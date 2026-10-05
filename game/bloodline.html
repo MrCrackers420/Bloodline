@@ -763,13 +763,11 @@
     <button id="rateP" style="font-size:.65rem; opacity:.6;">Your blood x3: off (test)</button>
     <button id="rateA" style="font-size:.65rem; opacity:.6;">Rival blood x3: off (test)</button>
     <button id="askelFate" style="font-size:.65rem; opacity:.6;">Askel's fate (test)</button>
-    <button id="askelScene" style="font-size:.65rem; opacity:.6;">Askel's last words (test)</button>
     <button id="tutorialTest" style="font-size:.65rem; opacity:.6;">Guided fight (test)</button>
     <button id="matsAdd" style="font-size:.65rem; opacity:.6;">Materials +5 each (test)</button>
     <button id="matsClear" style="font-size:.65rem; opacity:.6;">Materials: clear (test)</button>
     <button id="osricFate" style="font-size:.65rem; opacity:.6;">Osric's fate (test)</button>
     <button id="hadrekFate" style="font-size:.65rem; opacity:.6;">Hadrek's fate (test)</button>
-    <button id="hadrekScene" style="font-size:.65rem; opacity:.6;">Hadrek's last words (test)</button>
   </div>
 </div>
 
@@ -5365,7 +5363,6 @@
   document.getElementById('matsAdd').onclick = ()=>{ for(const m of MATERIALS) materials[m.id] += 5; saveAlchemy(); matsLabel(); haptic(20); };
   document.getElementById('matsClear').onclick = ()=>{ for(const m of MATERIALS) materials[m.id] = 0; saveAlchemy(); matsLabel(); };
   document.getElementById('tutorialTest').onclick = ()=>{ tutorialForce = true; setChallenger(CHALLENGERS[0]); renderTitle(); document.getElementById('tutorialTest').textContent = 'Guided fight: next Korrath match (test)'; };
-  document.getElementById('hadrekScene').onclick = ()=>{ sfxVictory(); showFate(true, 'hadrek'); };
   // recording toggles: Test tools, the pre-fight screen and the pause menu all flip the same switch.
   // A match is saved only if recording is on when it ends, so switching off mid-match keeps that match out of the data
   function recLabels(){
@@ -5380,7 +5377,6 @@
     const b = document.getElementById(side==='p' ? 'rateP' : 'rateA'), who = side==='p' ? 'Your' : 'Rival';
     b.onclick = ()=>{ testRate[side] = testRate[side]===1 ? 3 : 1; b.textContent = `${who} blood x3: ${testRate[side]===3 ? 'on' : 'off'} (test)`; };
   }
-  document.getElementById('askelScene').onclick = ()=>{ sfxVictory(); beep(220,2.0,'triangle',0.11,1.3); beep(330,2.0,'triangle',0.07,1.35); thud(1.3,0.12,200,1.3); showFate(true); }; // the whole sting (its last chord normally opens the victory score), then Askel's own score
   document.getElementById('unlockAll').onclick = ()=>{
     usedUnlockAll = true; try{ localStorage.setItem('bloodline_usedUnlockAll','1'); }catch(e){}
     unlockedTier = Math.max(...CARD_DEFS.map(c=>c.unlockTier||1), CHALLENGERS.length+1); // every card, challenger and trinket there is now, not a fixed number
