@@ -1,0 +1,16 @@
+{
+  "name": "bloodline",
+  "productName": "Bloodline",
+  "version": "0.1.0",
+  "description": "Bloodline: a war fought in blood, across two rivers.",
+  "author": "MrCrackers420",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "pack:win": "electron-packager . Bloodline --platform=win32 --arch=x64 --out=dist --overwrite --prune=false --ignore=\"^/dist\" --ignore=\"^/node_modules\" --ignore=\"^/README\""
+  },
+  "devDependencies": {
+    "@electron/packager": "^18.3.0",
+    "electron": "^33.0.0"
+  }
+}

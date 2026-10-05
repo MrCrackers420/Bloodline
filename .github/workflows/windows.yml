@@ -1,0 +1,31 @@
+# Builds the Windows app (a zip with Bloodline.exe) from game/bloodline.html. Push a tag like v0.2.0 to attach it to a Release.
+name: Windows build
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  windows:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - name: Put the game in the shell
+        run: mkdir -p windows/www && cp game/bloodline.html windows/www/index.html
+      - name: Install
+        working-directory: windows
+        run: npm install --no-audit --no-fund
+      - name: Package for Windows
+        working-directory: windows
+        run: npm run pack:win
+      - name: Zip
+        run: cd windows/dist && zip -qr ../../Bloodline-windows-x64.zip Bloodline-win32-x64
+      - uses: actions/upload-artifact@v4
+        with: { name: Bloodline-windows-x64, path: Bloodline-windows-x64.zip }
+      - name: Attach to the release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with: { files: Bloodline-windows-x64.zip }
