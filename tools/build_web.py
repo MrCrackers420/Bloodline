@@ -76,7 +76,7 @@ def main():
     open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 
     json.dump({"name": "Bloodline", "short_name": "Bloodline", "description": "A war fought in blood, across two rivers.",
-               "start_url": "./", "scope": "./", "display": "standalone", "orientation": "portrait",
+               "start_url": "./", "scope": "./", "display": "standalone", "orientation": "any",  # any: the installed app turns with the phone (the game has sideways layouts)
                "background_color": "#15100f", "theme_color": "#15100f",
                "icons": [{"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
                          {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
