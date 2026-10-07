@@ -214,6 +214,7 @@
   .lob-mark{ position:absolute; border-radius:50%; border:1.5px solid; pointer-events:none; z-index:1; opacity:.7; animation:lob-mark .45s ease-in-out infinite alternate; }
   .lob-mark.p{ border-color:var(--crimson-lt); } .lob-mark.a{ border-color:var(--teal-lt); }
   @keyframes lob-mark{ from{ opacity:.35; } to{ opacity:.85; } }
+  .unit.copied .unit-ring{ outline:1px dashed rgba(255,255,255,.35); outline-offset:1px; } /* a copy: an Echo, a Stage's encore, a Mummer's borrowed shape, Ysolde's mimicry */
   .unit.chained{ filter:grayscale(.75) brightness(.85); } /* Hadrek's chains: drained of color while slowed */
   /* Grael's snares: a dashed teal ring the size of the trigger */
   .snare{ position:absolute; width:44px; height:44px; margin:-22px 0 0 -22px; border:1px dashed; border-radius:50%; pointer-events:none; z-index:1;
@@ -303,13 +304,25 @@
   .rm-page .intro-desc{ max-width:360px; text-align:center; }
   .rm-nav{ display:flex; align-items:center; gap:.8rem; } .rm-nav button{ font-size:1.1rem; padding:.2rem .9rem; }
   .rm-dots{ display:flex; gap:5px; } .rm-dots i{ width:6px; height:6px; border-radius:50%; background:rgba(217,201,163,.25); } .rm-dots i.on{ background:var(--crimson-lt); }
+  #roadOverlay{ z-index:70; background:#0a0706; justify-content:center; gap:.7rem; cursor:pointer; }
+  .road-map{ margin:0; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:clamp(.7rem, 3.9vw, 1.15rem); line-height:1.15; color:var(--bone-dim); }
+  .road-map .rv{ color:#3f6f78; } .road-map .old{ color:#6b5d4c; } .road-map .new{ color:var(--crimson-lt); } .road-map .won{ color:var(--bone-dim); } .road-map .next{ color:var(--crimson-lt); font-weight:700; animation:road-blink 1s steps(2) infinite; }
+  @keyframes road-blink{ 50%{ opacity:.25; } }
+  .road-day{ font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:var(--crimson-lt); } .road-to{ font-size:.95rem; color:var(--bone); letter-spacing:.06em; }
+  .road-text{ max-width:34ch; text-align:center; font-style:italic; color:var(--bone); line-height:1.5; margin:0; min-height:3em; opacity:0; transition:opacity 1.1s; } .road-text.on{ opacity:1; }
+  #workshopOverlay, #labOverlay, #boilerOverlay, #tavernOverlay{ z-index:61 !important; } #tavernOverlay{ background:#0a0706; justify-content:flex-start; } #boilerOverlay{ background:#0a0706; justify-content:flex-start; }
+  .cg-record{ font-size:.66rem; color:#e0b54a; margin-top:.25rem; letter-spacing:.02em; } .cg-card.unmet .spell-preview{ opacity:.35; }
+  .king-note{ color:#e0b54a; text-align:center; }
+  .tavern-rumour{ font-style:italic; color:var(--bone); text-align:center; margin:.4rem 0; }
+  .heat-note{ font-size:.72rem; color:var(--bone-dim); text-align:center; margin:-.2rem 0 .6rem; column-span:all; } .heat-note.hot{ color:#e09a4a; }
+  .base-cell.boiler-hot{ box-shadow:inset 0 0 0 1px rgba(224,154,74,.7), 0 0 8px rgba(224,154,74,.35); } #labOverlay{ background:#0a0706; justify-content:flex-start; } /* opened from the Camp map: it must sit above it, as the other buildings' screens do */
   #kitchenOverlay, #campOverlay, #baseOverlay, #workshopOverlay{ z-index:60; background:#0a0706; justify-content:flex-start; }
   #baseOverlay .help{ width:min(92vw, 330px); width:min(92vw, 760px, max(330px, calc((100vh - 270px) * 0.83 + 14px))); width:min(92vw, 760px, max(330px, calc((100dvh - 270px) * 0.83 + 14px))); } /* the camp grows to fill a wide screen, as tall as the window allows */
   #baseOverlay .help-sec{ max-width:520px; margin-left:auto; margin-right:auto; text-align:center; }
   @media (orientation:landscape) and (min-width:700px){ /* a wide screen: the map fills the window's height on the left, everything else stands beside it */
     #baseOverlay{ justify-content:center; padding:0; }
     #baseOverlay .help{ display:grid; grid-template-columns:auto minmax(220px, 320px); column-gap:2rem; row-gap:.6rem; align-content:center; align-items:center; width:auto; max-width:96vw; padding:1rem 0; }
-    #baseOverlay .base-map{ grid-column:1; grid-row:1 / span 7; margin:0; width:calc((100vh - 2.5rem) * 0.83); width:calc((100dvh - 2.5rem) * 0.83); max-width:calc(96vw - 260px); }
+    #baseOverlay .base-map{ grid-column:1; grid-row:1 / span 7; margin:0; width:calc((100vh - 2.5rem) * 0.72); width:calc((100dvh - 2.5rem) * 0.72); max-width:calc(96vw - 260px); }
     #baseOverlay .help > :not(.base-map){ grid-column:2; }
   }
   .base-map{ display:grid; grid-template-columns:repeat(5, 1fr); gap:3px; width:100%; box-sizing:border-box; container-type:inline-size; margin:.4rem auto; padding:6px; background:#17110e; border:1px solid var(--line); border-radius:6px;
@@ -323,6 +336,21 @@
   .base-build{ display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin:.3rem 0; }
   .base-build button{ font-size:.68rem; padding:.25rem .6rem; } .base-build button.sel{ border-color:#e0b54a; color:#e0b54a; box-shadow:0 0 0 1px #e0b54a; }
   .base-hint{ text-align:center; min-height:1.2em; }
+  .base-cell.void{ visibility:hidden; }
+  .base-cell.home{ touch-action:none; -webkit-user-select:none; user-select:none; cursor:grab; }
+  .base-cell.home{ border:1px solid rgba(224,181,74,.35); color:#e0b54a; background:rgba(224,181,74,.06); } .base-art{ margin:0; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:clamp(6px, 3.3cqw, 17px); line-height:1.05; white-space:pre; color:inherit; pointer-events:none; }
+  .base-cell.bld .base-art{ color:var(--bone); } .base-cell.home .base-art{ color:#e0b54a; }
+ .base-cell.home b{ font-size:clamp(1.3rem, 7cqw, 2.8rem); font-weight:400; } .base-cell.home span{ font-size:clamp(.55rem, 2.6cqw, 1.05rem); }
+  .base-layouts{ display:flex; gap:.45rem; justify-content:center; align-items:center; flex-wrap:wrap; margin:.3rem 0; }
+  .base-layouts .bl-label{ font-size:.66rem; color:var(--bone-dim); letter-spacing:.1em; text-transform:uppercase; }
+  .bl-slot{ display:flex; gap:2px; } .bl-slot button{ font-size:.75rem; padding:.25rem .6rem; } .bl-slot .bl-save{ font-size:.6rem; padding:.25rem .4rem; opacity:.7; }
+  .base-pack{ margin:.2rem auto; padding:.45rem .8rem; border:1px dashed var(--line); border-radius:6px; text-align:center; font-size:.68rem; color:var(--bone-dim); max-width:340px; }
+  .base-pack.over{ border-color:#e0b54a; color:#e0b54a; background:rgba(224,181,74,.08); }
+  .base-cell.bld{ touch-action:none; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; } .base-cell.lifted{ opacity:.25; }
+  .base-cell.drop-ok{ border-color:#7fcf8e !important; background:rgba(127,207,142,.14); }
+  .base-ghost{ position:fixed; z-index:200; transform:translate(-50%,-50%) scale(1.08); pointer-events:none; box-shadow:0 6px 18px rgba(0,0,0,.6); border-color:#e0b54a !important; }
+  .base-ghost.bad{ border-color:#d65a5a !important; opacity:.8; }
+  .base-cell.lab-linked{ box-shadow:inset 0 0 0 1px rgba(127,207,142,.55); } /* joined to the Laboratory beside it */
   .base-up{ border:1px solid var(--line); border-radius:6px; padding:.5rem .6rem; margin-bottom:.6rem; display:flex; flex-direction:column; gap:.3rem; font-size:.72rem; color:var(--bone-dim); break-inside:avoid; column-span:all; }
   .base-up-head{ color:var(--bone); font-weight:700; } .base-up button{ align-self:flex-start; font-size:.7rem; }
   .cg-card.alc-locked{ opacity:.5; }
@@ -476,6 +504,11 @@
   #talkOverlay .bubble{ animation-delay:0s; }
   #talkOverlay .bubbles{ width:min(340px, 88vw); } /* fixed width, so a right-aligned reply doesn't shift the lines above it */
   #talkOverlay .bubble .who{ display:block; font-size:.56rem; letter-spacing:.12em; text-transform:uppercase; opacity:.55; margin-bottom:.15rem; }
+  .talk-units{ display:none; gap:46px; justify-content:center; align-items:center; height:70px; } .talk-units.on{ display:flex; } /* a troop that speaks is drawn as itself */
+  .talk-units .unit{ position:relative; left:auto; top:auto; margin:0; transform:scale(2.4); transition:none; animation:talk-bob 1.6s ease-in-out infinite; }
+  .talk-units .unit:nth-child(2){ animation-delay:.3s; } .talk-units .unit:nth-child(3){ animation-delay:.6s; }
+  @keyframes talk-bob{ 0%,100%{ translate:0 0; } 50%{ translate:0 -3px; } }
+  #talkName.yours{ color:var(--crimson-lt); } #talkOverlay .bubble.yours{ align-self:flex-end; border-color:var(--crimson); } #talkOverlay .bubble.yours .who{ color:var(--crimson-lt); } /* your own side speaking */
   #talkOverlay .bubble.ally{ align-self:flex-end; border-color:#b8954a; background:#2e271d; color:#e8c770; } /* Askel: dark, with golden words */
   .talk-hint{ font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); opacity:.7; animation:talk-pulse 1.4s ease-in-out infinite alternate; }
   @keyframes talk-pulse{ from{ opacity:.35; } to{ opacity:.85; } }
@@ -793,6 +826,18 @@
     #helpOverlay .help > h2, #helpOverlay .help > button{ column-span:all; }
     #helpOverlay .help > button{ display:block; margin:1rem auto 0; }
   }
+  /* ---- notch, Dynamic Island and home indicator (iPhone 16 Pro and the like): nothing you read or tap sits under them ---- */
+  .overlay{ padding-top:calc(1rem + env(safe-area-inset-top,0px)); padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px)); padding-left:env(safe-area-inset-left,0px); padding-right:env(safe-area-inset-right,0px); }
+  #rematchOverlay{ padding-top:calc(1rem + env(safe-area-inset-top,0px)); padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px)); }
+  #storyOverlay{ padding-top:calc(2rem + env(safe-area-inset-top,0px)); } #unlockOverlay{ padding-top:calc(2.2rem + env(safe-area-inset-top,0px)); }
+  #holdfastOverlay{ padding:0; } /* the Holdfast's own frame (.hf-wrap) keeps clear of them instead */
+  #tutor{ top:max(64px, 9vh, calc(env(safe-area-inset-top,0px) + 12px)); }
+  @media (orientation:landscape) and (min-width:700px){ #baseOverlay{ padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px); } }
+  /* the Holdfast drawn turned on a tall view: its sides are the screen's sides turned a quarter, so each takes the matching inset */
+  @media (orientation:portrait){
+    #holdfastOverlay.show .hf-wrap{ padding:env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px) env(safe-area-inset-top,0px); }
+    body.hf-flip #holdfastOverlay.show .hf-wrap{ padding:env(safe-area-inset-left,0px) env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px); }
+  }
 </style>
 </head>
 <body>
@@ -942,6 +987,8 @@
       <button id="vibeTest" style="font-size:.65rem; opacity:.6;">Vibration (test)</button>
       <button id="musicWorst" style="font-size:.65rem; opacity:.6;">Fight music: worst case (test)</button>
       <button id="musicBest" style="font-size:.65rem; opacity:.6;">Fight music: best case (test)</button>
+      <button id="labTestBtn" style="font-size:.65rem; opacity:.6;">Laboratory (test)</button>
+      <button id="roadTestBtn" style="font-size:.65rem; opacity:.6;">The road (test)</button>
       <button id="resetProgress" style="font-size:.65rem; opacity:.6;">Reset progress (test)</button>
       <button id="playLogBtn" style="font-size:.65rem; opacity:.6;">Play log: on</button>
       <button id="exportLog" style="font-size:.65rem; opacity:.6;">Export play log</button>
@@ -957,6 +1004,7 @@
       <button id="osricFate" style="font-size:.65rem; opacity:.6;">Osric's fate</button>
       <button id="hadrekFate" style="font-size:.65rem; opacity:.6;">Hadrek's fate</button>
       <button id="orrinFate" style="font-size:.65rem; opacity:.6;">Orrin's fate</button>
+      <button id="ysoldeFate" style="font-size:.65rem; opacity:.6;">Ysolde's fate</button>
     </div>
   </div>
   </div>
@@ -1036,14 +1084,14 @@
       <div class="help-shape"><div class="unit p shape-square card-preview help-icon"><div class="unit-ring"><div class="unit-core">&#9638;</div></div></div><span>Wall: soaks damage, does none</span></div>
     </div>
     <div class="help-sec"><b>Rivers and bridges.</b> Troops cannot wade: they cross only on the bridges. Once you have beaten Veyra you can seal one of your own bridges by tapping it (it costs nothing, but there is a cooldown). Anything standing on it drops into the river. Your bridge pulses when that would drown the rival's troops. No building may stand at either end of a bridge.</div>
-    <div class="help-sec"><b>Spells.</b> Spells land anywhere and affect everything whose body touches their circle. Some catch your own troops too. The Card guide explains each one.</div>
+    <div class="help-sec"><b>Spells.</b> Spells land anywhere and affect everything whose body touches their circle. Some catch your own troops too. The Bestiary explains each one.</div>
     <div class="help-sec"><b>Rivals.</b> Each challenger openly breaks a rule you must keep, and the screen before each fight says which. One of them keeps every rule you do.</div>
     <div class="help-sec"><b>Trinkets.</b> Beating Veyra, Corvane, Maren, Grael and Osric each earns a trinket with a perk. Askel's is yours if you finish him, or later if you spare him, and Hadrek's if you slay him. Carry one at a time, chosen in the Trinket row on the screen before a fight. After Chapter I you may carry two, or none for a ninth card. The Trinkets page explains each one.</div>
     <div class="help-sec"><b>Formations.</b> With Grael's Crown, a relic, the deck picker lets you bind two troops into one card with a shape: one behind, beside or ahead of the other. It lands both at once and costs both, and it takes two slots. Its troops cannot be carried alone until you separate it with its cross.</div>
     <div class="help-sec"><b>Skirmish and Alchemy.</b> After Veyra, wandering rivals roam the rivers. Fight them in Skirmish, from the menu: each breaks a rule of its own, nothing in the story moves, and every win brings three materials. Story fights pay too: breaking all three of a rival's Pentagons in your first fight with a challenger earns 8 materials, from Corvane on. Rematches pay nothing. Half the time a beaten wanderer begs: spare them for what they carry, or kill them for something else. In Alchemy, two spells you own and some materials brew three doses of a new spell, cheaper than both and with its own nature. The first cast in a fight spends a dose, and after that the spell is free for the rest of that fight.</div>
     <div class="help-sec"><b>The Holdfast.</b> An optional mode, opened from the main menu once Osric has fallen, and best played with your phone on its side. Hold the Keep at the tollhouse as raiders come down three roads, for as long as you can: the raids do not stop. The Keep stands on a square plot inside a moat, and raiders cross by the bridges. Build anywhere on the grid with Mortar: every building is on the buttons under the board, the Holdfast's own and yours, and between waves you can dismantle one for half its Mortar. Your hand starts empty: after every wave you hold you choose one of two cards, a troop or a spell, for a single use, paid in blood, and every fifth wave pays a second. Every wave also adds food ingredients (and now and then an alchemy material) to your pot. Conclude between waves to take all of it; if the Keep falls, half of it reaches you. The story never needs it.</div>
-    <div class="help-sec"><b>Your camp: the Still, the Kitchen and the War Pen.</b> Open Camp from the menu: a small map of your own base, where Alchemy, the Kitchen and the War Pen stand as buildings you raise with Mortar (the stores send enough as each one opens, and Holdfast waves and Skirmish wins send a little more). Tap a building to work in it. The Holdfast is a different camp: losing it never touches yours. Each building has seven levels: raising one costs Mortar, and every second level also needs a blueprint, won the first time you beat certain challengers. Troops eat the food of their band (I to IV, by when they join you); higher bands need rarer ingredients from deeper Holdfast waves (Honey from wave 8, Marrow from 15, Ember from 22). Cook the Holdfast's ingredients into Bread, Stew and Smoked Fish in the Kitchen. At the Training camp a troop eats food in large amounts. A kingdom troop is fed for raw stats (Bread hardier, Stew fiercer, Smoked Fish quicker); every other troop is taught new functions instead. Either way it lasts, in every mode. A ★ beside a troop in your deck shows how fed it is.</div>
-    <button id="helpCards">Card guide</button>
+    <div class="help-sec"><b>Your camp: the Still, the Kitchen and the War Pen.</b> Open Camp from the menu: a small map of your own base, where Alchemy, the Kitchen and the War Pen stand as buildings you raise with Mortar (the stores send enough as each one opens, and Holdfast waves and Skirmish wins send a little more). Tap a building to work in it. The Holdfast is a different camp: losing it never touches yours. Each building has seven levels: raising one costs Mortar, and every second level also needs a blueprint, won the first time you beat certain challengers. Food comes in four grades, Plain, Good, Fine and Gourmet, and each lesson in the War Pen asks for one particular dish; stronger troops need finer food, made from rarer ingredients from deeper Holdfast waves (Honey from wave 8, Marrow from 15, Bloodroot from 22). The Boiler burns Ember: the buildings beside it brew and cook at full speed while it is hot, and everything else at half. Cook the Holdfast's ingredients into Bread, Stew and Smoked Fish in the Kitchen. At the Training camp a troop eats food in large amounts. A kingdom troop is fed for raw stats (Bread hardier, Stew fiercer, Smoked Fish quicker); every other troop is taught new functions instead. Either way it lasts, in every mode. A ★ beside a troop in your deck shows how fed it is.</div>
+    <button id="helpCards">Bestiary</button>
     <button id="helpTrinkets">Trinkets</button>
     <button id="helpBack">Back</button>
   </div>
@@ -1051,7 +1099,8 @@
 
 <div class="overlay" id="cardsOverlay">
   <div class="help">
-    <h2>Card guide</h2>
+    <h2>Bestiary</h2>
+    <div class="help-sec">Every troop, building and spell you have met. Ones you have not met yet stay in the dark. Your record with each is kept as you play.</div>
     <div id="cardGuide"></div>
     <button id="cardsBack">Back</button>
   </div>
@@ -1089,6 +1138,7 @@
 
 <div class="overlay" id="talkOverlay">
   <pre class="portrait" id="talkPortrait" style="display:block;"></pre>
+  <div class="talk-units" id="talkUnits"></div>
   <div class="herald-name" id="talkName"></div>
   <div class="bubbles" id="talkBubbles"></div>
   <div class="talk-hint" id="talkHint">tap to continue</div>
@@ -1109,10 +1159,41 @@
   <div class="rm-nav"><button id="rmPrev" aria-label="Previous">‹</button><div class="rm-dots" id="rmDots"></div><button id="rmNext" aria-label="Next">›</button></div>
   <button id="rmBack">Back</button>
 </div>
+<div class="overlay" id="roadOverlay">
+  <div class="road-day" id="roadDay"></div>
+  <pre class="road-map" id="roadMap"></pre>
+  <div class="road-to" id="roadTo"></div>
+  <p class="road-text" id="roadText"></p>
+  <div class="talk-hint">tap to go on</div>
+</div>
+<div class="overlay" id="tavernOverlay">
+  <div class="help">
+    <h2>Tavern</h2>
+    <div class="help-sec">Long tables, a fire, and somewhere for troops to sit between lessons. When it touches the War Pen, the Kitchen and the Still at once, training goes faster.</div>
+    <div id="tavernList"></div>
+    <button id="tavernBack">Back</button>
+  </div>
+</div>
+<div class="overlay" id="boilerOverlay">
+  <div class="help">
+    <h2>Boiler</h2>
+    <div class="help-sec">An iron belly that eats Ember. While it burns, the buildings beside it work at full speed; anything cold works at half.</div>
+    <div id="boilerList"></div>
+    <button id="boilerBack">Back</button>
+  </div>
+</div>
+<div class="overlay" id="labOverlay">
+  <div class="help">
+    <h2>Laboratory</h2>
+    <div class="help-sec">A long bench, stained and cold, with three empty slots along it. Whoever built it knew what it was for. You do not, yet.</div>
+    <div id="labList"></div>
+    <button id="labBack">Back</button>
+  </div>
+</div>
 <div class="overlay" id="workshopOverlay">
   <div class="help">
     <h2>Workshop</h2>
-    <div class="help-sec">Orrin's bench. Fit your buildings here: each fitting costs materials, works in story fights and the Holdfast alike, and can be taken off again for free between fights.</div>
+    <div class="help-sec">Orrin's bench. Fit your buildings here, one fitting each. You make each fitting once, for materials, and it sits on one building at a time: move it to another whenever you like, for free. Tempered fittings can only be made while a hot Boiler stands beside the Workshop. Fittings work in story fights and the Holdfast alike.</div>
     <div id="workshopMats" class="alc-mats"></div>
     <div id="workshopList"></div>
     <button id="workshopBack">Back</button>
@@ -1124,6 +1205,8 @@
     <div class="help-sec">Your own camp, behind the lines. Raise its buildings with Mortar and tap one to work in it. Whatever happens at the Holdfast, this camp stands.</div>
     <div id="baseMortar" class="alc-mats"></div>
     <div id="baseMap" class="base-map"></div>
+    <div id="basePack" class="base-pack">Drop a building here to pack it away</div>
+    <div id="baseLayouts" class="base-layouts"></div>
     <div id="baseHint" class="help-sec base-hint"></div>
     <div id="baseBuild" class="base-build"></div>
     <button id="baseBack">Back</button>
@@ -1248,19 +1331,27 @@
     {name:"Barricade",  cost:3, hp:90,  dmg:0,  spd:0, range:0,  atkStyle:'none', targets:'none', isBuilding:true, emoji:"⊟", unlockTier:13, pair:{gap:8, max:4}},
     {name:"Ballista",   cost:6, hp:120, dmg:14, spd:0, range:20, atkStyle:'interval-ranged', targets:'troops', atkInterval:2500, isBuilding:true, uniquePerOwner:true, emoji:"⇶", unlockTier:13, pierceLine:1.6},
     {name:"Undermine",  cost:6, cardType:'spell', radius:10, undermine:{silence:3000, ms:8000, more:0.5}, emoji:"⊻", unlockTier:13, brew:{a:'Fracture', b:'Oath', mats:{bone:4, brine:3}, ms:600000}}, // never touches a Pentagon
+    // ---- two weapons at once: a melee weapon that leads, and a second, ranged one that fires on its own at the other kind of target
+    {name:"Breacher",   cost:5, hp:70, dmg:12, spd:8.5, range:4, atkStyle:'interval-melee', targets:'buildings', atkInterval:1400, emoji:"Ψ", unlockTier:14, noHoldfast:true, second:{targets:'troops', dmg:4, range:9, atkInterval:900}},   // hacks at buildings, shoots troops that come near
+    {name:"Harrier",    cost:4, hp:50, dmg:8,  spd:10,  range:4, atkStyle:'interval-melee', targets:'troops',    atkInterval:1000, emoji:"Ϟ", unlockTier:14, noHoldfast:true, second:{targets:'buildings', dmg:5, range:12, atkInterval:1200}}, // fights troops hand to hand, shoots at buildings in reach
+    // ---- Ysolde's troupe (beat Ysolde, challenger 13): copying, borrowed shapes, and the encore
+    {name:"Mummer",     cost:3, hp:30, dmg:6,  spd:9,  range:5,  atkStyle:'interval-melee', targets:'troops', atkInterval:1000, emoji:"Ѻ", unlockTier:14, mummer:{hp:0.5}}, // when it falls, it stands up again as whatever killed it, on your side
+    {name:"Stage",      cost:5, hp:140, dmg:0, spd:0,  range:0,  atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"⌓", unlockTier:14, stage:{every:12000, hp:0.5}}, // replays your last troop beside it
+    {name:"Echo",       cost:3, cardType:'spell', radius:3, echo:{hp:0.7}, emoji:"◌", unlockTier:14}, // your last troop again, here
+    {name:"Encore",     cost:5, cardType:'spell', radius:3, encore:{hp:0.7}, emoji:"⊙", unlockTier:14, needsLab:true, brew:{a:'Echo', b:'Oath', mats:{ichor:4, ash:3}, ms:600000}}, // the rival's last troop, playing for you
     // ---- the tier 1 replacements (spec of Oct 7). Tier 14 is a placeholder until the challenger that unlocks them exists; none
     // reaches the Holdfast yet (noHoldfast). The Stakewall waits for the Workshop
-    {name:"Lamprey",    cost:2, hp:16,  dmg:5,  spd:10.7, range:3,  atkStyle:'continuous',      targets:'troops',    emoji:"ϩ", needsTarget:true, unlockTier:14, noHoldfast:true, numbs:{mult:1.35}},
-    {name:"Fusebearer", cost:5, hp:100, dmg:14, spd:9,    range:4,  atkStyle:'interval-melee',  targets:'buildings', atkInterval:1500, emoji:"ϙ", unlockTier:14, noHoldfast:true, fuse:{ms:2000, dmg:56, splash:18, r:6}},
-    {name:"Bombard",    cost:4, hp:34,  dmg:26, spd:8,    range:12, atkStyle:'interval-ranged', targets:'any',       atkInterval:2800, emoji:"Ѳ", unlockTier:14, noHoldfast:true, lob:{flight:900, r:4, splashFrac:0.5}},
-    {name:"Mourner",    cost:5, hp:48,  dmg:11, spd:8,    range:6,  atkStyle:'interval-melee',  targets:'any',       atkInterval:1100, emoji:"ϸ", unlockTier:14, noHoldfast:true, grieves:{r:10, heal:6, haste:0.3, ms:4000, gap:2000}},
+    {name:"Lamprey",    cost:2, hp:16,  dmg:5,  spd:10.7, range:3,  atkStyle:'continuous',      targets:'troops',    emoji:"ϩ", needsTarget:true, unlockTier:99, labOnly:true, noHoldfast:true, numbs:{mult:1.35}},
+    {name:"Fusebearer", cost:5, hp:100, dmg:14, spd:9,    range:4,  atkStyle:'interval-melee',  targets:'buildings', atkInterval:1500, emoji:"ϙ", unlockTier:99, labOnly:true, noHoldfast:true, fuse:{ms:2000, dmg:56, splash:18, r:6}},
+    {name:"Bombard",    cost:4, hp:34,  dmg:5,  spd:8,    range:44, atkStyle:'interval-ranged', targets:'any',       atkInterval:3000, emoji:"Ѳ", unlockTier:99, labOnly:true, noHoldfast:true, sniper:true, lob:{flight:1600, r:8, splashFrac:1}}, // the first sniper: lobs light stones with a wide splash from the island's far edge onto a Pentagon; anything nearer draws its aim
+    {name:"Mourner",    cost:5, hp:48,  dmg:11, spd:8,    range:6,  atkStyle:'interval-melee',  targets:'any',       atkInterval:1100, emoji:"ϸ", unlockTier:99, labOnly:true, noHoldfast:true, grieves:{r:10, heal:6, haste:0.3, ms:4000, gap:2000}},
     {name:"Bloodletting", cost:3, cardType:'spell', radius:10, opens:6000, emoji:"⌇", unlockTier:10}, // Grael's: opens rival troops to your parasites
     // brewed in Alchemy from two spells and materials won from wandering rivals; each is its own new spell, cheaper than its parts
     {name:"Transfusion", cost:5, cardType:'spell', radius:10, transfuse:10, emoji:"⥮", unlockTier:4, brew:{a:'Blood Burst', b:'Mercy', mats:{ichor:4, bone:3}, ms:120000}},
     {name:"Rupture",     cost:7, cardType:'spell', radius:11, rupture:{delay:1500, pct:0.30, flat:10, bpct:0.10, friendly:0.3}, emoji:"✹", unlockTier:4, brew:{a:'Blood Burst', b:'Fracture', mats:{ash:4, bone:4}, ms:720000}},
     {name:"False Oath",  cost:6, cardType:'spell', radius:9,  turn:5000, emoji:"⊘", unlockTier:5, brew:{a:'Confusion', b:'Oath', mats:{brine:4, ichor:3}, ms:300000}},
     {name:"Sanctuary",   cost:5, cardType:'spell', radius:10, zone:{ms:6000, regen:4, cut:0.5, slow:0.5}, emoji:"⌂", unlockTier:5, brew:{a:'Mercy', b:'Oath', mats:{bone:4, brine:3}, ms:180000}},
-    {name:"Haemorrhage", cost:5, cardType:'spell', radius:10, bleed:{dps:3, ms:6000, burst:8, r:8}, emoji:"♒", unlockTier:10, brew:{a:'Bloodletting', b:'Blood Burst', mats:{ichor:5, ash:3}, ms:480000}},
+    {name:"Haemorrhage", cost:5, cardType:'spell', radius:10, bleed:{dps:3, ms:6000, burst:8, r:8}, emoji:"≀", unlockTier:10, brew:{a:'Bloodletting', b:'Blood Burst', mats:{ichor:5, ash:3}, ms:480000}},
     {name:"Shieldbearer", cost:5, hp:200, dmg:6, spd:6, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1400, emoji:"⛉", unlockTier:11, osric:'slain', guards:{r:7, share:0.5}}, // Osric's guard: takes half of what hits the troops standing near it
     {name:"Plunderer",   cost:4, hp:34, dmg:5, spd:10, range:5, atkStyle:'interval-melee', targets:'troops', atkInterval:1000, emoji:"⌘", unlockTier:11, steals:0.04}, // Morvek's way: every hit takes blood from the rival's pool into yours
     {name:"Stolen Standard", cost:4, hp:90, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"⍟", unlockTier:11, taunts:12, rallies:true}, // a flag nobody can ignore: enemy troops nearby attack it first
@@ -1354,7 +1445,7 @@
   const SKIRMISH_MATS = 3;
   const matName = k => MATERIALS.find(m=>m.id===k).name;
   const SKIRMISH_MORTAR = 2; // a won Skirmish also sends a little Mortar to your camp
-  function giveMaterial(k){ materials[k] += SKIRMISH_MATS; saveAlchemy(); camp.mortar += SKIRMISH_MORTAR; saveCamp(); return SKIRMISH_MATS + ' ' + matName(k) + ` and ${SKIRMISH_MORTAR} Mortar for your camp`; }
+  function giveMaterial(k){ materials[k] += SKIRMISH_MATS; saveAlchemy(); camp.mortar += SKIRMISH_MORTAR; saveCamp(); food.ember = (food.ember||0) + 2; saveFood(); return SKIRMISH_MATS + ' ' + matName(k) + ` and ${SKIRMISH_MORTAR} Mortar and 2 Ember for your camp`; }
   const OSRIC_FACE = `      _________
      |  _____  |
      | | o o | |
@@ -1382,6 +1473,13 @@
    ___\\_______/___
   |  |=|=|=|=|=|  |
   |__|_|_|_|_|_|__|`;
+  const YSOLDE_FACE = `     _______
+    /       \\
+   |  ^   ^  |
+   |    o    |
+   |  \\___/  |
+    \\_______/
+     |  |  |`;
   const CHALLENGERS = [
     {
       id:1, name:'Korrath', useIsland:false, greedy:false, troopCap:8, gentle:true, maxBuildings:1, // early fights: see troopCap, gentle and maxBuildings below
@@ -1615,14 +1713,21 @@
       // Chapter II, at the burned ford: the Builder. He raised every bridge on the rivers and cut his name off the posts when the first thing
       // across each was an army. Rule, Works: two of every building at once, and his buildings mend while none of your troops are near.
       // Mid-fight: when his first gate falls he raises Barricades across both lanes. Spare him: the Workshop. Slay him: Double Works
-      id:12, name:'Orrin', useIsland:true, greedy:true, smart:true, tactician:true, pushStart:9, works:true, theme:'orrin',
+      id:12, name:'Orrin', useIsland:true, greedy:true, smart:true, tactician:true, pushStart:9, works:true, theme:'orrin', puzzle:true, // a siege puzzle: his works stand from the start, he plays nothing; your blood is endless but every card plays once
       portrait:ORRIN_FACE, fateKey:'orrin',
+      preHerald: n => [ // the Borers explain the siege before Orrin's herald
+        `We went under the ford while you fought, ${n}. All of us, together. We found him.`,
+        `Orrin. The one who raised the bridges. His works stand past the burned ford, already built, and he will not come out to meet you.`,
+        `There is no slow way in. It has to be everything at once: every card you carry, spent one time each. Blood will not run short. We will see to that.`,
+        `Break every wall, every tower, every Pentagon. Leave one standing and the ford stays shut.`,
+      ],
       rally: n => [
         `That one I built in a night, ${n}. I can build another before morning.`,
         `There was one bridge I never finished. I left the last span open, so nothing could cross it.`,
         `Here. See if you can cross this.`,
       ],
-      rallyDo: () => { const B = CARD_DEFS.find(c=>c.name==='Barricade'); for(const x of BRIDGE_X){ deploy('a', B, x, 21); } fieldText(50, 18, 'Orrin raises Barricades across both lanes'); },
+      rallyDo: () => { const B = CARD_DEFS.find(c=>c.name==='Barricade'); for(const x of BRIDGE_X){ deploy('a', B, x, 15); } fieldText(50, 12, 'Orrin raises Barricades across both lanes'); },
+      fortress: [['Ballista',30,12],['Ballista',70,12],['Cannon',22,19],['Cannon',78,19],['Watchtower',42,8],['Watchtower',58,8],['Barricade',18,23],['Barricade',82,23]], // his works, placed before the fight
       deathWords: n => [
         `You broke what I built faster than I could mend it, ${n}. I have not seen that since the first army came.`,
         `My name is under the ash on every post. Orrin. Say it once, so somebody has.`,
@@ -1633,10 +1738,37 @@
         `I cut my name off every post. The first thing over each of them was an army.`,
         `Come to the ford. I have built something you cannot cross.`,
       ],
-      intro:"Orrin raised every bridge on these rivers, and he builds faster than anyone can break. He keeps two of every building at once, and his buildings mend themselves while none of your troops are near them. Break them under pressure and keep troops on them. When his first gate falls, expect a wall.",
+      intro:"Your Borers found him: an all-out attack, with nothing held back. Orrin's works are built before you arrive, the same every time: three Pentagons behind two Ballistas, two Cannons, two Watchtowers, and a Barricade across each bridge. He plays no cards. Your blood never runs out, but every card in your deck can be played only once. Break every building he has, Pentagons included, to win. When his first Pentagon falls he raises more Barricades.",
       winStory: n => `Orrin's works lie broken along the ford, and for the first time in years someone has said his name aloud. ${n} leaves the posts as they are. The ash on them is still warm.`,
-      lossStory: n => `${n} broke Orrin's walls again and again, and every time they stood once more before the next push arrived. The ford stayed closed.`,
+      lossStory: n => `${n} spent every card against Orrin's works, and some of them were still standing at the end. The ford stayed closed. Look again at how he built it.`,
       rewardNote:"The Watchtower, Barricade and Ballista join your cards, and Undermine can be brewed. Orrin's gift depends on what you did with him.",
+    },
+    {
+      // Chapter II, on the road beyond the burned ford: Ysolde and her troupe of mummers, who play the war back at whoever brings it.
+      // Rule, Mimicry: every troop you send out past your own river, her troupe plays a moment later, mirrored across the field, weaker, for 1 blood each. Mid-fight: when her
+      // first Pentagon falls, the mask comes off and the copies come faster and at full strength. Reward: Ysolde's Mask (a trinket)
+      id:13, name:'Ysolde', useIsland:true, smart:true, ownCap:{Behemoth:1}, // not greedy, and at most one Behemoth of her own at a time: her copies are the pressure theme:'ysolde', portrait:YSOLDE_FACE,
+      echo:{delay:1500, hp:0.6, delayOff:700}, fateKey:'ysolde',
+      deathWords: n => [
+        `Well played, ${n}. Truly. I would know: I played it too.`,
+        `The troupe will want to know how the show ends. I suppose you get to write that part.`,
+        `Let me go and take the Mask; it is the best part I ever played. Or take the whole Wardrobe, and play every part yourself.`,
+      ],
+      rally: n => [
+        `You are very good at this, ${n}. So good that I am bored of being you.`,
+        `There. The mask is off. No more half measures.`,
+        `Play what you like. I will play it back faster, and harder.`,
+      ],
+      rallyDo: () => { fieldText(50, 12, 'The mask is off: her copies come faster, at full strength'); },
+      herald: n => [
+        `We saw you at the ford, ${n}. All of you. We have been practising.`,
+        `We play the war back at whoever brings it. You'd be amazed how few people enjoy watching themselves.`,
+        `Come to the crossroads. The troupe has a show to put on, and you're in it.`,
+      ],
+      intro:"Ysolde leads a troupe of mummers who play the war back at whoever brings it. Every troop you send out past your own river, they play too, a moment later, mirrored across the field: weaker, and for a single blood each. What you keep at home, and your spells and buildings, they leave alone. When her first Pentagon falls, the mask comes off and the copies come faster and at full strength. Choose cards that are worse in her hands than in yours.",
+      winStory: n => `The troupe packs its masks into a cart and leaves the crossroads in silence. Ysolde does not look back, but she bows as she goes, which is more than ${n} expected.`,
+      lossStory: n => `${n} spent the whole fight against copies of ${n}'s own troops. The troupe takes its bows to an empty field.`,
+      rewardNote:"The Mummer, the Stage and Echo join your cards, and Encore can be brewed at a Still with a Laboratory beside it. Ysolde's fate decides her gift.",
     }
   ];
   let currentChallengerId = 1;
@@ -1672,11 +1804,14 @@
   let osricChoice = ''; // what you did with Osric: 'spared' (the First Standard relic) or 'slain' (his Shield and the Shieldbearer)
   try{ osricChoice = localStorage.getItem('bloodline_osric') || ''; }catch(e){}
   function setOsricChoice(v){ osricChoice = v || ''; try{ v ? localStorage.setItem('bloodline_osric', v) : localStorage.removeItem('bloodline_osric'); }catch(e){} }
+  let ysoldeChoice = ''; // what you did with Ysolde: 'spared' (her Mask) or 'slain' (her Wardrobe)
+  try{ ysoldeChoice = localStorage.getItem('bloodline_ysolde') || ''; }catch(e){}
+  function setYsoldeChoice(v){ ysoldeChoice = v || ''; try{ v ? localStorage.setItem('bloodline_ysolde', v) : localStorage.removeItem('bloodline_ysolde'); }catch(e){} }
   let orrinChoice = ''; // what you did with Orrin: 'spared' (the Workshop) or 'slain' (the relic Double Works)
   try{ orrinChoice = localStorage.getItem('bloodline_orrin') || ''; }catch(e){}
   function setOrrinChoice(v){ orrinChoice = v || ''; try{ v ? localStorage.setItem('bloodline_orrin', v) : localStorage.removeItem('bloodline_orrin'); }catch(e){} }
   let orrinRelic = false; try{ orrinRelic = localStorage.getItem('bloodline_orrinRelic')==='1'; }catch(e){} // the relic's harder second door, for one who spared him
-  function fateChoiceOf(k){ return k==='osric' ? osricChoice : k==='orrin' ? orrinChoice : hadrekChoice; }
+  function fateChoiceOf(k){ return k==='osric' ? osricChoice : k==='orrin' ? orrinChoice : k==='ysolde' ? ysoldeChoice : hadrekChoice; }
   let hadrekChoice = '';
   try{ hadrekChoice = localStorage.getItem('bloodline_hadrek') || ''; }catch(e){}
   function setHadrekChoice(v){ hadrekChoice = v || ''; try{ v ? localStorage.setItem('bloodline_hadrek', v) : localStorage.removeItem('bloodline_hadrek'); }catch(e){} }
@@ -1728,15 +1863,26 @@
   // Mortar. It is not the Holdfast's map: the Holdfast is a camp you command for a while, and losing it never touches this one.
   // When a building's work unlocks, the stores send its Mortar, so nothing is ever locked away; spare Mortar (Holdfast waves, Skirmish
   // wins) is kept for buildings to come. Saved as bloodline_camp ----
-  const BASE_COLS = 5, BASE_ROWS = 6;
+  // The camp map: your base stands in the middle and blocks its plot; buildings go on the plots around it. In Chapter I that is the 8 plots
+  // of a 3 by 3 ring. From Chapter II a row opens above. Your base can be moved too: hold it and drop it on an empty plot. Positions live in one 4 by 4 frame with the base at (1,2),
+  // so nothing moves when the map grows. Space is the point: there are always more buildings than plots, so you pack some away and swap
+  const BASE_COLS = 3, BASE_ROWS = 4, BASE_HOME = [1, 2]; // where your base starts; it can be moved (camp.home). Chapter II (CH2_TIER) opens the top row
+  const baseBig = () => unlockedTier >= CH2_TIER; // Chapter II reached
+  const BASE_LAYOUTS = 3; // saved formations you can switch between
+  const baseHome = () => (camp && camp.home) || BASE_HOME;
+  const baseInCamp = (x, y) => x>=0 && x<BASE_COLS && y<BASE_ROWS && (y>=1 || (y===0 && baseBig())); // Chapter I: three rows; Chapter II adds the row above
+  const baseCellOpen = (x, y) => baseInCamp(x, y) && !(x===baseHome()[0] && y===baseHome()[1]);
   const BASE_BUILDS = [
     {id:'still',   name:'Still',      icon:'◍', cost:6, opens:'Alchemy: brew spells from two others and materials', unlocked:()=>unlockedTier >= ALCHEMY_TIER},
     {id:'kitchen', name:'Kitchen',    icon:'⌂', cost:6, opens:'cook the Holdfast\'s ingredients into food', unlocked:()=>unlockedTier >= 11},
     {id:'yard',    name:'War Pen', icon:'╬', cost:8, opens:'feed and teach your troops', unlocked:()=>unlockedTier >= 11},
     {id:'workshop', name:'Workshop', icon:'⌗', cost:10, opens:'fit your buildings', unlocked:()=>orrinChoice==='spared' || (orrinChoice==='slain' && holdfast.best>=15),
      grant:()=>orrinChoice==='spared', costFor:()=>orrinChoice==='spared' ? 10 : 14}, // spared: Orrin sends the Mortar; slain: the harder door, built at full price
+    {id:'boiler', name:'Boiler', icon:'◘', cost:6, opens:'heat for the buildings beside it', unlocked:()=>unlockedTier >= ALCHEMY_TIER},
+    {id:'tavern', name:'Tavern', icon:'⌸', cost:8, opens:'faster training, once it touches the War Pen, the Kitchen and the Still', unlocked:()=>unlockedTier >= HOLDFAST_TIER},
+    {id:'lab', name:'Laboratory', icon:'⌬', cost:6, opens:'a bench for work you do not understand yet', unlocked:()=>unlockedTier > LAB_FROM || labTest}, // challenger 15's blueprint (or Test tools)
   ];
-  const BASE_FIXED = {'0,0':'∆', '4,0':'∆', '2,3':'*'}; // two tents and the fire: the camp was here before you built anything
+  const baseFixed = () => ({[baseHome().join(',')]:'♜'}); // your base: a piece of its own that blocks its plot; hold it to move it
   // ---- building levels (1 to 7). An odd level needs that building's blueprint, won by a challenger's first defeat; every level after the
   // first costs Mortar. Higher levels open more recipes, foods and training. Blueprints are read from your progress, so a save that has
   // already beaten a challenger has its blueprint at once ----
@@ -1748,29 +1894,67 @@
     yard:    {1:10, 3:9, 5:12, 7:14},  // Osric, Grael, Orrin, challenger 14
     workshop:{3:12, 5:14},             // Orrin, challenger 14
   };
-  const BASE_MAX = {workshop:5}; // a building's top level when it is not seven
+  const BASE_MAX = {workshop:5, lab:1, boiler:1, tavern:1}; // a building's top level when it is not seven (the Laboratory has no levels)
   const maxLvl = id => BASE_MAX[id] || BASE_MAX_LVL;
   const BASE_LVL_TEXT = {
     still:   {1:'Transfusion', 2:'Sanctuary', 3:'False Oath', 4:'Haemorrhage', 5:'Rupture', 6:'Sunder', 7:'every brew makes 4 doses instead of 3'},
-    kitchen: {1:'Bread and Stew', 2:'Smoked Fish', 3:'the second band of foods (Honey)', 4:'the third band (Marrow)', 5:'the fourth band (Ember)', 6:'every recipe makes 3', 7:'every recipe makes 4'},
-    workshop:{1:'one socket per building, and Barbs', 2:'Murder holes', 3:'a second socket on every building', 4:'the Sluice', 5:'every fitting costs 2 materials instead of 3'},
-    yard:    {1:'feeding to level 1, functions level 1', 2:'feeding to level 2', 3:'functions level 2', 4:'feeding to level 3', 5:'feeding to level 4', 6:'feeding to level 5', 7:'retraining: switch a troop to its other function'},
+    kitchen: {1:'Bread and Stew', 2:'Smoked Fish', 3:'Good dishes (made with Honey)', 4:'Fine dishes (Marrow)', 5:'Gourmet dishes (Bloodroot)', 6:'every recipe makes 3', 7:'every recipe makes 4'},
+    workshop:{1:'Barbs (one fitting per building)', 2:'Murder holes', 3:'tempering: stronger Barbs and Murder holes, made while a hot Boiler stands beside the Workshop', 4:'the Sluice, and a tempered Sluice', 5:'every fitting costs 2 materials instead of 3'},
+    yard:    {1:'lessons for Plain troops', 2:'lessons for Good troops', 3:'second lessons (level 2)', 4:'lessons for Fine troops', 5:'lessons for Gourmet troops', 6:'lessons cost a quarter less food', 7:'retraining: switch a troop to its other lesson'},
   };
   const STILL_ORDER = ['Transfusion','Sanctuary','False Oath','Haemorrhage','Rupture','Sunder']; // the order the Still's levels open recipes
-  const stillNeed = name => { const i = STILL_ORDER.indexOf(name); return i>=0 ? i+1 : ({Undermine:5})[name] || 1; }; // later recipes slot into a level
+  const stillNeed = name => { const i = STILL_ORDER.indexOf(name); return i>=0 ? i+1 : ({Undermine:5, Encore:6})[name] || 1; }; // later recipes slot into a level
   let camp = {mortar:0, built:{}, granted:{}, levels:{}, lv:0};
   const cleanCamp = c => { const o = {mortar:0, built:{}, granted:{}, levels:{}, lv:0}; if(!c || typeof c!=='object') return o;
+    o.heatUntil = Math.max(0, parseInt(c.heatUntil,10)||0); if(c.clock && typeof c.clock==='object'){ o.clock = {}; for(const id of ['still','kitchen']){ const k = c.clock[id]; if(k && Number.isFinite(k.w) && Number.isFinite(k.t)) o.clock[id] = {w:k.w, t:k.t}; } }
+    if(Array.isArray(c.cook)) o.cook = c.cook.filter(e=>e && typeof e.id==='string' && Number.isFinite(e.end) && e.qty>0).map(e=>({id:e.id, end:e.end, qty:Math.min(99, e.qty|0), of:Math.min(99, (e.of|0)||e.qty)}));
     o.lv = parseInt(c.lv,10)||0; for(const id of ['still','kitchen','yard','workshop']){ const v = parseInt(c.levels && c.levels[id],10); if(v>=1) o.levels[id] = Math.min(BASE_MAX_LVL, v); }
     o.mortar = Math.max(0, Math.min(999, parseInt(c.mortar,10)||0));
-    for(const b of BASE_BUILDS){ const p = c.built && c.built[b.id]; if(Array.isArray(p) && p.length===2){ const x = parseInt(p[0],10), y = parseInt(p[1],10); if(x>=0 && x<BASE_COLS && y>=0 && y<BASE_ROWS && !BASE_FIXED[x+','+y]) o.built[b.id] = [x,y]; } if(c.granted && c.granted[b.id]) o.granted[b.id] = true; }
-    return o; };
+    for(const b of BASE_BUILDS){ const p = c.built && c.built[b.id]; if(Array.isArray(p) && p.length===2){ const x = parseInt(p[0],10), y = parseInt(p[1],10); if(c.v2 && x>=0 && x<BASE_COLS && y>=0 && y<BASE_ROWS && !(Array.isArray(c.home) && c.home[0]===x && c.home[1]===y)) o.built[b.id] = [x,y]; else { o.old = o.old || []; o.old.push(b.id); } } /* off the map (an older layout): packed, never lost */ if(c.granted && c.granted[b.id]) o.granted[b.id] = true; }
+    o.stored = Array.isArray(c.stored) ? [...new Set(c.stored.filter(id=>BASE_BUILDS.some(b=>b.id===id) && !o.built[id]))] : [];
+    if(o.old){ for(const id of o.old) if(!o.stored.includes(id)) o.stored.push(id); delete o.old; } // the old wide map: everything already built waits, packed, to be set down again
+    if(Array.isArray(c.layouts)) o.layouts = c.layouts.slice(0, BASE_LAYOUTS).map(L=>{ if(!L || typeof L!=='object') return null; const r = {built:{}}; // saved formations
+      for(const b of BASE_BUILDS){ const q = L.built && L.built[b.id]; if(Array.isArray(q) && q.length===2) r.built[b.id] = [parseInt(q[0],10)|0, parseInt(q[1],10)|0]; }
+      if(Array.isArray(L.home) && L.home.length===2) r.home = [parseInt(L.home[0],10)|0, parseInt(L.home[1],10)|0]; return r; });
+    if(Array.isArray(c.home) && c.home.length===2){ const hx = parseInt(c.home[0],10), hy = parseInt(c.home[1],10); if(hx>=0 && hx<3 && hy>=0 && hy<4) o.home = [hx, hy]; }
+    o.v2 = 1; return o; };
   try{ camp = cleanCamp(JSON.parse(localStorage.getItem('bloodline_camp')||'null')); }catch(e){}
   function saveCamp(){ try{ localStorage.setItem('bloodline_camp', JSON.stringify(camp)); }catch(e){} }
   let workshop = {}; // fittings by building name: {name:[fittingId, ...]}
-  const cleanWorkshop = w => { const o = {}; if(!w || typeof w!=='object') return o; for(const [k,v] of Object.entries(w)){ if(typeof k==='string' && Array.isArray(v)){ const ids = [...new Set(v.filter(x=>['barbs','holes','sluice'].includes(x)))].slice(0,2); if(ids.length) o[k] = ids; } } return o; };
+  const cleanWorkshop = w => { const o = {}, used = new Set(); if(!w || typeof w!=='object') return o; for(const [k,v] of Object.entries(w)){ if(typeof k==='string' && Array.isArray(v)){ const ids = [...new Set(v.filter(x=>['barbs','holes','sluice','barbs2','holes2','sluice2'].includes(x) && !used.has(x)))].slice(0,1); ids.forEach(x=>used.add(x)); if(ids.length) o[k] = ids; } } return o; }; // each fitting on one building only
   try{ workshop = cleanWorkshop(JSON.parse(localStorage.getItem('bloodline_workshop')||'null')); }catch(e){}
   function saveWorkshop(){ try{ localStorage.setItem('bloodline_workshop', JSON.stringify(workshop)); }catch(e){} }
   const baseLvl = id => Math.max(1, camp.levels[id]||1);
+  // ---- the Laboratory: for now a cheap bench with no levels whose only work is beside the Still: a Still with a Laboratory next to it on the
+  // Camp map can brew the newer spells (needsLab). What else the bench is for, the King of Shards will teach later ----
+  const LAB_FROM = 15; // the blueprint: challenger 15's first defeat
+  let labTest = false; try{ labTest = localStorage.getItem('bloodline_labTest')==='1'; }catch(e){}
+  // ---- the Boiler: Ember buys heat, which burns down in real time. A building beside a hot Boiler works at full speed; anywhere else, or with
+  // the Boiler cold, brewing and cooking run at half speed. Each such building keeps a work clock that advances at that speed ----
+  const EMBER_HEAT_MS = 5*60*1000, COLD_RATE = 0.5;
+  const besideBoiler = id => { const L = camp.built && camp.built.boiler, B = camp.built && camp.built[id]; return !!(L && B && Math.abs(L[0]-B[0]) + Math.abs(L[1]-B[1]) === 1); };
+  const heatLeft = () => Math.max(0, (camp.heatUntil||0) - Date.now());
+  const heated = id => besideBoiler(id) && heatLeft() > 0;
+  function workNow(id){
+    const now = Date.now(); camp.clock = camp.clock || {};
+    let c = camp.clock[id];
+    if(!c){ c = camp.clock[id] = {w:now, t:now}; // first use: anything already brewing keeps its real finishing time at the cold pace
+      if(id==='still') for(const e of brewing) e.end = now + Math.max(0, e.end - now)*COLD_RATE; }
+    const el = Math.max(0, now - c.t), hot = besideBoiler(id) ? Math.max(0, Math.min(now, camp.heatUntil||0) - c.t) : 0;
+    c.w += Math.min(el, hot) + Math.max(0, el - hot)*COLD_RATE; c.t = now; return c.w;
+  }
+  const stillNow = () => workNow('still'), kitchenNow = () => workNow('kitchen');
+  function realLeft(id, work){ // real time to get through this much work, at the pace the building has right now (heat runs out partway, perhaps)
+    work = Math.max(0, work); if(!besideBoiler(id)) return work/COLD_RATE;
+    const H = heatLeft(); return work <= H ? work : H + (work - H)/COLD_RATE;
+  }
+  const besideTavern = id => { const L = camp.built && camp.built.tavern, B = camp.built && camp.built[id]; return !!(L && B && Math.abs(L[0]-B[0]) + Math.abs(L[1]-B[1]) === 1); };
+  const tavernLinked = () => besideTavern('yard') && besideTavern('kitchen') && besideTavern('still'); // the Tavern touches all three
+  // ---- training takes time: an hour for the lowest band of troop, a day for the highest. The food is paid at the start, the lesson lands at the
+  // end, and the troop keeps what it had meanwhile. A Tavern touching the War Pen, the Kitchen and the Still makes a lesson started then take 1/4 ----
+  const TRAIN_MS = [1, 4, 10, 24].map(h=>h*3600*1000), TAVERN_RATE = 0.25; // a full Tavern: a quarter of the time
+  const trainMs = c => Math.round(TRAIN_MS[troopBand(c)] * (tavernLinked() ? TAVERN_RATE : 1));
+  const besideLab = id => { const L = camp.built && camp.built.lab, B = camp.built && camp.built[id]; return !!(L && B && Math.abs(L[0]-B[0]) + Math.abs(L[1]-B[1]) === 1); }; // side by side on the map
   const hasBlueprint = (id, lvl) => { const ch = BLUEPRINTS[id] && BLUEPRINTS[id][lvl]; return !ch || unlockedTier > ch; }; // even levels need none
   const blueprintFrom = (id, lvl) => { const ch = BLUEPRINTS[id] && BLUEPRINTS[id][lvl]; const c = ch && CHALLENGERS.find(x=>x.id===ch); return c ? c.name : 'a challenger still to come'; };
   // EXPERIMENTAL (food, the Kitchen, the Training camp and its functions): unsettled; the camp's name will change, and most FN_DEFS functions are
@@ -1778,27 +1962,46 @@
   // ---- food: the Holdfast pays ingredients, the Kitchen cooks them into food, and the Training Camp feeds food to a troop, in large amounts, to
   // enhance it for good (in the story, Skirmish and the Holdfast alike) ----
   const FOOD_INGS = [{id:'grain', name:'Grain', icon:'⁘'}, {id:'meat', name:'Meat', icon:'◆'}, {id:'fish', name:'Fish', icon:'⋈'}, {id:'herb', name:'Herb', icon:'❦'},
-    {id:'honey', name:'Honey', icon:'◈', wave:8}, {id:'marrow', name:'Marrow', icon:'⊚', wave:15}, {id:'ember', name:'Ember', icon:'⊛', wave:22}]; // the last three only from deeper Holdfast waves
+    {id:'honey', name:'Honey', icon:'◈', wave:8}, {id:'marrow', name:'Marrow', icon:'⊚', wave:15}, {id:'bloodroot', name:'Bloodroot', icon:'⸙', wave:22},
+    {id:'ember', name:'Ember', icon:'⊛', wave:1, fuel:true}]; // Honey, Marrow and Bloodroot only from deeper Holdfast waves; Ember, the Boiler's fuel, from every wave
   const FOOD_ITEMS = [
-    {id:'bread',  name:'Bread',       icon:'▰', needs:{grain:3, herb:1},         makes:2, band:0, track:0, kit:1},
-    {id:'stew',   name:'Stew',        icon:'◍', needs:{meat:2, grain:1, herb:1}, makes:2, band:0, track:1, kit:1},
-    {id:'smoked', name:'Smoked Fish', icon:'≋', needs:{fish:3, herb:1},         makes:2, band:0, track:2, kit:2},
-    {id:'honeybread', name:'Honey Bread',   icon:'▤', needs:{grain:2, honey:1, herb:1},  makes:2, band:1, track:0, kit:3},
-    {id:'broth',      name:'Bone Broth',    icon:'◒', needs:{meat:2, honey:1, herb:1},   makes:2, band:1, track:1, kit:3},
-    {id:'saltfish',   name:'Salt Fish',     icon:'≈', needs:{fish:2, honey:1, herb:1},   makes:2, band:1, track:2, kit:3},
-    {id:'marrowloaf', name:'Marrow Loaf',   icon:'▧', needs:{grain:2, marrow:1, herb:1}, makes:2, band:2, track:0, kit:4},
-    {id:'pudding',    name:'Blood Pudding', icon:'◓', needs:{meat:2, marrow:1, herb:1},  makes:2, band:2, track:1, kit:4},
-    {id:'eel',        name:'Brined Eel',    icon:'∿', needs:{fish:2, marrow:1, herb:1},  makes:2, band:2, track:2, kit:4},
-    {id:'ashcake',    name:'Ash Cake',      icon:'▨', needs:{grain:2, ember:1, herb:1},  makes:2, band:3, track:0, kit:5},
-    {id:'warfeast',   name:'War Feast',     icon:'◉', needs:{meat:2, ember:1, herb:1},   makes:2, band:3, track:1, kit:5},
-    {id:'roe',        name:'Black Roe',     icon:'⁖', needs:{fish:2, ember:1, herb:1},   makes:2, band:3, track:2, kit:5},
+    {id:'bread',  name:'Bread',       icon:'▰', needs:{grain:3, herb:1},         makes:2, band:0, track:0, kit:1, taste:'savory'},
+    {id:'stew',   name:'Stew',        icon:'◍', needs:{meat:2, grain:1, herb:1}, makes:2, band:0, track:1, kit:1, taste:'hearty'},
+    {id:'smoked', name:'Smoked Fish', icon:'≋', needs:{fish:3, herb:1},         makes:2, band:0, track:2, kit:2, taste:'smoky'},
+    {id:'honeybread', name:'Honey Bread',   icon:'▤', needs:{grain:2, honey:1, herb:1},  makes:2, band:1, track:0, kit:3, taste:'sweet'},
+    {id:'broth',      name:'Bone Broth',    icon:'◒', needs:{meat:2, honey:1, herb:1},   makes:2, band:1, track:1, kit:3, taste:'rich'},
+    {id:'saltfish',   name:'Salt Fish',     icon:'≈', needs:{fish:2, honey:1, herb:1},   makes:2, band:1, track:2, kit:3, taste:'salty'},
+    {id:'marrowloaf', name:'Marrow Loaf',   icon:'▧', needs:{grain:2, marrow:1, herb:1}, makes:2, band:2, track:0, kit:4, taste:'earthy'},
+    {id:'pudding',    name:'Blood Pudding', icon:'◓', needs:{meat:2, marrow:1, herb:1},  makes:2, band:2, track:1, kit:4, taste:'dark'},
+    {id:'eel',        name:'Brined Eel',    icon:'∿', needs:{fish:2, marrow:1, herb:1},  makes:2, band:2, track:2, kit:4, taste:'sour'},
+    {id:'ashcake',    name:'Bloodroot Tart',      icon:'▨', needs:{grain:2, bloodroot:1, herb:1},  makes:2, band:3, track:0, kit:5, taste:'bitter'},
+    {id:'warfeast',   name:'War Feast',     icon:'◉', needs:{meat:2, bloodroot:1, herb:1},   makes:2, band:3, track:1, kit:5, taste:'spiced'},
+    {id:'roe',        name:'Black Roe',     icon:'⁖', needs:{fish:2, bloodroot:1, herb:1},   makes:2, band:3, track:2, kit:5, taste:'briny'},
   ];
   // A troop's band follows when it unlocks: I up to Korrath, II to Corvane, III to Grael, IV from Osric on. It eats only its own band's food
-  const BAND_NAMES = ['I','II','III','IV'];
-  const troopBand = c => { const t = c.unlockTier||1; return t<=2 ? 0 : t<=5 ? 1 : t<=10 ? 2 : 3; };
+  const BAND_NAMES = ['Plain','Good','Fine','Gourmet']; // food and troop grades (once called bands I to IV)
+  const GRADE_NAMES = BAND_NAMES;
+  const TROOP_GRADE = {Ramhorn:1, Shieldbearer:1, Plunderer:1, Revenant:2, Overseer:2, Borer:2, Bleeder:3, Bloodhound:3, Botfly:3}; // the War Pen's troops, by how strong they are
+  const FN_DISH = { // the dish each lesson asks for, the way a brew asks for its materials
+    Ramhorn:{splinter:'broth', shockwave:'honeybread'}, Shieldbearer:{taunting:'honeybread', bastion:'saltfish'}, Plunderer:{fence:'saltfish', ambush:'broth'},
+    Revenant:{hungry:'pudding', defiant:'marrowloaf'}, Overseer:{rousing:'marrowloaf', cruel:'eel'}, Borer:{gnaw:'eel', mire:'pudding'},
+    Bleeder:{rend:'roe', seep:'warfeast'}, Bloodhound:{howl:'warfeast', lastbite:'ashcake'}, Botfly:{itch:'ashcake', swarm:'roe'},
+  };
+  const troopBand = c => { if(c.name in TROOP_GRADE) return TROOP_GRADE[c.name]; const t = c.unlockTier||1; return t<=2 ? 0 : t<=5 ? 1 : t<=10 ? 2 : 3; }; // a troop's grade
   const foodFor = (c, track) => FOOD_ITEMS.find(f=>f.band===troopBand(c) && f.track===track); // track 0 health, 1 damage, 2 speed
   const TRACK_OF_FOOD = {bread:0, stew:1, smoked:2}; // a function's food names its track; the troop's band picks the dish
-  const fnFoodFor = (c, f) => foodFor(c, TRACK_OF_FOOD[f.food] ?? 0);
+  const fnFoodFor = (c, f) => { const id = FN_DISH[c.name] && FN_DISH[c.name][f.id]; return (id && FOOD_ITEMS.find(x=>x.id===id)) || foodFor(c, TRACK_OF_FOOD[f.food] ?? 0); };
+  const penCost = (lvl, c) => Math.round(enhCost(lvl, c) * (baseLvl('yard')>=6 ? 0.75 : 1)); // War Pen level 6: lessons cost a quarter less
+  const penGradeLvl = c => [1, 2, 4, 5][troopBand(c)]; // the War Pen level that can teach this grade of troop
+  // Recipes for the shared fire: with the Still beside the Kitchen, some foods can also be cooked from brewing materials (in place of Honey,
+  // Marrow or Bloodroot). They make the same dish as the usual recipe
+  const SHARED_FIRE = [
+    {id:'curedfish', makes:'saltfish', name:'Brine-cured Salt Fish', needs:{fish:2, brine:1}, kit:3},
+    {id:'ichorpud',  makes:'pudding',  name:'Ichor Blood Pudding',  needs:{meat:2, ichor:1}, kit:4},
+    {id:'bonefeast', makes:'warfeast', name:'Boneyard War Feast',   needs:{meat:2, bone:2, herb:1}, kit:5},
+  ];
+  const besideStill = () => { const A = camp.built && camp.built.kitchen, B = camp.built && camp.built.still; return !!(A && B && Math.abs(A[0]-B[0]) + Math.abs(A[1]-B[1]) === 1); };
+  const stockOf = k => k in materials ? materials[k] : (food[k]||0); // a recipe may draw on brewing materials too
   const kitchenMakes = () => baseLvl('kitchen')>=7 ? 4 : baseLvl('kitchen')>=6 ? 3 : 2;
   const penFeedCap = () => [0,1,2,2,3,4,5,5][baseLvl('yard')];
   const penFnCap = () => baseLvl('yard')>=3 ? 2 : 1;
@@ -1893,6 +2096,7 @@
   const cleanEnhance = e => { const o = {}; if(e && typeof e==='object') for(const c of CARD_DEFS.filter(enhTroop)){ const v = e[c.name]; if(v && typeof v==='object'){ const r = {}; let any = false;
     for(const t of ENH_TRACKS){ r[t.id] = Math.max(0, Math.min(ENH_MAX, parseInt(v[t.id],10) || 0)); if(r[t.id]) any = true; }
     const fs = FN_DEFS[c.name]; if(fs && v.fn && fs.some(f=>f.id===v.fn.id)){ r.fn = {id:v.fn.id, lvl:Math.max(1, Math.min(2, parseInt(v.fn.lvl,10) || 1))}; any = true; }
+    const tr = v.train; if(tr && typeof tr==='object' && Number.isFinite(tr.end) && ['fn','retrain','feed'].includes(tr.kind)){ r.train = {kind:tr.kind, fid:String(tr.fid||''), track:String(tr.track||''), lvl:Math.max(1, Math.min(ENH_MAX, parseInt(tr.lvl,10)||1)), end:tr.end}; any = true; } // a lesson under way
     if(any) o[c.name] = r; } } return o; };
   let enhance = {};
   try{ enhance = cleanEnhance(JSON.parse(localStorage.getItem('bloodline_enhance')||'null')); }catch(e){}
@@ -1934,10 +2138,14 @@
       const d = talkDone; talkDone = null; if(d) d(); return;
     }
     const L = talkLines[talkIdx++];
-    document.getElementById('talkPortrait').textContent = L.face || '';
-    document.getElementById('talkName').textContent = L.who.toUpperCase();
+    { const tu = document.getElementById('talkUnits'), pt = document.getElementById('talkPortrait'), d = L.troop && CARD_DEFS.find(c=>c.name===L.troop.name);
+      if(d){ // a troop speaking: drawn as the troop itself, the way it looks on the field
+        tu.innerHTML = ''; for(let k=0;k<(L.troop.n||1);k++){ const e = document.createElement('div'); e.className = 'unit p ' + shapeClass(d); e.innerHTML = `<div class="unit-ring"><div class="unit-core">${d.emoji}</div></div>`; tu.appendChild(e); }
+        tu.classList.add('on'); pt.style.display = 'none';
+      } else { tu.classList.remove('on'); pt.style.display = 'block'; pt.textContent = L.face || ''; } }
+    document.getElementById('talkName').textContent = L.who.toUpperCase(); document.getElementById('talkName').classList.toggle('yours', !!L.yours);
     // each bubble carries its speaker's name, so earlier lines stay theirs when the portrait switches to someone else
-    const b = document.createElement('div'); b.className = 'bubble' + (L.ally ? ' ally' : '');
+    const b = document.createElement('div'); b.className = 'bubble' + (L.ally ? ' ally' : '') + (L.yours ? ' yours' : '');
     const w = document.createElement('span'); w.className = 'who'; w.textContent = L.who; b.appendChild(w);
     b.appendChild(document.createTextNode(L.text.replace(/(^|[.!?]\s+)([a-z])/g, (m,a,c)=>a+c.toUpperCase()))); // "the stranger" can open a line
     const box = document.getElementById('talkBubbles'); box.appendChild(b);
@@ -2005,7 +2213,7 @@
     state.units = state.units.filter(u=>u.isBuilding);
     for(const p of state.projectiles) if(p.el.parentNode) p.el.parentNode.removeChild(p.el);
     state.projectiles = []; state.aPush = null;
-    dropFx(state.lobs||[]); state.lobs = []; dropFx(state.charges||[]); state.charges = [];
+    dropFx(state.lobs||[]); state.lobs = []; dropFx(state.charges||[]); state.charges = []; state.echoes = [];
   }
   function graelWave(){
     clearTroops();
@@ -2217,6 +2425,8 @@
   }
   // ---- trinkets: one perk earned from each of the hardest challengers; carry one at a time ----
   const TRINKETS = [
+    {id:'wardrobe', name:"Ysolde's Wardrobe", short:"Wardrobe", line:"Your copies arrive at full strength.", from:13, ysolde:'slain', icon:'◑', lore:"A trunk of costumes for every part in every war. None of them has ever been worn by the same person twice.", desc:"Every copy you make (Echo, Encore, the Stage's encores and the Mummer's borrowed shapes) arrives at full health instead of part of it."},
+    {id:'mask', name:"Ysolde's Mask", short:"Mask", line:"Your first troop in each fight is played twice.", from:13, ysolde:'spared', icon:'◐', lore:"A white face with a painted smile and nothing behind the eyes. It fits whoever puts it on, a little too well.", desc:"The first troop you play in each fight arrives twice: a second one, at full strength, beside the first. A formation counts as one troop and arrives twice whole."},
     {id:'plumb',   name:"Veyra's Plumb", short:"Plumb", line:"Buildings get their own hand slot, cost 1 less, and you carry two extra.",    from:3, icon:'▿', lore:"The cord Veyra hung over every bridge she learned to pull. It always points straight down, into the river.", desc:"Carry two extra buildings beyond your eight: with your eight chosen, tap buildings in the deck picker and they are marked with a star (a third replaces the first). Every building you carry costs 1 less blood, never below 1. Your first hand slot holds only buildings and cycles among them; the other three cycle the rest."},
     {id:'signet',  name:"Corvane's Signet", short:"Signet", line:"Your blood builds up to 20 instead of 12.", from:4, icon:'⊚', lore:"Corvane pressed it into the wax of every oath she swore. It never once broke a seal.", desc:"Your blood builds on its own all the way to 20 instead of 12."},
     {id:'shackle', name:"Askel's Shackle", short:"Shackle", line:"Rival troops that fall on your half rise for you.",  from:5, askel:'finished', icon:'⊸', lore:"One half of the iron Askel wore. The other half is still on someone.", desc:"Rival troops that fall on your half of the field stand back up for you, at half health."},
@@ -2225,7 +2435,7 @@
     {id:'chain', name:"Hadrek's Chain", short:"Chain", line:"The first wound you deal a rival troop chains it.", from:8, hadrek:'slain', icon:'⊶', lore:"A length of the chain Hadrek hung over his gate. Every link has a name scratched into it.", desc:"The first time anything of yours wounds a rival troop, it is chained: it moves and strikes at half speed for 3 seconds. Each troop can be chained only once. Buildings are unaffected."},
     {id:'vial', name:"Grael's Vial", short:"Vial", line:"Snares where rivals cross; your parasites smell farther and never starve.", from:9, icon:'∿', lore:"A stoppered vial of the blood Grael tracked runaways by. Your parasites know the smell.", desc:"Grael's own tools. Your Leaches, Ticks and Fleas notice rival troops from much farther away (40 instead of 25), and while they are chasing prey they no longer waste away; idle, they still do. A Flea's leap is unchanged. Every 15 seconds a snare is also laid on your ground where rival troops have crossed into your half this fight, two at most: a rival troop that steps in is held fast and cut, and a free Leach crawls out onto it. Pairs with Grael's other gifts, the Bleeder and Bloodletting."},
   ];
-  const trinketEarned = t => unlockedTier >= t.from + 1 && askelGiftOwned(t.askel) && (!t.hadrek || hadrekChoice===t.hadrek) && (!t.osric || osricChoice===t.osric);
+  const trinketEarned = t => unlockedTier >= t.from + 1 && askelGiftOwned(t.askel) && (!t.hadrek || hadrekChoice===t.hadrek) && (!t.osric || osricChoice===t.osric) && (!t.ysolde || ysoldeChoice===t.ysolde);
   // Veyra's Plumb also gives two deck slots that hold buildings, beyond your eight (saved as a JSON list; old saves hold one name)
   const PLUMB_EXTRA = 2, PLUMB_DISCOUNT = 1; // first guesses
   let plumbSlots = [];
@@ -2306,7 +2516,7 @@
   function cycleCard(def){
     const i = state.hand.indexOf(def);
     if(i<0) return;
-    const spent = !!def.brew && !((brewStock[def.name]||0) > 0) && !dosePaid(def); // no doses and none paid this fight: it does not come round again
+    const spent = currentChallenger.puzzle || (!!def.brew && !((brewStock[def.name]||0) > 0) && !dosePaid(def)); // no doses and none paid this fight (or a puzzle: every card once): it does not come round again
     if(state.yardQueue && i===0){ // the building slot
       if(!state.yardQueue.length) return;
       state.hand[i] = state.yardQueue.shift(); state.yardQueue.push(def); return;
@@ -2493,7 +2703,7 @@
     const target = currentChallenger.id + 1;
     if(unlockedTier<target){
       unlockedTier = target;
-      camp.mortar += FIRST_WIN_MORTAR; saveCamp(); // a challenger's first defeat sends Mortar to your camp (and its blueprint, if it has one)
+      camp.mortar += FIRST_WIN_MORTAR; saveCamp(); food.ember = (food.ember||0) + 3; saveFood(); // a challenger's first defeat sends Mortar and Ember to your camp (and its blueprint, if it has one)
       try{ localStorage.setItem('bloodline_unlockedTier', String(unlockedTier)); }catch(e){}
       return true;
     }
@@ -2708,6 +2918,12 @@
     Ramhorn:   n=>`You love the Ramhorn, ${n}. You go for the walls before the men behind them.`,
     Camel:     n=>`You love the Camel, ${n}. You like to hit from where nothing hits back.`,
     Jackal:    n=>`You love the Jackal, ${n}. Cheap teeth, and plenty of them.`,
+    Breacher:  n=>`You love the Breacher, ${n}. Something at my wall I cannot chase away.`,
+    Harrier:   n=>`You love the Harrier, ${n}. It fights my troops and still finds time to scratch at my walls.`,
+    Mummer:    n=>`You love the Mummer, ${n}. Whatever kills it had better be something you want on your side.`,
+    Stage:     n=>`You love the Stage, ${n}. You make your favourite troop come back, again and again.`,
+    Echo:      n=>`You love Echo, ${n}. You never play a good troop only once.`,
+    Encore:    n=>`You love Encore, ${n}. You take my best troop and send it back at me.`,
     Watchtower:n=>`You love the Watchtower, ${n}. You like to see me coming from further off than I can see you.`,
     Barricade: n=>`You love your Barricades, ${n}. Two walls where one would do.`,
     Ballista:  n=>`You love the Ballista, ${n}. One bolt, and everything standing in a line pays for it.`,
@@ -2822,16 +3038,59 @@
   const FUSE_PENT_DMG = 28; // Pentagon guardrail: planting strike 14 plus 28 equals the Ramhorn's 42 opener, so no Pentagon falls faster to a Fusebearer
   // Orrin's Works: his buildings (never a Pentagon) mend while none of your troops are near. Workshop Murder holes: rival troops beside a
   // fitted building of yours bleed a little every second
+  // Ysolde's Mimicry: whatever you play, her troupe plays a moment later, mirrored across the field (your half to hers), for free but weaker.
+  // Once her mask is off (her first Pentagon has fallen) the copies come faster and at full strength. Buildings she already has, she skips
+  const ECHO_COST = 1;
+  function echoQueue(def, x, y){
+    const E = currentChallenger.echo; if(!E || state.over) return;
+    if(def.cardType==='spell' || def.isBuilding) return; // she copies troops only
+    if(y >= RIVER_BANDS[1].min) return; // and only troops sent out past your own river: what stays home, she cannot see
+    if(state.aBlood < ECHO_COST){ fieldText(x, Math.max(6, 100-y-4), 'she could not keep up'); return; } // each copy costs her a single blood, paid the moment she sees it
+    state.aBlood -= ECHO_COST; state.stats.a.spent += ECHO_COST;
+    const off = state.rallied, delay = off ? E.delayOff : E.delay;
+    (state.echoes || (state.echoes = [])).push({def, x, y:100-y, at:(state.clock||0) + delay, hp:off ? 1 : E.hp});
+  }
+  function tickEchoes(){
+    if(!state.echoes || !state.echoes.length || state.over) return;
+    for(const e of [...state.echoes]){ if((state.clock||0) < e.at) continue; state.echoes.splice(state.echoes.indexOf(e), 1);
+      const d = e.def;
+
+      if(d.cardType==='spell') castSpell('a', d, e.x, e.y);
+      else if(d.isBuilding){ if(d.uniquePerOwner && state.units.some(u=>u.owner==='a' && u.name===d.name)) continue; const sp = freeBuildingSpot('a', e.x, Math.min(e.y, 22), null); copyTroop('a', d, sp ? sp.x : e.x, sp ? sp.y : Math.min(e.y, 22), e.hp); }
+      else copyTroop('a', d, e.x, aiLegalY(e.y), e.hp);
+      sfxEcho(); fieldText(e.x, Math.max(6, e.y-4), 'mimicked');
+    }
+  }
+  function sfxEcho(){ if(!voiceOk()) return; beep(784, 0.08, 'triangle', 0.02); beep(659, 0.12, 'triangle', 0.02, 0.07); beep(523, 0.16, 'triangle', 0.018, 0.14); } // a little three-note mock
+  function tickPuzzle(){ // Orrin's siege puzzle: endless blood; won when all his works are down; lost when nothing of yours can still do anything
+    if(!currentChallenger.puzzle || state.over || !matchStarted) return;
+    state.pBlood = MAX_BLOOD;
+    const works = state.units.filter(u=>u.owner==='a' && u.isBuilding && u.hp>0);
+    if(!works.length){ state.aBase = 0; return; }
+    const cardsLeft = state.hand.length + (state.queue||[]).length;
+    const busy = state.units.some(u=>u.owner==='p' && u.hp>0 && (!u.isBuilding || (u.dmg>0 && u.atkTarget && u.atkTarget.owner==='a' && u.atkTarget.hp>0)))
+      || (state.lobs||[]).some(l=>l.owner==='p') || (state.charges||[]).some(c=>c.owner==='p') || (state.projectiles||[]).some(pr=>pr.owner==='p');
+    if(!cardsLeft && !busy){ state.puzzleLost = (state.puzzleLost||0) + 1; if(state.puzzleLost > 90) state.pBase = 0; } else state.puzzleLost = 0; // a moment's grace for the last blow to land
+  }
   const BARBS_DMG = 3, SLUICE_R = 12, SLUICE_MS = 5000;
   const WORKS_MEND = 2, WORKS_CLEAR = 10, HOLES_DPS = 2, HOLES_R = 4;
+  function tickSecond(u, dt){ // the second weapon: the nearest rival of its kind within its reach, fired as a ranged shot, its own clock
+    const S = u.second; u.acc2 = (u.acc2||0) + dt*atkRate(u); if(u.acc2 < S.atkInterval) return;
+    let t = null, bd = Infinity; const tg0 = u.targets; u.targets = S.targets; // judged as the second weapon would be
+    try{ for(const o of state.units){ if(o.owner===u.owner || o.hp<=0) continue; if(S.targets==='troops' ? o.isBuilding : !o.isBuilding) continue;
+      if(!isValidTarget(u, o)) continue; const d = dist(u, o); if(d <= S.range && d < bd){ bd = d; t = o; } } } finally { u.targets = tg0; }
+    if(!t) { u.acc2 = S.atkInterval; return; } // held ready
+    u.acc2 = 0; const d0 = u.dmg, r0 = u.range; u.dmg = S.dmg; u.range = S.range; try{ fireProjectile(u, t); } finally { u.dmg = d0; u.range = r0; }
+  }
   function tickWorks(dt){
     for(const b of state.units){
       if(!b.isBuilding || b.hp<=0) continue;
-      if(currentChallenger.works && b.owner==='a' && b.name!=='Pentagon' && b.hp<b.maxHp && !state.units.some(o=>o.owner==='p' && !o.isBuilding && o.hp>0 && dist(o,b)<=WORKS_CLEAR)){
+      if(b.stage){ b.stageT = (b.stageT||0) + dt; if(b.stageT >= b.stage.every){ b.stageT = 0; const src = (state.lastTroop||{})[b.owner]; if(src){ const dy = b.owner==='p' ? -5 : 5; copyTroop(b.owner, src, b.x, Math.max(4, Math.min(96, b.y+dy)), b.stage.hp); fieldText(b.x, b.y-4, 'encore'); } } }
+      if(currentChallenger.works && !currentChallenger.puzzle && b.owner==='a' && b.name!=='Pentagon' && b.hp<b.maxHp && !state.units.some(o=>o.owner==='p' && !o.isBuilding && o.hp>0 && dist(o,b)<=WORKS_CLEAR)){
         b.hp = Math.min(b.maxHp, b.hp + WORKS_MEND*dt/1000); }
-      if(b.fit && b.fit.includes('holes')) for(const o of state.units){
-        if(o.owner===b.owner || o.isBuilding || o.hp<=0 || underground(o) || airborne(o) || dist(o,b) > HOLES_R) continue;
-        const d = warded(o, HOLES_DPS*dt/1000); credit(b.owner, b.name, o, d); o.hp -= d; o.lastHitBy = b; }
+      const hl = fitLvl(b, 'holes'); if(hl) for(const o of state.units){
+        if(o.owner===b.owner || o.isBuilding || o.hp<=0 || underground(o) || airborne(o) || dist(o,b) > (hl===2 ? 6 : HOLES_R)) continue;
+        const d = warded(o, (hl===2 ? 3 : HOLES_DPS)*dt/1000); credit(b.owner, b.name, o, d); o.hp -= d; o.lastHitBy = b; }
     }
   }
   function tickCharges(dt){
@@ -3211,6 +3470,11 @@
   function statLine(c){
     if(c.ram) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · ram`;
     if(c.fuse) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · fuse`;
+    if(c.second) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s melee on ${c.targets} · ${c.second.dmg} @ ${(c.second.atkInterval/1000)}s shot at ${c.second.targets}`;
+    if(c.mummer) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · mimic`;
+    if(c.stage) return `hp ${c.hp} · replays your last troop every ${c.stage.every/1000}s`;
+    if(c.echo) return `your last troop again, at ${Math.round(c.echo.hp*100)}% health`;
+    if(c.encore) return `the rival's last troop, for you, at ${Math.round(c.encore.hp*100)}% health`;
     if(c.watch) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s · ranged +${Math.round((c.watch.mult-1)*100)}% reach`;
     if(c.pair) return `hp ${c.hp} each · places two · keep ${c.pair.max}`;
     if(c.pierceLine) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s · through a line`;
@@ -3301,6 +3565,8 @@
       scent:def.scent||0, // the Bleeder's trail
       numbs:def.numbs||null, fuse:def.fuse||null, lob:def.lob||null, grieves:def.grieves||null, // Lamprey, Fusebearer, Bombard, Mourner
       watch:def.watch||null, pierceLine:def.pierceLine||0, // Watchtower, Ballista
+      mummer:def.mummer||null, stage:def.stage||null, // Mummer, Stage
+      second:def.second||null, sniper:!!def.sniper, // the Breacher's and Harrier's second weapon; the sniper's fast shot
       rallies:!!def.rallies, // a Stolen Standard: tap it once to open a wide Sanctuary
       bores:def.bores||0, reach:def.reach||0, selfCost:def.selfCost||0, lays:def.lays||0, // the Borer: slows a building's fire, tunnel reach, health paid per second, eggs laid
       x:xPct, y:yPct, drift:(Math.random()-0.5)*0.6,
@@ -3330,10 +3596,18 @@
     return u;
   }
 
+  function copyTroop(owner, def, x, y, frac){ // a copy at frac of its health: the units it makes are marked so they are not remembered as played
+    const n0 = state.units.length; deploy.copy = true; deploy.silent = true;
+    try{ deploy(owner, def, x, y); } finally { deploy.copy = false; deploy.silent = false; }
+    if(owner==='p' && hasTrinket('wardrobe')) frac = 1; // Ysolde's Wardrobe: your copies arrive whole
+    for(const u of state.units.slice(n0)){ u.maxHp = Math.max(1, Math.round(u.maxHp*frac)); u.hp = Math.min(u.hp, u.maxHp); u.cost = 0; u.copied = true; u.el.classList.add('copied'); }
+  }
   function deploy(owner, def, x, y){
+    if(!def.isBuilding && def.cardType!=='spell' && !def.formation && !deploy.copy) (state.lastTroop || (state.lastTroop = {}))[owner] = def; // remembered for Echo, Encore and the Stage
+    bestNote(def.name, owner==='p' && !deploy.silent ? 'played' : null); // the Bestiary: met, and played
     if(def.pair){ // a Barricade: two short walls side by side; a side keeps at most four, the oldest retiring first
       const g = def.pair.gap*PX_UNIT/FW*100/2, a = spawn(owner, def, Math.max(6, x-g), y), b = spawn(owner, def, Math.min(94, x+g), y);
-      const mine = state.units.filter(u=>u.owner===owner && u.name===def.name); while(mine.length > def.pair.max) retireBuilding(mine.shift());
+      const mine = state.units.filter(u=>u.owner===owner && u.name===def.name); if(!(owner==='a' && currentChallenger.puzzle)) while(mine.length > def.pair.max) retireBuilding(mine.shift()); // Orrin's puzzle works keep every wall
       return a;
     }
     if(!def.squad) return spawn(owner, def, x, y);
@@ -3551,6 +3825,8 @@
   function battleTheme(name){
     if(name==='grael') return {step:graelStep, len:GRAEL_EIGHTH, danger:true, bar:7, heart:{low:[0], mid:[0,4], high:[0,2,4]}, // seven to the bar, felt 2+2+3
       stab:[880, 932.3, 1318.5], scrape:[1760, 2637], slide:[659.3, 1760]};                                                         // A phrygian: A, B-flat, E
+    if(name==='ysolde') return {step:ysoldeStep, len:YSOLDE_EIGHTH, danger:true, bar:6, heart:{low:[0], mid:[0,3], high:[0,2,4]}, // three to the bar, a waltz
+      stab:[659.3, 783.99, 987.77], scrape:[2637, 1975.5], slide:[493.9, 1318.5]};                                                   // E minor: E, G, B
     if(name==='orrin') return {step:orrinStep, len:ORRIN_EIGHTH, danger:true, bar:8, heart:{low:[0], mid:[0,4], high:[0,2,4,6]},
       stab:[587.3, 659.3, 880], scrape:[2349.3, 1760], slide:[440, 1174.7]};                                                         // D dorian: D, E, A
     return null;
@@ -3593,6 +3869,23 @@
       if(i===0 && Math.random() < 0.25){ stringSlide(at, kill, T.slide[0], T.slide[1], Math.floor(T.bar/2)*T.len); return; }
       if(Math.random() < 0.35 + 0.4*kill){ stringStab(at, kill, T.stab); if(Math.random() < 0.6*kill + 0.2) stringStab(at + half, kill*0.8, T.stab); }
     }
+  }
+  // ---- Ysolde's theme: a mummers' waltz. Three beats to the bar at about 120: an oom-pah-pah of low string and two light plucks, a music-box
+  // melody in E minor played twice, the second time an echo an octave up and a beat behind (her rule, in the music), a tambourine shake on
+  // the third beat, and a sustained accordion-like chord every four bars ----
+  const YSOLDE_EIGHTH = 0.25;
+  const YSOLDE_LINE = [[76,0,79,0,78,0],[76,0,71,0,0,0],[72,0,76,0,74,0],[71,0,0,0,67,0],[76,0,79,0,81,0],[79,0,76,0,0,0],[74,0,72,0,71,0],[69,0,71,0,0,0]];
+  function tambourine(at){ const ctx = audioCtx, n = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = (amb && amb.noise) || hfNoiseBuf(); hp.type = 'highpass'; hp.frequency.value = 6000; g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.05, at + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.12);
+    n.connect(hp); hp.connect(g); g.connect(amb.musicBus); n.start(at, Math.random()); n.stop(at + 0.15); }
+  function ysoldeStep(step, at){
+    const bar = Math.floor(step/6), i = step%6, phrase = bar%8, d = at - audioCtx.currentTime, root = [52, 52, 48, 47, 52, 55, 50, 45][phrase];
+    if(i===0) grBass(midiHz(root), at);                                                         // oom
+    if(i===2 || i===4){ grPluck(midiHz(root + 12 + 7), at); grPluck(midiHz(root + 12 + 3), at + 0.005); } // pah, pah
+    if(i===4) tambourine(at);
+    const n = YSOLDE_LINE[phrase][i]; if(n){ beep(midiHz(n), 0.35, 'sine', 0.035, d, amb.musicBus); beep(midiHz(n)*2, 0.2, 'sine', 0.01, d, amb.musicBus);
+      if(bar%16 >= 8) beep(midiHz(n+12), 0.3, 'sine', 0.018, d + YSOLDE_EIGHTH*2, amb.musicBus); } // the mimic: the tune again, an octave up and a beat behind
+    if(i===0 && bar%4===0) grPad(at, 4*6*YSOLDE_EIGHTH, null, [[164.8, -5], [196, 4], [246.9, 0]]); // an accordion swell: E, G, B
   }
   // ---- Grael's theme: a hunter's stalk. Seven eighth notes to a bar at 100 bpm, so it never settles into a march: a low
   // two-beat pulse, a plucked A-phrygian line that keeps circling back to the same note (the habit he has counted), a whip
@@ -4034,6 +4327,7 @@
 
   const TOLL_BLOOD = 1; // Garrow's toll: what each spell you cast pays him
   function castSpell(owner, def, x, y){
+    bestNote(def.name, owner==='p' ? 'played' : null);
     if(owner==='p' && currentChallenger.tolls){ refund('a', TOLL_BLOOD); fieldText(Math.max(8, Math.min(92, x)), Math.max(8, y-5), 'toll: 1 blood to Garrow'); log('Garrow takes his toll.'); } // brews pay it too
     if(def.wardDuration || def.zone) sfxOath(); else if(def.heal || def.transfuse) sfxMercy(); else if(def.confuseDuration || def.turn) sfxConfusion();
     else if(def.pctDamage || def.rupture || def.sunder) sfxFracture(); else sfxSpell();
@@ -4052,6 +4346,10 @@
         u.el.classList.add('confused');
         u.atkTarget = null; u.attached = false; // forces an immediate re-evaluation under the new rules
       }
+    } else if(def.echo || def.encore){ // Echo: your last troop again, here. Encore: the rival's last troop, playing for you
+      const src = (state.lastTroop||{})[def.echo ? owner : (owner==='p' ? 'a' : 'p')];
+      if(src){ copyTroop(owner, src, x, y, (def.echo||def.encore).hp); asciiFx(x, y, {chars:"=~*", n:8, dist:[2,8], dur:500, cls:owner, size:.7}); }
+      else fieldText(x, y-3, 'nothing to echo yet');
     } else if(def.undermine){
       // Undermine: rival buildings in the circle (never a Pentagon) fall silent for a moment and take more damage for a while. Troops untouched
       for(const u of state.units){
@@ -4300,7 +4598,7 @@
     // gentle fights (the first two): your Pentagons hit GENTLE_PENT_DMG times as hard while they stand
     let dmg = (u.name==='Pentagon' && u.owner==='p' && currentChallenger.gentle) ? u.dmg*GENTLE_PENT_DMG : u.dmg;
     if(u.owner==='a' && tutHolding()) dmg *= TUT_SHOT; // the guided fight: Korrath's shots go easy on your first push
-    const p = {x:u.x, y:u.y, owner:u.owner, dmg, target:t, spd:70, src:u.name, burn:u.burn, bld:!!u.isBuilding, el:document.createElement('div')};
+    const p = {x:u.x, y:u.y, owner:u.owner, dmg, target:t, spd:u.sniper ? 220 : 70, src:u.name, shooter:u, burn:u.burn, bld:!!u.isBuilding, el:document.createElement('div')}; // shooter: so a ranged kill credits who fired it
     p.el.className = 'proj ' + u.owner;
     p.el.style.left = p.x+'%'; p.el.style.top = p.y+'%';
     field.appendChild(p.el);
@@ -4490,8 +4788,8 @@
   function placeFormation(def, xPct, yPct){
     const f = def.formation, sp = formationSpots(def, xPct, yPct);
     state.pBlood -= def.cost;
-    deploy('p', f.a, sp.ax, sp.ay);
-    deploy('p', f.b, sp.bx, sp.by);
+    deploy('p', f.a, sp.ax, sp.ay); echoQueue(f.a, sp.ax, sp.ay);
+    deploy('p', f.b, sp.bx, sp.by); echoQueue(f.b, sp.bx, sp.by);
     state.stats.p.spent += def.cost;
     for(const [d,x,y] of [[f.a,sp.ax,sp.ay],[f.b,sp.bx,sp.by]]){ state.drops.push({x, y}); logPlay(d, x, y); }
     haptic(HAPTIC.place);
@@ -4521,6 +4819,8 @@
       deploy('p', def, Math.max(6, Math.min(94, xPct)), Math.max(34, Math.min(97, yPct)));
     }
     state.stats.p.spent += def.cost;
+    echoQueue(def, xPct, yPct); // Ysolde copies it
+    if(hasTrinket('mask') && !state.masked && def.cardType!=='spell' && !def.isBuilding){ state.masked = true; copyTroop('p', def, Math.max(6, Math.min(94, xPct + 6)), Math.max(34, Math.min(97, yPct)), 1); } // Ysolde's Mask: the first troop twice
     if(def.cardType!=='spell' && !def.isBuilding) state.drops.push({x:xPct, y:yPct}); // Grael reads these
     logPlay(def, xPct, yPct);
     tutEvent(def.name);
@@ -4747,6 +5047,7 @@
     return m;
   }
   function aiTick(dt){
+    if(currentChallenger.puzzle) return; // a siege puzzle: his works are already built and he plays nothing
     if(tutHolding()) return; // the guided fight: Korrath plays nothing until your first push breaks a Pentagon
     if(state.aPush){ state.aPush.ms -= dt; if(state.aPush.ms<=0) state.aPush = null; }
     state._aiTimer = (state._aiTimer==null ? 1000 : state._aiTimer) - dt;
@@ -4765,6 +5066,7 @@
       const out = state.units.filter(u=>u.owner==='a' && isPara(u)).length;
       pool = pool.filter(c=>!(c.needsTarget && (!hosts || out>=MAX_RIVAL_PARASITES))); // a card whose purpose isn't met isn't worth playing
     }
+    if(currentChallenger.ownCap) pool = pool.filter(c=>!(c.name in currentChallenger.ownCap) || state.units.filter(u=>u.owner==='a' && u.name===c.name && !u.copied && u.hp>0).length < currentChallenger.ownCap[c.name]);
     if(currentChallenger.works && Math.random() < 0.45){ // Orrin builds: often he reaches for a building he does not have two of yet
       const b = pool.filter(c=>c.isBuilding && state.units.filter(u=>u.owner==='a' && u.name===c.name).length < (c.uniquePerOwner ? 2 : 4)); if(b.length) pool = b; }
     // the first two challengers keep at most troopCap troops (bodies, so a squad counts as four) on the field until any Pentagon falls, yours or theirs
@@ -4919,6 +5221,13 @@
     if(currentChallenger.smart && def.needsTarget){
       const prey = freeLeachHosts().sort((a,b)=>unitWeight(b)-unitWeight(a))[0];
       if(prey){ dropX = prey.x; y = Math.max(6, prey.y-8); if(inRiver(y)) y -= 9; } // lands beside its target, on its own side of it
+    }
+    if(def.bores){ // a Borer goes in as close to one of your buildings as a rival may reach: at the bank of your river, straight across from it
+      const taken = new Set(state.units.filter(b=>b.owner==='a' && b.bores && b.atkTarget).map(b=>b.atkTarget));
+      const marks = state.units.filter(u=>u.owner==='p' && u.isBuilding && u.hp>0 && !taken.has(u))
+        .sort((m,n)=>((m.name==='Pentagon') - (n.name==='Pentagon')) || (m.y - n.y)); // your other buildings first, the nearest of them; a Pentagon if nothing else
+      const mark = marks[0];
+      if(mark){ dropX = mark.x + (Math.random()-0.5)*4; y = mark.y - 4; } // aiLegalY below pulls it back to the furthest bank it may use
     }
     if(state.tutorial && !def.isBuilding) dropX = 66 + Math.random()*26; // the guided fight: Korrath only ever comes down the right side
     if(currentChallenger.multiBuildings && def.isBuilding){
@@ -5160,7 +5469,7 @@
   }
 
   const SIGHT_RANGE = 25, VIAL_SIGHT = 40;
-  const sightOf = u => u.reach ? u.reach : (isPara(u) && hasVial(u.owner)) ? VIAL_SIGHT : SIGHT_RANGE; // the Vial: parasites smell farther
+  const sightOf = u => u.reach ? u.reach : (isPara(u) && hasVial(u.owner)) ? VIAL_SIGHT : Math.max(SIGHT_RANGE, (u.range||0) + 2); // the Vial: parasites smell farther; a sniper sees as far as it shoots
   function findTarget(u){
     // a Stolen Standard: troops (not parasites, not buildings) with one in sight attack it before anything else
     if(state._taunters && state._taunters.length && !u.isBuilding && !isPara(u)){
@@ -5363,6 +5672,9 @@
     }
   }
   function dealDeath(victim, killer){
+    if(victim.mummer && !victim.isBuilding){ const k = killer || victim.lastHitBy, kd = k && !k.isBuilding && CARD_DEFS.find(c=>c.name===k.name && !c.isBuilding);
+      if(kd && k.owner!==victim.owner) setTimeout(()=>{ if(!state.over) copyTroop(victim.owner, kd, victim.x, victim.y, victim.mummer.hp); }, 0); } // the Mummer takes the shape of what killed it
+    { const k = killer || victim.lastHitBy; if(k && k.owner==='p' && victim.owner==='a') bestNote(k.name, 'kills'); bestNote(victim.name, null); } // the Bestiary
     if(!victim.isBuilding && !victim.diedFromDrain && !isPara(victim) && victim.cost>0) for(const m of state.units){ // a Mourner grieves a friend who falls near it
       if(!m.grieves || m===victim || m.owner!==victim.owner || m.hp<=0 || dist(m, victim) > m.grieves.r) continue;
       if((state.clock||0) - (m.griefAt||-1e9) < m.grieves.gap) continue; // at most once every two seconds
@@ -5372,7 +5684,7 @@
     { const k = killer || victim.lastHitBy; if(k && k!==victim && k.fx && k.fx.kill && k.hp>0 && !victim.isBuilding && !victim.diedFromDrain && k.owner!==victim.owner) fnKill(k, victim);
       if(k && k!==victim && k.fx && k.fx.skulk && k.hp>0 && !victim.isBuilding && k.owner!==victim.owner) k.rehideMs = k.fx.skulk; } // a Skulk slips back out of sight after a kill
     if(victim.fx && victim.fx.purse && victim.purse>0){ const pay = Math.round(victim.purse*victim.fx.purse.mult*10)/10; refund(victim.owner, pay); fieldText(victim.x, victim.y-3, `+${pay.toFixed(1)} blood`); victim.purse = 0; } // a Smuggler's purse, paid as it falls
-    if(victim.isBuilding && victim.fit && victim.fit.includes('sluice')){ for(const o of state.units) if(o.owner!==victim.owner && !o.isBuilding && o.hp>0 && dist(o, victim) <= SLUICE_R){ o.floodMs = SLUICE_MS; } asciiFx(victim.x, victim.y, {chars:"~=~", n:14, dist:[4,24], dur:900, cls:victim.owner, size:.8}); } // Workshop Sluice
+    if(victim.isBuilding && fitLvl(victim, 'sluice')){ const sl = fitLvl(victim, 'sluice'); for(const o of state.units) if(o.owner!==victim.owner && !o.isBuilding && o.hp>0 && dist(o, victim) <= (sl===2 ? 16 : SLUICE_R)){ o.floodMs = sl===2 ? 8000 : SLUICE_MS; } asciiFx(victim.x, victim.y, {chars:"~=~", n:14, dist:[4,24], dur:900, cls:victim.owner, size:.8}); } // Workshop Sluice
     if(victim.fx && victim.fx.spill && !victim.isBuilding){ (state.pools || (state.pools = [])).push({x:victim.x, y:victim.y, owner:victim.owner, until:(state.clock||0) + victim.fx.spill}); asciiFx(victim.x, victim.y, {chars:"~o.", n:10, dist:[2,6], dur:1800, cls:victim.owner, size:.7}); }
     if(victim.fx && victim.fx.death && !victim.isBuilding && !victim.diedFromDrain) fnBurst(victim, victim.fx.death);
     if(!victim.isBuilding) hatchBrood(victim);
@@ -5576,7 +5888,7 @@
     rallyWatch();
     tickBridges(dt);
     aiBridgeTick(dt);
-    tickSnares(dt); tickCharges(dt); tickLobs(dt); tickWorks(dt);
+    tickSnares(dt); tickCharges(dt); tickLobs(dt); tickWorks(dt); tickPuzzle(); tickEchoes();
     updateProjectiles(dt);
 
     // which bases are open: a side with no Pentagons left. Rival parasites smell the blood there
@@ -5588,6 +5900,7 @@
       if(u.wardMs>0){ u.wardMs -= dt; if(u.wardMs<=0){ u.wardMs = 0; u.el.classList.remove('warded'); } }
       if(u.exposedMs>0){ u.exposedMs -= dt; if(u.exposedMs<=0){ u.exposedMs = 0; u.el.classList.remove('exposed'); } }
       if(u.hookMs>0) u.hookMs -= dt; // a Siege Hook
+      if(u.second && !u.isBuilding && !(u.inactiveMs>0)) tickSecond(u, dt); // a second weapon fires on its own
       if(u.fx && u.hp>0) fnTimers(u, dt); // Camp behaviours with clocks of their own
       if(u.bleedMs>0){ // Haemorrhage
         const step = Math.min(dt, u.bleedMs), d = warded(u, u.bleedDps*step/1000);
@@ -5768,6 +6081,7 @@
           const sideKey = u.owner==='p' ? 'aBase' : 'pBase';
           let hit = baseDamage(u);
           if(sideKey==='pBase' && state.openBase && state.openBase.p) hit *= OPEN_BASE_MULT; // all three of yours are down: the end comes fast
+          if(sideKey==='aBase' && currentChallenger.puzzle) hit = 0; // a siege puzzle is won by breaking his works, not his base
           if(sideKey==='aBase' && currentChallenger.rally && !state.rallied && state.aBase - hit <= 0){ // a fight whose mid-fight scene waits on his first gate
             const pe = state.units.filter(o=>o.owner==='a' && o.name==='Pentagon' && o.hp>0).sort((m,n)=>dist(m,u)-dist(n,u))[0]; // (a Bloodhound runs past every Pentagon)
             if(pe){ hit = Math.max(0, state.aBase - 1); pe.hp = 0; fieldText(pe.x, pe.y+4, 'The blow breaks a Pentagon instead'); } // the base holds at 1 and the nearest Pentagon falls, so his scene still plays
@@ -5828,7 +6142,7 @@
               if(!(state.charges || (state.charges = [])).some(c=>c.target===t && c.owner===u.owner)) state.charges.push({owner:u.owner, target:t, x:t.x, y:t.y, ms:u.fuse.ms, dmg:u.fuse.dmg, splash:u.fuse.splash, r:u.fuse.r, src:u.name, el:makeFuseEl(t, u.owner)}); }
             state._striker = u; const hd = warded(t, base); credit(u.owner, u.name, t, hd); state._striker = null; t.hp -= hd; t.lastHitBy = u; sound.dmgNums && showDamageNumber(t.x, t.y, hd, u.owner); flashHit(t);
             fnStrike(u, t); fnRiposte(u, t);
-            if(t.fit && t.fit.includes('barbs') && t.owner!==u.owner){ const back = warded(u, BARBS_DMG); credit(t.owner, t.name, u, back); u.hp -= back; u.lastHitBy = t; flashHit(u); } // Workshop Barbs
+            if(fitLvl(t, 'barbs') && t.owner!==u.owner){ const back = warded(u, BARBS_DMG*fitLvl(t, 'barbs')); credit(t.owner, t.name, u, back); u.hp -= back; u.lastHitBy = t; flashHit(u); } // Workshop Barbs
             if(u.fx && u.fx.batter && t.isBuilding && u.ramSet && u.ramSet.has(t)) u.attached = false; // free to look for the next building
           }
         } else if(u.atkStyle==='interval-ranged'){
@@ -5979,6 +6293,7 @@
       }
       savePlayLog(won);
       won ? sfxVictory() : sfxDefeat();
+      saveBestiary(); // the fight's plays and kills, won or lost
       setMusic(won ? 'victory' : 'defeat', won ? 1.2 : 0.15); // the score's first beat lands exactly where the sting's last sound was
       renderMatchStats();
       haptic(won ? HAPTIC.victory : HAPTIC.defeat);
@@ -6008,8 +6323,11 @@
         if(currentChallenger.deathWords){ const fk = currentChallenger.fateKey || 'hadrek'; if(!fateChoiceOf(fk) || replay){ pendingFate = fk; needsIntroOnRestart = true; } }
         // Askel still standing when Hadrek falls: he says his piece and walks away
         if(currentChallenger.keepsAskelBody && askelChoice==='spared' && (!askelLeft || replay) && state.units.some(u=>u.isAskel && u.hp>0)) pendingAskelLeave = true;
+        for(const c of availableCards()) bestNote(c.name, 'wins'); saveBestiary(); /* the Bestiary: a win for every card you brought */
+        const fromId = currentChallenger.id;
         if(advanceChallenger()){
           needsIntroOnRestart = true;
+          if(!replay && ROAD[currentChallenger.id]) pendingRoad = {from:fromId, to:currentChallenger.id}; // the road to the next fight, the first time you travel it
           if(currentChallenger.herald) pendingHerald = true; // the next challenger has words for you first
           subText += (subText?' ':'') + `Next match: Challenger ${currentChallenger.id}, ${currentChallenger.name}.`;
         }
@@ -6041,7 +6359,7 @@
     };
     paused = false;
     resetBridges();
-    spawnDefenses();
+    spawnDefenses(); state.forId = currentChallenger.id; // the field was laid out for this challenger (Orrin's works are part of it)
     document.getElementById('overlay').classList.remove('show');
     document.getElementById('pauseOverlay').classList.remove('show');
     document.getElementById('pauseBtn').style.opacity = 1;
@@ -6079,8 +6397,12 @@
   function portraitOf(c){ return (typeof c.portrait==='function' ? c.portrait() : c.portrait) || ''; }
   let pendingHerald = false;
   // a challenger's first words: portrait, then bubbles arriving one at a time, then Continue to their intro
+  // A challenger can open with a scene before its herald: before Orrin, your own Borers, who have tunnelled under the ford, tell you where
+  // he is and why this fight is an all-out attack (his works stand ready; every card once; blood that never runs short)
   function showHerald(){
     const ch = currentChallenger;
+    if(ch.preHerald && !showHerald.pre){ document.getElementById('overlay').classList.remove('show'); showHerald.pre = true;
+      showTalk(ch.preHerald(playerName).map(text=>({who:'Your Borers', troop:{name:'Borer', n:3}, yours:true, text})), ()=>{ showHerald(); showHerald.pre = false; }, 'tap to go on'); return; }
     document.getElementById('overlay').classList.remove('show');
     document.getElementById('heraldPortrait').textContent = portraitOf(ch);
     document.getElementById('heraldName').textContent = ch.name.toUpperCase();
@@ -6132,6 +6454,10 @@
       later:"Whichever you leave behind, you can still find later in the game."},
     wanderer: {name:'', portrait:()=>'', lines:()=>{ const w = currentChallenger; return [`Enough. You win, ${playerName}.`, w.say, `Let me walk away and my ${matName(w.mat).toLowerCase()} is yours. Or take what you want from my body.`]; },
       spare:'', kill:'', later:'Either way, nothing in the story moves.'},
+    ysolde: {name:'YSOLDE', portrait:()=>YSOLDE_FACE, lines:()=>CHALLENGERS.find(c=>c.id===13).deathWords(playerName),
+      spare:"Spare her<span>Take Ysolde's Mask, a trinket: your first troop in each fight arrives twice.</span>",
+      kill:"Slay her<span>Take Ysolde's Wardrobe, a trinket: every copy you make arrives at full strength.</span>",
+      later:"You only get one. Either way, the Mummer, the Stage and Echo are yours, and Encore can be brewed."},
     orrin: {name:'ORRIN', portrait:()=>ORRIN_FACE, lines:()=>CHALLENGERS.find(c=>c.id===12).deathWords(playerName),
       spare:"Spare him<span>He raises the Workshop in your camp: fit your buildings with Barbs, Murder holes and a Sluice.</span>",
       kill:"Slay him<span>Take Double Works, a relic: keep two of each building at once.</span>",
@@ -6150,8 +6476,59 @@
     if(pendingAskelLeave){ pendingAskelLeave = false; showAskelLeaves(afterFate); return; }
     if(pendingFarewell){ const f = pendingFarewell; pendingFarewell = null; showTalk(f.lines.map(text=>({who:f.who, face:f.face, text})), afterFate, 'tap to go on'); return; }
     if(pendingChapter){ const c = pendingChapter; pendingChapter = null; showChapterEnd(c); return; }
+    if(pendingRoad){ const r = pendingRoad; pendingRoad = null; showRoad(r, afterFate); return; }
     if(pendingHerald){ pendingHerald = false; showHerald(); return; }
     fullRestart();
+  }
+  // ---- the road between fights: a map of the rivers with your path drawing itself from the fight you won to the next, and a line of what
+  // the days on the road were like. Shown once per leg, the first time you travel it; tap to skip ----
+  let pendingRoad = null;
+  const ROAD = { // to challenger id: [days on the road, the line, saying plainly where you are headed and who waits there]
+    1:[0, n=>`Day one, ${n}. You set out for the first ford. Korrath holds it, and he will not let you cross.`],
+    2:[2, n=>`Two days along the near bank, ${n}, to the next ford. Seris waits there.`],
+    3:[3, n=>`You march for the walls on the far bank. Veyra built them, and she is waiting behind them.`],
+    4:[4, n=>`Four days upriver, to the crossing Corvane holds. You will reach him at dawn.`],
+    5:[3, n=>`Through rain and mud to the next ford, ${n}. Askel is camped on the other side.`],
+    6:[2, n=>`Across the shallows and on to Iselde's ford. Nobody speaks of what happened at the last one.`],
+    7:[3, n=>`Three days through the marsh, to the crossing where Maren waits.`],
+    8:[3, n=>`On toward Hadrek, against a road full of people walking the other way. None of them will say what they are walking from.`],
+    9:[4, n=>`Something has followed you since the last camp, ${n}. Its tracks lead to Grael, and so does the road.`],
+    10:[5, n=>`A new stretch of river, and a new season of war. You head for the tollhouse on the far bank, where Osric keeps his standard.`],
+    11:[3, n=>`Down the road to the burned ford, where Garrow keeps the toll. The posts along the way are blank where names used to be.`],
+    13:[3, n=>`Three days on to the crossroads, where the road splits east and south. Someone has set up a stage there. Ysolde's troupe is waiting.`],
+    12:[2, n=>`Past the burned ford, toward Orrin's works. Your Borers go ahead into the ground, and you wait two days by the water for them to come back.`],
+  };
+  const ROAD_W = 31, ROAD_H = 18, ROAD_STEP = 120, ROAD_PAUSE = 600; // the path's pace per step, and the breath before the words
+  const ROAD_COLS = [4, 15, 26, 15]; // near bank, the island, far bank, the island: the war crosses the rivers and back
+  const roadStop = id => { if(id<=0) return [1, 0]; const k = id-1; return [ROAD_COLS[k%4], 1 + Math.round(k*(ROAD_H-3)/11)]; }; // the fights wind down the map; 0 is where the road begins
+  const roadDays = id => { let d = 1; for(let k=2;k<=id;k++) d += ROAD[k] ? ROAD[k][0] : 3; return d; }; // Korrath is reached on day one
+  function roadGrid(){
+    const g = Array.from({length:ROAD_H}, ()=>Array(ROAD_W).fill(' '));
+    for(let r=0;r<ROAD_H;r++){ const a = Math.round(9 + Math.sin(r*0.55)), b = Math.round(21 + Math.sin(r*0.55 + 1.5)); g[r][a] = '~'; g[r][b] = '~'; } // the two rivers
+    return g;
+  }
+  function roadLine(a, b){ const pts = []; let [x0,y0] = a; const [x1,y1] = b, dx = Math.abs(x1-x0), dy = -Math.abs(y1-y0), sx = x0<x1?1:-1, sy = y0<y1?1:-1; let e = dx+dy;
+    for(let k=0;k<200;k++){ pts.push([x0,y0]); if(x0===x1 && y0===y1) break; const e2 = 2*e; if(e2>=dy){ e += dy; x0 += sx; } if(e2<=dx){ e += dx; y0 += sy; } } return pts; }
+  function showRoad(r, done){
+    document.getElementById('overlay').classList.remove('show');
+    const o = document.getElementById('roadOverlay'), map = document.getElementById('roadMap'), g = roadGrid();
+    for(let id=1; id<r.to; id++){ const [c,w] = roadStop(id); if(id>1){ for(const [x,y] of roadLine(roadStop(id-1), [c,w])) if(g[y][x]===' ') g[y][x] = ':'; } } // the road already walked
+    for(let id=1; id<r.to; id++){ const [c,w] = roadStop(id); g[w][c] = 'x'; } // fights won
+    const [tc,tr] = roadStop(r.to); g[tr][tc] = '?';
+    const CL = {'~':'rv', ':':'old', '.':'new', 'x':'won', '?':'next'}, leg = roadLine(roadStop(r.from), [tc,tr]).slice(1, -1);
+    const draw = ()=>{ map.innerHTML = g.map(row=>row.map(ch=>CL[ch] ? `<span class="${CL[ch]}">${ch==='.' ? '•' : ch===':' ? '·' : ch}</span>` : ch).join('')).join('\n'); }; // rivers, the old road, the new leg, won fights, the next
+    draw();
+    const C = CHALLENGERS.find(c=>c.id===r.to), info = ROAD[r.to];
+    document.getElementById('roadDay').textContent = `Day ${roadDays(r.to)}`;
+    document.getElementById('roadTo').textContent = `Towards ${C ? C.name : 'the next ford'}`;
+    const t = document.getElementById('roadText'); t.textContent = ''; t.classList.remove('on');
+    o.classList.add('show');
+    let k = 0, finished = false; const step = setInterval(()=>{ // the path draws itself, a step at a time
+      if(k < leg.length){ const [x,y] = leg[k++]; if(g[y][x]===' ' || g[y][x]===':') g[y][x] = '.'; draw(); beep(420 + k*6, 0.03, 'triangle', 0.012); }
+      else { clearInterval(step); setTimeout(()=>{ if(!t.classList.contains('on')){ t.textContent = info[1](playerName).replace(/(^|[.!?]\s+)([a-z])/g, (m,a,c)=>a+c.toUpperCase()); t.classList.add('on'); } }, ROAD_PAUSE); }
+    }, ROAD_STEP);
+    o.onclick = ()=>{ if(finished) return; if(k < leg.length || !t.classList.contains('on')){ clearInterval(step); for(const [x,y] of leg) if(g[y][x]===' ' || g[y][x]===':') g[y][x] = '.'; draw(); t.textContent = info[1](playerName).replace(/(^|[.!?]\s+)([a-z])/g, (m,a,c)=>a+c.toUpperCase()); t.classList.add('on'); k = leg.length; return; }
+      finished = true; o.classList.remove('show'); o.onclick = null; done(); }; // first tap finishes the drawing, the second goes on
   }
   // ---- the end of a chapter: an animated "Chapter I complete", then the story so far, told from the choices you made ----
   let pendingChapter = null;
@@ -6294,6 +6671,10 @@
       const w = currentChallenger;
       if(v==='spared'){ giveMaterial(w.mat); add(`${w.name} limps off toward the river, leaving behind ${SKIRMISH_MATS} ${matName(w.mat)}.`, 'fate-note'); haptic([20,60,20]); sfxSpare(); }
       else { giveMaterial(w.killMat); add(`${w.name} goes into the river. You take ${SKIRMISH_MATS} ${matName(w.killMat)} from what is left.`, 'fate-note'); haptic([60,40,120]); sfxFinish(); }
+    } else if(fateSubject==='ysolde'){
+      setYsoldeChoice(v==='spared' ? 'spared' : 'slain');
+      if(v==='spared'){ add(`Then here. Wear it well. It will want you to.`); add(`Ysolde's Mask is yours: your first troop in each fight arrives twice. Equip it from the Trinkets screen.`, 'fate-note'); haptic([20,60,20]); sfxSpare(); }
+      else { add(`Take them all, then. Every part, every face.`); add(`Ysolde's Wardrobe is yours: every copy you make arrives at full strength. Equip it from the Trinkets screen.`, 'fate-note'); haptic([60,40,120]); sfxFinish(); }
     } else if(fateSubject==='orrin'){
       setOrrinChoice(v==='spared' ? 'spared' : 'slain');
       if(v==='spared'){
@@ -6353,7 +6734,7 @@
     afterFate();
   };
   function exportSave(){
-    const data = {saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, orrinRelic, workshop, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp};
+    const data = {saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, ysoldeChoice, orrinRelic, workshop, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp};
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -6393,7 +6774,7 @@
           if(c) setChallenger(c);
         }
         setAskelChoice(data.askelChoice==='spared' || data.askelChoice==='finished' ? data.askelChoice : ''); setAskelPaid(!!data.askelPaid);
-        setOrrinChoice(data.orrinChoice==='spared' || data.orrinChoice==='slain' ? data.orrinChoice : ''); orrinRelic = !!data.orrinRelic; try{ localStorage.setItem('bloodline_orrinRelic', orrinRelic ? '1' : '0'); }catch(e){} workshop = cleanWorkshop(data.workshop); saveWorkshop();
+        setOrrinChoice(data.orrinChoice==='spared' || data.orrinChoice==='slain' ? data.orrinChoice : ''); setYsoldeChoice(data.ysoldeChoice==='spared' || data.ysoldeChoice==='slain' ? data.ysoldeChoice : ''); orrinRelic = !!data.orrinRelic; try{ localStorage.setItem('bloodline_orrinRelic', orrinRelic ? '1' : '0'); }catch(e){} workshop = cleanWorkshop(data.workshop); saveWorkshop();
         setHadrekChoice(data.hadrekChoice==='spared' || data.hadrekChoice==='slain' ? data.hadrekChoice : ''); setOsricChoice(data.osricChoice==='spared' || data.osricChoice==='slain' ? data.osricChoice : ''); setAskelLeft(!!data.askelLeft); hadrekFateLabel();
         if(data.materials && typeof data.materials==='object') for(const k of Object.keys(materials)) materials[k] = Math.max(0, parseInt(data.materials[k],10)||0);
         if(Array.isArray(data.brewed)) brewed = data.brewed.filter(n=>typeof n==='string' && CARD_DEFS.some(c=>c.brew && c.name===n));
@@ -6437,6 +6818,29 @@
   // Test tools: force the fight's music to its worst case (your Pentagons gone, rivals at the gate) or its best (theirs gone), for whatever fight
   // is running or the next one started. Tapping the same button again goes back to normal. The fight itself is untouched
   function musicTestLabels(){ for(const [id, k, t] of [['musicWorst','worst','worst case'], ['musicBest','best','best case']]){ const b = document.getElementById(id); if(b) b.textContent = `Fight music: ${t}${musicTest===k ? ' (on)' : ''} (test)`; } }
+  // ---- Back: the phone's back button or gesture, and Escape on a keyboard, go to the previous screen. The topmost open screen closes through its
+  // own Back (or Done, Resume, Menu) button, so it behaves exactly like tapping it. Scenes and choices ignore it, so a story beat or a spare/slay
+  // decision can never be skipped by accident. In a fight, Back pauses; in the Holdfast, Back pauses or resumes ----
+  const BACK_BUTTONS = {pauseOverlay:'pauseResume', soundOverlay:'soundDone', creditsOverlay:'creditsBack', helpOverlay:'helpBack', cardsOverlay:'cardsBack',
+    changelogOverlay:'changelogBack', rematchOverlay:'rmBack', tavernOverlay:'tavernBack', boilerOverlay:'boilerBack', labOverlay:'labBack', workshopOverlay:'workshopBack',
+    baseOverlay:'baseBack', kitchenOverlay:'kitchenBack', campOverlay:'campBack', alchemyOverlay:'alchemyBack', trinketsOverlay:'trinketsBack', introOverlay:'introMenu'};
+  function goBack(){ // true when Back did something here (or was deliberately swallowed); false on the bare title, where it may leave the page
+    const open = [...document.querySelectorAll('.overlay.show')];
+    if(open.length){
+      const z = e => parseInt(getComputedStyle(e).zIndex,10) || 0, all = [...document.querySelectorAll('.overlay')];
+      const top = open.sort((a,b)=> (z(a)-z(b)) || (all.indexOf(a)-all.indexOf(b))).pop();
+      if(top.id==='holdfastOverlay'){ const pb = document.getElementById('hfPause'); if(pb && !document.getElementById('hfPanel').classList.contains('on')) pb.click(); return true; }
+      const bid = BACK_BUTTONS[top.id], btn = bid && document.getElementById(bid);
+      if(btn){ btn.click(); return true; }
+      return top.id!=='titleOverlay'; // a scene, a choice, a result: swallowed, never skipped
+    }
+    if(matchStarted && !state.over && !paused){ const pb = document.getElementById('pauseBtn'); if(pb){ pb.click(); return true; } } // mid-fight: pause
+    return true;
+  }
+  window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ e.preventDefault(); goBack(); } });
+  try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} // one step of history keeps the phone's Back inside the game
+  document.getElementById('roadTestBtn').onclick = ()=>{ const nx = storyNext(), tt = document.getElementById('titleOverlay'); tt.classList.remove('show'); showRoad({from:nx.id-1, to:nx.id}, ()=>{ tt.classList.add('show'); }); }; // the road to the story's next fight
+  { const b = document.getElementById('labTestBtn'), lbl = ()=>{ b.textContent = `Laboratory (test): ${labTest ? 'open' : 'locked'}`; }; lbl(); b.onclick = ()=>{ labTest = !labTest; try{ localStorage.setItem('bloodline_labTest', labTest ? '1' : '0'); }catch(e){} lbl(); }; }
   for(const [id, k] of [['musicWorst','worst'], ['musicBest','best']]) document.getElementById(id).onclick = ()=>{ musicTest = musicTest===k ? null : k; musicTestLabels(); initAudio(); };
   document.getElementById('vibeTest').onclick = (e)=>{
     // reports what the browser said, so we can tell 'unsupported' from 'blocked here' from 'sent'
@@ -6456,7 +6860,7 @@
       return;
     }
     resetArmed = false;
-    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
+    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); setYsoldeChoice(''); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
     try{ ['bloodline_unlockedTier','bloodline_challengerId','bloodline_deck'].forEach(k=>localStorage.removeItem(k)); }catch(err){}
     setChallenger(CHALLENGERS[0]);
     if(matchStarted && !state.over){ document.getElementById('pauseOverlay').classList.remove('show'); fullRestart(); } // abandon the match in progress
@@ -6488,6 +6892,9 @@
   // test: cycle what you did with Hadrek (and whether Askel walked away), or replay Hadrek's last words (the choice is real)
   function hadrekFateLabel(){ const b = document.getElementById('hadrekFate'); if(b) b.textContent = `Hadrek's fate: ${hadrekChoice || 'undecided'}${askelLeft ? ', Askel left' : ''}`; }
   hadrekFateLabel();
+  function ysoldeFateLabel(){ const b = document.getElementById('ysoldeFate'); if(b) b.textContent = `Ysolde's fate: ${ysoldeChoice || 'undecided'}`; }
+  document.getElementById('ysoldeFate').onclick = ()=>{ const order = ['', 'spared', 'slain']; setYsoldeChoice(order[(order.indexOf(ysoldeChoice)+1) % order.length]); ysoldeFateLabel(); renderTitle(); };
+  ysoldeFateLabel();
   function orrinFateLabel(){ const b = document.getElementById('orrinFate'); if(b) b.textContent = `Orrin's fate: ${orrinChoice || 'undecided'}`; }
   document.getElementById('orrinFate').onclick = ()=>{ const order = ['', 'spared', 'slain']; setOrrinChoice(order[(order.indexOf(orrinChoice)+1) % order.length]); orrinFateLabel(); renderTitle(); };
   orrinFateLabel();
@@ -6641,7 +7048,9 @@
       alert(`Fill all ${deckSize()} slots before starting (${slotsOf(selectedDeck)}/${deckSize()} used).`);
       return;
     }
+    if(currentChallenger.fortress && state.forId!==currentChallenger.id) resetGame(); // a fight whose field starts built: lay it out for this challenger
     Object.assign(state, dealDeck(), dealAiDeck()); state.selected = null; // deal from the deck actually picked on this screen
+    if(currentChallenger.puzzle && state.yardQueue){ state.queue = state.queue.concat(state.yardQueue); state.yardQueue = null; } // a puzzle: no building slot, every card once
     if(tutorialDue()){ // the guided fight deals in teaching order: the push cards in hand, the Wall next
       const D = n=>CARD_DEFS.find(c=>c.name===n);
       state.hand = ['Ramhorn','Camel','Jackal','Leach'].map(D); state.queue = [D('Wall')]; state.yardQueue = null;
@@ -6671,6 +7080,7 @@
       spawn('p', PENTAGON_DEF, x, 97);
       spawn('a', PENTAGON_DEF, x, 3);
     });
+    if(currentChallenger.fortress) for(const [n, x, y] of currentChallenger.fortress){ const d = CARD_DEFS.find(c=>c.name===n); if(!d) continue; const u = deploy('a', d, x, y); if(u) u.inactiveMs = 0; } // Orrin's works
   }
   document.getElementById('pauseBtn').onclick = ()=>{
     if(battleCalling) return; // the fight hasn't started yet
@@ -6843,7 +7253,7 @@
      detail:"Osric carries Morvek's stolen standards behind a wall of shields: ranged troops deal his troops half damage. Bring melee, parasites and spells, and expect a rally when his first gate falls."},
     {since:2, kind:'Cards', title:'New cards that change a push', revealAt:11,
      hint:"New cards change how a push is built: one stands guard for its friends, one steals, and one is a flag no enemy can ignore.",
-     detail:"Plunderer, Stolen Standard and Shieldbearer. The Card guide has their numbers."},
+     detail:"Plunderer, Stolen Standard and Shieldbearer. The Bestiary has their numbers."},
     {since:2, kind:'Story', title:'The keeper of the ford', revealAt:12,
      hint:"Past the last river, the ford has a keeper, and he counts everything that crosses it.",
      detail:"Garrow keeps the toll at the burned ford: every spell you cast, brews included, pays him 1 blood. Otherwise he fights like any rival, with no shields, no phases and no choice at the end."},
@@ -6970,7 +7380,7 @@
      detail:"Every camp building has seven levels. Raising one costs Mortar, and every second level also needs a blueprint, won the first time you beat certain challengers. The Still opens one recipe per level, the Kitchen new bands of food, and the War Pen deeper training. Troops now eat the food of their band: the later a troop joins you, the rarer its food, cooked from ingredients only the deeper Holdfast waves give. Every challenger's first defeat sends 5 Mortar, the Holdfast sends more on every fifth wave, and a Skirmish win sends 2. What you already brewed, cooked and taught stays yours, and your buildings start at the level that covers it."},
     {since:2, kind:'Story', title:'The builder', revealAt:12,
      hint:"Somebody raised the bridges past the ford, and is still there.",
-     detail:"Orrin, who raised every bridge on the rivers, waits past the burned ford as challenger 12. He keeps two of every building, and they mend while none of your troops are near. When his first gate falls he raises Barricades across both lanes."},
+     detail:"Orrin, who raised every bridge on the rivers, waits past the burned ford as challenger 12, in a fight unlike the others: a siege puzzle. His works stand before you arrive, the same every time. Your blood never runs out, but each card in your deck can be played once. Break every building he has, Pentagons included. When his first Pentagon falls he raises Barricades across both lanes."},
     {since:2, kind:'Cards', title:'Works of the ford', revealAt:13,
      hint:"New fortifications wait past the ford.",
      detail:"The Watchtower (your ranged troops near it reach further), the Barricade (two walls at once) and the Ballista (a bolt through a whole line) join your cards, and Undermine can be brewed from Fracture and Oath to silence rival buildings."},
@@ -6979,7 +7389,35 @@
      detail:"Spare Orrin and his Workshop can stand in your camp: fit your buildings with Barbs, Murder holes and a Sluice, in story fights and the Holdfast alike. Slay him and you take Double Works, a relic for keeping two of each building; the Workshop can still be raised after holding the Holdfast to wave 15, and Double Works can still be earned by beating Orrin again without losing a Pentagon."},
     {since:2, kind:'Update', title:'Revenants cost everyone the same', revealAt:9,
      hint:"Two rivals from late in Chapter I field fewer of one troop.",
-     detail:"Hadrek and Grael no longer get Revenants cheap: they pay 5 blood like everyone else, so their last pushes no longer flood the field."}
+     detail:"Hadrek and Grael no longer get Revenants cheap: they pay 5 blood like everyone else, so their last pushes no longer flood the field."},
+    {since:2, kind:'Feature', title:'The Laboratory', revealAt:16,
+     hint:"Your camp will one day hold a bench nobody understands.",
+     detail:"The Laboratory is a cheap camp building with no levels. For now its only work is beside the Still: a Still with a Laboratory next to it on the Camp map can brew the newest spells. Whatever else its three empty slots are for, nobody has worked out yet."},
+    {since:2, kind:'Feature', title:'The Boiler', revealAt:4,
+     hint:"Your camp gains a building that burns something.",
+     detail:"The Boiler is a new camp building that burns Ember. While it has heat, the buildings directly beside it on the Camp map work at full speed; anything not beside it, or beside a cold Boiler, works at half. That covers brewing in the Still and, now, cooking in the Kitchen, which takes time. Ember is pure fuel now, from every Holdfast wave, Skirmish wins and first victories; Bloodroot takes its place in the finest foods. Brews already on the fire finish when they would have."},
+    {since:2, kind:'Feature', title:'Lessons take time, and the Tavern', revealAt:11,
+     hint:"Training troops now takes time, and your camp can help.",
+     detail:"Teaching or feeding a troop in the War Pen now takes time: an hour for the earliest troops, up to a day for the strongest. The food is paid when the lesson starts and the troop keeps what it had until the lesson lands. The Tavern, a new camp building, cuts that to a quarter when it stands beside the War Pen, the Kitchen and the Still all at once. Timers in the Still and the Kitchen now show real time at their current pace, so moving the Boiler away or back changes them at once."},
+    {since:2, kind:'Feature', title:'The Bestiary, the shared fire and tempered fittings',
+     detail:"The Card guide in How to play is now the Bestiary: every troop, building and spell you have met, with your record for each (played, kills, and wins with it in your deck). Ones you have not met stay hidden. In your camp, the Workshop now takes one fitting per building, and its tempered fittings can only be made with a hot Boiler beside it. A Still beside the Kitchen shares its fire: some foods can then be cooked from brewing materials. And the Tavern now has a rumour each day."},
+    {since:2, kind:'Feature', title:'A smaller camp', revealAt:4,
+     hint:"Your camp has less room, on purpose.",
+     detail:"Your base now stands in the middle of the camp map with eight plots around it. From Chapter II a row opens above. Your base can be moved too: hold it and drop it on an empty plot. There are more buildings than plots, so choose what your camp is doing: hold a building and drop it on the tray to pack it away, keeping its levels and fittings, and set it down again later for free. Buildings from the old, wider map start packed, ready to place."},
+    {since:2, kind:'Feature', title:'Camp formations', revealAt:4,
+     detail:"Under the camp map you can save up to three formations: tap save beside a number to keep the map as it stands, and tap the number to switch to it. Every building you own goes where that formation put it, anything it left out is packed away, and nothing costs Mortar."},
+    {since:2, kind:'Story', title:'The troupe at the crossroads', revealAt:13,
+     hint:"Somebody past the burned ford has been watching you fight, and practising.",
+     detail:"Ysolde and her troupe of mummers wait at the crossroads as challenger 13. Every troop you send out past your own river, they play back a moment later, mirrored across the field, for a single blood each: weaker, until her mask comes off. She has her own waltz."},
+    {since:2, kind:'Cards', title:'Borrowed shapes', revealAt:14,
+     hint:"New cards that copy, mimic and repeat.",
+     detail:"The Mummer (stands back up as whatever killed it, on your side), the Stage (replays your last troop) and Echo (your last troop again, where you cast it) join your cards. Encore can be brewed at a Still with a Laboratory beside it. Ysolde's Mask, a trinket, plays your first troop in each fight twice; her Wardrobe makes every copy you make whole. You choose which."},
+    {since:2, kind:'Cards', title:'Two weapons at once', revealAt:14,
+     hint:"Two new troops that fight two ways at the same time.",
+     detail:"The Breacher hacks at buildings while shooting rival troops that come near; the Harrier fights troops hand to hand while slinging stones at any building in reach. Both join your cards when Ysolde falls."},
+    {since:2, kind:'Update', title:'The War Pen teaches, and food has grades', revealAt:11,
+     hint:"Your camp's food and training have been reworked.",
+     detail:"Troops with a king are no longer fed in the War Pen; everything you fed them was given back as the same dishes. The War Pen now teaches lessons only, and each lesson asks for one particular dish. Food comes in four grades, Plain, Good, Fine and Gourmet, each with dishes of different tastes, and stronger troops need finer food. Ash Cake is now Bloodroot Tart."}
   ];
   const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
   function changelogEntries(){ return CHANGELOG.filter(e=>e.since > CHANGELOG_AFTER); }
@@ -7021,7 +7459,7 @@
     return h ? `${h}h ${String(m).padStart(2,'0')}m` : m ? `${m}m ${String(sc).padStart(2,'0')}s` : `${sc}s`;
   }
   const alchemyShown = ()=>document.getElementById('alchemyOverlay').classList.contains('show');
-  const brewLabel = (e, now)=>{ const ms = brewMs(CARD_DEFS.find(d=>d.name===e.name)); return 'Brewing' + (e.of>1 ? ` ${e.of-e.qty+1}/${e.of}` : '') + '... ' + fmtBrew(e.end-now) + (e.qty>1 ? ` (all done in ${fmtBrew(e.end-now + (e.qty-1)*ms)})` : ''); };
+  const brewLabel = (e, now)=>{ const ms = brewMs(CARD_DEFS.find(d=>d.name===e.name)); return 'Brewing' + (e.of>1 ? ` ${e.of-e.qty+1}/${e.of}` : '') + '... ' + fmtBrew(realLeft('still', e.end-now)) + (e.qty>1 ? ` (all done in ${fmtBrew(realLeft('still', e.end-now + (e.qty-1)*ms))})` : ''); }; // real time, at the Still's pace now
   function finishBatch(entry){ // one batch ran out its clock: its doses are yours, and the next batch starts from where this one ended. Quiet if you are elsewhere, a chime if you are watching
     const c = CARD_DEFS.find(d=>d.name===entry.name);
     if(c){ if(!brewed.includes(c.name)) brewed.push(c.name); brewStock[c.name] = (brewStock[c.name]||0) + brewDoses(); }
@@ -7032,8 +7470,9 @@
   }
   let boilUntil = 0;
   setInterval(()=>{
+    tickCooking(); tickTraining(); // the Kitchen's pots and the War Pen's lessons run on the same beat
     if(!brewing.length) return;
-    const now = Date.now();
+    const now = stillNow();
     for(const e of [...brewing]){ let guard = BREW_MAX + 1; while(brewing.includes(e) && now >= e.end && guard--) finishBatch(e); } // batches that finished while the game was closed all land now
     if(!brewing.length || !alchemyShown()) return;
     for(const e of brewing){ const b = [...document.querySelectorAll('#alchemyList button[data-brewing]')].find(x=>x.dataset.brewing===e.name); if(b) b.textContent = brewLabel(e, now); }
@@ -7053,7 +7492,7 @@
     for(const m of MATERIALS){ const sp = document.createElement('span'); sp.className = 'alc-mat'; sp.textContent = `${m.icon} ${m.name} ${materials[m.id]}`; mats.appendChild(sp); }
     if(keepScroll) box.style.minHeight = box.offsetHeight + 'px'; // holding the height while the rows are rebuilt keeps the scroll from being clamped to the top
     box.innerHTML = '';
-    box.appendChild(baseUpgradeBar('still', ()=>openAlchemy(true)));
+    box.appendChild(baseUpgradeBar('still', ()=>openAlchemy(true))); box.appendChild(heatNote('still'));
     for(const c of CARD_DEFS.filter(c=>c.brew)){
       const a = CARD_DEFS.find(d=>d.name===c.brew.a), b = CARD_DEFS.find(d=>d.name===c.brew.b);
       const stock = brewStock[c.name]||0, have = stock>0, tierOk = unlockedTier >= (c.unlockTier||1), spells = cardOwned(a) && cardOwned(b);
@@ -7066,8 +7505,9 @@
       row.querySelector('.cg-desc').textContent = CARD_DESC[c.name] || '';
       row.querySelector('.alc-need').textContent = 'Needs ' + Object.entries(c.brew.mats).map(([k,v])=>{ const m = MATERIALS.find(m=>m.id===k); return `${v*qty} ${m.name} (${materials[k]})`; }).join(', ') + ` · makes ${brewDoses()*qty} doses` + (qty>1 ? `, a batch of ${BREW_DOSES} every ${fmtBrew(brewMs(c))}` : '') + `, one spent per fight you cast it in · you hold ${stock}`;
       const btn = row.querySelector('.alc-brew');
-      if(run){ btn.disabled = true; btn.textContent = brewLabel(run, Date.now()); btn.dataset.brewing = c.name; }
+      if(run){ btn.disabled = true; btn.textContent = brewLabel(run, stillNow()); btn.dataset.brewing = c.name; }
       else if(!tierOk){ const g = CHALLENGERS.find(ch=>ch.id===(c.unlockTier||1)-1); btn.textContent = g ? `Beat ${g.name} first` : 'Not yet'; btn.disabled = true; }
+      else if(c.needsLab && !besideLab('still')){ btn.textContent = 'Needs a Laboratory beside the Still'; btn.disabled = true; row.classList.add('alc-locked'); } // spells added from now on
       else if(stillNeed(c.name) > baseLvl('still')){ btn.textContent = `Needs Still level ${stillNeed(c.name)}`; btn.disabled = true; row.classList.add('alc-locked'); }
       else if(!spells){ btn.textContent = `Needs ${!cardOwned(a) ? a.name : b.name}`; btn.disabled = true; }
       else if(!enough){ btn.textContent = 'Not enough materials'; btn.disabled = true; }
@@ -7086,7 +7526,7 @@
           if(brewing.some(e=>e.name===c.name)) return;
           for(const [k,v] of Object.entries(c.brew.mats)) materials[k] -= v*qty; // spent now: the brew is saved and keeps going whatever you do
           const chaining = brewing.some(e=>brewMs(CARD_DEFS.find(d=>d.name===e.name)) > 6000);
-          brewing.push({name:c.name, end:Date.now() + brewMs(c), qty, of:qty}); alcQty[c.name] = 1; saveAlchemy();
+          brewing.push({name:c.name, end:stillNow() + brewMs(c), qty, of:qty}); alcQty[c.name] = 1; saveAlchemy(); saveCamp();
           initAudio();
           if(brewMs(c) <= 6000) sfxBoil(brewMs(c)/1000); // a short brew is one swell
           else if(!chaining) boilUntil = 0;              // a long one starts the chain, unless another long brew is already boiling
@@ -7122,7 +7562,7 @@
   const HF_RAIDERS = [['Jackal',1,5],['Viper',1,3],['Bloodhound',2,2],['Ramhorn',3,2],['Behemoth',4,2],['Camel',5,2]]; // name, first wave, weight
   const HF_CAPTAIN = {name:'Captain', cost:12, hp:420, dmg:22, spd:4.5, range:6, atkStyle:'interval-melee', targets:'any', atkInterval:1300, emoji:'♞'};
   const HF_KEEP_DEF = {name:'Keep', cost:0, hp:420, dmg:8, spd:0, range:14, atkStyle:'interval-ranged', atkInterval:1300, targets:'troops', isBuilding:true, emoji:'♜'};
-  const HF_CAMP_DEF = {name:'Siege camp', cost:6, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, emoji:'⚔'};
+  const HF_CAMP_DEF = {name:'Siege camp', cost:6, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, emoji:'╳'};
   // Holdfast-only buildings: not in any deck, always ready on the buttons under the board, paid in Mortar, and you may place as many as you like
   // (up to HF_MAX_OF_KIND of one kind). None of them makes anything: they are for holding the roads
   const HF_BUILDS = [
@@ -7241,9 +7681,9 @@
   // food ingredients turn up at these odds; an alchemy material comes every second wave, whichever you hold least of
   const HF_FOOD_POOL = [['grain',4],['meat',2],['fish',3],['herb',3]]; // matched to what the recipes eat: cooking each dish equally uses grain 4 : meat 2 : fish 3 : herb 3
   const HF_MATS = {ash:'Ash', brine:'Brine', bone:'Bone', ichor:'Ichor'};
-  const HF_NAMES = Object.assign({}, HF_MATS, {grain:'Grain', meat:'Meat', fish:'Fish', herb:'Herb', honey:'Honey', marrow:'Marrow', ember:'Ember', stone:'Mortar for your camp'});
+  const HF_NAMES = Object.assign({}, HF_MATS, {grain:'Grain', meat:'Meat', fish:'Fish', herb:'Herb', honey:'Honey', marrow:'Marrow', bloodroot:'Bloodroot', ember:'Ember (fuel)', stone:'Mortar for your camp'});
   function hfWaveReward(n){
-    const pool = HF_FOOD_POOL.concat(FOOD_INGS.filter(x=>x.wave && n>=x.wave).map(x=>[x.id, 2])); // Honey from wave 8, Marrow from 15, Ember from 22
+    const pool = HF_FOOD_POOL.concat(FOOD_INGS.filter(x=>x.wave && n>=x.wave).map(x=>[x.id, 2])); // Ember from every wave; Honey from 8, Marrow from 15, Bloodroot from 22
     const got = {}, count = 3 + Math.floor((n-1)/3) + (n%5===0 ? 2 : 0), total = pool.reduce((a,r)=>a+r[1],0);
     for(let i=0;i<count;i++){ let roll = Math.random()*total, pick = pool[0][0]; for(const r of pool){ roll -= r[1]; if(roll<=0){ pick = r[0]; break; } } got[pick] = (got[pick]||0)+1; }
     got.stone = 1 + (n%5===0 ? 3 : 0); // every wave held sends Mortar home to your camp, more on every fifth
@@ -7362,7 +7802,7 @@
           if(f.opens) t.openMs = Math.max(t.openMs||0, f.opens); // Open Wounds
           if(f.conscript && t.side!==u.side && t.hp < t.maxHp*0.25 && !(t.turnMs>0)){ t.turnMs = f.conscript; hfFx(t.x, t.y-10, 'conscripted'); } }
         if(t.fx && t.fx.riposte && u.def.atkStyle==='interval-melee') hfKick(u, t, t.fx.riposte); // Riposte
-        if(t.fit && t.fit.includes('barbs') && u.def.atkStyle==='interval-melee' && u.kind==='troop') hfHurt(u, 3, t); // Workshop Barbs
+        if(fitLvl(t, 'barbs') && u.def.atkStyle==='interval-melee' && u.kind==='troop') hfHurt(u, 3*fitLvl(t, 'barbs'), t); // Workshop Barbs
         if(u.def.atkStyle==='interval-ranged'){ hfShot(u, t); sfxFire(u.kind==='troop' ? 1 : 0.8); } else sfxHit(ramming ? 0.6 : 1);
         if(t.kind==='keep' && performance.now() - hfKeepSfxAt > 700){ hfKeepSfxAt = performance.now(); sfxBaseHit(); haptic(HAPTIC.place); } // the Keep shakes
         if(u.def.steals && u.side==='p'){ const got = Math.max(0, before - t.hp)*u.def.steals; // the Plunderer's hits pay in blood; a Smuggler carries it
@@ -7558,7 +7998,7 @@
         hfFx(u.x, u.y-10, 'rises'); if(rv && rv.dmg) hfFnBurst(u, rv); return false; }
     }
     for(const p of hf.units) if(p.attached && p.host===u) hfLetGo(p, u); // whatever was riding it lets go
-    if(u.fit && u.fit.includes('sluice')) for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && Math.hypot(e.x-u.x, e.y-u.y) <= 12*PX_UNIT) e.slowMs = 5000; // Workshop Sluice
+    if(fitLvl(u, 'sluice')){ const sl = fitLvl(u, 'sluice'); for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && Math.hypot(e.x-u.x, e.y-u.y) <= (sl===2 ? 16 : 12)*PX_UNIT) e.slowMs = sl===2 ? 8000 : 5000; } // Workshop Sluice
     if(u.fx && u.fx.purse && u.purse>0){ const pay = u.purse*u.fx.purse.mult; hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + pay); hfFx(u.x, u.y-14, `+${pay.toFixed(1)} blood`); u.purse = 0; } // a Smuggler's purse
     { const k = u.lastHitBy; if(k && k.fx && k.fx.skulk && k.hp>0 && k.side!==u.side && u.kind==='troop') k.rehideMs = k.fx.skulk; }
     if(u.fx && u.fx.death && u.kind==='troop') hfFnBurst(u, u.fx.death);
@@ -7713,7 +8153,7 @@
       for(const z of hf.zones){ if(!z.on) continue; if(Math.hypot(u.x-z.x,u.y-z.y) <= z.r){ if(z.side===u.side){ u.inSanct = true; if(u.kind==='troop') u.hp = Math.min(u.maxHp, u.hp + z.regen*dt/1000); } else u.inEnemySanct = true; } }
       if(u.confuseMs>0) u.confuseMs -= dt; if(u.turnMs>0) u.turnMs -= dt; if(u.wardMs>0) u.wardMs -= dt; if(u.openMs>0) u.openMs -= dt; if(u.stunMs>0) u.stunMs -= dt; if(u.rootMs>0) u.rootMs -= dt; if(u.slowMs>0) u.slowMs -= dt;
       if(u.fx && u.fx.pulse && u.kind==='troop') hfFnPulse(u, dt); // Training Camp functions
-      if(u.fit && u.fit.includes('holes')) for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && e.hp>0 && Math.hypot(e.x-u.x, e.y-u.y) <= 4*PX_UNIT) hfHurt(e, 2*dt/1000, u); // Workshop Murder holes
+      if(fitLvl(u, 'holes')){ const hl = fitLvl(u, 'holes'); for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && e.hp>0 && Math.hypot(e.x-u.x, e.y-u.y) <= (hl===2 ? 6 : 4)*PX_UNIT) hfHurt(e, (hl===2 ? 3 : 2)*dt/1000, u); } // Workshop Murder holes
       if(u.tauntMs>0){ u.tauntMs -= dt; if(u.tauntMs<=0) u.tauntR = (u.fx && u.fx.taunt) || 0; }
       if(u.rehideMs>0){ u.rehideMs -= dt; if(u.rehideMs<=0) u.hidden = true; }
       if(u.swapCd>0) u.swapCd -= dt;
@@ -8005,6 +8445,8 @@
   };
   // ---- credits and hidden lore. Fragments surface as challengers fall; each is read by tapping it ----
   const LORE = [
+    {need:14, title:'XIX. The troupe', text:"Ysolde's mummers once played the old wars at harvest fairs, so the young would know what war looked like. Then a real one came down the road, and they found they could play that too."},
+    {need:14, title:'XX. The crossroads', text:"Past the burned ford the road splits: east toward the hills and the caves under them, south toward Morvek. Ysolde would not say which way the troupe came from."},
     {need:13, title:'XVII. The name', text:"Orrin. It was cut from every post because the first thing across every bridge was an army, and he would not sign his name to that. Somebody has said it now. The posts are still blank."},
     {need:13, title:'XVIII. The last span', text:"One bridge on the rivers was never finished. Orrin left its last span open so that nothing could cross. Morvek crossed it anyway, on the backs of the people he had taken."},
     {need:2, title:'I. The riverbank', text:"Korrath's people buried their dead in the riverbank so the water would carry them home. Every bridge you crossed was raised over one of them."},
@@ -8069,13 +8511,19 @@
   };
   // ---- card guide: every card, its real numbers from CARD_DEFS, and what it is for ----
   const CARD_DESC = {
+    'Breacher':"A sapper with a crossbow on its back. It walks to the nearest building and hacks at it, and while it works it shoots any rival troop that comes near. Hard to peel off a wall.",
+    'Harrier':"A skirmisher with a sling. It fights rival troops hand to hand, and whenever a rival building is in reach, it slings stones at that too. It never stops chipping at your walls.",
+    'Mummer':"A player from Ysolde's troupe. When a rival troop kills it, it stands back up as that troop, on your side, at half health. Bait the hardest hitters into killing it.",
+    'Stage':"A painted stage. Every twelve seconds a copy of the last troop you played walks off it, at half health. One at a time.",
+    'Echo':"Your last troop again, wherever you cast it, at seven tenths of its health. Nothing happens if you have not played a troop yet this fight.",
+    'Encore':"Brewed from Echo and Oath, at a Still with a Laboratory beside it. The last troop the rival played appears where you cast it, fighting for you, at seven tenths of its health.",
     'Watchtower':"A tall post that sees far. Your ranged troops within 10 of it reach a quarter further. It shoots weakly itself. One at a time.",
     'Barricade':"Two short walls at once, side by side. You may keep four Barricades; a fifth retires the oldest.",
     'Ballista':"A siege bow. Its bolt flies straight through every rival troop in a line, out to long range. Slow to reload. One at a time.",
     'Undermine':"Brewed from Fracture and Oath. Rival buildings in the circle stop firing for 3 seconds and take half again as much damage for 8. Pentagons are untouched, and so are troops.",
     'Lamprey':"A Leach that makes its host sluggish. After a one-second bite it drains, and the troop it rides swings and shoots about a quarter slower while it clings. Only one parasite fits a host. It wastes away with nothing to ride.",
     'Fusebearer':"A siege troop that hits only buildings. Its first strike on each building lights a charge that goes off two seconds later, even if the Fusebearer is dead: heavy damage to the building and a blast that hurts troops standing near it. Keep your defenders back from what it is lighting.",
-    'Bombard':"Lobs a stone that lands on the spot where its target stood, after a short flight, hurting everything in a small circle (half damage to the rest). Devastating against buildings and troops locked in a fight. Troops that keep moving walk out from under it.",
+    'Bombard':"The first sniper. It lobs light stones a very long way: from the far edge of the island it reaches the rival's Pentagons, and each stone splashes everything in a wide circle. Good for wearing down Pentagons and buildings, but it fires at whatever is nearest, so any rival troop that wanders into its huge range pulls its aim away.",
     'Mourner':"A fighter that feeds on loss. Whenever a friendly troop falls close to it, it recovers a little health and strikes about a third faster for four seconds. Strong in a brawl, ordinary on its own.",
     'Leach':'Latches onto an enemy troop and, after a one-second bite, drains it. The host cannot strike back, and only one Leach fits a host. It wastes away with nothing to hold, and never attacks buildings.',
     'Ramhorn':'A charging beast that ignores troops and runs straight for buildings. Its first strike on each new building lands three times as hard and throws it back from the impact, before it charges in again. Quick, but it has to get right up close. Pair it with something that clears the way.',
@@ -8124,6 +8572,10 @@
     const spd = c.isBuilding ? 'stationary' : c.spd>=10 ? 'fast' : c.spd<6 ? 'slow' : 'steady';
     return [`cost ${c.cost}`, `${c.hp} hp${c.squad?` x${c.squad}`:''}`, atk, c.range ? `range ${c.range}` : '', spd, tgt,
       c.ram ? `first hit on each building x${c.ram}` : '',
+      c.second ? `hits ${c.targets} hand to hand; at the same time shoots ${c.second.targets} within ${c.second.range}, ${c.second.dmg} every ${c.second.atkInterval/1000}s` : '',
+      c.sniper ? `a sniper: reaches ${c.range}, further than any Pentagon` : '',
+      c.mummer ? `falls to a troop: stands up again as that troop, for you, at ${Math.round(c.mummer.hp*100)}% health` : '',
+      c.stage ? `every ${c.stage.every/1000}s, a copy of the last troop you played appears beside it at ${Math.round(c.stage.hp*100)}% health` : '',
       c.watch ? `your ranged troops within ${c.watch.r} reach ${Math.round((c.watch.mult-1)*100)}% further` : '',
       c.pair ? `places two, ${c.pair.gap} apart; you keep ${c.pair.max}` : '',
       c.pierceLine ? 'its bolt hits every rival troop in a line, out to its range' : '',
@@ -8144,15 +8596,23 @@
       c.drives ? `your troops within ${c.drives.radius} strike ${Math.round((c.drives.mult-1)*100)}% faster` : '',
       c.hatch ? `hatches ${c.hatch.count} spiders (${SPIDER_DEF.hp} hp, ${SPIDER_DEF.dmg} dmg every ${SPIDER_DEF.atkInterval/1000}s, fast)` : ''].filter(Boolean).join(' · ');
   }
+  // ---- the Bestiary: what you have met, and your record with it. seen: met on the field by either side; played: times you played it;
+  // kills: rival troops and buildings it killed for you; wins: fights won with it in your deck. Saved as bloodline_bestiary ----
+  let bestiary = {}; try{ const b = JSON.parse(localStorage.getItem('bloodline_bestiary')||'null'); if(b && typeof b==='object') bestiary = b; }catch(e){}
+  function saveBestiary(){ try{ localStorage.setItem('bloodline_bestiary', JSON.stringify(bestiary)); }catch(e){} }
+  const bestOf = name => bestiary[name] || (bestiary[name] = {seen:0, played:0, kills:0, wins:0});
+  function bestNote(name, field){ if(!name || name==='Pentagon' || !CARD_DEFS.some(c=>c.name===name)) return; const e = bestOf(name); e.seen = 1; if(field) e[field] = (e[field]||0) + 1; }
   function renderCardGuide(){
     const el = document.getElementById('cardGuide'); el.innerHTML = '';
-    const groups = [['brew','Brewed in Alchemy'],[1,'Starting cards'],[2,'Beat Korrath'],[3,'Beat Seris'],[4,'Beat Veyra'],[5,'Beat Corvane'],[6,'Spare Askel'],[7,'Beat Iselde'],[9,'Spare Hadrek'],[10,'Beat Grael'],[11,'Beat Osric'],[13,'Beat Orrin'],[14,'Later in Chapter II']];
+    const groups = [['brew','Brewed in Alchemy'],[1,'Starting cards'],[2,'Beat Korrath'],[3,'Beat Seris'],[4,'Beat Veyra'],[5,'Beat Corvane'],[6,'Spare Askel'],[7,'Beat Iselde'],[9,'Spare Hadrek'],[10,'Beat Grael'],[11,'Beat Osric'],[13,'Beat Orrin'],[14,'Beat Ysolde'],[99,'Made in the Laboratory']];
     for(const [tier,label] of groups){
       const cards = tier==='brew' ? CARD_DEFS.filter(c=>c.brew) : cardsInObtainOrder().filter(c=>(c.unlockTier||1)===tier && !c.brew); // same order as the deck picker; brews have their own group
       if(!cards.length) continue;
       const h = document.createElement('div'); h.className = 'cg-group'; h.textContent = label; el.appendChild(h);
       for(const c of cards){
         const locked = c.brew ? !brewed.includes(c.name) : !cardOwned(c); // a brewed spell you have made before is not locked, only out of doses
+        const rec = bestiary[c.name], met = !locked || (rec && rec.seen);
+        if(!met){ const card = document.createElement('div'); card.className = 'cg-card locked unmet'; card.innerHTML = `<div class="spell-preview">?</div><div class="cg-body"><div class="cg-name">???</div><div class="cg-desc">Not yet met.</div></div>`; el.appendChild(card); continue; }
         const icon = c.cardType==='spell' ? `<div class="spell-preview">${c.emoji}</div>`
           : `<div class="unit p ${shapeClass(c)} card-preview"><div class="unit-ring"><div class="unit-core">${c.emoji}</div></div></div>`;
         const card = document.createElement('div'); card.className = 'cg-card' + (locked ? ' locked' : '');
@@ -8161,6 +8621,8 @@
         if(locked){ const l = document.createElement('span'); l.className = 'cg-lock'; l.textContent = 'locked'; card.querySelector('.cg-name').appendChild(l); }
         card.querySelector('.cg-stats').textContent = guideStats(c);
         card.querySelector('.cg-desc').textContent = CARD_DESC[c.name] || '';
+        { const r = bestiary[c.name] || {}, line = document.createElement('div'); line.className = 'cg-record';
+          line.textContent = (locked ? 'Met in battle · ' : '') + `played ${r.played||0} · kills ${r.kills||0} · wins ${r.wins||0}`; card.querySelector('.cg-body').appendChild(line); }
         el.appendChild(card);
       }
     }
@@ -8216,45 +8678,73 @@
     migrateCampLevels();
     const o = document.getElementById('kitchenOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('kitchenList');
     stockChips(document.getElementById('kitchenStock'), FOOD_IDS.filter(k=>food[k]>0 || FOOD_INGS.some(x=>x.id===k && !x.wave) || (FOOD_ITEMS.find(x=>x.id===k)||{kit:9}).kit <= baseLvl('kitchen'))); list.innerHTML = '';
-    list.appendChild(baseUpgradeBar('kitchen', ()=>renderKitchen(true)));
+    list.appendChild(baseUpgradeBar('kitchen', ()=>renderKitchen(true))); list.appendChild(heatNote('kitchen'));
     for(const f of FOOD_ITEMS){
       const locked = f.kit > baseLvl('kitchen');
       const times = locked ? 0 : Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(food[k]/v)));
       const row = document.createElement('div'); row.className = 'cg-card alc-row' + (food[f.id] ? ' alc-done' : '');
       row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-desc"></div><div class="alc-need"></div><div class="alc-qty"></div></div>`;
       row.querySelector('.spell-preview').textContent = f.icon;
-      row.querySelector('.cg-name').textContent = `${f.name} (band ${BAND_NAMES[f.band]}): you hold ${food[f.id]}`;
+      row.querySelector('.cg-name').textContent = `${f.name} (${BAND_NAMES[f.band]}, ${f.taste}): you hold ${food[f.id]}`;
       row.querySelector('.cg-desc').textContent = 'Needs ' + Object.entries(f.needs).map(([k,v])=>`${v} ${FOOD_INGS.find(x=>x.id===k).name}`).join(', ') + `, makes ${kitchenMakes()}.`;
-      { const t = ENH_TRACKS[f.track]; row.querySelector('.alc-need').textContent = `${t.name} food for band ${BAND_NAMES[f.band]} troops: they grow ${t.what==='health' ? 'hardier' : t.what==='damage' ? 'fiercer' : 'quicker'}, or learn a function that asks for ${['bread','stew','smoked fish'][f.track]}.`; }
+      { const who = Object.entries(FN_DISH).filter(([, m])=>Object.values(m).includes(f.id)).map(([n])=>n); row.querySelector('.alc-need').textContent = who.length ? `A ${BAND_NAMES[f.band]} dish. Asked for by lessons for: ${who.join(', ')}.` : `A ${BAND_NAMES[f.band]} dish.`; }
       if(locked) row.classList.add('alc-locked');
       const q = row.querySelector('.alc-qty');
       const mk = (label, n)=>{ const b = document.createElement('button'); b.textContent = label; b.disabled = times < 1 || (n && times < n); b.onclick = ()=>cookFood(f.id, n || times); q.appendChild(b); };
+      const cooking = (camp.cook||[]).find(e=>e.id===f.id);
+      if(cooking){ const b = document.createElement('button'); b.disabled = true; b.dataset.cooking = f.id; b.textContent = cookLabel(cooking, kitchenNow()); q.appendChild(b); }
       if(locked){ const b = document.createElement('button'); b.textContent = `Needs Kitchen level ${f.kit}`; b.disabled = true; q.appendChild(b); }
       else { mk('Cook', 1); if(times > 1) mk(`Cook all (${times})`, 0); }
       list.appendChild(row);
     }
+    { const head = document.createElement('div'); head.className = 'cg-group'; head.textContent = besideStill() ? 'The shared fire (the Still is beside the Kitchen)' : 'The shared fire: set the Still beside the Kitchen'; list.appendChild(head); }
+    if(besideStill()) for(const f of SHARED_FIRE){
+      const out = FOOD_ITEMS.find(x=>x.id===f.makes), locked = f.kit > baseLvl('kitchen'), times = locked ? 0 : Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(stockOf(k)/v)));
+      const row = document.createElement('div'); row.className = 'cg-card alc-row' + (locked ? ' alc-locked' : '');
+      row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-desc"></div><div class="alc-qty"></div></div>`;
+      row.querySelector('.spell-preview').textContent = out.icon; row.querySelector('.cg-name').textContent = f.name;
+      row.querySelector('.cg-desc').textContent = 'Needs ' + Object.entries(f.needs).map(([k,v])=>`${v} ${(FOOD_INGS.find(x=>x.id===k) || MATERIALS.find(x=>x.id===k)).name}`).join(', ') + `, makes ${kitchenMakes()} ${out.name}.`;
+      const q = row.querySelector('.alc-qty'), cooking = (camp.cook||[]).find(e=>e.id===f.id);
+      if(cooking){ const b = document.createElement('button'); b.disabled = true; b.dataset.cooking = f.id; b.textContent = cookLabel(cooking, kitchenNow()); q.appendChild(b); }
+      const b = document.createElement('button'); b.textContent = locked ? `Needs Kitchen level ${f.kit}` : 'Cook'; b.disabled = locked || times < 1; b.onclick = ()=>cookFood(f.id, 1); q.appendChild(b);
+      list.appendChild(row);
+    }
     o.classList.add('show'); o.scrollTop = top;
   }
+  // Cooking takes time now: each batch simmers COOK_MS of the Kitchen's work clock (full speed beside a hot Boiler, half otherwise)
+  const COOK_MS = 2*60*1000;
   function cookFood(id, n){
-    const f = FOOD_ITEMS.find(x=>x.id===id); if(!f || f.kit > baseLvl('kitchen')) return;
-    const times = Math.min(n, Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(food[k]/v)))); if(times < 1) return;
-    for(const [k,v] of Object.entries(f.needs)) food[k] -= v*times;
-    food[id] += kitchenMakes()*times; saveFood(); beep(392, 0.25, 'triangle', 0.05); beep(523, 0.3, 'triangle', 0.04, 0.1); renderKitchen(true);
+    const f = FOOD_ITEMS.find(x=>x.id===id) || (besideStill() && SHARED_FIRE.find(x=>x.id===id)); if(!f || f.kit > baseLvl('kitchen')) return;
+    const times = Math.min(n, Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(stockOf(k)/v)))); if(times < 1) return;
+    for(const [k,v] of Object.entries(f.needs)){ if(k in materials) materials[k] -= v*times; else food[k] -= v*times; } saveAlchemy();
+    camp.cook = camp.cook || []; const run = camp.cook.find(e=>e.id===id);
+    if(run){ run.qty += times; run.of += times; } else camp.cook.push({id, end:kitchenNow() + COOK_MS, qty:times, of:times});
+    saveFood(); saveCamp(); beep(330, 0.2, 'triangle', 0.04); renderKitchen(true);
   }
+  function tickCooking(){
+    if(!camp.cook || !camp.cook.length) return;
+    const now = kitchenNow(); let done = false;
+    for(const e of [...camp.cook]){ let guard = 100; while(e.qty>0 && now >= e.end && guard--){ const out = (SHARED_FIRE.find(x=>x.id===e.id)||{}).makes || e.id; food[out] = (food[out]||0) + kitchenMakes(); e.qty--; e.end += COOK_MS; done = true; } if(e.qty<=0) camp.cook = camp.cook.filter(x=>x!==e); }
+    if(done){ saveFood(); saveCamp(); if(document.getElementById('kitchenOverlay').classList.contains('show')){ beep(392, 0.25, 'triangle', 0.05); beep(523, 0.3, 'triangle', 0.04, 0.1); renderKitchen(true); } }
+    else if(document.getElementById('kitchenOverlay').classList.contains('show')) for(const e of camp.cook){ const b = document.querySelector(`#kitchenList [data-cooking="${e.id}"]`); if(b) b.textContent = cookLabel(e, now); }
+  }
+  const cookLabel = (e, now) => `Cooking ${e.of-e.qty+1}/${e.of}... ${fmtBrew(realLeft('kitchen', e.end-now))}`;
   // ---- the Training Camp: food in, a stronger troop out ----
   function renderCamp(keep){
     migrateCampLevels();
     const o = document.getElementById('campOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('campList');
     stockChips(document.getElementById('campStock'), FOOD_ITEMS.filter(x=>food[x.id]>0 || x.kit <= baseLvl('kitchen')).map(x=>x.id)); list.innerHTML = '';
     list.appendChild(baseUpgradeBar('yard', ()=>renderCamp(true)));
-    for(const c of CARD_DEFS.filter(c=>enhTroop(c) && cardOwned(c))){
-      const e = enhance[c.name] || {}, king = hasKing(c.name), row = document.createElement('div'); row.className = 'cg-card alc-row' + (enhanceTotal(c.name) ? ' alc-done' : '');
+    if(kingNote()){ const d = document.createElement('div'); d.className = 'help-sec king-note'; d.textContent = kingNote(); list.appendChild(d); }
+    for(const c of CARD_DEFS.filter(c=>enhTroop(c) && cardOwned(c) && !hasKing(c.name) && FN_DEFS[c.name])){ // kingdom troops are not taught here
+      const e = enhance[c.name] || {}, king = false, row = document.createElement('div'); row.className = 'cg-card alc-row' + (enhanceTotal(c.name) ? ' alc-done' : '');
       row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="alc-need"></div><div class="alc-qty"></div></div>`;
       row.querySelector('.spell-preview').textContent = c.emoji;
       row.querySelector('.cg-name').textContent = c.name + (enhanceTotal(c.name) ? ` ★${enhanceTotal(c.name)}` : '');
-      row.querySelector('.cg-stats').textContent = statLine(c) + ` · band ${BAND_NAMES[troopBand(c)]}` + (king ? ' · a kingdom troop: fed for stats' : ' · no kingdom: taught functions');
+      row.querySelector('.cg-stats').textContent = statLine(c) + ` · ${BAND_NAMES[troopBand(c)]} grade · lessons take ${fmtBrew(trainMs(c))}`;
       const q = row.querySelector('.alc-qty'), need = row.querySelector('.alc-need');
-      if(king){
+      if(e.train){ const b = document.createElement('button'); b.disabled = true; b.dataset.training = c.name; b.textContent = trainLabel(e.train); q.appendChild(b); } // a lesson under way: nothing else until it lands
+      if(e.train){ /* buttons wait */ } else if(king){
         need.textContent = ENH_TRACKS.map(t=>`${t.name} ${e[t.id]||0}/${ENH_MAX}${e[t.id] ? ' (+'+Math.round(t.per*e[t.id]*100)+'% '+t.what+')' : ''}`).join(' · ');
         for(const t of ENH_TRACKS){
           const lvl = e[t.id]||0, cost = enhCost(lvl, c), item = foodFor(c, ENH_TRACKS.indexOf(t)), capped = lvl >= penFeedCap(), b = document.createElement('button');
@@ -8269,37 +8759,61 @@
         else { const at = e.fn.lvl>=2 ? cur.next : cur; need.textContent = `${at.name}: ${at.desc}`; }
         if(legacy) need.textContent += `  (Fed for stats before: ${legacy}.)`;
         const mk = (label, fid, cost, food_, off, retrain)=>{ const b = document.createElement('button'); b.textContent = label; b.disabled = !!off || food[food_] < cost; b.onclick = ()=>retrain ? retrainFn(c.name, fid) : trainFn(c.name, fid); q.appendChild(b); };
-        if(!cur) for(const f of fns){ const it = fnFoodFor(c, f); mk(`${f.name}: ${enhCost(0, c)} ${it.name}`, f.id, enhCost(0, c), it.id); }
-        else if(e.fn.lvl<2){ const it = fnFoodFor(c, cur); if(penFnCap()<2) mk(`${cur.next.name}: needs War Pen level 3`, cur.id, 0, it.id, true); else mk(`${cur.next.name}: ${enhCost(1, c)} ${it.name}`, cur.id, enhCost(1, c), it.id); }
+        if(baseLvl('yard') < penGradeLvl(c)){ const b = document.createElement('button'); b.textContent = `A ${BAND_NAMES[troopBand(c)]} troop: needs War Pen level ${penGradeLvl(c)}`; b.disabled = true; q.appendChild(b); }
+        else if(!cur) for(const f of fns){ const it = fnFoodFor(c, f); mk(`${f.name}: ${penCost(0, c)} ${it.name}`, f.id, penCost(0, c), it.id); }
+        else if(e.fn.lvl<2){ const it = fnFoodFor(c, cur); if(penFnCap()<2) mk(`${cur.next.name}: needs War Pen level 3`, cur.id, 0, it.id, true); else mk(`${cur.next.name}: ${penCost(1, c)} ${it.name}`, cur.id, penCost(1, c), it.id); }
         else { const b = document.createElement('button'); b.textContent = 'Fully taught'; b.disabled = true; q.appendChild(b); }
-        if(cur && baseLvl('yard')>=7){ const other = fns.find(f=>f.id!==cur.id); if(other){ const it = fnFoodFor(c, other); mk(`Retrain to ${other.name}: ${enhCost(0, c)} ${it.name}`, other.id, enhCost(0, c), it.id, false, true); } }
+        if(cur && baseLvl('yard')>=7){ const other = fns.find(f=>f.id!==cur.id); if(other){ const it = fnFoodFor(c, other); mk(`Retrain to ${other.name}: ${penCost(0, c)} ${it.name}`, other.id, penCost(0, c), it.id, false, true); } }
       }
       list.appendChild(row);
     }
     o.classList.add('show'); o.scrollTop = top;
   }
+  function kingRefund(){ // once: every level fed into a kingdom troop comes back as the dishes spent on it, and the troop leaves the War Pen
+    try{ if(localStorage.getItem('bloodline_kingRefund')==='1') return; }catch(e){}
+    const back = {};
+    for(const [name, e] of Object.entries(enhance)){ if(!hasKing(name)) continue; const c = CARD_DEFS.find(x=>x.name===name); if(!c) continue;
+      ENH_TRACKS.forEach((t, idx)=>{ const lv = e[t.id]||0; for(let l=0; l<lv; l++){ const it = foodFor(c, idx); back[it.id] = (back[it.id]||0) + enhCost(l, c); } e[t.id] = 0; });
+      if(e.train && e.train.kind==='feed'){ const idx = ENH_TRACKS.findIndex(t=>t.id===e.train.track), it = foodFor(c, Math.max(0, idx)); back[it.id] = (back[it.id]||0) + enhCost(e.train.lvl-1, c); delete e.train; }
+      if(!e.fn && !e.train) delete enhance[name]; }
+    for(const [k, v] of Object.entries(back)) food[k] = (food[k]||0) + v;
+    const txt = Object.entries(back).map(([k, v])=>`${v} ${(FOOD_ITEMS.find(x=>x.id===k)||{name:k}).name}`).join(', ');
+    try{ localStorage.setItem('bloodline_kingRefund', '1'); if(txt) localStorage.setItem('bloodline_kingNote', `Troops with a king are no longer fed here. Everything you fed them came back: ${txt}.`); }catch(e){}
+    saveFood(); saveEnhance();
+  }
+  const kingNote = () => { try{ return localStorage.getItem('bloodline_kingNote') || ''; }catch(e){ return ''; } };
+  kingRefund();
   function trainFn(name, fid){ // a kingless troop learns a function: a pick at level 1, its follow-up at level 2. No switching once picked
     const c = CARD_DEFS.find(x=>x.name===name && enhTroop(x)), fns = FN_DEFS[name]; if(!c || !fns || hasKing(name)) return;
     const f = fns.find(x=>x.id===fid); if(!f) return;
     const e = enhance[name] || (enhance[name] = {hp:0, dmg:0, spd:0}), lvl = e.fn ? (e.fn.id===fid ? e.fn.lvl : 99) : 0;
-    if(lvl>=2 || lvl >= penFnCap()) return; const cost = enhCost(lvl, c), it = fnFoodFor(c, f); if(food[it.id] < cost) return;
-    food[it.id] -= cost; e.fn = {id:fid, lvl:lvl+1}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
+    if(e.train || lvl>=2 || lvl >= penFnCap() || baseLvl('yard') < penGradeLvl(c)) return; const cost = penCost(lvl, c), it = fnFoodFor(c, f); if(food[it.id] < cost) return;
+    food[it.id] -= cost; e.train = {kind:'fn', fid, lvl:lvl+1, end:Date.now() + trainMs(c)}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
   }
+  function tickTraining(){ // a lesson whose time is up lands: the function learned or switched, or the stat fed
+    const now = Date.now(); let done = false;
+    for(const [name, e] of Object.entries(enhance)){ const tr = e.train; if(!tr || now < tr.end) continue;
+      if(tr.kind==='feed') e[tr.track] = Math.max(e[tr.track]||0, tr.lvl); else e.fn = {id:tr.fid, lvl:tr.lvl};
+      delete e.train; done = true; }
+    if(done){ saveEnhance(); renderDeckPicker(); if(document.getElementById('campOverlay').classList.contains('show')){ beep(392, 0.3, 'triangle', 0.05); beep(587, 0.4, 'triangle', 0.045, 0.12); renderCamp(true); } }
+    else if(document.getElementById('campOverlay').classList.contains('show')) for(const b of document.querySelectorAll('#campList [data-training]')){ const e = enhance[b.dataset.training]; if(e && e.train) b.textContent = trainLabel(e.train); }
+  }
+  const trainLabel = tr => `In training (${tr.kind==='feed' ? 'level ' + tr.lvl : tr.kind==='retrain' ? 'switching' : 'level ' + tr.lvl})... ${fmtBrew(tr.end - Date.now())}`;
   function retrainFn(name, fid){ // War Pen level 7: a taught troop switches to its other function and keeps its level
     const c = CARD_DEFS.find(x=>x.name===name && enhTroop(x)), fns = FN_DEFS[name], e = enhance[name]; if(!c || !fns || !e || !e.fn || baseLvl('yard')<7) return;
-    const f = fns.find(x=>x.id===fid); if(!f || f.id===e.fn.id) return; const cost = enhCost(0, c), it = fnFoodFor(c, f); if(food[it.id] < cost) return;
-    food[it.id] -= cost; e.fn = {id:fid, lvl:e.fn.lvl}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(440, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
+    const f = fns.find(x=>x.id===fid); if(e.train || !f || f.id===e.fn.id) return; const cost = penCost(0, c), it = fnFoodFor(c, f); if(food[it.id] < cost) return;
+    food[it.id] -= cost; e.train = {kind:'retrain', fid, lvl:e.fn.lvl, end:Date.now() + trainMs(c)}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(440, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
   }
   function feedTroop(name, trackId){
     const t = ENH_TRACKS.find(x=>x.id===trackId), c = CARD_DEFS.find(x=>x.name===name && enhTroop(x)); if(!t || !c || !hasKing(name)) return; // only a kingdom troop is fed for stats
     const e = enhance[name] || (enhance[name] = {hp:0, dmg:0, spd:0}), lvl = e[t.id]||0, cost = enhCost(lvl, c), it = foodFor(c, ENH_TRACKS.indexOf(t));
-    if(lvl>=ENH_MAX || lvl >= penFeedCap() || food[it.id] < cost) return;
-    food[it.id] -= cost; e[t.id] = lvl+1; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
+    if(e.train || lvl>=ENH_MAX || lvl >= penFeedCap() || food[it.id] < cost) return;
+    food[it.id] -= cost; e.train = {kind:'feed', track:t.id, lvl:lvl+1, end:Date.now() + trainMs(c)}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
   }
   document.getElementById('titleKitchen').onclick = ()=>renderKitchen(false);
   let baseSel = null; // a building chosen to place, or 'move' / a building being moved
   function baseGrants(){ // each building's Mortar arrives when its work unlocks, once
-    let got = 0; for(const b of BASE_BUILDS){ if(b.unlocked() && !camp.granted[b.id] && (!b.grant || b.grant())){ camp.granted[b.id] = true; camp.mortar += b.cost; got += b.cost; } }
+    let got = 0; for(const b of BASE_BUILDS){ if(b.unlocked() && !camp.granted[b.id] && (!b.grant || b.grant())){ if(b.id==='boiler'){ food.ember = (food.ember||0) + 6; saveFood(); } /* a starter heap of Ember */ camp.granted[b.id] = true; camp.mortar += b.cost; got += b.cost; } }
     if(got) saveCamp(); return got;
   }
   function baseAt(x, y){ return BASE_BUILDS.find(b=>{ const p = camp.built[b.id]; return p && p[0]===x && p[1]===y; }) || null; }
@@ -8317,16 +8831,88 @@
     b.disabled = !bp || camp.mortar < cost; b.onclick = ()=>{ if(baseUpgrade(id)) rerender(); };
     el.appendChild(b); return el;
   }
-  function baseOpenBuilding(b){ if(b.id==='still') openAlchemy(false); else if(b.id==='kitchen') renderKitchen(false); else if(b.id==='workshop') renderWorkshop(false); else renderCamp(false); }
+  function baseOpenBuilding(b){ if(b.id==='still') openAlchemy(false); else if(b.id==='kitchen') renderKitchen(false); else if(b.id==='workshop') renderWorkshop(false); else if(b.id==='lab') renderLab(); else if(b.id==='boiler') renderBoiler(); else if(b.id==='tavern') renderTavern(); else renderCamp(false); }
+  function heatNote(id){ const d = document.createElement('div'); d.className = 'heat-note' + (heated(id) ? ' hot' : '');
+    d.textContent = heated(id) ? `The Boiler beside it is hot: full speed (${fmtBrew(heatLeft())} of heat left).` : besideBoiler(id) ? 'The Boiler beside it is cold: half speed. Feed it Ember.' : 'No Boiler beside it: everything here runs at half speed.'; return d; }
+  function renderBoiler(){
+    const list = document.getElementById('boilerList'); list.innerHTML = '';
+    const add = (t, cls)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; list.appendChild(d); return d; };
+    add(heatLeft() > 0 ? `Burning: ${fmtBrew(heatLeft())} of heat left.` : 'Cold.', 'base-up-head');
+    const near = BASE_BUILDS.filter(B=>B.id!=='boiler' && besideBoiler(B.id));
+    add(near.length ? `Heating: ${near.map(B=>B.name).join(', ')}.` : 'Nothing stands beside it. Set it next to the Still or the Kitchen on the Camp map.');
+    add(`You hold ${food.ember||0} Ember. Each one burns for ${EMBER_HEAT_MS/60000} minutes.`);
+    const row = document.createElement('div'); row.className = 'alc-qty';
+    for(const n of [1, 5]){ const b = document.createElement('button'); b.textContent = `Feed ${n} Ember`; b.disabled = (food.ember||0) < n;
+      b.onclick = ()=>{ workNow('still'); workNow('kitchen'); food.ember -= n; camp.heatUntil = Math.max(Date.now(), camp.heatUntil||0) + n*EMBER_HEAT_MS; saveFood(); saveCamp(); thud(0.4, 0.14, 240); beep(150, 0.4, 'sawtooth', 0.03); renderBoiler(); }; row.appendChild(b); }
+    list.appendChild(row);
+    document.getElementById('boilerOverlay').classList.add('show');
+  }
+  document.getElementById('boilerBack').onclick = ()=>document.getElementById('boilerOverlay').classList.remove('show');
+  // One rumour a day from the Tavern's tables: about the challenger you face next, the Laboratory's bench, or the war
+  const RUMOURS_NEXT = {
+    1:"Korrath fights like a man with nothing to lose. Spread your troops and he will spend himself on the river.",
+    2:"Seris never stands still. A wall where she means to go is worth more than a wall where she has been.",
+    3:"Veyra keeps more walls than anyone. Something that goes under them, or over, saves a long siege.",
+    4:"They say Corvane's people hold a crossing better than they take one. Make him come to you.",
+    5:"Askel wants something from you. Listen before you decide what he gets.",
+    6:"Iselde is patient. Do not be the one who blinks first.",
+    7:"Maren's ford is colder than the rest. Bring troops who do not mind the wait.",
+    8:"Hadrek chains what he catches. Keep your troops moving and he has less to hold.",
+    9:"Grael hunts the wounded. Pull back what is hurt before he finds it.",
+    10:"Osric fights for his standard. When it rises, the fight changes; be ready.",
+    11:"Garrow taxes every spell you cast. Win with troops and he takes nothing.",
+    13:"Ysolde's troupe plays back whatever you play. A card that is weaker in her hands than in yours is worth two.",
+    12:"Orrin's works stand before you arrive. Look at them twice before you spend a single card.",
+  };
+  const RUMOURS = [
+    "Someone swears the Laboratory's bench was built for living things, not spells.",
+    "Two parasites in one jar, they say, make something that holds on harder than either.",
+    "A siege troop that carries fire would be a terrible thing to meet at a gate.",
+    "The Boiler keeps the Still honest. A cold Still brews like it is half asleep.",
+    "Old soldiers say a Shieldbearer that taunts saves more troops than one that guards.",
+    "Nobody remembers who built the bridges. Nobody asks, either.",
+    "The leeches in the marsh are bigger every year. Nobody likes to say why.",
+    "There are caves under the hills to the east. People who go in come back quieter.",
+  ];
+  function tavernRumour(){
+    const day = Math.floor(Date.now()/86400000), nx = storyNext();
+    if(day % 2===0 && RUMOURS_NEXT[nx.id]) return RUMOURS_NEXT[nx.id]; // every other day, the next challenger
+    return RUMOURS[day % RUMOURS.length];
+  }
+  function renderTavern(){
+    const list = document.getElementById('tavernList'); list.innerHTML = '';
+    const add = (t, cls)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; list.appendChild(d); };
+    const parts = [['yard','War Pen'], ['kitchen','Kitchen'], ['still','Still']];
+    add(tavernLinked() ? 'Full and loud: lessons in the War Pen take a quarter of the time.' : 'Quiet. It needs the War Pen, the Kitchen and the Still all standing beside it.', 'base-up-head');
+    add(parts.map(([id, n])=>`${n}: ${besideTavern(id) ? 'beside it' : 'not beside it'}`).join(' · '));
+    add(`Today's rumour: "${tavernRumour()}"`, 'tavern-rumour');
+    add('A lesson takes its time when it starts: one begun while the Tavern is full keeps the shorter time even if you move things later.');
+    document.getElementById('tavernOverlay').classList.add('show');
+  }
+  document.getElementById('tavernBack').onclick = ()=>document.getElementById('tavernOverlay').classList.remove('show');
+  function renderLab(){
+    const list = document.getElementById('labList'); list.innerHTML = '';
+    const near = BASE_BUILDS.filter(B=>B.id!=='lab' && besideLab(B.id)), add = (t, cls)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; list.appendChild(d); };
+    add(near.length ? `Beside it: ${near.map(B=>B.name).join(', ')}.` : 'Nothing stands beside it yet. Move it next to another building on the Camp map.', 'base-up-head');
+    add(besideLab('still') ? 'The Still is connected: it can brew the newer spells that need a Laboratory.' : 'Set it beside the Still, and the Still can brew the newer spells that need a Laboratory.');
+    add('The rest of the bench sits idle: three slots, built for some work nobody here understands yet.');
+    document.getElementById('labOverlay').classList.add('show');
+  }
+  document.getElementById('labBack').onclick = ()=>document.getElementById('labOverlay').classList.remove('show');
   const baseCost = B => B.costFor ? B.costFor() : B.cost;
   // ---- the Workshop: fittings for your buildings, kept by building name, used in story fights and the Holdfast alike ----
   const FITTINGS = [
     {id:'barbs',  name:'Barbs',        icon:'✕', mat:'bone',  lvl:1, desc:`Rival melee troops that strike it take ${3} per hit.`},
     {id:'holes',  name:'Murder holes', icon:'⁙', mat:'ash',   lvl:2, desc:'Rival troops within 4 of it take 2 a second.'},
     {id:'sluice', name:'Sluice',       icon:'∽', mat:'brine', lvl:4, desc:'When it falls, rival troops within 12 move at half speed for 5 s.'},
+    // tempered fittings: made only while a hot Boiler stands beside the Workshop; once made they work anywhere
+    {id:'barbs2',  name:'Tempered Barbs',        icon:'✕', mat:'bone',  lvl:3, hot:true, desc:'Rival melee troops that strike it take 6 per hit.'},
+    {id:'holes2',  name:'Tempered Murder holes', icon:'⁙', mat:'ash',   lvl:3, hot:true, desc:'Rival troops within 6 of it take 3 a second.'},
+    {id:'sluice2', name:'Tempered Sluice',       icon:'∽', mat:'brine', lvl:4, hot:true, desc:'When it falls, rival troops within 16 move at half speed for 8 s.'},
   ];
-  const FIT_REFUSE = {'Spike Pit':['barbs','holes']}; // raiders walk over a Spike Pit instead of striking it, and it already hurts what crosses it
-  const fitSockets = () => baseLvl('workshop')>=3 ? 2 : 1, fitCost = () => baseLvl('workshop')>=5 ? 2 : 3;
+  const fitLvl = (u, id) => !u || !u.fit ? 0 : u.fit.includes(id+'2') ? 2 : u.fit.includes(id) ? 1 : 0; // 2 when tempered
+  const FIT_REFUSE = {'Spike Pit':['barbs','holes','barbs2','holes2']}; // raiders walk over a Spike Pit instead of striking it, and it already hurts what crosses it
+  const fitSockets = () => 1, fitCost = () => baseLvl('workshop')>=5 ? 2 : 3; // one fitting per building
   function workshopBuildings(){ // every building you own, and the Holdfast's own once it is open
     const story = CARD_DEFS.filter(c=>c.isBuilding && !c.brew && cardOwned(c)).map(c=>({name:c.name, icon:c.emoji, where:'story and Holdfast'}));
     const hold = unlockedTier>=HOLDFAST_TIER ? HF_BUILDS.map(b=>({name:b.name, icon:b.emoji, where:'Holdfast'})) : [];
@@ -8337,7 +8923,7 @@
     const o = document.getElementById('workshopOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('workshopList'), mats = document.getElementById('workshopMats');
     mats.innerHTML = ''; for(const m of MATERIALS){ const sp = document.createElement('span'); sp.className = 'alc-mat'; sp.textContent = `${m.icon} ${m.name} ${materials[m.id]}`; mats.appendChild(sp); }
     list.innerHTML = ''; list.appendChild(baseUpgradeBar('workshop', ()=>renderWorkshop(true)));
-    const avail = FITTINGS.filter(f=>f.lvl <= baseLvl('workshop'));
+    const avail = FITTINGS.filter(f=>f.lvl <= baseLvl('workshop')), hot = heated('workshop');
     for(const b of workshopBuildings()){
       const have = workshop[b.name] || [], row = document.createElement('div'); row.className = 'cg-card alc-row' + (have.length ? ' alc-done' : '');
       row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="alc-need"></div><div class="alc-qty"></div></div>`;
@@ -8348,44 +8934,133 @@
       const q = row.querySelector('.alc-qty');
       for(const id of have){ const f = FITTINGS.find(x=>x.id===id), bt = document.createElement('button'); bt.textContent = `Remove ${f.name}`; bt.onclick = ()=>{ workshop[b.name] = have.filter(x=>x!==id); if(!workshop[b.name].length) delete workshop[b.name]; saveWorkshop(); renderWorkshop(true); }; q.appendChild(bt); }
       for(const f of avail){ if(have.includes(f.id)) continue; const refused = (FIT_REFUSE[b.name]||[]).includes(f.id), m = MATERIALS.find(x=>x.id===f.mat), bt = document.createElement('button');
-        bt.textContent = refused ? `${f.name}: does not fit` : `Fit ${f.name}: ${fitCost()} ${m.name}`; bt.disabled = refused || have.length >= fitSockets() || materials[f.mat] < fitCost();
-        bt.onclick = ()=>{ if(materials[f.mat] < fitCost()) return; materials[f.mat] -= fitCost(); (workshop[b.name] || (workshop[b.name] = [])).push(f.id); saveAlchemy(); saveWorkshop(); thud(0.25, 0.12, 500); beep(330, 0.1, 'square', 0.03); renderWorkshop(true); };
+        const onOther = Object.keys(workshop).find(k=>k!==b.name && workshop[k].includes(f.id)); // each fitting is on one building at a time
+        if(refused){ bt.textContent = `${f.name}: does not fit`; bt.disabled = true; }
+        else if(f.hot && !onOther && !hot){ bt.textContent = `${f.name}: needs a hot Boiler beside the Workshop`; bt.disabled = true; }
+        else if(onOther){ bt.textContent = `Move ${f.name} here (from ${onOther})`; bt.disabled = have.length >= fitSockets();
+          bt.onclick = ()=>{ workshop[onOther] = workshop[onOther].filter(x=>x!==f.id); if(!workshop[onOther].length) delete workshop[onOther]; (workshop[b.name] || (workshop[b.name] = [])).push(f.id); saveWorkshop(); thud(0.2, 0.1, 500); renderWorkshop(true); }; }
+        else { bt.textContent = `Fit ${f.name}: ${fitCost()} ${m.name}`; bt.disabled = have.length >= fitSockets() || materials[f.mat] < fitCost();
+          bt.onclick = ()=>{ if(materials[f.mat] < fitCost()) return; materials[f.mat] -= fitCost(); (workshop[b.name] || (workshop[b.name] = [])).push(f.id); saveAlchemy(); saveWorkshop(); thud(0.25, 0.12, 500); beep(330, 0.1, 'square', 0.03); renderWorkshop(true); }; }
         q.appendChild(bt); }
       list.appendChild(row);
     }
     o.classList.add('show'); o.scrollTop = top;
   }
   document.getElementById('workshopBack').onclick = ()=>document.getElementById('workshopOverlay').classList.remove('show');
+  // the camp's buildings drawn as small ASCII pictures, scaled to the plot
+  const BASE_ART = {
+    home:    [" |-|-|-| ", " |     | ", " |  ^  | ", " |_[_]_| "].join('\n'),
+    still:   ["   _|_   ", "  (   )  ", "   \\_/~, ", "   |_| ' ", "  /___\\  "].join('\n'),
+    kitchen: ["  ~ ~ ~  ", " _______ ", "|_______|", "  /^^^\\  ", " '^^^^^' "].join('\n'),
+    yard:    [" |=|=|=| ", " | o o | ", " |  o  | ", " |=|=|=| "].join('\n'),
+    workshop:["    __   ", "  _/__\\_ ", "  \\____/ ", "    ||   ", "   /__\\  "].join('\n'),
+    boiler:  ["   ((    ", " .-----. ", " |(@@@)| ", " |_____| ", "  '''''  "].join('\n'),
+    tavern:  ["   /\\    ", "  /__\\[T]", "  |[]|-' ", "  |__|   "].join('\n'),
+    lab:     ["  _   _  ", " | | | | ", " /  \\/ \\ ", "(____)__)"].join('\n'),
+  };
   function renderBase(){
     const o = document.getElementById('baseOverlay'), map = document.getElementById('baseMap'), bar = document.getElementById('baseBuild'), hint = document.getElementById('baseHint');
     const fresh = baseGrants(); migrateCampLevels();
     document.getElementById('baseMortar').innerHTML = `<span class="alc-mat">▣ Mortar ${camp.mortar}</span>`;
     map.innerHTML = '';
+    if(baseSel==='move' || (baseSel && baseSel.moving)) baseSel = null; // moving is by holding a building now
     const placing = baseSel && baseSel!=='move';
-    for(let y=0; y<BASE_ROWS; y++) for(let x=0; x<BASE_COLS; x++){
-      const c = document.createElement('div'), fx = BASE_FIXED[x+','+y], b = baseAt(x, y);
-      if(fx){ c.className = 'base-cell fixed' + (fx==='*' ? ' fire' : ''); c.textContent = fx; }
-      else if(b){ c.className = 'base-cell bld' + (baseSel && baseSel.moving===b.id ? ' sel' : ''); c.innerHTML = `<b></b><span></span>`; c.querySelector('b').textContent = b.icon; c.querySelector('span').textContent = `${b.name} · ${baseLvl(b.id)}`;
-        c.onclick = ()=>{ if(baseSel==='move'){ baseSel = {moving:b.id}; sfxFatePick(); renderBase(); return; } if(baseSel) return; sfxTutClick(); baseOpenBuilding(b); }; }
+    const big = baseBig(), xs = [0,1,2], ys = big ? [0,1,2,3] : [1,2,3];
+    if(!baseInCamp(...baseHome())) camp.home = BASE_HOME.slice(); // the base stands somewhere that is still camp
+    for(const [id, p] of Object.entries(camp.built)) if(!baseCellOpen(p[0], p[1])){ delete camp.built[id]; camp.stored = (camp.stored||[]).concat(id); saveCamp(); } // a plot that is not open (yet): packed
+    map.style.gridTemplateColumns = `repeat(${xs.length}, 1fr)`;
+    for(const y of ys) for(const x of xs){
+      const c = document.createElement('div'), fx = baseFixed()[x+','+y], b = baseAt(x, y); c.dataset.x = x; c.dataset.y = y;
+      if(!fx && !baseCellOpen(x, y)){ c.className = 'base-cell void'; map.appendChild(c); continue; } // outside the camp: kept only so the grid lines up
+      if(fx){ c.className = 'base-cell fixed home'; c.innerHTML = `<pre class="base-art"></pre><span>Your base</span>`; c.querySelector('pre').textContent = BASE_ART.home; c.addEventListener('pointerdown', ev=>baseHoldStart(ev, BASE_PIECE, c)); }
+      else if(b){ c.className = 'base-cell bld' + (baseSel && baseSel.moving===b.id ? ' sel' : ''); c.innerHTML = `<pre class="base-art"></pre><span></span>`; c.querySelector('pre').textContent = BASE_ART[b.id] || b.icon; c.querySelector('span').textContent = b.id==='lab' ? b.name : `${b.name} · ${baseLvl(b.id)}`; if(b.id!=='lab' && besideLab(b.id)) c.classList.add('lab-linked'); if(heated(b.id) || (b.id==='boiler' && heatLeft()>0)) c.classList.add('boiler-hot'); if(b.id==='tavern' && tavernLinked()) c.classList.add('lab-linked');
+        c.onclick = ()=>{ if(baseDrag.justDropped){ baseDrag.justDropped = false; return; } if(baseSel) return; sfxTutClick(); baseOpenBuilding(b); };
+        c.addEventListener('pointerdown', ev=>baseHoldStart(ev, b, c)); }
       else { const canDrop = placing; c.className = 'base-cell' + (canDrop ? ' open' : '');
         c.onclick = ()=>{
-          if(baseSel && baseSel.moving){ camp.built[baseSel.moving] = [x,y]; baseSel = null; saveCamp(); thud(0.2, 0.1, 400); renderBase(); return; }
-          if(!placing) return; const B = BASE_BUILDS.find(k=>k.id===baseSel); if(!B || camp.mortar < baseCost(B)) return;
-          camp.mortar -= baseCost(B); camp.built[B.id] = [x,y]; baseSel = null; saveCamp(); thud(0.3, 0.14, 420); beep(196, 0.1, 'square', 0.03); beep(294, 0.14, 'triangle', 0.035, 0.08); haptic(HAPTIC.place); renderBase(); }; }
+          if(baseSel && baseSel.moving){ workNow('still'); workNow('kitchen'); camp.built[baseSel.moving] = [x,y]; /* the clocks settle at the old layout first */ baseSel = null; saveCamp(); thud(0.2, 0.1, 400); renderBase(); return; }
+          if(!placing) return; const B = BASE_BUILDS.find(k=>k.id===baseSel), packed = B && (camp.stored||[]).includes(B.id); if(!B || (!packed && camp.mortar < baseCost(B))) return;
+          workNow('still'); workNow('kitchen'); if(packed) camp.stored = camp.stored.filter(id=>id!==B.id); else camp.mortar -= baseCost(B); camp.built[B.id] = [x,y]; baseSel = null; saveCamp(); thud(0.3, 0.14, 420); beep(196, 0.1, 'square', 0.03); beep(294, 0.14, 'triangle', 0.035, 0.08); haptic(HAPTIC.place); renderBase(); }; }
       map.appendChild(c);
     }
+    { const box = document.getElementById('baseLayouts'); box.innerHTML = ''; // formations: save the map as it stands, switch to one in a tap
+      const lbl = document.createElement('span'); lbl.className = 'bl-label'; lbl.textContent = 'Formations'; box.appendChild(lbl);
+      for(let k=0; k<BASE_LAYOUTS; k++){ const L = (camp.layouts||[])[k], g = document.createElement('div'); g.className = 'bl-slot';
+        const use = document.createElement('button'); use.textContent = `${k+1}${L ? '' : ' (empty)'}`; use.disabled = !L; use.title = 'Switch to this formation';
+        use.onclick = ()=>{ baseUseLayout(k); }; g.appendChild(use);
+        const save = document.createElement('button'); save.className = 'bl-save'; save.textContent = 'save'; save.title = 'Save the map as it stands here';
+        save.onclick = ()=>{ camp.layouts = camp.layouts || []; camp.layouts[k] = {built:JSON.parse(JSON.stringify(camp.built)), home:baseHome().slice()}; saveCamp(); beep(523, 0.1, 'triangle', 0.03); renderBase(); }; g.appendChild(save);
+        box.appendChild(g); } }
     bar.innerHTML = '';
-    for(const B of BASE_BUILDS){ if(!B.unlocked() || camp.built[B.id]) continue;
+    for(const id of (camp.stored||[])){ const B = BASE_BUILDS.find(k=>k.id===id); if(!B) continue; // packed away: setting it down is free, and it keeps its levels
+      const bt = document.createElement('button'); bt.textContent = `${B.icon} ${B.name} · packed`; if(baseSel===B.id) bt.classList.add('sel');
+      bt.onclick = ()=>{ baseSel = baseSel===B.id ? null : B.id; renderBase(); }; bar.appendChild(bt); }
+    for(const B of BASE_BUILDS){ if(!B.unlocked() || camp.built[B.id] || (camp.stored||[]).includes(B.id)) continue;
       const bt = document.createElement('button'); bt.textContent = `${B.icon} ${B.name} · ${baseCost(B)} Mortar`; bt.disabled = camp.mortar < baseCost(B); if(baseSel===B.id) bt.classList.add('sel');
       bt.onclick = ()=>{ baseSel = baseSel===B.id ? null : B.id; renderBase(); }; bar.appendChild(bt); }
-    if(Object.keys(camp.built).length){ const mv = document.createElement('button'); mv.textContent = baseSel && (baseSel==='move' || baseSel.moving) ? 'Cancel move' : 'Move a building'; if(baseSel==='move' || (baseSel && baseSel.moving)) mv.classList.add('sel');
-      mv.onclick = ()=>{ baseSel = (baseSel==='move' || (baseSel && baseSel.moving)) ? null : 'move'; renderBase(); }; bar.appendChild(mv); }
+
     const left = BASE_BUILDS.filter(B=>B.unlocked() && !camp.built[B.id]);
-    hint.textContent = baseSel==='move' ? 'Tap a building to pick it up.' : (baseSel && baseSel.moving) ? 'Tap an empty plot to set it down. Moving is free.'
-      : placing ? `Tap an empty plot for the ${BASE_BUILDS.find(k=>k.id===baseSel).name}: ${BASE_BUILDS.find(k=>k.id===baseSel).opens}.`
+    hint.textContent = placing ? `Tap an empty plot for the ${BASE_BUILDS.find(k=>k.id===baseSel).name}: ${BASE_BUILDS.find(k=>k.id===baseSel).opens}.`
+      : (camp.stored||[]).length ? 'Plots are few: set down a packed building, or hold one on the map and drop it on the tray to pack it away.'
       : fresh ? `The stores sent ${fresh} Mortar. Choose a building below, then a plot.` : left.length ? 'Choose a building below, then a plot.'
-      : (orrinChoice==='slain' && !camp.built.workshop) ? "Tap a building to work in it. Orrin's Workshop can still be raised: hold the Holdfast to wave 15." : 'Tap a building to work in it.';
+      : (orrinChoice==='slain' && !camp.built.workshop) ? "Tap a building to work in it, or hold it to move it. Orrin's Workshop can still be raised: hold the Holdfast to wave 15." : 'Tap a building to work in it, or hold it and drag to move it.';
     o.classList.add('show');
+  }
+  // ---- moving a building: hold it (0.35 s) to pick it up, drag, and let go over an empty plot. Anywhere else (a tent, the fire, another
+  // building, off the map) puts it back where it was. A quick tap still opens it ----
+  const baseDrag = {timer:0, b:null, ghost:null, over:null, justDropped:false};
+  const BASE_PIECE = {id:'__home', name:'Your base', icon:'♜'}; // your base can be moved like a building, but never packed away
+  function baseHoldStart(ev, b, cell){
+    if(baseSel) return; const sx = ev.clientX, sy = ev.clientY;
+    clearTimeout(baseDrag.timer);
+    const cancel = ()=>{ clearTimeout(baseDrag.timer); window.removeEventListener('pointerup', cancel); window.removeEventListener('pointermove', early); };
+    const early = e=>{ if(Math.hypot(e.clientX-sx, e.clientY-sy) > 10) cancel(); }; // a scroll or a swipe, not a hold
+    window.addEventListener('pointerup', cancel); window.addEventListener('pointermove', early);
+    baseDrag.timer = setTimeout(()=>{ cancel(); basePickUp(b, cell, sx, sy); }, 350);
+  }
+  function basePickUp(b, cell, x, y){
+    baseDrag.b = b; cell.classList.add('lifted'); haptic(HAPTIC.place); sfxFatePick();
+    const g = baseDrag.ghost = cell.cloneNode(true); g.classList.add('base-ghost'); const r = cell.getBoundingClientRect();
+    g.style.width = r.width+'px'; g.style.height = r.height+'px'; document.body.appendChild(g); baseGhostAt(x, y);
+    const move = e=>{ e.preventDefault(); baseGhostAt(e.clientX, e.clientY); };
+    const up = e=>{ window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); baseDrop(); };
+    window.addEventListener('pointermove', move, {passive:false}); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  }
+  function baseTarget(x, y){ // the empty plot under the finger, or null
+    const g = baseDrag.ghost; if(g) g.style.display = 'none'; const el = document.elementFromPoint(x, y); if(g) g.style.display = '';
+    const c = el && el.closest && el.closest('#baseMap .base-cell'); if(!c) return null;
+    const cx = +c.dataset.x, cy = +c.dataset.y; if(!baseCellOpen(cx, cy)) return null;
+    const other = baseAt(cx, cy); if(other && other.id!==baseDrag.b.id) return null; if(other && baseDrag.b.id==='__home') return null;
+    return {c, x:cx, y:cy};
+  }
+  function baseGhostAt(x, y){
+    const g = baseDrag.ghost; if(!g) return; g.style.left = x+'px'; g.style.top = y+'px';
+    document.getElementById('basePack').classList.toggle('over', baseDrag.b && baseDrag.b.id!=='__home' && baseOverPack(x, y));
+    const t = baseTarget(x, y); if(baseDrag.over && baseDrag.over!==(t && t.c)) baseDrag.over.classList.remove('drop-ok');
+    baseDrag.over = t ? t.c : null; if(t) t.c.classList.add('drop-ok'); g.classList.toggle('bad', !t);
+  }
+  function baseUseLayout(k){ // every building you own goes where the formation put it; anything it left out is packed away. Free, as moving always is
+    const L = (camp.layouts||[])[k]; if(!L) return;
+    workNow('still'); workNow('kitchen');
+    const owned = Object.keys(camp.built).concat(camp.stored||[]), home = (L.home && baseInCamp(L.home[0], L.home[1])) ? L.home.slice() : BASE_HOME.slice();
+    camp.home = home; const built = {}, used = new Set([home.join(',')]), stored = [];
+    for(const id of owned){ const q = L.built[id]; if(q && baseInCamp(q[0], q[1]) && !used.has(q.join(','))){ built[id] = q.slice(); used.add(q.join(',')); } else stored.push(id); }
+    camp.built = built; camp.stored = [...new Set(stored)]; saveCamp(); thud(0.3, 0.12, 320); renderBase();
+  }
+  function baseOverPack(x, y){ const p = document.getElementById('basePack'), r = p.getBoundingClientRect(); return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom; }
+  function baseDrop(){
+    const g = baseDrag.ghost, b = baseDrag.b; if(!b) return;
+    const r = g ? g.getBoundingClientRect() : null, t = r ? baseTarget(r.left + r.width/2, r.top + r.height/2) : null;
+    document.getElementById('basePack').classList.remove('over');
+    if(r && b.id!=='__home' && baseOverPack(r.left + r.width/2, r.top + r.height/2)){ // packed away: off the map, levels and fittings kept, free to set down again
+      if(g && g.parentNode) g.parentNode.removeChild(g); baseDrag.ghost = null; baseDrag.b = null; baseDrag.over = null; baseDrag.justDropped = true; setTimeout(()=>{ baseDrag.justDropped = false; }, 400);
+      workNow('still'); workNow('kitchen'); delete camp.built[b.id]; camp.stored = (camp.stored||[]).concat(b.id); saveCamp(); thud(0.25, 0.1, 300); renderBase(); return; }
+    if(g && g.parentNode) g.parentNode.removeChild(g); baseDrag.ghost = null; baseDrag.b = null; baseDrag.over = null; baseDrag.justDropped = true;
+    setTimeout(()=>{ baseDrag.justDropped = false; }, 400);
+    if(t && b.id==='__home'){ if(!baseAt(t.x, t.y)){ camp.home = [t.x, t.y]; saveCamp(); thud(0.3, 0.12, 300); } else beep(180, 0.12, 'square', 0.025); } // your base: only onto an empty plot
+    else if(t && (t.x!==camp.built[b.id][0] || t.y!==camp.built[b.id][1])){ workNow('still'); workNow('kitchen'); camp.built[b.id] = [t.x, t.y]; saveCamp(); thud(0.2, 0.1, 400); } // the clocks settle at the old layout first
+    else if(!t) beep(180, 0.12, 'square', 0.025); // nowhere to put it: back where it was
+    renderBase();
   }
   // ---- Rematches: one page per fallen challenger, swiped through, with their art, their words before the fight, and a button ----
   function openRematches(){
@@ -8397,7 +9072,7 @@
       const pr = portraitOf(c); if(pr){ const art = document.createElement('pre'); art.className = 'portrait rm-art'; art.style.display = 'block'; art.textContent = pr; pg.appendChild(art); }
       const d = document.createElement('p'); d.className = 'intro-desc'; try{ d.textContent = typeof c.intro==='function' ? c.intro() : c.intro; }catch(e){ d.textContent = ''; } pg.appendChild(d);
       const b = document.createElement('button'); b.className = 'title-main'; b.textContent = 'Rematch';
-      b.onclick = ()=>{ sfxTutClick(); setChallenger(c); selectHerald = !!c.herald && isReplay(); document.getElementById('rematchOverlay').classList.remove('show'); beginChosen(); };
+      b.onclick = ()=>{ sfxTutClick(); setChallenger(c); selectHerald = !!c.herald && isReplay(); document.getElementById('rematchOverlay').classList.remove('show'); document.getElementById('titleOverlay').classList.remove('show'); showRoad({from:c.id-1, to:c.id}, beginChosen); }; // the road there first
       pg.appendChild(b); box.appendChild(pg);
       dots.appendChild(document.createElement('i'));
     }
