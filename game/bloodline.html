@@ -303,7 +303,7 @@
   .rm-page .intro-desc{ max-width:360px; text-align:center; }
   .rm-nav{ display:flex; align-items:center; gap:.8rem; } .rm-nav button{ font-size:1.1rem; padding:.2rem .9rem; }
   .rm-dots{ display:flex; gap:5px; } .rm-dots i{ width:6px; height:6px; border-radius:50%; background:rgba(217,201,163,.25); } .rm-dots i.on{ background:var(--crimson-lt); }
-  #kitchenOverlay, #campOverlay, #baseOverlay{ z-index:60; background:#0a0706; justify-content:flex-start; }
+  #kitchenOverlay, #campOverlay, #baseOverlay, #workshopOverlay{ z-index:60; background:#0a0706; justify-content:flex-start; }
   #baseOverlay .help{ width:min(92vw, 330px); width:min(92vw, 760px, max(330px, calc((100vh - 270px) * 0.83 + 14px))); width:min(92vw, 760px, max(330px, calc((100dvh - 270px) * 0.83 + 14px))); } /* the camp grows to fill a wide screen, as tall as the window allows */
   #baseOverlay .help-sec{ max-width:520px; margin-left:auto; margin-right:auto; text-align:center; }
   @media (orientation:landscape) and (min-width:700px){ /* a wide screen: the map fills the window's height on the left, everything else stands beside it */
@@ -323,6 +323,9 @@
   .base-build{ display:flex; flex-wrap:wrap; gap:.35rem; justify-content:center; margin:.3rem 0; }
   .base-build button{ font-size:.68rem; padding:.25rem .6rem; } .base-build button.sel{ border-color:#e0b54a; color:#e0b54a; box-shadow:0 0 0 1px #e0b54a; }
   .base-hint{ text-align:center; min-height:1.2em; }
+  .base-up{ border:1px solid var(--line); border-radius:6px; padding:.5rem .6rem; margin-bottom:.6rem; display:flex; flex-direction:column; gap:.3rem; font-size:.72rem; color:var(--bone-dim); break-inside:avoid; column-span:all; }
+  .base-up-head{ color:var(--bone); font-weight:700; } .base-up button{ align-self:flex-start; font-size:.7rem; }
+  .cg-card.alc-locked{ opacity:.5; }
   .alc-mats{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:.3rem 0 .6rem; }
   .alc-mat{ font-size:.75rem; color:#e0b54a; border:1px solid #3a2c27; border-radius:4px; padding:.15rem .45rem; }
   .alc-need{ font-size:.66rem; color:#8f8470; margin-top:.25rem; }
@@ -762,6 +765,9 @@
   body.lay-phone.land .meter .num{font-size:.95rem;}
   body.lay-phone.land .main{flex-direction:row; gap:.4rem;}
   /* sideways field: by default your hand sits by your base (left) and the blood meters by the rival's (right); Settings can swap either */
+  body.sideways.lay-tablet .card{ height:5.4rem; padding:.35rem .4rem; } body.sideways.lay-tablet .card .stats{ -webkit-line-clamp:2; } /* a sideways field on a wide screen: a slim hand, so the board takes the height */
+  body.sideways.lay-tablet .card.next{ flex-basis:2.6rem; }
+  body.sideways.lay-tablet .layout{ max-width:min(1600px, 100%); } /* a sideways board is wide: let it use a wide screen */
   body.sideways.lay-phone.land .main{flex-direction:row-reverse;} body.sideways.lay-phone.land.sw-hand-right .main{flex-direction:row;}
   body.sideways.lay-phone.land .layout{flex-direction:row-reverse;} body.sideways.lay-phone.land.sw-blood-left .layout{flex-direction:row;}
   body.lay-phone.land .hand{flex-direction:column; margin-top:0; width:150px; gap:.3rem;}
@@ -778,9 +784,9 @@
     #titleOverlay.show:not(.gate) .title-col{ max-height:100%; }
     #titleOverlay.show:not(.gate) .title-right{ overflow-y:auto; max-height:calc(100vh - 2rem); padding:.5rem 0; scrollbar-width:none; }
     #titleOverlay.show:not(.gate) .title-right::-webkit-scrollbar{ display:none; }
-    #alchemyOverlay .help, #kitchenOverlay .help, #campOverlay .help, #cardsOverlay .help, #trinketsOverlay .help, #changelogOverlay .help, #helpOverlay .help{ width:min(94vw, 1000px); }
-    #alchemyList, #kitchenList, #campList, #cardGuide, #relicGuide, #trinketGuide, #changelogList{ columns:300px; column-gap:1rem; }
-    #alchemyList > *, #kitchenList > *, #campList > *, #cardGuide > *, #relicGuide > *, #trinketGuide > *, #changelogList > *{ break-inside:avoid; }
+    #alchemyOverlay .help, #kitchenOverlay .help, #campOverlay .help, #workshopOverlay .help, #cardsOverlay .help, #trinketsOverlay .help, #changelogOverlay .help, #helpOverlay .help{ width:min(94vw, 1000px); }
+    #alchemyList, #kitchenList, #campList, #workshopList, #cardGuide, #relicGuide, #trinketGuide, #changelogList{ columns:300px; column-gap:1rem; }
+    #alchemyList > *, #kitchenList > *, #campList > *, #workshopList > *, #cardGuide > *, #relicGuide > *, #trinketGuide > *, #changelogList > *{ break-inside:avoid; }
     #alchemyList .cg-card:first-child, #kitchenList .cg-card:first-child, #campList .cg-card:first-child{ margin-top:0; }
     #helpOverlay .help{ display:block; columns:340px; column-gap:2.5rem; }
     #helpOverlay .help > *{ break-inside:avoid; margin-bottom:.75rem; }
@@ -879,8 +885,8 @@
     <label>Music<input type="range" id="snd-music" min="0" max="100"><span id="snd-music-v"></span></label>
     <label class="sound-check">Vibration<input type="checkbox" id="snd-haptics"></label>
     <label class="sound-check">Damage numbers<input type="checkbox" id="snd-dmgnums"></label>
-    <label class="sound-check">Sideways field<input type="checkbox" id="snd-sideways"></label>
-    <div style="font-size:.62rem; color:var(--bone-dim); margin-top:-.3rem;">Your side on the left, the rival's on the right. Best on a wide screen.</div>
+    <button id="fieldDir" style="font-size:.75rem;">Field: auto</button>
+    <div style="font-size:.62rem; color:var(--bone-dim); margin-top:-.3rem;">Sideways puts your side on the left and the rival's on the right. Auto turns the field whenever the screen is wider than it is tall.</div>
     <div style="display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap;"><button id="swHandBtn" style="font-size:.7rem;">Sideways hand: left</button><button id="swBloodBtn" style="font-size:.7rem;">Sideways blood: right</button></div>
     <button id="layoutMode" style="font-size:.75rem;">Layout: auto</button>
     <div style="font-size:.62rem; color:var(--bone-dim); margin-top:-.3rem;">Auto picks the phone or tablet layout for your screen. Either can be forced.</div>
@@ -934,6 +940,8 @@
       <button id="skipChallenger" style="font-size:.65rem; opacity:.6;">Skip to Next Challenger (test)</button>
       <button id="unlockAll" style="font-size:.65rem; opacity:.6;">Unlock Everything (test)</button>
       <button id="vibeTest" style="font-size:.65rem; opacity:.6;">Vibration (test)</button>
+      <button id="musicWorst" style="font-size:.65rem; opacity:.6;">Fight music: worst case (test)</button>
+      <button id="musicBest" style="font-size:.65rem; opacity:.6;">Fight music: best case (test)</button>
       <button id="resetProgress" style="font-size:.65rem; opacity:.6;">Reset progress (test)</button>
       <button id="playLogBtn" style="font-size:.65rem; opacity:.6;">Play log: on</button>
       <button id="exportLog" style="font-size:.65rem; opacity:.6;">Export play log</button>
@@ -948,6 +956,7 @@
       <button id="askelFate" style="font-size:.65rem; opacity:.6;">Askel's fate</button>
       <button id="osricFate" style="font-size:.65rem; opacity:.6;">Osric's fate</button>
       <button id="hadrekFate" style="font-size:.65rem; opacity:.6;">Hadrek's fate</button>
+      <button id="orrinFate" style="font-size:.65rem; opacity:.6;">Orrin's fate</button>
     </div>
   </div>
   </div>
@@ -1016,7 +1025,7 @@
 <div class="overlay" id="helpOverlay">
   <div class="help">
     <h2>How to play</h2>
-    <div class="help-sec"><b>The goal.</b> Break the rival's base at the top. Troops that reach an enemy edge strike the base and are spent, harder the costlier and healthier they arrive. Three Pentagons guard each base; while they stand, troops fight them first. When one falls, the others take on part of its strength, so the next is harder than the last (not in the first two fights). Every card you play is paid in your slaves' blood, and it soaks into your ground. Your Pentagons hold back its smell; once all three fall, the rival's parasites come for it.</div>
+    <div class="help-sec"><b>The goal.</b> Break the rival's base <span id="helpGoalDir">at the top</span>. Troops that reach an enemy edge strike the base and are spent, harder the costlier and healthier they arrive. Three Pentagons guard each base; while they stand, troops fight them first. When one falls, the others take on part of its strength, so the next is harder than the last (not in the first two fights). Every card you play is paid in your slaves' blood, and it soaks into your ground. Your Pentagons hold back its smell; once all three fall, the rival's parasites come for it.</div>
     <div class="help-sec"><b>Blood.</b> Blood pays for every card and builds on its own, faster the more you have hurt the rival. Every kill refunds half the dead unit's cost to its killer, so trades move value instead of wasting it.</div>
     <div class="help-sec"><b>Cards.</b> You carry 8 and hold 4. Playing one sends it to the back and the dashed card shows what comes next. Place by dragging a card onto your side, tapping a card then the field, or tapping a card and holding on the field to see its reach first. You deploy anywhere from the near river bank down; spells land anywhere.</div>
     <div class="help-sec"><b>Shapes tell you what a unit does.</b>
@@ -1033,7 +1042,7 @@
     <div class="help-sec"><b>Formations.</b> With Grael's Crown, a relic, the deck picker lets you bind two troops into one card with a shape: one behind, beside or ahead of the other. It lands both at once and costs both, and it takes two slots. Its troops cannot be carried alone until you separate it with its cross.</div>
     <div class="help-sec"><b>Skirmish and Alchemy.</b> After Veyra, wandering rivals roam the rivers. Fight them in Skirmish, from the menu: each breaks a rule of its own, nothing in the story moves, and every win brings three materials. Story fights pay too: breaking all three of a rival's Pentagons in your first fight with a challenger earns 8 materials, from Corvane on. Rematches pay nothing. Half the time a beaten wanderer begs: spare them for what they carry, or kill them for something else. In Alchemy, two spells you own and some materials brew three doses of a new spell, cheaper than both and with its own nature. The first cast in a fight spends a dose, and after that the spell is free for the rest of that fight.</div>
     <div class="help-sec"><b>The Holdfast.</b> An optional mode, opened from the main menu once Osric has fallen, and best played with your phone on its side. Hold the Keep at the tollhouse as raiders come down three roads, for as long as you can: the raids do not stop. The Keep stands on a square plot inside a moat, and raiders cross by the bridges. Build anywhere on the grid with Mortar: every building is on the buttons under the board, the Holdfast's own and yours, and between waves you can dismantle one for half its Mortar. Your hand starts empty: after every wave you hold you choose one of two cards, a troop or a spell, for a single use, paid in blood, and every fifth wave pays a second. Every wave also adds food ingredients (and now and then an alchemy material) to your pot. Conclude between waves to take all of it; if the Keep falls, half of it reaches you. The story never needs it.</div>
-    <div class="help-sec"><b>Your camp: the Still, the Kitchen and the War Pen.</b> Open Camp from the menu: a small map of your own base, where Alchemy, the Kitchen and the War Pen stand as buildings you raise with Mortar (the stores send enough as each one opens, and Holdfast waves and Skirmish wins send a little more). Tap a building to work in it. The Holdfast is a different camp: losing it never touches yours. Cook the Holdfast's ingredients into Bread, Stew and Smoked Fish in the Kitchen. At the Training camp a troop eats food in large amounts. A kingdom troop is fed for raw stats (Bread hardier, Stew fiercer, Smoked Fish quicker); every other troop is taught new functions instead. Either way it lasts, in every mode. A ★ beside a troop in your deck shows how fed it is.</div>
+    <div class="help-sec"><b>Your camp: the Still, the Kitchen and the War Pen.</b> Open Camp from the menu: a small map of your own base, where Alchemy, the Kitchen and the War Pen stand as buildings you raise with Mortar (the stores send enough as each one opens, and Holdfast waves and Skirmish wins send a little more). Tap a building to work in it. The Holdfast is a different camp: losing it never touches yours. Each building has seven levels: raising one costs Mortar, and every second level also needs a blueprint, won the first time you beat certain challengers. Troops eat the food of their band (I to IV, by when they join you); higher bands need rarer ingredients from deeper Holdfast waves (Honey from wave 8, Marrow from 15, Ember from 22). Cook the Holdfast's ingredients into Bread, Stew and Smoked Fish in the Kitchen. At the Training camp a troop eats food in large amounts. A kingdom troop is fed for raw stats (Bread hardier, Stew fiercer, Smoked Fish quicker); every other troop is taught new functions instead. Either way it lasts, in every mode. A ★ beside a troop in your deck shows how fed it is.</div>
     <button id="helpCards">Card guide</button>
     <button id="helpTrinkets">Trinkets</button>
     <button id="helpBack">Back</button>
@@ -1099,6 +1108,15 @@
   <div class="rm-pages" id="rmPages"></div>
   <div class="rm-nav"><button id="rmPrev" aria-label="Previous">‹</button><div class="rm-dots" id="rmDots"></div><button id="rmNext" aria-label="Next">›</button></div>
   <button id="rmBack">Back</button>
+</div>
+<div class="overlay" id="workshopOverlay">
+  <div class="help">
+    <h2>Workshop</h2>
+    <div class="help-sec">Orrin's bench. Fit your buildings here: each fitting costs materials, works in story fights and the Holdfast alike, and can be taken off again for free between fights.</div>
+    <div id="workshopMats" class="alc-mats"></div>
+    <div id="workshopList"></div>
+    <button id="workshopBack">Back</button>
+  </div>
 </div>
 <div class="overlay" id="baseOverlay">
   <div class="help">
@@ -1225,6 +1243,11 @@
     {name:"Botfly",   cost:3, hp:8,   dmg:2,    spd:14,    range:3,    atkStyle:'continuous',      targets:'troops',    emoji:"ѵ", needsTarget:true, unlockTier:10, brood:2, flies:true},  // Grael's: its host dies, Leaches crawl out
     {name:"Leech Bog", cost:5, hp:150, dmg:0,  spd:0,  range:0,    atkStyle:'none',             targets:'none',      isBuilding:true, uniquePerOwner:true, emoji:"⁂", unlockTier:10, breeds:{every:8000, max:12}}, // Grael's: breeds Leaches, one for each rival troop that could host one (max is only a ceiling)
     {name:"Bloodhound", cost:4, hp:41, dmg:7,   spd:11,   range:5,    atkStyle:'interval-melee',   targets:'troops',    atkInterval:840, emoji:"ϖ", unlockTier:10, finisher:2}, // Grael's: runs down the wounded
+    // ---- Orrin's works (beat Orrin, challenger 12): fortifications, judged by role, not by the per-blood curve
+    {name:"Watchtower", cost:4, hp:110, dmg:3,  spd:0, range:16, atkStyle:'interval-ranged', targets:'troops', atkInterval:1200, isBuilding:true, uniquePerOwner:true, emoji:"♙", unlockTier:13, watch:{r:10, mult:1.25}},
+    {name:"Barricade",  cost:3, hp:90,  dmg:0,  spd:0, range:0,  atkStyle:'none', targets:'none', isBuilding:true, emoji:"⊟", unlockTier:13, pair:{gap:8, max:4}},
+    {name:"Ballista",   cost:6, hp:120, dmg:14, spd:0, range:20, atkStyle:'interval-ranged', targets:'troops', atkInterval:2500, isBuilding:true, uniquePerOwner:true, emoji:"⇶", unlockTier:13, pierceLine:1.6},
+    {name:"Undermine",  cost:6, cardType:'spell', radius:10, undermine:{silence:3000, ms:8000, more:0.5}, emoji:"⊻", unlockTier:13, brew:{a:'Fracture', b:'Oath', mats:{bone:4, brine:3}, ms:600000}}, // never touches a Pentagon
     // ---- the tier 1 replacements (spec of Oct 7). Tier 14 is a placeholder until the challenger that unlocks them exists; none
     // reaches the Holdfast yet (noHoldfast). The Stakewall waits for the Workshop
     {name:"Lamprey",    cost:2, hp:16,  dmg:5,  spd:10.7, range:3,  atkStyle:'continuous',      targets:'troops',    emoji:"ϩ", needsTarget:true, unlockTier:14, noHoldfast:true, numbs:{mult:1.35}},
@@ -1330,7 +1353,7 @@
   // a won skirmish pays SKIRMISH_MATS of one kind (a brew takes about seven, so two or three wins); a loss leaves nothing
   const SKIRMISH_MATS = 3;
   const matName = k => MATERIALS.find(m=>m.id===k).name;
-  const SKIRMISH_MORTAR = 1; // a won Skirmish also sends a little Mortar to your camp
+  const SKIRMISH_MORTAR = 2; // a won Skirmish also sends a little Mortar to your camp
   function giveMaterial(k){ materials[k] += SKIRMISH_MATS; saveAlchemy(); camp.mortar += SKIRMISH_MORTAR; saveCamp(); return SKIRMISH_MATS + ' ' + matName(k) + ` and ${SKIRMISH_MORTAR} Mortar for your camp`; }
   const OSRIC_FACE = `      _________
      |  _____  |
@@ -1351,6 +1374,14 @@
   | ____________ |
   ||____toll____||
   |______________|`;
+  const ORRIN_FACE = `      _________
+     /  _   _  \\
+    |  (o) (o)  |
+    |     ^     |
+     \\   ===   /
+   ___\\_______/___
+  |  |=|=|=|=|=|  |
+  |__|_|_|_|_|_|__|`;
   const CHALLENGERS = [
     {
       id:1, name:'Korrath', useIsland:false, greedy:false, troopCap:8, gentle:true, maxBuildings:1, // early fights: see troopCap, gentle and maxBuildings below
@@ -1471,7 +1502,7 @@
       lossStory: n => `${n} trusted the bridges. Maren never needed them. Her dead came up out of the water on every side, and the river took ${n}'s standards down to keep with the rest.`,
     },
     {
-      id:8, name:'Hadrek', useIsland:true, greedy:true, smart:true, tactician:true, chains:true, keepsAskelBody:true, cheapRevenants:true, revenantPrice:2,
+      id:8, name:'Hadrek', useIsland:true, greedy:true, smart:true, tactician:true, chains:true, keepsAskelBody:true, // no Revenant discount: they are strong enough at 5 (at 2 his last wave flooded the field)
       pushStart:9, // rival economy caps at 10
       // finished Askel: he greets you with Askel's body. Otherwise, his own face
       face: ()=> HADREK_FACE,
@@ -1518,7 +1549,7 @@
       rewardNote:"The chains are broken. Not every slave catcher worked for him.",
     },
     {
-      id:9, name:'Grael', champion:true, revenantPrice:3,
+      id:9, name:'Grael', champion:true,
       nextChapter:{num:'II', title:'THE PURSUIT', name:'The pursuit', lines:[
         "Morvek crossed the last river with every standard he could steal, and the water let him through.",
         "Follow him, and see what an invader looks like with no oath at all.",
@@ -1579,6 +1610,33 @@
       winStory: n => `Garrow's ledger burns without a sound, one page at a time. ${n} crosses the ford and finds the bridge posts standing in the ash, every one scraped clean where a name should be. The scraping is older than the burning. Whoever raised these bridges left room for his name, and took it back.`,
       lossStory: n => `${n} paid for every spell, one blood at a time, and each payment bought Garrow a troop. By the time the last Pentagon fell, the keeper had collected more than the ford had ever asked.`,
       rewardNote:"The bridges past the ford are standing, and not one of them has a name on it.",
+    },
+    {
+      // Chapter II, at the burned ford: the Builder. He raised every bridge on the rivers and cut his name off the posts when the first thing
+      // across each was an army. Rule, Works: two of every building at once, and his buildings mend while none of your troops are near.
+      // Mid-fight: when his first gate falls he raises Barricades across both lanes. Spare him: the Workshop. Slay him: Double Works
+      id:12, name:'Orrin', useIsland:true, greedy:true, smart:true, tactician:true, pushStart:9, works:true, theme:'orrin',
+      portrait:ORRIN_FACE, fateKey:'orrin',
+      rally: n => [
+        `That one I built in a night, ${n}. I can build another before morning.`,
+        `There was one bridge I never finished. I left the last span open, so nothing could cross it.`,
+        `Here. See if you can cross this.`,
+      ],
+      rallyDo: () => { const B = CARD_DEFS.find(c=>c.name==='Barricade'); for(const x of BRIDGE_X){ deploy('a', B, x, 21); } fieldText(50, 18, 'Orrin raises Barricades across both lanes'); },
+      deathWords: n => [
+        `You broke what I built faster than I could mend it, ${n}. I have not seen that since the first army came.`,
+        `My name is under the ash on every post. Orrin. Say it once, so somebody has.`,
+        `Spare me and I will teach you walls that fight back. Or take my tools, and build twice what anyone should.`,
+      ],
+      herald: n => [
+        `You crossed my bridges to get here, ${n}. Everyone does. Nobody asks who raised them.`,
+        `I cut my name off every post. The first thing over each of them was an army.`,
+        `Come to the ford. I have built something you cannot cross.`,
+      ],
+      intro:"Orrin raised every bridge on these rivers, and he builds faster than anyone can break. He keeps two of every building at once, and his buildings mend themselves while none of your troops are near them. Break them under pressure and keep troops on them. When his first gate falls, expect a wall.",
+      winStory: n => `Orrin's works lie broken along the ford, and for the first time in years someone has said his name aloud. ${n} leaves the posts as they are. The ash on them is still warm.`,
+      lossStory: n => `${n} broke Orrin's walls again and again, and every time they stood once more before the next push arrived. The ford stayed closed.`,
+      rewardNote:"The Watchtower, Barricade and Ballista join your cards, and Undermine can be brewed. Orrin's gift depends on what you did with him.",
     }
   ];
   let currentChallengerId = 1;
@@ -1614,7 +1672,11 @@
   let osricChoice = ''; // what you did with Osric: 'spared' (the First Standard relic) or 'slain' (his Shield and the Shieldbearer)
   try{ osricChoice = localStorage.getItem('bloodline_osric') || ''; }catch(e){}
   function setOsricChoice(v){ osricChoice = v || ''; try{ v ? localStorage.setItem('bloodline_osric', v) : localStorage.removeItem('bloodline_osric'); }catch(e){} }
-  function fateChoiceOf(k){ return k==='osric' ? osricChoice : hadrekChoice; }
+  let orrinChoice = ''; // what you did with Orrin: 'spared' (the Workshop) or 'slain' (the relic Double Works)
+  try{ orrinChoice = localStorage.getItem('bloodline_orrin') || ''; }catch(e){}
+  function setOrrinChoice(v){ orrinChoice = v || ''; try{ v ? localStorage.setItem('bloodline_orrin', v) : localStorage.removeItem('bloodline_orrin'); }catch(e){} }
+  let orrinRelic = false; try{ orrinRelic = localStorage.getItem('bloodline_orrinRelic')==='1'; }catch(e){} // the relic's harder second door, for one who spared him
+  function fateChoiceOf(k){ return k==='osric' ? osricChoice : k==='orrin' ? orrinChoice : hadrekChoice; }
   let hadrekChoice = '';
   try{ hadrekChoice = localStorage.getItem('bloodline_hadrek') || ''; }catch(e){}
   function setHadrekChoice(v){ hadrekChoice = v || ''; try{ v ? localStorage.setItem('bloodline_hadrek', v) : localStorage.removeItem('bloodline_hadrek'); }catch(e){} }
@@ -1636,7 +1698,7 @@
   try{ const m = JSON.parse(localStorage.getItem('bloodline_materials')||'{}'); for(const k of Object.keys(materials)) materials[k] = Math.max(0, parseInt(m[k],10)||0); }catch(e){}
   try{ const b = JSON.parse(localStorage.getItem('bloodline_brewed')||'[]'); if(Array.isArray(b)) brewed = b.filter(x=>typeof x==='string'); }catch(e){}
   // a brew in progress: {name, end} with end as a real clock time, so it keeps going while the menu is shut or the page is closed
-  const BREW_DOSES = 3; // one brew makes this many doses of a spell; the first cast in a fight spends one
+  const BREW_DOSES = 3; // one brew makes this many doses of a spell; the first cast in a fight spends one (four at Still level 7, brewDoses)
   let brewStock = {}; // doses held per brewed spell
   try{ const st = JSON.parse(localStorage.getItem('bloodline_brewstock')||'null');
     if(st && typeof st==='object'){ for(const n of Object.keys(st)){ const v = parseInt(st[n],10); if(v>0 && CARD_DEFS.some(c=>c.brew && c.name===n)) brewStock[n] = v; } }
@@ -1671,25 +1733,75 @@
     {id:'still',   name:'Still',      icon:'◍', cost:6, opens:'Alchemy: brew spells from two others and materials', unlocked:()=>unlockedTier >= ALCHEMY_TIER},
     {id:'kitchen', name:'Kitchen',    icon:'⌂', cost:6, opens:'cook the Holdfast\'s ingredients into food', unlocked:()=>unlockedTier >= 11},
     {id:'yard',    name:'War Pen', icon:'╬', cost:8, opens:'feed and teach your troops', unlocked:()=>unlockedTier >= 11},
+    {id:'workshop', name:'Workshop', icon:'⌗', cost:10, opens:'fit your buildings', unlocked:()=>orrinChoice==='spared' || (orrinChoice==='slain' && holdfast.best>=15),
+     grant:()=>orrinChoice==='spared', costFor:()=>orrinChoice==='spared' ? 10 : 14}, // spared: Orrin sends the Mortar; slain: the harder door, built at full price
   ];
   const BASE_FIXED = {'0,0':'∆', '4,0':'∆', '2,3':'*'}; // two tents and the fire: the camp was here before you built anything
-  let camp = {mortar:0, built:{}, granted:{}};
-  const cleanCamp = c => { const o = {mortar:0, built:{}, granted:{}}; if(!c || typeof c!=='object') return o;
+  // ---- building levels (1 to 7). An odd level needs that building's blueprint, won by a challenger's first defeat; every level after the
+  // first costs Mortar. Higher levels open more recipes, foods and training. Blueprints are read from your progress, so a save that has
+  // already beaten a challenger has its blueprint at once ----
+  const BASE_MAX_LVL = 7;
+  const BASE_LVL_COST = {2:6, 3:10, 4:15, 5:20, 6:28, 7:36};
+  const BLUEPRINTS = { // building: {level: id of the challenger whose first defeat gives the blueprint}
+    still:   {1:3, 3:4, 5:6, 7:7},     // Veyra, Corvane, Iselde, Maren
+    kitchen: {1:10, 3:11, 5:13, 7:14}, // Osric, Garrow, challenger 13, challenger 14
+    yard:    {1:10, 3:9, 5:12, 7:14},  // Osric, Grael, Orrin, challenger 14
+    workshop:{3:12, 5:14},             // Orrin, challenger 14
+  };
+  const BASE_MAX = {workshop:5}; // a building's top level when it is not seven
+  const maxLvl = id => BASE_MAX[id] || BASE_MAX_LVL;
+  const BASE_LVL_TEXT = {
+    still:   {1:'Transfusion', 2:'Sanctuary', 3:'False Oath', 4:'Haemorrhage', 5:'Rupture', 6:'Sunder', 7:'every brew makes 4 doses instead of 3'},
+    kitchen: {1:'Bread and Stew', 2:'Smoked Fish', 3:'the second band of foods (Honey)', 4:'the third band (Marrow)', 5:'the fourth band (Ember)', 6:'every recipe makes 3', 7:'every recipe makes 4'},
+    workshop:{1:'one socket per building, and Barbs', 2:'Murder holes', 3:'a second socket on every building', 4:'the Sluice', 5:'every fitting costs 2 materials instead of 3'},
+    yard:    {1:'feeding to level 1, functions level 1', 2:'feeding to level 2', 3:'functions level 2', 4:'feeding to level 3', 5:'feeding to level 4', 6:'feeding to level 5', 7:'retraining: switch a troop to its other function'},
+  };
+  const STILL_ORDER = ['Transfusion','Sanctuary','False Oath','Haemorrhage','Rupture','Sunder']; // the order the Still's levels open recipes
+  const stillNeed = name => { const i = STILL_ORDER.indexOf(name); return i>=0 ? i+1 : ({Undermine:5})[name] || 1; }; // later recipes slot into a level
+  let camp = {mortar:0, built:{}, granted:{}, levels:{}, lv:0};
+  const cleanCamp = c => { const o = {mortar:0, built:{}, granted:{}, levels:{}, lv:0}; if(!c || typeof c!=='object') return o;
+    o.lv = parseInt(c.lv,10)||0; for(const id of ['still','kitchen','yard','workshop']){ const v = parseInt(c.levels && c.levels[id],10); if(v>=1) o.levels[id] = Math.min(BASE_MAX_LVL, v); }
     o.mortar = Math.max(0, Math.min(999, parseInt(c.mortar,10)||0));
     for(const b of BASE_BUILDS){ const p = c.built && c.built[b.id]; if(Array.isArray(p) && p.length===2){ const x = parseInt(p[0],10), y = parseInt(p[1],10); if(x>=0 && x<BASE_COLS && y>=0 && y<BASE_ROWS && !BASE_FIXED[x+','+y]) o.built[b.id] = [x,y]; } if(c.granted && c.granted[b.id]) o.granted[b.id] = true; }
     return o; };
   try{ camp = cleanCamp(JSON.parse(localStorage.getItem('bloodline_camp')||'null')); }catch(e){}
   function saveCamp(){ try{ localStorage.setItem('bloodline_camp', JSON.stringify(camp)); }catch(e){} }
+  let workshop = {}; // fittings by building name: {name:[fittingId, ...]}
+  const cleanWorkshop = w => { const o = {}; if(!w || typeof w!=='object') return o; for(const [k,v] of Object.entries(w)){ if(typeof k==='string' && Array.isArray(v)){ const ids = [...new Set(v.filter(x=>['barbs','holes','sluice'].includes(x)))].slice(0,2); if(ids.length) o[k] = ids; } } return o; };
+  try{ workshop = cleanWorkshop(JSON.parse(localStorage.getItem('bloodline_workshop')||'null')); }catch(e){}
+  function saveWorkshop(){ try{ localStorage.setItem('bloodline_workshop', JSON.stringify(workshop)); }catch(e){} }
+  const baseLvl = id => Math.max(1, camp.levels[id]||1);
+  const hasBlueprint = (id, lvl) => { const ch = BLUEPRINTS[id] && BLUEPRINTS[id][lvl]; return !ch || unlockedTier > ch; }; // even levels need none
+  const blueprintFrom = (id, lvl) => { const ch = BLUEPRINTS[id] && BLUEPRINTS[id][lvl]; const c = ch && CHALLENGERS.find(x=>x.id===ch); return c ? c.name : 'a challenger still to come'; };
   // EXPERIMENTAL (food, the Kitchen, the Training camp and its functions): unsettled; the camp's name will change, and most FN_DEFS functions are
   // placeholders the user calls stat boosts given through abilities. Every number is a first guess.
   // ---- food: the Holdfast pays ingredients, the Kitchen cooks them into food, and the Training Camp feeds food to a troop, in large amounts, to
   // enhance it for good (in the story, Skirmish and the Holdfast alike) ----
-  const FOOD_INGS = [{id:'grain', name:'Grain', icon:'⁘'}, {id:'meat', name:'Meat', icon:'◆'}, {id:'fish', name:'Fish', icon:'⋈'}, {id:'herb', name:'Herb', icon:'❦'}];
+  const FOOD_INGS = [{id:'grain', name:'Grain', icon:'⁘'}, {id:'meat', name:'Meat', icon:'◆'}, {id:'fish', name:'Fish', icon:'⋈'}, {id:'herb', name:'Herb', icon:'❦'},
+    {id:'honey', name:'Honey', icon:'◈', wave:8}, {id:'marrow', name:'Marrow', icon:'⊚', wave:15}, {id:'ember', name:'Ember', icon:'⊛', wave:22}]; // the last three only from deeper Holdfast waves
   const FOOD_ITEMS = [
-    {id:'bread',  name:'Bread',       icon:'▰', needs:{grain:3, herb:1},         makes:2},
-    {id:'stew',   name:'Stew',        icon:'◍', needs:{meat:2, grain:1, herb:1}, makes:2},
-    {id:'smoked', name:'Smoked Fish', icon:'≋', needs:{fish:3, herb:1},         makes:2},
+    {id:'bread',  name:'Bread',       icon:'▰', needs:{grain:3, herb:1},         makes:2, band:0, track:0, kit:1},
+    {id:'stew',   name:'Stew',        icon:'◍', needs:{meat:2, grain:1, herb:1}, makes:2, band:0, track:1, kit:1},
+    {id:'smoked', name:'Smoked Fish', icon:'≋', needs:{fish:3, herb:1},         makes:2, band:0, track:2, kit:2},
+    {id:'honeybread', name:'Honey Bread',   icon:'▤', needs:{grain:2, honey:1, herb:1},  makes:2, band:1, track:0, kit:3},
+    {id:'broth',      name:'Bone Broth',    icon:'◒', needs:{meat:2, honey:1, herb:1},   makes:2, band:1, track:1, kit:3},
+    {id:'saltfish',   name:'Salt Fish',     icon:'≈', needs:{fish:2, honey:1, herb:1},   makes:2, band:1, track:2, kit:3},
+    {id:'marrowloaf', name:'Marrow Loaf',   icon:'▧', needs:{grain:2, marrow:1, herb:1}, makes:2, band:2, track:0, kit:4},
+    {id:'pudding',    name:'Blood Pudding', icon:'◓', needs:{meat:2, marrow:1, herb:1},  makes:2, band:2, track:1, kit:4},
+    {id:'eel',        name:'Brined Eel',    icon:'∿', needs:{fish:2, marrow:1, herb:1},  makes:2, band:2, track:2, kit:4},
+    {id:'ashcake',    name:'Ash Cake',      icon:'▨', needs:{grain:2, ember:1, herb:1},  makes:2, band:3, track:0, kit:5},
+    {id:'warfeast',   name:'War Feast',     icon:'◉', needs:{meat:2, ember:1, herb:1},   makes:2, band:3, track:1, kit:5},
+    {id:'roe',        name:'Black Roe',     icon:'⁖', needs:{fish:2, ember:1, herb:1},   makes:2, band:3, track:2, kit:5},
   ];
+  // A troop's band follows when it unlocks: I up to Korrath, II to Corvane, III to Grael, IV from Osric on. It eats only its own band's food
+  const BAND_NAMES = ['I','II','III','IV'];
+  const troopBand = c => { const t = c.unlockTier||1; return t<=2 ? 0 : t<=5 ? 1 : t<=10 ? 2 : 3; };
+  const foodFor = (c, track) => FOOD_ITEMS.find(f=>f.band===troopBand(c) && f.track===track); // track 0 health, 1 damage, 2 speed
+  const TRACK_OF_FOOD = {bread:0, stew:1, smoked:2}; // a function's food names its track; the troop's band picks the dish
+  const fnFoodFor = (c, f) => foodFor(c, TRACK_OF_FOOD[f.food] ?? 0);
+  const kitchenMakes = () => baseLvl('kitchen')>=7 ? 4 : baseLvl('kitchen')>=6 ? 3 : 2;
+  const penFeedCap = () => [0,1,2,2,3,4,5,5][baseLvl('yard')];
+  const penFnCap = () => baseLvl('yard')>=3 ? 2 : 1;
   const ENH_TRACKS = [ // each kind of food builds one thing in a troop
     {id:'hp',  name:'Hearty', food:'bread',  per:0.06, what:'health'},
     {id:'dmg', name:'Fierce', food:'stew',   per:0.06, what:'damage'},
@@ -1706,6 +1818,15 @@
   try{ food = cleanFood(JSON.parse(localStorage.getItem('bloodline_food')||'null')); }catch(e){}
   function saveFood(){ try{ localStorage.setItem('bloodline_food', JSON.stringify(food)); }catch(e){} }
   const enhTroop = c => c.cardType!=='spell' && !c.isBuilding && !c.brew;
+  function migrateCampLevels(){ // once: buildings start at whatever level already covers what you have brewed, cooked and trained
+    if(camp.lv>=1) return; camp.lv = 1;
+    const used = new Set([...(brewed||[]), ...Object.keys(brewStock||{}).filter(k=>brewStock[k]>0), ...(brewing||[]).map(e=>e.name)]);
+    let st = 1; for(const n of used) st = Math.max(st, stillNeed(n));
+    let ki = food.smoked>0 ? 2 : 1;
+    let yd = 1; for(const e of Object.values(enhance||{})){ const f = Math.max(e.hp||0, e.dmg||0, e.spd||0); yd = Math.max(yd, [1,1,2,4,5,6][Math.min(5,f)]); if(e.fn && e.fn.lvl>=2) yd = Math.max(yd, 3); if(e.fn && FN_DEFS){ const n = Object.keys(enhance).find(k=>enhance[k]===e); const d = n && (FN_DEFS[n]||[]).find(x=>x.id===e.fn.id); if(d && d.food==='smoked') ki = Math.max(ki, 2); } if(e.spd) ki = Math.max(ki, 2); }
+    camp.levels = {still: Math.max(st, camp.levels.still||1), kitchen: Math.max(ki, camp.levels.kitchen||1), yard: Math.max(yd, camp.levels.yard||1)};
+    saveCamp();
+  }
   // Troops that belong to a king's kingdom are fed for raw stats. Every other troop is taught new functions instead: no card gets both.
   const KINGDOM = new Set(['Shardlings','Viper','Jackal','Behemoth','Camel','Arquebus','Ashfang','Leach','Tick','Flea']);
   const hasKing = name => KINGDOM.has(name);
@@ -2057,6 +2178,9 @@
   // ---- relics: an inventory of things taken from the fallen. Unlike trinkets they are never chosen: every relic you own
   // always applies. Grael's Crown, the knotted rope he bound runaways with two by two, lets you bind formations ----
   const RELICS = [
+    {id:'doubleworks', name:'Double Works', icon:'⧉', from:12, orrin:'slain', line:'Keep two of each building at once.',
+     desc:"Orrin's level and tools. You may keep two of each building on the field at once instead of one; a third retires the oldest. Barricades keep their own limit of four.",
+     lore:"A builder's level, its glass cracked and its bubble long gone. Orrin trued every post on the rivers with it. It still finds what is straight."},
     {id:'crown', name:"Grael's Crown", icon:'♛', from:9, line:'Bind two troops into a formation.',
      desc:"In the deck picker you may bind two troops into one card with a shape: one behind, beside or ahead of the other. It lands both at once, costs both, and takes two slots. Its troops cannot be carried alone until you separate it.",
      lore:"Not gold: a crown of knotted rope. Grael bound the runaways he caught two by two, and wore what was left of the rope. Morvek left it in the mud beside him."},
@@ -2064,7 +2188,7 @@
      desc:"Always with you, never chosen. Each time one of your Pentagons falls, the First Standard is raised where it stood: a wide Sanctuary opens there for 6 seconds, up to three times a fight. Your troops inside take half damage and mend 4 health a second; rival troops inside move at half pace. You get it by sparing Osric.",
      lore:"No sigil is left on it. Osric carried it first, before Morvek's stolen ones, and every one that came after was hung beneath it."},
   ];
-  const relicOwned = r => unlockedTier >= r.from + 1 && (!r.osric || osricChoice===r.osric);
+  const relicOwned = r => unlockedTier >= r.from + 1 && (!r.osric || osricChoice===r.osric) && (!r.orrin || orrinChoice===r.orrin || (r.id==='doubleworks' && orrinRelic));
   function hasRelic(id){ const r = RELICS.find(r=>r.id===id); return !!r && relicOwned(r); }
   const FORMATION_MAX = 3;
   const FORMATION_SHAPES = {behind:{label:'Behind', dx:0, dy:6}, beside:{label:'Beside', dx:7, dy:0}, ahead:{label:'Ahead', dx:0, dy:-6}};
@@ -2197,7 +2321,7 @@
   // preset works at every tier, and swaps in newer cards (Fracture for Blood Burst, the Revenant for a Jackal...) as you earn them.
   // A preset shows once you have more than eight cards and own its key card
   const PRESETS = [
-    {name:'Fortress', key:'Wall', slots:[['Wall'],['Cannon'],['Stolen Standard','Shieldbearer','Behemoth'],['Revenant','Behemoth','Mourner','Jackal'],['Eggs','Behemoth','Mourner','Jackal'],['Arquebus','Camel'],['Overseer','Viper','Camel'],['Oath','Mercy','Leach'],['Fracture','Blood Burst']]},
+    {name:'Fortress', key:'Wall', slots:[['Wall'],['Ballista','Cannon'],['Stolen Standard','Shieldbearer','Behemoth'],['Revenant','Behemoth','Mourner','Jackal'],['Eggs','Behemoth','Mourner','Jackal'],['Arquebus','Camel'],['Overseer','Viper','Camel'],['Oath','Mercy','Leach'],['Fracture','Blood Burst']]},
     {name:'Siege',    key:'Ramhorn', slots:[['Fusebearer','Ramhorn'],['Ashfang','Bombard','Camel'],['Borer','Lamprey','Leach'],['Revenant','Behemoth','Jackal'],['Behemoth','Jackal'],['Wall','Cannon'],['Overseer','Viper'],['Fracture','Blood Burst'],['Oath','Mercy','Leach']]},
     {name:'Swarm',    key:'Viper', slots:[['Shardlings','Viper'],['Viper','Jackal'],['Jackal'],['Eggs','Leach'],['Overseer','Camel'],['Blood Burst'],['Mercy','Leach'],['Confusion','Camel']]},
     {name:'Marksman', key:'Camel', slots:[['Arquebus','Camel'],['Camel'],['Viper'],['Cannon','Wall'],['Revenant','Behemoth','Jackal'],['Overseer','Ramhorn'],['Fracture','Blood Burst'],['Confusion','Oath','Leach']]},
@@ -2364,10 +2488,12 @@
   // a rematch plays as the first time did: same reward screen, the same choices offered again, the same herald.
   // (a separate, lighter rematch mode can come later)
   function isReplay(){ return unlockedTier > currentChallenger.id; }
+  const FIRST_WIN_MORTAR = 5;
   function unlockNextTier(){
     const target = currentChallenger.id + 1;
     if(unlockedTier<target){
       unlockedTier = target;
+      camp.mortar += FIRST_WIN_MORTAR; saveCamp(); // a challenger's first defeat sends Mortar to your camp (and its blueprint, if it has one)
       try{ localStorage.setItem('bloodline_unlockedTier', String(unlockedTier)); }catch(e){}
       return true;
     }
@@ -2543,7 +2669,7 @@
     if(!u._washing){ u._washing = true; fieldText(u.x, u.y-3, 'to the water'); }
     return true;
   }
-  function waterMult(u){ return (isPara(u) && onTrail(u) ? 2 : 1) * (wades(u) && inWater(u) ? WADE_SPEED : 1) * (u.chainMs>0 ? CHAIN_SLOW : 1) * (u.snareMs>0 ? 0 : 1) * (u.inSanct || 1); } // water and Hadrek's chains slow; a snare holds fast
+  function waterMult(u){ return (u.floodMs>0 ? 0.5 : 1) * (isPara(u) && onTrail(u) ? 2 : 1) * (wades(u) && inWater(u) ? WADE_SPEED : 1) * (u.chainMs>0 ? CHAIN_SLOW : 1) * (u.snareMs>0 ? 0 : 1) * (u.inSanct || 1); } // water and Hadrek's chains slow; a snare holds fast
   // Hadrek's broken rule: a troop of yours his troops wound is chained, moving and striking at half speed for a while
   const CHAIN_MS = 3000, CHAIN_SLOW = 0.5;
   function chainUnit(u){
@@ -2582,6 +2708,10 @@
     Ramhorn:   n=>`You love the Ramhorn, ${n}. You go for the walls before the men behind them.`,
     Camel:     n=>`You love the Camel, ${n}. You like to hit from where nothing hits back.`,
     Jackal:    n=>`You love the Jackal, ${n}. Cheap teeth, and plenty of them.`,
+    Watchtower:n=>`You love the Watchtower, ${n}. You like to see me coming from further off than I can see you.`,
+    Barricade: n=>`You love your Barricades, ${n}. Two walls where one would do.`,
+    Ballista:  n=>`You love the Ballista, ${n}. One bolt, and everything standing in a line pays for it.`,
+    Undermine: n=>`You love Undermine, ${n}. You go under my walls instead of through them.`,
     Lamprey:   n=>`You love the Lamprey, ${n}. You would rather my best hound grow slow than die quick.`,
     Fusebearer:n=>`You love the Fusebearer, ${n}. You light my walls and walk away before they burn.`,
     Bombard:   n=>`You love the Bombard, ${n}. Stones on my snares, stones on anything that stands still.`,
@@ -2690,6 +2820,20 @@
   function makeFuseEl(t, owner){ const e = document.createElement('div'); e.className = 'fuse ' + owner; e.style.left = t.x+'%'; e.style.top = t.y+'%'; e.innerHTML = '<span class="glyph">2</span>'; field.appendChild(e); return e; }
   function dropFx(list){ for(const c of list){ if(c.el && c.el.parentNode) c.el.parentNode.removeChild(c.el); if(c.mark && c.mark.parentNode) c.mark.parentNode.removeChild(c.mark); } }
   const FUSE_PENT_DMG = 28; // Pentagon guardrail: planting strike 14 plus 28 equals the Ramhorn's 42 opener, so no Pentagon falls faster to a Fusebearer
+  // Orrin's Works: his buildings (never a Pentagon) mend while none of your troops are near. Workshop Murder holes: rival troops beside a
+  // fitted building of yours bleed a little every second
+  const BARBS_DMG = 3, SLUICE_R = 12, SLUICE_MS = 5000;
+  const WORKS_MEND = 2, WORKS_CLEAR = 10, HOLES_DPS = 2, HOLES_R = 4;
+  function tickWorks(dt){
+    for(const b of state.units){
+      if(!b.isBuilding || b.hp<=0) continue;
+      if(currentChallenger.works && b.owner==='a' && b.name!=='Pentagon' && b.hp<b.maxHp && !state.units.some(o=>o.owner==='p' && !o.isBuilding && o.hp>0 && dist(o,b)<=WORKS_CLEAR)){
+        b.hp = Math.min(b.maxHp, b.hp + WORKS_MEND*dt/1000); }
+      if(b.fit && b.fit.includes('holes')) for(const o of state.units){
+        if(o.owner===b.owner || o.isBuilding || o.hp<=0 || underground(o) || airborne(o) || dist(o,b) > HOLES_R) continue;
+        const d = warded(o, HOLES_DPS*dt/1000); credit(b.owner, b.name, o, d); o.hp -= d; o.lastHitBy = b; }
+    }
+  }
   function tickCharges(dt){
     if(!state.charges || !state.charges.length) return;
     for(const c of [...state.charges]){
@@ -3067,6 +3211,10 @@
   function statLine(c){
     if(c.ram) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · ram`;
     if(c.fuse) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · fuse`;
+    if(c.watch) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s · ranged +${Math.round((c.watch.mult-1)*100)}% reach`;
+    if(c.pair) return `hp ${c.hp} each · places two · keep ${c.pair.max}`;
+    if(c.pierceLine) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s · through a line`;
+    if(c.undermine) return `silences rival buildings ${c.undermine.silence/1000}s, +${Math.round(c.undermine.more*100)}% dmg ${c.undermine.ms/1000}s · radius ${c.radius}`;
     if(c.lob) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · lob`;
     if(c.grieves) return `hp ${c.hp} · ${c.dmg} @ ${(c.atkInterval/1000)}s${speedTag(c)} · grieves`;
     if(c.numbs) return `hp ${c.hp} · ${c.dmg}/s drain${speedTag(c)} · numbs`;
@@ -3152,6 +3300,7 @@
       brood:def.brood||0, flies:!!def.flies, breeds:def.breeds||null, finisher:def.finisher||0, // Botfly, Leech Bog, Bloodhound
       scent:def.scent||0, // the Bleeder's trail
       numbs:def.numbs||null, fuse:def.fuse||null, lob:def.lob||null, grieves:def.grieves||null, // Lamprey, Fusebearer, Bombard, Mourner
+      watch:def.watch||null, pierceLine:def.pierceLine||0, // Watchtower, Ballista
       rallies:!!def.rallies, // a Stolen Standard: tap it once to open a wide Sanctuary
       bores:def.bores||0, reach:def.reach||0, selfCost:def.selfCost||0, lays:def.lays||0, // the Borer: slows a building's fire, tunnel reach, health paid per second, eggs laid
       x:xPct, y:yPct, drift:(Math.random()-0.5)*0.6,
@@ -3162,6 +3311,7 @@
     if(owner==='p' && !def.isBuilding){ const fx = fnFx(def.name); if(fx){ u.fx = fx; u.fxT = 0; if(fx.taunt) u.taunts = Math.max(u.taunts||0, fx.taunt); } } // taught at the Training Camp
     u.el.className='unit '+owner+' '+shapeClass(def)+(def.revive ? ' revenant' : '')+(def.name==='Pentagon' ? ' pentagon' : '');
     if(u.fx && u.fx.skulk){ u.hidden = true; u.el.classList.add('skulking'); } // a Skulk comes in unseen
+    if(owner==='p' && def.isBuilding && camp.built && camp.built.workshop && workshop[def.name]) u.fit = workshop[def.name].slice(); // Workshop fittings
     u.el.style.left=u.x+'%'; u.el.style.top=u.y+'%';
     u.el.style.setProperty('--hp','100');
     const arrowHtml = def.atkStyle==='none' ? '' : `<div class="unit-arrow">➤</div>`;
@@ -3181,6 +3331,11 @@
   }
 
   function deploy(owner, def, x, y){
+    if(def.pair){ // a Barricade: two short walls side by side; a side keeps at most four, the oldest retiring first
+      const g = def.pair.gap*PX_UNIT/FW*100/2, a = spawn(owner, def, Math.max(6, x-g), y), b = spawn(owner, def, Math.min(94, x+g), y);
+      const mine = state.units.filter(u=>u.owner===owner && u.name===def.name); while(mine.length > def.pair.max) retireBuilding(mine.shift());
+      return a;
+    }
     if(!def.squad) return spawn(owner, def, x, y);
     // a squad deploys as a small diamond-shaped cluster — same formation the units themselves are shaped like
     const squadId = 'sq'+(state.nextId++);
@@ -3291,6 +3446,7 @@
   }
   function ambientLive(){ return !!amb && (!paused || !!(state && state.tutorial)) && !(state && state.over); } // the guided fight's explanations keep the field's sound
   // per frame: steer volume to the match state, and the drone to the field's tension (writes only on change)
+  let musicTest = null; // 'worst' or 'best' while a Test tools music button is on
   function ambientTick(){
     if(!amb) return;
     const t = audioCtx.currentTime;
@@ -3322,11 +3478,12 @@
       amb.swarmFilter.frequency.setTargetAtTime(180 + 260*frenzy, t, 0.8);
     }
     // suspense: how close rival troops are to your Pentagons (deep in your half counts most), or full when yours have all fallen
-    const pPent = state.units.filter(u=>u.owner==='p' && u.name==='Pentagon').length;
-    const aPent = state.units.filter(u=>u.owner==='a' && u.name==='Pentagon').length;
+    let pPent = state.units.filter(u=>u.owner==='p' && u.name==='Pentagon').length;
+    let aPent = state.units.filter(u=>u.owner==='a' && u.name==='Pentagon').length;
+    if(musicTest==='worst'){ pPent = 0; aPent = 3; } else if(musicTest==='best'){ pPent = 3; aPent = 0; } // Test tools: hear the fight's music at its worst or its best
     let near = 0;
     for(const u of state.units) if(u.owner==='a' && !u.isBuilding && u.y>50) near += Math.min(1, (u.y-50)/40);
-    const sus = Math.round(Math.max(Math.min(1, near/2.5), pPent===0 ? 0.8 : 0)*20)/20;
+    const sus = musicTest==='worst' ? 1 : musicTest==='best' ? 0 : Math.round(Math.max(Math.min(1, near/2.5), pPent===0 ? 0.8 : 0)*20)/20;
     if(sus!==amb.susSet){ amb.susSet = sus; amb.susLvl = sus; amb.sus.gain.setTargetAtTime(0.06*Math.pow(sus,1.2), t, 0.8); }
     // doom: one Pentagon left starts it; none left, and it is everything
     const doom = pPent===0 ? 1 : pPent===1 ? 0.4 : 0;
@@ -3339,7 +3496,8 @@
     amb.kill = aPent===0 ? 1 : aPent===1 ? 0.45 : 0;
     if(!want) return;
     // heartbeat: two low knocks, quicker as the suspense grows
-    if(amb.susLvl>0.12){
+    const synced = !!(battleTheme(currentChallenger.theme) || {}).danger; // Orrin's theme plays the heartbeat, scrapes and stabs on its own beat
+    if(amb.susLvl>0.12 && !synced){
       if(amb.nextHeart < t) amb.nextHeart = t + 0.05;
       while(amb.nextHeart < t + 0.15){
         const v = 0.12 + 0.2*amb.susLvl, at = amb.nextHeart - t;
@@ -3349,18 +3507,20 @@
       }
     }
     // scrapes: metal dragged across stone, at uneven moments, only while doom is in the air
-    if(amb.doomLvl>0){
+    if(amb.doomLvl>0 && !synced){
       if(amb.nextScrape < t) amb.nextScrape = t + 1 + Math.random()*2;
       if(amb.nextScrape < t + 0.15){ scrape(amb.nextScrape, amb.doomLvl); amb.nextScrape += (5 - 2.5*amb.doomLvl) + Math.random()*3; }
     }
     // a champion's own battle music (Grael's), scheduled a little ahead on the audio clock, only while the fight is live
-    if(currentChallenger.theme==='grael'){
-      if(amb.grNext < t) amb.grNext = t + 0.1, amb.grStep = amb.grStep||0;
-      while(amb.grNext < t + 0.2){ graelStep(amb.grStep, amb.grNext); amb.grStep++; amb.grNext += GRAEL_EIGHTH; }
+    { const BT = battleTheme(currentChallenger.theme); // a challenger's own battle music (Grael's, Orrin's)
+      if(BT){
+        if(amb.grNext < t) amb.grNext = t + 0.1, amb.grStep = amb.grStep||0;
+        while(amb.grNext < t + 0.2){ const st = amb.grStep, at = amb.grNext; amb.grStep++; amb.grNext += BT.len; try{ BT.step(st, at); if(BT.danger) themeDanger(st, at, BT); }catch(e){ noteError(e); } } // advanced first: a failing step is skipped, never replayed
+      }
     }
     // the rival near the end (one Pentagon or none): frantic screeching, no tune and no beat. Bent, rubbing high voices and
     // noise shrieks at uneven moments, sometimes piling up, denser with no Pentagons left
-    if(amb.kill>0){
+    if(amb.kill>0 && !synced){
       // bowed-string stabs, the knife-in-the-shower kind: bursts of fast sixteenths on a grinding cluster, then a gap,
       // now and then a long string slide tearing upward. Denser and louder with no Pentagons left
       if(amb.nextNote < t) amb.nextNote = t + 0.05;
@@ -3378,13 +3538,61 @@
     if(amb.nextBubble < t) amb.nextBubble = t;
     while(amb.nextBubble < t + 0.12){ bubble(amb.nextBubble); amb.nextBubble += 0.02 + Math.random()*0.09; }
   }
-  function scrape(at, lvl){
+  function scrape(at, lvl, top){
     const ctx = audioCtx, n = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain(), dur = 1.1 + Math.random()*0.9;
     n.buffer = amb.noise; bp.type = 'bandpass'; bp.Q.value = 9;
-    const hi = 2400 + Math.random()*1600; bp.frequency.setValueAtTime(hi, at); bp.frequency.exponentialRampToValueAtTime(hi*0.25, at+dur); // a falling screech
+    const hi = top || (2400 + Math.random()*1600); bp.frequency.setValueAtTime(hi, at); bp.frequency.exponentialRampToValueAtTime(hi*0.25, at+dur); // a falling screech
     g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.5*lvl, at+0.15); g.gain.exponentialRampToValueAtTime(0.0001, at+dur);
     n.connect(bp); bp.connect(g); g.connect(amb.musicBus);
     n.start(at, Math.random()*2); n.stop(at+dur+0.05);
+  }
+  // Every challenger theme carries the fight's danger sounds on its own grid and in its own key: which steps of a bar the heartbeat may land
+  // on as danger grows (heart: low, mid, high), the chord the string stabs play, the notes scrapes fall from, and a slide's two ends
+  function battleTheme(name){
+    if(name==='grael') return {step:graelStep, len:GRAEL_EIGHTH, danger:true, bar:7, heart:{low:[0], mid:[0,4], high:[0,2,4]}, // seven to the bar, felt 2+2+3
+      stab:[880, 932.3, 1318.5], scrape:[1760, 2637], slide:[659.3, 1760]};                                                         // A phrygian: A, B-flat, E
+    if(name==='orrin') return {step:orrinStep, len:ORRIN_EIGHTH, danger:true, bar:8, heart:{low:[0], mid:[0,4], high:[0,2,4,6]},
+      stab:[587.3, 659.3, 880], scrape:[2349.3, 1760], slide:[440, 1174.7]};                                                         // D dorian: D, E, A
+    return null;
+  }
+  // ---- Orrin's theme: a builder's work song. Four steady beats to the bar at about 88 bpm, the pace of men raising a bridge: two
+  // smiths' hammers ringing on an anvil (the high one on the first beat, the lower answering on the third), a low D drone, a plucked
+  // work-song line in D dorian that rises and comes home, saw strokes on the off-beats every other bar, and a slow open pad. Pitched
+  // for phone speakers (nothing under 110 Hz) ----
+  const ORRIN_EIGHTH = 0.34;
+  const ORRIN_LINE = [[62,0,65,0,67,65,0,62],[60,0,62,0,64,62,0,57],[62,0,65,0,69,67,65,0],[64,62,0,60,0,57,0,0]];
+  function anvil(at, f, v){ // a hammer on an anvil: a bright ring with an inharmonic shimmer over it, and the knock of the blow
+    const d = at - audioCtx.currentTime;
+    beep(f, 0.4, 'triangle', 0.045*v, d, amb.musicBus); beep(f*2.76, 0.18, 'sine', 0.018*v, d, amb.musicBus); thud(0.07, 0.07*v, 1100, d, amb.musicBus);
+  }
+  function sawStroke(at, v){ // a saw drawn once through timber
+    const ctx = audioCtx, n = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), g = ctx.createGain();
+    n.buffer = (amb && amb.noise) || hfNoiseBuf(); bp.type = 'bandpass'; bp.Q.value = 3; bp.frequency.setValueAtTime(1500, at); bp.frequency.linearRampToValueAtTime(2300, at + 0.14);
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.09*v, at + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.18);
+    n.connect(bp); bp.connect(g); g.connect(amb.musicBus); n.start(at, Math.random()*1.5); n.stop(at + 0.22);
+  }
+  function orrinStep(step, at){
+    const bar = Math.floor(step/8), i = step%8, phrase = bar%4;
+    if(i===0) anvil(at, 1568, 1); if(i===4) anvil(at, 1175, 0.85); if(phrase===3 && i===6) anvil(at, 1397, 0.6); // the two hammers, and a quick extra blow at the turn
+    if(i===0 || i===4) grBass(midiHz(phrase===2 ? 45 : 50), at);                                              // the drone: D, then A on the third bar
+    const n = ORRIN_LINE[phrase][i]; if(n) grPluck(midiHz(n), at);
+    if(bar%2===1 && i%2===1) sawStroke(at, i===7 ? 0.7 : 1);                                                   // saw strokes on the off-beats
+    if(i===0 && phrase===0) grPad(at, 4*8*ORRIN_EIGHTH, null, [[146.8, -6], [220, 5], [174.6, 0]]);             // D, A and F, open and slow
+  }
+  // The fight's danger sounds, played on the theme's beat and in its key instead of free-running: the heartbeat lands on the beats (once a
+  // bar, then twice, then every beat as the danger grows), scrapes fall from the theme's high notes at the top of a bar, and near the end the
+  // string stabs come in sixteenths on the theme's chord, with slides between its notes
+  function themeDanger(step, at, T){
+    const bar = Math.floor(step/T.bar), i = step%T.bar, sus = amb.susLvl||0, doom = amb.doomLvl||0, kill = amb.kill||0, bus = amb.musicBus, d = at - audioCtx.currentTime, half = T.len/2;
+    if(sus>0.12){
+      const on = (sus>0.6 || doom) ? T.heart.high : sus>0.35 ? T.heart.mid : T.heart.low;
+      if(on.includes(i)){ const v = 0.12 + 0.2*sus; thud(0.25, v, 160, d, bus); thud(0.22, v*0.7, 150, d + half, bus); } // lub on the beat, dub a sixteenth after
+    }
+    if(doom>0 && i===0 && bar%2===0 && Math.random() < 0.5 + 0.4*doom) scrape(at, doom, T.scrape[(bar/2)%T.scrape.length|0]);
+    if(kill>0){
+      if(i===0 && Math.random() < 0.25){ stringSlide(at, kill, T.slide[0], T.slide[1], Math.floor(T.bar/2)*T.len); return; }
+      if(Math.random() < 0.35 + 0.4*kill){ stringStab(at, kill, T.stab); if(Math.random() < 0.6*kill + 0.2) stringStab(at + half, kill*0.8, T.stab); }
+    }
   }
   // ---- Grael's theme: a hunter's stalk. Seven eighth notes to a bar at 100 bpm, so it never settles into a march: a low
   // two-beat pulse, a plucked A-phrygian line that keeps circling back to the same note (the habit he has counted), a whip
@@ -3430,10 +3638,10 @@
   // one stab: a grinding cluster (E, F and B: a semitone and a tritone) bowed hard and cut short, each voice resonating
   // through its own narrow band so it rasps like a string rather than buzzing like a synth
   const STAB_CLUSTER = [1318.5, 1396.9, 1975.5];
-  function stringStab(at, lvl){
+  function stringStab(at, lvl, cluster){
     const ctx = audioCtx, g = ctx.createGain(), v = 0.05*lvl;
     g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(v, at+0.004); g.gain.exponentialRampToValueAtTime(0.0001, at+0.13);
-    for(const f of STAB_CLUSTER){
+    for(const f of (cluster || STAB_CLUSTER)){
       const o = ctx.createOscillator(), bp = ctx.createBiquadFilter();
       o.type = 'sawtooth'; o.frequency.setValueAtTime(f*1.01, at); o.frequency.exponentialRampToValueAtTime(f*0.985, at+0.12); // bites sharp, sags as the bow lifts
       bp.type = 'bandpass'; bp.frequency.value = f; bp.Q.value = 6;
@@ -3442,8 +3650,8 @@
     g.connect(amb.musicBus);
   }
   // a slide: two strings dragged from low to a shriek, wobbling, through a filter that follows them up
-  function stringSlide(at, lvl){
-    const ctx = audioCtx, g = ctx.createGain(), bp = ctx.createBiquadFilter(), dur = 0.7 + Math.random()*0.3, f0 = 700 + Math.random()*300, f1 = 2400 + Math.random()*600;
+  function stringSlide(at, lvl, from, to, len){
+    const ctx = audioCtx, g = ctx.createGain(), bp = ctx.createBiquadFilter(), dur = len || (0.7 + Math.random()*0.3), f0 = from || (700 + Math.random()*300), f1 = to || (2400 + Math.random()*600);
     bp.type = 'bandpass'; bp.Q.value = 4; bp.frequency.setValueAtTime(f0, at); bp.frequency.exponentialRampToValueAtTime(f1, at+dur);
     const vib = ctx.createOscillator(), vg = ctx.createGain(); vib.frequency.value = 9; vg.gain.value = 25; vib.connect(vg);
     for(const det of [0, 18]){ const o = ctx.createOscillator(); o.type = 'sawtooth'; o.detune.value = det; o.frequency.setValueAtTime(f0, at); o.frequency.exponentialRampToValueAtTime(f1, at+dur); vg.connect(o.frequency); o.connect(bp); o.start(at); o.stop(at+dur+0.1); }
@@ -3844,6 +4052,13 @@
         u.el.classList.add('confused');
         u.atkTarget = null; u.attached = false; // forces an immediate re-evaluation under the new rules
       }
+    } else if(def.undermine){
+      // Undermine: rival buildings in the circle (never a Pentagon) fall silent for a moment and take more damage for a while. Troops untouched
+      for(const u of state.units){
+        if(u.owner===owner || !u.isBuilding || u.name==='Pentagon' || !inBlast(x, y, def.radius, u)) continue;
+        u.silenceMs = def.undermine.silence; u.underMs = def.undermine.ms; u.underMore = def.undermine.more;
+        asciiFx(u.x, u.y, {chars:"v.:", n:6, dist:[3,9], dur:700, cls:owner, size:.7});
+      }
     } else if(def.sunder){
       // Sunder: exposes, cuts deep and pins: enemy troops in the circle are held fast, opened up, and lose a share of their health
       for(const u of state.units){
@@ -4073,6 +4288,12 @@
   const OPEN_BASE_MULT = 3;     // every fight: with all three of your Pentagons down, rival troops hit your base three times as hard
   function fireProjectile(u, t){
     if(u.lob) return fireLob(u, t); // a Bombard's stone lands on a spot, not a troop
+    if(u.pierceLine && t){ // a Ballista: everything in the line out to its range takes the bolt; the target gets the drawn shot
+      const dx = (t.x-u.x)*FW/100, dy = (t.y-u.y)*FH/100, L = Math.hypot(dx,dy)||1, len = u.range*PX_UNIT;
+      for(const o of state.units){ if(o===t || o.owner===u.owner || o.isBuilding || o.hp<=0 || airborne(o) || underground(o) || o.jumpT!=null) continue;
+        const ox = (o.x-u.x)*FW/100, oy = (o.y-u.y)*FH/100, along = (ox*dx+oy*dy)/L, off = Math.abs(ox*dy-oy*dx)/L;
+        if(along>0 && along<=len && off <= u.pierceLine*PX_UNIT){ const d = warded(o, u.dmg); credit(u.owner, u.name, o, d); o.hp -= d; flashHit(o); sound.dmgNums && showDamageNumber(o.x, o.y, d, u.owner); } }
+    }
     if(u.isBuilding && t && !t.isBuilding){ (state._lastShot || (state._lastShot = {}))[t.owner] = u; } // for a Sapper
     if(u.spread>0) return fireShot(u, t);
     sfxFire(u.name==='Shardlings' ? 1.7 : 1);
@@ -4130,9 +4351,9 @@
     if(!currentChallenger.rally || state.rallied || state.over || paused) return;
     if(state.units.filter(u=>u.owner==='a' && u.name==='Pentagon').length >= 3) return;
     state.rallied = true; paused = true;
-    const O = text=>({who:'Osric', face:OSRIC_FACE, text});
+    const C = currentChallenger, O = text=>({who:C.name, face:portraitOf(C) || OSRIC_FACE, text});
     shakeField();
-    showTalk(currentChallenger.rally(playerName).map(O), ()=>{ paused = false; raiseStandard('a'); });
+    showTalk(C.rally(playerName).map(O), ()=>{ paused = false; if(C.rallyDo) C.rallyDo(); else raiseStandard('a'); }); // Osric raises a standard; Orrin, Barricades
   }
   function shieldedUnit(u){ return !!u && !u.isBuilding && ((u.owner==='a' && !!currentChallenger.shields) || (u.owner==='p' && hasTrinket('shield'))); }
   function shieldMult(t, fromBuilding){ return (!fromBuilding && shieldedUnit(t) && !(t.exposedMs>0)) ? SHIELD_CUT : 1; }
@@ -4155,6 +4376,7 @@
       if(sm && (sm.purse||0) < sm.fx.purse.max){ const room = sm.fx.purse.max - (sm.purse||0), keep = Math.min(room, take); sm.purse = (sm.purse||0) + keep; state[to] = Math.min(MAX_BLOOD, state[to] + take - keep); } // a Smuggler carries it
       else state[to] = Math.min(MAX_BLOOD, state[to] + take);
     }
+    if(amt>0 && target && target.isBuilding && target.underMs>0 && target.name!=='Pentagon') target.hp -= amt*(target.underMore||0.5); // Undermine: half again as much
     if(amt>0 && target && target.fx && target.fx.brow && target.owner!==owner && (name==='Pentagon' || (CARD_DEFS.find(c=>c.name===name)||{}).isBuilding) && state.units.some(b=>b.hookBy===target && b.hookMs>0)) target.hp += amt*0.5; // Iron Brow
     if(owner==='a' && currentChallenger.chains && target && target.owner==='p' && !target.isBuilding && amt>0) chainUnit(target);
     if(owner==='p' && target && target.owner==='a' && !target.isBuilding && amt>0 && hasTrinket('chain')) chainUnit(target); // Hadrek's Chain, for you
@@ -4293,8 +4515,8 @@
       if(def.brew && !dosePaid(def)){ (state.paid || (state.paid = {}))[def.name] = true; const left = useDose(def); if(!left) fieldText(xPct, Math.max(8, yPct-6), 'Last dose spent'); } // no counts in a fight, only a note when the last one goes
     } else {
       if(def.uniquePerOwner){ // only remove the old one once the new one is actually paid for
-        const old = state.units.find(u=>u.owner==='p' && u.name===def.name);
-        if(old) retireBuilding(old);
+        const mine = state.units.filter(u=>u.owner==='p' && u.name===def.name); // Double Works (Orrin's relic): keep two
+        if(mine.length >= (hasRelic('doubleworks') ? 2 : 1)) retireBuilding(mine[0]);
       }
       deploy('p', def, Math.max(6, Math.min(94, xPct)), Math.max(34, Math.min(97, yPct)));
     }
@@ -4493,14 +4715,17 @@
   const OATH_MIN_WEIGHT = 80;  // unwarded weight in the circle (max hp + 5x cost) needed before a rival swears an Oath
   const MAX_RIVAL_PARASITES = 2;
   // a random pick weighted by cost, so cheap cards (which are affordable far more often) don't flood the field
+  // A rival leans toward its newest cards: a card's chance grows with how late it unlocks, up to three times as likely for the newest tier
+  // the rival may use as for a starting card, so later fights show off their rewards instead of the same old Jackals
+  const AI_NEW_BIAS = 2;
+  function tierWeight(c){ const cap = currentChallenger.cardCap || (currentChallenger.id + 1); if(cap<=2) return 1; const f = Math.max(0, (c.unlockTier||1) - 1)/(cap - 1); return 1 + AI_NEW_BIAS*f*f; }
   function byCost(list){
-    const total = list.reduce((a,c)=>a+Math.max(1,c.cost), 0);
+    const w = c => Math.max(1,c.cost)*tierWeight(c), total = list.reduce((a,c)=>a+w(c), 0);
     let r = Math.random()*total;
-    for(const c of list){ r -= Math.max(1,c.cost); if(r<=0) return c; }
+    for(const c of list){ r -= w(c); if(r<=0) return c; }
     return list[list.length-1];
   }
-  // only two rivals get a Revenant cheaper than the 5 everyone pays: Hadrek, who owns them (2), and Grael (3). They play a copy of
-  // the card at that price (profile field revenantPrice), built once and reused
+  // a rival with a revenantPrice plays a copy of the Revenant at that price, built once and reused. None has one now: every side pays 5
   const rivalCopies = {};
   function rivalDef(c){
     const price = c.name==='Revenant' ? currentChallenger.revenantPrice : null;
@@ -4540,6 +4765,8 @@
       const out = state.units.filter(u=>u.owner==='a' && isPara(u)).length;
       pool = pool.filter(c=>!(c.needsTarget && (!hosts || out>=MAX_RIVAL_PARASITES))); // a card whose purpose isn't met isn't worth playing
     }
+    if(currentChallenger.works && Math.random() < 0.45){ // Orrin builds: often he reaches for a building he does not have two of yet
+      const b = pool.filter(c=>c.isBuilding && state.units.filter(u=>u.owner==='a' && u.name===c.name).length < (c.uniquePerOwner ? 2 : 4)); if(b.length) pool = b; }
     // the first two challengers keep at most troopCap troops (bodies, so a squad counts as four) on the field until any Pentagon falls, yours or theirs
     if(currentChallenger.troopCap && state.units.filter(u=>u.name==='Pentagon').length>=6){
       const out = state.units.filter(u=>u.owner==='a' && !u.isBuilding).length;
@@ -4592,7 +4819,7 @@
         if(!affordable.length){ state._aiTimer = 400; return; } // down to the reserve: wait for blood, the push is still on
         const troops = affordable.filter(c=>c.cardType!=='spell' && !c.isBuilding);
         if(state.aPush.n===0){
-          def = troops.slice().sort((a,b)=>b.hp-a.hp)[0]; // lead with the toughest body in hand
+          def = troops.slice().sort((a,b)=>b.hp*tierWeight(b)-a.hp*tierWeight(a))[0]; // lead with the toughest body in hand, newer bodies counted heavier
           if(!def){ state.aPush = null; return; }
         } else {
           def = troops.length && Math.random()<0.75 ? byCost(troops) : byCost(affordable);
@@ -4607,7 +4834,7 @@
       // (that flooded the field with Leaches). A want is dropped after a while, or if it stops making sense
       const now = performance.now();
       if(!state.aWant || !pool.includes(state.aWant) || now > state.aWantUntil){
-        state.aWant = currentChallenger.greedy && Math.random()<0.6 ? pool.reduce((b,c)=>c.cost>b.cost?c:b, pool[0]) : byCost(pool);
+        state.aWant = currentChallenger.greedy && Math.random()<0.6 ? pool.reduce((b,c)=>(c.cost>b.cost || (c.cost===b.cost && (c.unlockTier||1)>(b.unlockTier||1)))?c:b, pool[0]) : byCost(pool); // greedy: the dearest, the newest of equals
         state.aWantUntil = now + 9000;
       }
       if(state.aWant.cost + keep > state.aBlood){ state._aiTimer = 300; return; } // saving up
@@ -4616,7 +4843,7 @@
     state.aBlood -= def.cost;
     if(def.uniquePerOwner){
       const mine = state.units.filter(u=>u.owner==='a' && u.name===def.name);
-      const limit = currentChallenger.multiBuildings ? 3 : 1; // most opponents obey the one-at-a-time rule; Veyra keeps up to three
+      const limit = currentChallenger.multiBuildings ? 3 : currentChallenger.works ? 2 : 1; // most opponents obey the one-at-a-time rule; Veyra keeps up to three, Orrin two of each
       if(mine.length>=limit) retireBuilding(mine[0]);
     }
     if(def.cardType==='spell'){
@@ -4728,11 +4955,12 @@
   // fit the whole board inside the arena (both width and height), never stretching it
   // Sideways field: the very same board and rules, only drawn turned a quarter clockwise, so your side is on the left and the
   // rival's on the right. Units, numbers and effects are turned back upright; taps are turned back into board positions in fieldPct
-  let sideways = false; try{ sideways = localStorage.getItem('bloodline_sideways')==='1'; }catch(e){}
-  function setSideways(on){
-    sideways = !!on; try{ localStorage.setItem('bloodline_sideways', sideways ? '1' : '0'); }catch(e){}
-    document.body.classList.toggle('sideways', sideways); lastScale = 0; measureField();
-  }
+  // Field direction: upright, sideways, or auto (sideways whenever the view is wider than tall, so turning the phone turns the field)
+  let sidewaysPref = 'auto'; try{ const v = localStorage.getItem('bloodline_sideways'); sidewaysPref = v==='1' ? 'on' : v==='0' ? 'off' : (v==='auto' || !v) ? 'auto' : 'auto'; }catch(e){}
+  let sideways = false;
+  function syncSideways(){ const on = sidewaysPref==='on' || (sidewaysPref==='auto' && innerWidth > innerHeight); if(on!==sideways){ sideways = on; document.body.classList.toggle('sideways', sideways); lastScale = 0; measureField(); } }
+  function setSidewaysPref(p){ sidewaysPref = p; try{ localStorage.setItem('bloodline_sideways', p==='on' ? '1' : p==='off' ? '0' : 'auto'); }catch(e){} syncSideways(); }
+  function setSideways(on){ setSidewaysPref(on ? 'on' : 'off'); }
   function measureField(){
     const aw = arena.clientWidth-2, ah = arena.clientHeight-2; // leave room for the frame's border
     if(aw<=0 || ah<=0) return;
@@ -5056,6 +5284,9 @@
     state._hollow = new Set(U.filter(o=>o.fx && o.fx.hollow && o.attached && alive(o.atkTarget) && o.atkTarget.isBuilding).map(o=>o.atkTarget));
     state._gutted = new Map(U.filter(o=>o.fx && o.fx.gutted && o.attached && alive(o.atkTarget) && o.atkTarget.isBuilding && o.atkTarget.name!=='Pentagon').map(o=>[o.atkTarget, o.fx.gutted]));
     state._rotted = new Set(U.filter(o=>o.fx && o.fx.rot && o.attached && alive(o.atkTarget) && o.atkTarget.isBuilding).map(o=>o.atkTarget));
+    { const towers = U.filter(o=>o.watch && o.hp>0); // a Watchtower: your ranged troops near it reach further
+      for(const u of U){ if(u.isBuilding || u.atkStyle!=='interval-ranged') continue; if(u._baseRange==null) u._baseRange = u.range;
+        let m = 1; for(const t of towers) if(t.owner===u.owner && dist(t,u) <= t.watch.r) m = Math.max(m, t.watch.mult); u.range = u._baseRange*m; } }
     if(state.trails && state.trails.length) state.trails = state.trails.filter(p=>p.until > state.clock);
     if(state.pools && state.pools.length) state.pools = state.pools.filter(p=>p.until > state.clock);
   }
@@ -5141,6 +5372,7 @@
     { const k = killer || victim.lastHitBy; if(k && k!==victim && k.fx && k.fx.kill && k.hp>0 && !victim.isBuilding && !victim.diedFromDrain && k.owner!==victim.owner) fnKill(k, victim);
       if(k && k!==victim && k.fx && k.fx.skulk && k.hp>0 && !victim.isBuilding && k.owner!==victim.owner) k.rehideMs = k.fx.skulk; } // a Skulk slips back out of sight after a kill
     if(victim.fx && victim.fx.purse && victim.purse>0){ const pay = Math.round(victim.purse*victim.fx.purse.mult*10)/10; refund(victim.owner, pay); fieldText(victim.x, victim.y-3, `+${pay.toFixed(1)} blood`); victim.purse = 0; } // a Smuggler's purse, paid as it falls
+    if(victim.isBuilding && victim.fit && victim.fit.includes('sluice')){ for(const o of state.units) if(o.owner!==victim.owner && !o.isBuilding && o.hp>0 && dist(o, victim) <= SLUICE_R){ o.floodMs = SLUICE_MS; } asciiFx(victim.x, victim.y, {chars:"~=~", n:14, dist:[4,24], dur:900, cls:victim.owner, size:.8}); } // Workshop Sluice
     if(victim.fx && victim.fx.spill && !victim.isBuilding){ (state.pools || (state.pools = [])).push({x:victim.x, y:victim.y, owner:victim.owner, until:(state.clock||0) + victim.fx.spill}); asciiFx(victim.x, victim.y, {chars:"~o.", n:10, dist:[2,6], dur:1800, cls:victim.owner, size:.7}); }
     if(victim.fx && victim.fx.death && !victim.isBuilding && !victim.diedFromDrain) fnBurst(victim, victim.fx.death);
     if(!victim.isBuilding) hatchBrood(victim);
@@ -5344,7 +5576,7 @@
     rallyWatch();
     tickBridges(dt);
     aiBridgeTick(dt);
-    tickSnares(dt); tickCharges(dt); tickLobs(dt);
+    tickSnares(dt); tickCharges(dt); tickLobs(dt); tickWorks(dt);
     updateProjectiles(dt);
 
     // which bases are open: a side with no Pentagons left. Rival parasites smell the blood there
@@ -5407,7 +5639,7 @@
         u.atkTarget = bt;
         if(dist(u,bt) <= u.range){
           u.atkAcc += dt * boredMult(u); // a Borer in it slows it
-          if(u.atkAcc>=u.atkInterval){ u.atkAcc-=u.atkInterval; if(!forced) bt = strikeTarget(u, bt); fireProjectile(u,bt); }
+          if(u.atkAcc>=u.atkInterval && !(u.silenceMs>0)){ u.atkAcc-=u.atkInterval; if(!forced) bt = strikeTarget(u, bt); fireProjectile(u,bt); } // Undermine silences it
         } else {
           u.atkAcc = 0; // out of range — stationary, just wait
         }
@@ -5419,6 +5651,7 @@
       if(u.isAskel && u.hp>0 && u.hp<u.maxHp && (state.clock||0) - (u.lastHurtAt||0) > ASKEL_REST) u.hp = Math.min(u.maxHp, u.hp + ASKEL_MEND*dt/1000); // mends out of the fight
       if(u.chainMs>0){ u.chainMs -= dt; if(u.chainMs<=0){ u.chainMs = 0; u.el.classList.remove('chained'); } }
       if(u.numbMs>0) u.numbMs -= dt; if(u.hasteMs>0) u.hasteMs -= dt;
+      if(u.silenceMs>0) u.silenceMs -= dt; if(u.underMs>0) u.underMs -= dt; if(u.floodMs>0) u.floodMs -= dt;
       { const nb = u.numbMs>0; if(nb!==!!u._numbed){ u._numbed = nb; u.el.classList.toggle('numbed', nb); } const gr = u.hasteMs>0; if(gr!==!!u._grief){ u._grief = gr; u.el.classList.toggle('grieving', gr); } }
       { const dv = driveMult(u)>1; if(dv!==!!u._driven){ u._driven = dv; u.el.classList.toggle('driven', dv); } }
       if(u.scent && !u.isAskel){ u.dripMs = (u.dripMs||0) - dt; if(u.dripMs<=0){ u.dripMs = 600 + Math.random()*400; asciiFx(u.x, u.y+1, {chars:",.'", n:2, dist:[2,5], dur:700, cls:'p', mode:'down', size:.55}); } } // it bleeds as it walks
@@ -5535,6 +5768,10 @@
           const sideKey = u.owner==='p' ? 'aBase' : 'pBase';
           let hit = baseDamage(u);
           if(sideKey==='pBase' && state.openBase && state.openBase.p) hit *= OPEN_BASE_MULT; // all three of yours are down: the end comes fast
+          if(sideKey==='aBase' && currentChallenger.rally && !state.rallied && state.aBase - hit <= 0){ // a fight whose mid-fight scene waits on his first gate
+            const pe = state.units.filter(o=>o.owner==='a' && o.name==='Pentagon' && o.hp>0).sort((m,n)=>dist(m,u)-dist(n,u))[0]; // (a Bloodhound runs past every Pentagon)
+            if(pe){ hit = Math.max(0, state.aBase - 1); pe.hp = 0; fieldText(pe.x, pe.y+4, 'The blow breaks a Pentagon instead'); } // the base holds at 1 and the nearest Pentagon falls, so his scene still plays
+          }
           state[sideKey] -= hit;
           { const d = state.stats[u.owner].dmg; d[u.name] = (d[u.name]||0) + hit; } // base hits count toward the card too
           sound.dmgNums && showDamageNumber(u.x, u.y, hit, u.owner);
@@ -5591,6 +5828,7 @@
               if(!(state.charges || (state.charges = [])).some(c=>c.target===t && c.owner===u.owner)) state.charges.push({owner:u.owner, target:t, x:t.x, y:t.y, ms:u.fuse.ms, dmg:u.fuse.dmg, splash:u.fuse.splash, r:u.fuse.r, src:u.name, el:makeFuseEl(t, u.owner)}); }
             state._striker = u; const hd = warded(t, base); credit(u.owner, u.name, t, hd); state._striker = null; t.hp -= hd; t.lastHitBy = u; sound.dmgNums && showDamageNumber(t.x, t.y, hd, u.owner); flashHit(t);
             fnStrike(u, t); fnRiposte(u, t);
+            if(t.fit && t.fit.includes('barbs') && t.owner!==u.owner){ const back = warded(u, BARBS_DMG); credit(t.owner, t.name, u, back); u.hp -= back; u.lastHitBy = t; flashHit(u); } // Workshop Barbs
             if(u.fx && u.fx.batter && t.isBuilding && u.ramSet && u.ramSet.has(t)) u.attached = false; // free to look for the next building
           }
         } else if(u.atkStyle==='interval-ranged'){
@@ -5766,6 +6004,7 @@
         if(currentChallenger.lastWords && (!askelChoice || replay)){ pendingFate = 'askel'; needsIntroOnRestart = true; } // he is still breathing: decide first
         if(currentChallenger.chapterEnd) pendingChapter = currentChallenger.chapterEnd; // the champion falls: the chapter closes
         if(currentChallenger.farewell && !replay) pendingFarewell = {who:currentChallenger.name, face:portraitOf(currentChallenger), lines:currentChallenger.farewell(playerName)}; // said once, on the first win
+        if(currentChallenger.works && orrinChoice==='spared' && !orrinRelic && state.units.filter(u=>u.owner==='p' && u.name==='Pentagon').length>=3){ orrinRelic = true; try{ localStorage.setItem('bloodline_orrinRelic','1'); }catch(e){} log('Not one of your gates fell. Orrin hands over his level: Double Works is yours too.'); } // the relic's second door
         if(currentChallenger.deathWords){ const fk = currentChallenger.fateKey || 'hadrek'; if(!fateChoiceOf(fk) || replay){ pendingFate = fk; needsIntroOnRestart = true; } }
         // Askel still standing when Hadrek falls: he says his piece and walks away
         if(currentChallenger.keepsAskelBody && askelChoice==='spared' && (!askelLeft || replay) && state.units.some(u=>u.isAskel && u.hp>0)) pendingAskelLeave = true;
@@ -5893,6 +6132,10 @@
       later:"Whichever you leave behind, you can still find later in the game."},
     wanderer: {name:'', portrait:()=>'', lines:()=>{ const w = currentChallenger; return [`Enough. You win, ${playerName}.`, w.say, `Let me walk away and my ${matName(w.mat).toLowerCase()} is yours. Or take what you want from my body.`]; },
       spare:'', kill:'', later:'Either way, nothing in the story moves.'},
+    orrin: {name:'ORRIN', portrait:()=>ORRIN_FACE, lines:()=>CHALLENGERS.find(c=>c.id===12).deathWords(playerName),
+      spare:"Spare him<span>He raises the Workshop in your camp: fit your buildings with Barbs, Murder holes and a Sluice.</span>",
+      kill:"Slay him<span>Take Double Works, a relic: keep two of each building at once.</span>",
+      later:"Either way, the Watchtower, Barricade and Ballista are yours, and Undermine can be brewed. Whichever reward you leave can still be earned later, the hard way."},
     osric: {name:'OSRIC', portrait:()=>OSRIC_FACE, lines:()=>CHALLENGERS.find(c=>c.id===10).deathWords(playerName),
       spare:"Spare him<span>Take the First Standard, a relic: when one of your Pentagons falls, a wide Sanctuary opens where it stood.</span>",
       kill:"Slay him<span>Take Osric's Shield, a trinket: rival ranged troops deal your troops half damage. And the Shieldbearer card: a tank that soaks half the damage dealt to troops near it.</span>",
@@ -6051,6 +6294,17 @@
       const w = currentChallenger;
       if(v==='spared'){ giveMaterial(w.mat); add(`${w.name} limps off toward the river, leaving behind ${SKIRMISH_MATS} ${matName(w.mat)}.`, 'fate-note'); haptic([20,60,20]); sfxSpare(); }
       else { giveMaterial(w.killMat); add(`${w.name} goes into the river. You take ${SKIRMISH_MATS} ${matName(w.killMat)} from what is left.`, 'fate-note'); haptic([60,40,120]); sfxFinish(); }
+    } else if(fateSubject==='orrin'){
+      setOrrinChoice(v==='spared' ? 'spared' : 'slain');
+      if(v==='spared'){
+        add(`Then use it. Walls should give something back.`);
+        add(`Orrin's Workshop can stand in your camp now: build it on the Camp map, then fit your buildings there.`, 'fate-note');
+        haptic([20,60,20]); sfxSpare();
+      } else {
+        add(`Then build. Build until there is nothing left to cross.`);
+        add(`Double Works is yours: you may keep two of each building at once. His Workshop is not lost: hold the Holdfast to wave 15 and you can raise it yourself.`, 'fate-note');
+        haptic([60,40,120]); sfxFinish();
+      }
     } else if(fateSubject==='osric'){
       setOsricChoice(v==='spared' ? 'spared' : 'slain');
       if(v==='spared'){
@@ -6099,7 +6353,7 @@
     afterFate();
   };
   function exportSave(){
-    const data = {unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp};
+    const data = {saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, orrinRelic, workshop, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp};
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -6107,11 +6361,25 @@
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+  // Save versions. 1: every save before versions existed (brews kept as a list, no doses; camp without levels). 2: brew doses, the brewing
+  // queue, camp levels. A save from an older version is brought up to date here before anything reads it; the stored copy is marked too
+  const SAVE_VERSION = 2;
+  function migrateSave(d){
+    if(!d || typeof d!=='object') return d;
+    const v = parseInt(d.saveVersion,10) || 1;
+    if(v < 2){
+      if(Array.isArray(d.brewed) && (!d.brewStock || typeof d.brewStock!=='object')){ d.brewStock = {}; for(const n of d.brewed) d.brewStock[n] = BREW_DOSES; } // brews from before doses: a full batch each
+      if(d.brewing && !Array.isArray(d.brewing)) d.brewing = [d.brewing]; // the brewing queue used to be a single brew
+      if(d.camp && typeof d.camp==='object' && !d.camp.lv) d.camp.lv = 0; // camp levels are worked out from what the save already used
+    }
+    d.saveVersion = SAVE_VERSION; return d;
+  }
+  try{ if(!localStorage.getItem('bloodline_saveVersion')) localStorage.setItem('bloodline_saveVersion', String(SAVE_VERSION)); }catch(e){} // the stored game is already brought up to date by the loaders above
   function importSaveFile(file){
     const reader = new FileReader();
     reader.onload = ()=>{
       try{
-        const data = JSON.parse(reader.result);
+        const data = migrateSave(JSON.parse(reader.result));
         if(data.unlockedTier){
           unlockedTier = Math.min(Math.max(1, parseInt(data.unlockedTier,10)||1), Math.max(...CARD_DEFS.map(c=>c.unlockTier||1), CHALLENGERS.length+1)); // never past the last tier
           try{ localStorage.setItem('bloodline_unlockedTier', String(unlockedTier)); }catch(e){}
@@ -6125,6 +6393,7 @@
           if(c) setChallenger(c);
         }
         setAskelChoice(data.askelChoice==='spared' || data.askelChoice==='finished' ? data.askelChoice : ''); setAskelPaid(!!data.askelPaid);
+        setOrrinChoice(data.orrinChoice==='spared' || data.orrinChoice==='slain' ? data.orrinChoice : ''); orrinRelic = !!data.orrinRelic; try{ localStorage.setItem('bloodline_orrinRelic', orrinRelic ? '1' : '0'); }catch(e){} workshop = cleanWorkshop(data.workshop); saveWorkshop();
         setHadrekChoice(data.hadrekChoice==='spared' || data.hadrekChoice==='slain' ? data.hadrekChoice : ''); setOsricChoice(data.osricChoice==='spared' || data.osricChoice==='slain' ? data.osricChoice : ''); setAskelLeft(!!data.askelLeft); hadrekFateLabel();
         if(data.materials && typeof data.materials==='object') for(const k of Object.keys(materials)) materials[k] = Math.max(0, parseInt(data.materials[k],10)||0);
         if(Array.isArray(data.brewed)) brewed = data.brewed.filter(n=>typeof n==='string' && CARD_DEFS.some(c=>c.brew && c.name===n));
@@ -6165,6 +6434,10 @@
     if(e.target.files[0]) importSaveFile(e.target.files[0]);
   };
 
+  // Test tools: force the fight's music to its worst case (your Pentagons gone, rivals at the gate) or its best (theirs gone), for whatever fight
+  // is running or the next one started. Tapping the same button again goes back to normal. The fight itself is untouched
+  function musicTestLabels(){ for(const [id, k, t] of [['musicWorst','worst','worst case'], ['musicBest','best','best case']]){ const b = document.getElementById(id); if(b) b.textContent = `Fight music: ${t}${musicTest===k ? ' (on)' : ''} (test)`; } }
+  for(const [id, k] of [['musicWorst','worst'], ['musicBest','best']]) document.getElementById(id).onclick = ()=>{ musicTest = musicTest===k ? null : k; musicTestLabels(); initAudio(); };
   document.getElementById('vibeTest').onclick = (e)=>{
     // reports what the browser said, so we can tell 'unsupported' from 'blocked here' from 'sent'
     let msg;
@@ -6183,7 +6456,7 @@
       return;
     }
     resetArmed = false;
-    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
+    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
     try{ ['bloodline_unlockedTier','bloodline_challengerId','bloodline_deck'].forEach(k=>localStorage.removeItem(k)); }catch(err){}
     setChallenger(CHALLENGERS[0]);
     if(matchStarted && !state.over){ document.getElementById('pauseOverlay').classList.remove('show'); fullRestart(); } // abandon the match in progress
@@ -6215,6 +6488,9 @@
   // test: cycle what you did with Hadrek (and whether Askel walked away), or replay Hadrek's last words (the choice is real)
   function hadrekFateLabel(){ const b = document.getElementById('hadrekFate'); if(b) b.textContent = `Hadrek's fate: ${hadrekChoice || 'undecided'}${askelLeft ? ', Askel left' : ''}`; }
   hadrekFateLabel();
+  function orrinFateLabel(){ const b = document.getElementById('orrinFate'); if(b) b.textContent = `Orrin's fate: ${orrinChoice || 'undecided'}`; }
+  document.getElementById('orrinFate').onclick = ()=>{ const order = ['', 'spared', 'slain']; setOrrinChoice(order[(order.indexOf(orrinChoice)+1) % order.length]); orrinFateLabel(); renderTitle(); };
+  orrinFateLabel();
   function osricFateLabel(){ const b = document.getElementById('osricFate'); if(b) b.textContent = `Osric's fate: ${osricChoice || 'undecided'}`; }
   osricFateLabel();
   document.getElementById('osricFate').onclick = ()=>{
@@ -6278,6 +6554,12 @@
   try{ tutorialDone = localStorage.getItem('bloodline_tutorialDone')==='1'; }catch(e){}
   function setTutorialDone(v){ tutorialDone = !!v; try{ v ? localStorage.setItem('bloodline_tutorialDone','1') : localStorage.removeItem('bloodline_tutorialDone'); }catch(e){} }
   function tutorialDue(){ return currentChallenger.id===1 && (tutorialForce || (!tutorialDone && unlockedTier===1)); }
+  // Words for where things are on the field. In the sideways field your side is on the left, the rival's on the right, and the board's
+  // right-hand lane runs along the bottom of the screen, so the tutorial and How to play say it that way
+  function dirText(t){
+    if(!sideways) return t;
+    return t.replace(/at the bottom/g, 'on the left').replace(/at the top/g, 'on the right').replace(/down the right/g, 'along the bottom').replace(/bridges at the sides/g, 'bridges at the top and bottom edges');
+  }
   const TUT = [
     {text:"This is a guided fight. Your base is at the bottom, behind three Pentagons. Break Korrath's base at the top to win."},
     {text:"Every card costs blood, the red meter. It fills on its own, and every kill refunds half the dead unit's cost."},
@@ -6298,7 +6580,7 @@
     const st = TUT[state.tutStep], box = document.getElementById('tutor');
     if(!st){ box.classList.remove('show'); state.tutHi = null; renderHand(); paused = false; return; } // hints done: the fight runs on
     if(st.wait && state.tutDone && state.tutDone[st.wait]){ state.tutStep++; tutShow(); return; } // already done earlier: skip straight past it
-    document.getElementById('tutorText').textContent = st.text;
+    document.getElementById('tutorText').textContent = dirText(st.text);
     box.classList.toggle('wait', !!st.wait);
     box.classList.add('show');
     state.tutHi = st.hi || null; renderHand();
@@ -6418,8 +6700,8 @@
     const dn = document.getElementById('snd-dmgnums');
     dn.checked = sound.dmgNums!==false;
     dn.onchange = ()=>{ sound.dmgNums = dn.checked; saveSound(); };
-    const sw = document.getElementById('snd-sideways');
-    sw.checked = sideways; sw.onchange = ()=>{ setSideways(sw.checked); };
+    const fd = document.getElementById('fieldDir'), fdText = ()=>{ fd.textContent = 'Field: ' + (sidewaysPref==='auto' ? `auto (${sideways ? 'sideways' : 'upright'})` : sidewaysPref==='on' ? 'sideways' : 'upright'); };
+    fdText(); fd.onclick = ()=>{ setSidewaysPref(sidewaysPref==='auto' ? 'on' : sidewaysPref==='on' ? 'off' : 'auto'); fdText(); };
     const side = (btn, key, cls, label, flipWord)=>{ const show = ()=>{ btn.textContent = `${label}: ${document.body.classList.contains(cls) ? flipWord : (flipWord==='right' ? 'left' : 'right')}`; };
       show(); btn.onclick = ()=>{ const on = document.body.classList.toggle(cls); try{ localStorage.setItem(key, on ? '1' : '0'); }catch(e){} lastScale = 0; measureField(); show(); }; };
     side(document.getElementById('swHandBtn'), 'bloodline_swHand', 'sw-hand-right', 'Sideways hand', 'right');
@@ -6595,7 +6877,7 @@
     {since:2, kind:'Update', title:'Troops strike what is nearest',
      hint:"", detail:"A troop that has locked on now hits whatever is nearest when its next blow lands, instead of staying on its first target. It does not flip back and forth for a target that is only slightly closer."},
     {since:2, kind:'Update', title:'Only two rivals get cheap Revenants',
-     hint:"", detail:"A Revenant costs 5 blood for you and for almost every rival. Only Hadrek, who owns them, and Grael pay less (2 and 3)."},
+     hint:"", detail:"A Revenant costs 5 blood for you and for almost every rival. Hadrek and Grael used to pay less; now nobody does."},
     {since:2, kind:'Update', title:'Random battle calls',
      hint:"", detail:"The line that opens each battle is now picked at random, and some of them are silly. The call also holds a little longer so you can read it."},
     {since:2, kind:'Update', title:'Cheaper Cannons',
@@ -6677,12 +6959,27 @@
      hint:"The menu has a new place of your own.",
      detail:"Camp, on the menu, is a small map of your own base. Alchemy is the Still there, and later the Kitchen and the War Pen (once called the Training Camp) stand beside it. Raise each with Mortar, set it on whichever plot you like, and tap it to work inside. The stores send each building's Mortar as it opens, and every Holdfast wave and Skirmish win sends a little more, kept for what comes next. The Holdfast is a different camp: losing it never touches yours."},
     {since:2, kind:'Feature', title:'A sideways field, and a tidier menu',
-     detail:"Settings has a new switch, Sideways field: the battlefield turns a quarter so your side is on the left and the rival's on the right, filling a wide screen or a phone held on its side. The fight itself is exactly the same. The menu is reorganised: Continue is always the story's next fight, the ways to play sit together in large buttons, then settings and saves, then reading, with test tools smallest. Old fights moved to their own Rematches screen: swipe through every challenger you have beaten, read their words before the fight, and tap Rematch."},
+     detail:"Settings has a new switch for the field (now upright, sideways, or auto, which turns with your phone): the battlefield turns a quarter so your side is on the left and the rival's on the right, filling a wide screen or a phone held on its side. The fight itself is exactly the same. The menu is reorganised: Continue is always the story's next fight, the ways to play sit together in large buttons, then settings and saves, then reading, with test tools smallest. Old fights moved to their own Rematches screen: swipe through every challenger you have beaten, read their words before the fight, and tap Rematch."},
     {since:2, kind:'Feature', title:'Phone or tablet, your choice',
      detail:"The game now works out whether it is on a phone or a tablet and lays itself out to match. Settings has a Layout switch to force either one: the phone layout on a tablet, or the tablet layout on a phone. In the Holdfast, a phone that will not turn its view now follows its tilt sensor, so the defence reads upright whichever way you hold it; Flip still turns it by hand."},
     {since:2, kind:'Cards', title:'Old cards, new rivals', revealAt:14,
      hint:"Four new troops are coming that outdo some of the first cards you were given.",
-     detail:"Four new troops: the Lamprey (a Leach that makes its host slow), the Fusebearer (lights charges on buildings that go off even after it falls), the Bombard (lobs stones that land where a troop stood) and the Mourner (grows fierce when friends die near it). Each beats a card from the start of the game, and those old cards can catch up through the War Pen."}
+     detail:"Four new troops: the Lamprey (a Leach that makes its host slow), the Fusebearer (lights charges on buildings that go off even after it falls), the Bombard (lobs stones that land where a troop stood) and the Mourner (grows fierce when friends die near it). Each beats a card from the start of the game, and those old cards can catch up through the War Pen."},
+    {since:2, kind:'Feature', title:'Raise your camp', revealAt:4,
+     hint:"Your camp's buildings can now grow.",
+     detail:"Every camp building has seven levels. Raising one costs Mortar, and every second level also needs a blueprint, won the first time you beat certain challengers. The Still opens one recipe per level, the Kitchen new bands of food, and the War Pen deeper training. Troops now eat the food of their band: the later a troop joins you, the rarer its food, cooked from ingredients only the deeper Holdfast waves give. Every challenger's first defeat sends 5 Mortar, the Holdfast sends more on every fifth wave, and a Skirmish win sends 2. What you already brewed, cooked and taught stays yours, and your buildings start at the level that covers it."},
+    {since:2, kind:'Story', title:'The builder', revealAt:12,
+     hint:"Somebody raised the bridges past the ford, and is still there.",
+     detail:"Orrin, who raised every bridge on the rivers, waits past the burned ford as challenger 12. He keeps two of every building, and they mend while none of your troops are near. When his first gate falls he raises Barricades across both lanes."},
+    {since:2, kind:'Cards', title:'Works of the ford', revealAt:13,
+     hint:"New fortifications wait past the ford.",
+     detail:"The Watchtower (your ranged troops near it reach further), the Barricade (two walls at once) and the Ballista (a bolt through a whole line) join your cards, and Undermine can be brewed from Fracture and Oath to silence rival buildings."},
+    {since:2, kind:'Feature', title:'The Workshop', revealAt:13,
+     hint:"Your camp may gain a bench for fitting buildings.",
+     detail:"Spare Orrin and his Workshop can stand in your camp: fit your buildings with Barbs, Murder holes and a Sluice, in story fights and the Holdfast alike. Slay him and you take Double Works, a relic for keeping two of each building; the Workshop can still be raised after holding the Holdfast to wave 15, and Double Works can still be earned by beating Orrin again without losing a Pentagon."},
+    {since:2, kind:'Update', title:'Revenants cost everyone the same', revealAt:9,
+     hint:"Two rivals from late in Chapter I field fewer of one troop.",
+     detail:"Hadrek and Grael no longer get Revenants cheap: they pay 5 blood like everyone else, so their last pushes no longer flood the field."}
   ];
   const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
   function changelogEntries(){ return CHANGELOG.filter(e=>e.since > CHANGELOG_AFTER); }
@@ -6727,7 +7024,7 @@
   const brewLabel = (e, now)=>{ const ms = brewMs(CARD_DEFS.find(d=>d.name===e.name)); return 'Brewing' + (e.of>1 ? ` ${e.of-e.qty+1}/${e.of}` : '') + '... ' + fmtBrew(e.end-now) + (e.qty>1 ? ` (all done in ${fmtBrew(e.end-now + (e.qty-1)*ms)})` : ''); };
   function finishBatch(entry){ // one batch ran out its clock: its doses are yours, and the next batch starts from where this one ended. Quiet if you are elsewhere, a chime if you are watching
     const c = CARD_DEFS.find(d=>d.name===entry.name);
-    if(c){ if(!brewed.includes(c.name)) brewed.push(c.name); brewStock[c.name] = (brewStock[c.name]||0) + BREW_DOSES; }
+    if(c){ if(!brewed.includes(c.name)) brewed.push(c.name); brewStock[c.name] = (brewStock[c.name]||0) + brewDoses(); }
     entry.qty--;
     if(entry.qty > 0) entry.end += c ? brewMs(c) : 0; else brewing = brewing.filter(b=>b!==entry);
     saveAlchemy(); renderDeckPicker();
@@ -6748,12 +7045,15 @@
     }
   }, 250);
   const alcQty = {}; // batches picked per recipe in the menu
+  const brewDoses = () => baseLvl('still')>=7 ? 4 : BREW_DOSES;
   function openAlchemy(keepScroll){
+    migrateCampLevels();
     const o = document.getElementById('alchemyOverlay'), keepTop = keepScroll ? o.scrollTop : 0, box = document.getElementById('alchemyList'), mats = document.getElementById('alchemyMats');
     mats.innerHTML = '';
     for(const m of MATERIALS){ const sp = document.createElement('span'); sp.className = 'alc-mat'; sp.textContent = `${m.icon} ${m.name} ${materials[m.id]}`; mats.appendChild(sp); }
     if(keepScroll) box.style.minHeight = box.offsetHeight + 'px'; // holding the height while the rows are rebuilt keeps the scroll from being clamped to the top
     box.innerHTML = '';
+    box.appendChild(baseUpgradeBar('still', ()=>openAlchemy(true)));
     for(const c of CARD_DEFS.filter(c=>c.brew)){
       const a = CARD_DEFS.find(d=>d.name===c.brew.a), b = CARD_DEFS.find(d=>d.name===c.brew.b);
       const stock = brewStock[c.name]||0, have = stock>0, tierOk = unlockedTier >= (c.unlockTier||1), spells = cardOwned(a) && cardOwned(b);
@@ -6764,10 +7064,11 @@
       row.querySelector('.cg-name').textContent = `${c.name}: ${a.name} + ${b.name}`;
       row.querySelector('.cg-stats').textContent = `cost ${c.cost} (both would be ${a.cost + b.cost}) · ${statLine(c)}`;
       row.querySelector('.cg-desc').textContent = CARD_DESC[c.name] || '';
-      row.querySelector('.alc-need').textContent = 'Needs ' + Object.entries(c.brew.mats).map(([k,v])=>{ const m = MATERIALS.find(m=>m.id===k); return `${v*qty} ${m.name} (${materials[k]})`; }).join(', ') + ` · makes ${BREW_DOSES*qty} doses` + (qty>1 ? `, a batch of ${BREW_DOSES} every ${fmtBrew(brewMs(c))}` : '') + `, one spent per fight you cast it in · you hold ${stock}`;
+      row.querySelector('.alc-need').textContent = 'Needs ' + Object.entries(c.brew.mats).map(([k,v])=>{ const m = MATERIALS.find(m=>m.id===k); return `${v*qty} ${m.name} (${materials[k]})`; }).join(', ') + ` · makes ${brewDoses()*qty} doses` + (qty>1 ? `, a batch of ${BREW_DOSES} every ${fmtBrew(brewMs(c))}` : '') + `, one spent per fight you cast it in · you hold ${stock}`;
       const btn = row.querySelector('.alc-brew');
       if(run){ btn.disabled = true; btn.textContent = brewLabel(run, Date.now()); btn.dataset.brewing = c.name; }
       else if(!tierOk){ const g = CHALLENGERS.find(ch=>ch.id===(c.unlockTier||1)-1); btn.textContent = g ? `Beat ${g.name} first` : 'Not yet'; btn.disabled = true; }
+      else if(stillNeed(c.name) > baseLvl('still')){ btn.textContent = `Needs Still level ${stillNeed(c.name)}`; btn.disabled = true; row.classList.add('alc-locked'); }
       else if(!spells){ btn.textContent = `Needs ${!cardOwned(a) ? a.name : b.name}`; btn.disabled = true; }
       else if(!enough){ btn.textContent = 'Not enough materials'; btn.disabled = true; }
       else {
@@ -6813,10 +7114,10 @@
   // crossed by one bridge on each road (west, north, east). Raiders keep to the bridges; anyone wading the moat is slowed
   const HF_PLOT = 5, HF_PH = (HF_PLOT + 0.5)*HF_CELL, HF_MOAT = HF_CELL, HF_OUT = HF_PH + HF_MOAT; // the moat is one grid cell wide, and each bridge is one cell
   const hfBridge = f => f==='w' ? {ox:HF_KX-HF_OUT-4, oy:HF_KY, ix:HF_KX-HF_PH+4, iy:HF_KY} : f==='e' ? {ox:HF_KX+HF_OUT+4, oy:HF_KY, ix:HF_KX+HF_PH-4, iy:HF_KY} : {ox:HF_KX, oy:HF_KY-HF_OUT-4, ix:HF_KX, iy:HF_KY-HF_PH+4};
-  const HF_FRONTS = { // spawn point, and the Pentagon snapped to the grid one cell in from the moat
-    w:{label:'west',  sx:8,   sy:HF_KY, px:HF_KX-(HF_PLOT-1)*HF_CELL, py:HF_KY},
-    n:{label:'north', sx:HF_KX, sy:6,   px:HF_KX, py:HF_KY-(HF_PLOT-1)*HF_CELL},
-    e:{label:'east',  sx:632, sy:HF_KY, px:HF_KX+(HF_PLOT-1)*HF_CELL, py:HF_KY},
+  const HF_FRONTS = { // spawn point, and the Pentagon snapped to the grid three cells in from the moat, beside the Keep
+    w:{label:'west',  sx:8,   sy:HF_KY, px:HF_KX-(HF_PLOT-3)*HF_CELL, py:HF_KY},
+    n:{label:'north', sx:HF_KX, sy:6,   px:HF_KX, py:HF_KY-(HF_PLOT-3)*HF_CELL},
+    e:{label:'east',  sx:632, sy:HF_KY, px:HF_KX+(HF_PLOT-3)*HF_CELL, py:HF_KY},
   };
   const HF_RAIDERS = [['Jackal',1,5],['Viper',1,3],['Bloodhound',2,2],['Ramhorn',3,2],['Behemoth',4,2],['Camel',5,2]]; // name, first wave, weight
   const HF_CAPTAIN = {name:'Captain', cost:12, hp:420, dmg:22, spd:4.5, range:6, atkStyle:'interval-melee', targets:'any', atkInterval:1300, emoji:'♞'};
@@ -6861,6 +7162,7 @@
       rng:(def.range||0)*PX_UNIT, iv:def.atkInterval||1200, acc:0, spd:(def.spd||0)*HF_SPEED, r:kind==='troop' ? 0 : (o.r||13),
       front:o.front||null, cost:def.cost||0, rule:o.rule||null, tag:o.tag||null, emoji:o.emoji||def.emoji||'?', work:o.work||null, survived:0, banked:0, lastX:-1, lastY:-1, lastHp:-1};
     if(side==='p' && kind==='troop' && enhance[def.name]){ const m = enhanceMult(def.name); u.maxHp = u.hp = u.hp*m.hp; u.dmg *= m.dmg; u.spd *= m.spd; } // fed at the Training Camp
+    if(side==='p' && kind==='bld' && camp.built && camp.built.workshop && workshop[def.name]) u.fit = workshop[def.name].slice(); // Workshop fittings
     if(side==='p' && kind==='troop'){ const fx = fnFx(def.name); if(fx){ u.fx = fx; u.fxT = 0; if(fx.taunt) u.tauntR = fx.taunt; if(fx.skulk) u.hidden = true; } } // taught at the Training Camp
     if(kind==='keep'){ u.el = null; }
     else {
@@ -6939,11 +7241,12 @@
   // food ingredients turn up at these odds; an alchemy material comes every second wave, whichever you hold least of
   const HF_FOOD_POOL = [['grain',4],['meat',2],['fish',3],['herb',3]]; // matched to what the recipes eat: cooking each dish equally uses grain 4 : meat 2 : fish 3 : herb 3
   const HF_MATS = {ash:'Ash', brine:'Brine', bone:'Bone', ichor:'Ichor'};
-  const HF_NAMES = Object.assign({}, HF_MATS, {grain:'Grain', meat:'Meat', fish:'Fish', herb:'Herb', stone:'Mortar for your camp'});
+  const HF_NAMES = Object.assign({}, HF_MATS, {grain:'Grain', meat:'Meat', fish:'Fish', herb:'Herb', honey:'Honey', marrow:'Marrow', ember:'Ember', stone:'Mortar for your camp'});
   function hfWaveReward(n){
-    const got = {}, count = 3 + Math.floor((n-1)/3) + (n%5===0 ? 2 : 0), total = HF_FOOD_POOL.reduce((a,r)=>a+r[1],0);
-    for(let i=0;i<count;i++){ let roll = Math.random()*total, pick = HF_FOOD_POOL[0][0]; for(const r of HF_FOOD_POOL){ roll -= r[1]; if(roll<=0){ pick = r[0]; break; } } got[pick] = (got[pick]||0)+1; }
-    got.stone = 1; // every wave held sends a little Mortar home to your camp
+    const pool = HF_FOOD_POOL.concat(FOOD_INGS.filter(x=>x.wave && n>=x.wave).map(x=>[x.id, 2])); // Honey from wave 8, Marrow from 15, Ember from 22
+    const got = {}, count = 3 + Math.floor((n-1)/3) + (n%5===0 ? 2 : 0), total = pool.reduce((a,r)=>a+r[1],0);
+    for(let i=0;i<count;i++){ let roll = Math.random()*total, pick = pool[0][0]; for(const r of pool){ roll -= r[1]; if(roll<=0){ pick = r[0]; break; } } got[pick] = (got[pick]||0)+1; }
+    got.stone = 1 + (n%5===0 ? 3 : 0); // every wave held sends Mortar home to your camp, more on every fifth
     if(n%2===0){ const order = Object.keys(HF_MATS).sort((a,b)=>(materials[a]+(hf.pot[a]||0))-(materials[b]+(hf.pot[b]||0))); got[order[0]] = (got[order[0]]||0)+1; }
     return got;
   }
@@ -7059,6 +7362,7 @@
           if(f.opens) t.openMs = Math.max(t.openMs||0, f.opens); // Open Wounds
           if(f.conscript && t.side!==u.side && t.hp < t.maxHp*0.25 && !(t.turnMs>0)){ t.turnMs = f.conscript; hfFx(t.x, t.y-10, 'conscripted'); } }
         if(t.fx && t.fx.riposte && u.def.atkStyle==='interval-melee') hfKick(u, t, t.fx.riposte); // Riposte
+        if(t.fit && t.fit.includes('barbs') && u.def.atkStyle==='interval-melee' && u.kind==='troop') hfHurt(u, 3, t); // Workshop Barbs
         if(u.def.atkStyle==='interval-ranged'){ hfShot(u, t); sfxFire(u.kind==='troop' ? 1 : 0.8); } else sfxHit(ramming ? 0.6 : 1);
         if(t.kind==='keep' && performance.now() - hfKeepSfxAt > 700){ hfKeepSfxAt = performance.now(); sfxBaseHit(); haptic(HAPTIC.place); } // the Keep shakes
         if(u.def.steals && u.side==='p'){ const got = Math.max(0, before - t.hp)*u.def.steals; // the Plunderer's hits pay in blood; a Smuggler carries it
@@ -7254,6 +7558,7 @@
         hfFx(u.x, u.y-10, 'rises'); if(rv && rv.dmg) hfFnBurst(u, rv); return false; }
     }
     for(const p of hf.units) if(p.attached && p.host===u) hfLetGo(p, u); // whatever was riding it lets go
+    if(u.fit && u.fit.includes('sluice')) for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && Math.hypot(e.x-u.x, e.y-u.y) <= 12*PX_UNIT) e.slowMs = 5000; // Workshop Sluice
     if(u.fx && u.fx.purse && u.purse>0){ const pay = u.purse*u.fx.purse.mult; hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + pay); hfFx(u.x, u.y-14, `+${pay.toFixed(1)} blood`); u.purse = 0; } // a Smuggler's purse
     { const k = u.lastHitBy; if(k && k.fx && k.fx.skulk && k.hp>0 && k.side!==u.side && u.kind==='troop') k.rehideMs = k.fx.skulk; }
     if(u.fx && u.fx.death && u.kind==='troop') hfFnBurst(u, u.fx.death);
@@ -7408,6 +7713,7 @@
       for(const z of hf.zones){ if(!z.on) continue; if(Math.hypot(u.x-z.x,u.y-z.y) <= z.r){ if(z.side===u.side){ u.inSanct = true; if(u.kind==='troop') u.hp = Math.min(u.maxHp, u.hp + z.regen*dt/1000); } else u.inEnemySanct = true; } }
       if(u.confuseMs>0) u.confuseMs -= dt; if(u.turnMs>0) u.turnMs -= dt; if(u.wardMs>0) u.wardMs -= dt; if(u.openMs>0) u.openMs -= dt; if(u.stunMs>0) u.stunMs -= dt; if(u.rootMs>0) u.rootMs -= dt; if(u.slowMs>0) u.slowMs -= dt;
       if(u.fx && u.fx.pulse && u.kind==='troop') hfFnPulse(u, dt); // Training Camp functions
+      if(u.fit && u.fit.includes('holes')) for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && e.hp>0 && Math.hypot(e.x-u.x, e.y-u.y) <= 4*PX_UNIT) hfHurt(e, 2*dt/1000, u); // Workshop Murder holes
       if(u.tauntMs>0){ u.tauntMs -= dt; if(u.tauntMs<=0) u.tauntR = (u.fx && u.fx.taunt) || 0; }
       if(u.rehideMs>0){ u.rehideMs -= dt; if(u.rehideMs<=0) u.hidden = true; }
       if(u.swapCd>0) u.swapCd -= dt;
@@ -7699,6 +8005,8 @@
   };
   // ---- credits and hidden lore. Fragments surface as challengers fall; each is read by tapping it ----
   const LORE = [
+    {need:13, title:'XVII. The name', text:"Orrin. It was cut from every post because the first thing across every bridge was an army, and he would not sign his name to that. Somebody has said it now. The posts are still blank."},
+    {need:13, title:'XVIII. The last span', text:"One bridge on the rivers was never finished. Orrin left its last span open so that nothing could cross. Morvek crossed it anyway, on the backs of the people he had taken."},
     {need:2, title:'I. The riverbank', text:"Korrath's people buried their dead in the riverbank so the water would carry them home. Every bridge you crossed was raised over one of them."},
     {need:3, title:'II. The contract', text:"Seris was paid before the first blow. Every contract on these rivers is signed in blood. Whose blood signed this one was never written down."},
     {need:4, title:'III. The builder', text:"Veyra did not build the bridges. She only learned which planks could be pulled. The builder's name was cut from every post."},
@@ -7761,6 +8069,10 @@
   };
   // ---- card guide: every card, its real numbers from CARD_DEFS, and what it is for ----
   const CARD_DESC = {
+    'Watchtower':"A tall post that sees far. Your ranged troops within 10 of it reach a quarter further. It shoots weakly itself. One at a time.",
+    'Barricade':"Two short walls at once, side by side. You may keep four Barricades; a fifth retires the oldest.",
+    'Ballista':"A siege bow. Its bolt flies straight through every rival troop in a line, out to long range. Slow to reload. One at a time.",
+    'Undermine':"Brewed from Fracture and Oath. Rival buildings in the circle stop firing for 3 seconds and take half again as much damage for 8. Pentagons are untouched, and so are troops.",
     'Lamprey':"A Leach that makes its host sluggish. After a one-second bite it drains, and the troop it rides swings and shoots about a quarter slower while it clings. Only one parasite fits a host. It wastes away with nothing to ride.",
     'Fusebearer':"A siege troop that hits only buildings. Its first strike on each building lights a charge that goes off two seconds later, even if the Fusebearer is dead: heavy damage to the building and a blast that hurts troops standing near it. Keep your defenders back from what it is lighting.",
     'Bombard':"Lobs a stone that lands on the spot where its target stood, after a short flight, hurting everything in a small circle (half damage to the rest). Devastating against buildings and troops locked in a fight. Troops that keep moving walk out from under it.",
@@ -7812,6 +8124,9 @@
     const spd = c.isBuilding ? 'stationary' : c.spd>=10 ? 'fast' : c.spd<6 ? 'slow' : 'steady';
     return [`cost ${c.cost}`, `${c.hp} hp${c.squad?` x${c.squad}`:''}`, atk, c.range ? `range ${c.range}` : '', spd, tgt,
       c.ram ? `first hit on each building x${c.ram}` : '',
+      c.watch ? `your ranged troops within ${c.watch.r} reach ${Math.round((c.watch.mult-1)*100)}% further` : '',
+      c.pair ? `places two, ${c.pair.gap} apart; you keep ${c.pair.max}` : '',
+      c.pierceLine ? 'its bolt hits every rival troop in a line, out to its range' : '',
       c.numbs ? `its host attacks ${Math.round((1-1/c.numbs.mult)*100)}% slower while it clings` : '',
       c.fuse ? `charge ${c.fuse.dmg} to a building (28 to a Pentagon), ${c.fuse.splash} to troops within ${c.fuse.r}, after ${c.fuse.ms/1000}s, even if it dies` : '',
       c.lob ? `lob lands after ${c.lob.flight/1000}s, radius ${c.lob.r}, half to others, never splashes a Pentagon` : '',
@@ -7831,7 +8146,7 @@
   }
   function renderCardGuide(){
     const el = document.getElementById('cardGuide'); el.innerHTML = '';
-    const groups = [['brew','Brewed in Alchemy'],[1,'Starting cards'],[2,'Beat Korrath'],[3,'Beat Seris'],[4,'Beat Veyra'],[5,'Beat Corvane'],[6,'Spare Askel'],[7,'Beat Iselde'],[9,'Spare Hadrek'],[10,'Beat Grael'],[11,'Beat Osric'],[14,'Later in Chapter II']];
+    const groups = [['brew','Brewed in Alchemy'],[1,'Starting cards'],[2,'Beat Korrath'],[3,'Beat Seris'],[4,'Beat Veyra'],[5,'Beat Corvane'],[6,'Spare Askel'],[7,'Beat Iselde'],[9,'Spare Hadrek'],[10,'Beat Grael'],[11,'Beat Osric'],[13,'Beat Orrin'],[14,'Later in Chapter II']];
     for(const [tier,label] of groups){
       const cards = tier==='brew' ? CARD_DEFS.filter(c=>c.brew) : cardsInObtainOrder().filter(c=>(c.unlockTier||1)===tier && !c.brew); // same order as the deck picker; brews have their own group
       if(!cards.length) continue;
@@ -7882,7 +8197,7 @@
   function openCards(){ renderCardGuide(); const o = document.getElementById('cardsOverlay'); o.classList.add('show'); o.scrollTop = 0; }
   document.getElementById('helpCards').onclick = openCards;
   document.getElementById('cardsBack').onclick = ()=>document.getElementById('cardsOverlay').classList.remove('show');
-  function openHelp(){ const o = document.getElementById('helpOverlay'); o.classList.add('show'); o.scrollTop = 0; }
+  function openHelp(){ const o = document.getElementById('helpOverlay'); const g = document.getElementById('helpGoalDir'); if(g) g.textContent = dirText('at the top'); o.classList.add('show'); o.scrollTop = 0; }
   document.getElementById('titleHelp').onclick = openHelp;
   document.getElementById('pauseHelp').onclick = openHelp;
   document.getElementById('helpBack').onclick = ()=>document.getElementById('helpOverlay').classList.remove('show');
@@ -7898,46 +8213,53 @@
   // ---- the Kitchen: ingredients in, food out ----
   function stockChips(box, ids){ box.innerHTML = ''; for(const k of ids){ const m = FOOD_INGS.find(x=>x.id===k) || FOOD_ITEMS.find(x=>x.id===k); const sp = document.createElement('span'); sp.className = 'alc-mat'; sp.textContent = `${m.icon} ${m.name} ${food[k]}`; box.appendChild(sp); } }
   function renderKitchen(keep){
+    migrateCampLevels();
     const o = document.getElementById('kitchenOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('kitchenList');
-    stockChips(document.getElementById('kitchenStock'), FOOD_IDS); list.innerHTML = '';
+    stockChips(document.getElementById('kitchenStock'), FOOD_IDS.filter(k=>food[k]>0 || FOOD_INGS.some(x=>x.id===k && !x.wave) || (FOOD_ITEMS.find(x=>x.id===k)||{kit:9}).kit <= baseLvl('kitchen'))); list.innerHTML = '';
+    list.appendChild(baseUpgradeBar('kitchen', ()=>renderKitchen(true)));
     for(const f of FOOD_ITEMS){
-      const times = Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(food[k]/v)));
+      const locked = f.kit > baseLvl('kitchen');
+      const times = locked ? 0 : Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(food[k]/v)));
       const row = document.createElement('div'); row.className = 'cg-card alc-row' + (food[f.id] ? ' alc-done' : '');
       row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-desc"></div><div class="alc-need"></div><div class="alc-qty"></div></div>`;
       row.querySelector('.spell-preview').textContent = f.icon;
-      row.querySelector('.cg-name').textContent = `${f.name}: you hold ${food[f.id]}`;
-      row.querySelector('.cg-desc').textContent = 'Needs ' + Object.entries(f.needs).map(([k,v])=>`${v} ${FOOD_INGS.find(x=>x.id===k).name}`).join(', ') + `, makes ${f.makes}.`;
-      row.querySelector('.alc-need').textContent = ENH_TRACKS.filter(t=>t.food===f.id).map(t=>`${t.name}: a troop that eats it grows ${t.what==='health' ? 'hardier' : t.what==='damage' ? 'fiercer' : 'quicker'}.`).join(' ');
+      row.querySelector('.cg-name').textContent = `${f.name} (band ${BAND_NAMES[f.band]}): you hold ${food[f.id]}`;
+      row.querySelector('.cg-desc').textContent = 'Needs ' + Object.entries(f.needs).map(([k,v])=>`${v} ${FOOD_INGS.find(x=>x.id===k).name}`).join(', ') + `, makes ${kitchenMakes()}.`;
+      { const t = ENH_TRACKS[f.track]; row.querySelector('.alc-need').textContent = `${t.name} food for band ${BAND_NAMES[f.band]} troops: they grow ${t.what==='health' ? 'hardier' : t.what==='damage' ? 'fiercer' : 'quicker'}, or learn a function that asks for ${['bread','stew','smoked fish'][f.track]}.`; }
+      if(locked) row.classList.add('alc-locked');
       const q = row.querySelector('.alc-qty');
       const mk = (label, n)=>{ const b = document.createElement('button'); b.textContent = label; b.disabled = times < 1 || (n && times < n); b.onclick = ()=>cookFood(f.id, n || times); q.appendChild(b); };
-      mk('Cook', 1); if(times > 1) mk(`Cook all (${times})`, 0);
+      if(locked){ const b = document.createElement('button'); b.textContent = `Needs Kitchen level ${f.kit}`; b.disabled = true; q.appendChild(b); }
+      else { mk('Cook', 1); if(times > 1) mk(`Cook all (${times})`, 0); }
       list.appendChild(row);
     }
     o.classList.add('show'); o.scrollTop = top;
   }
   function cookFood(id, n){
-    const f = FOOD_ITEMS.find(x=>x.id===id); if(!f) return;
+    const f = FOOD_ITEMS.find(x=>x.id===id); if(!f || f.kit > baseLvl('kitchen')) return;
     const times = Math.min(n, Math.min(...Object.entries(f.needs).map(([k,v])=>Math.floor(food[k]/v)))); if(times < 1) return;
     for(const [k,v] of Object.entries(f.needs)) food[k] -= v*times;
-    food[id] += f.makes*times; saveFood(); beep(392, 0.25, 'triangle', 0.05); beep(523, 0.3, 'triangle', 0.04, 0.1); renderKitchen(true);
+    food[id] += kitchenMakes()*times; saveFood(); beep(392, 0.25, 'triangle', 0.05); beep(523, 0.3, 'triangle', 0.04, 0.1); renderKitchen(true);
   }
   // ---- the Training Camp: food in, a stronger troop out ----
   function renderCamp(keep){
+    migrateCampLevels();
     const o = document.getElementById('campOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('campList');
-    stockChips(document.getElementById('campStock'), FOOD_ITEMS.map(x=>x.id)); list.innerHTML = '';
+    stockChips(document.getElementById('campStock'), FOOD_ITEMS.filter(x=>food[x.id]>0 || x.kit <= baseLvl('kitchen')).map(x=>x.id)); list.innerHTML = '';
+    list.appendChild(baseUpgradeBar('yard', ()=>renderCamp(true)));
     for(const c of CARD_DEFS.filter(c=>enhTroop(c) && cardOwned(c))){
       const e = enhance[c.name] || {}, king = hasKing(c.name), row = document.createElement('div'); row.className = 'cg-card alc-row' + (enhanceTotal(c.name) ? ' alc-done' : '');
       row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="alc-need"></div><div class="alc-qty"></div></div>`;
       row.querySelector('.spell-preview').textContent = c.emoji;
       row.querySelector('.cg-name').textContent = c.name + (enhanceTotal(c.name) ? ` ★${enhanceTotal(c.name)}` : '');
-      row.querySelector('.cg-stats').textContent = statLine(c) + (king ? ' · a kingdom troop: fed for stats' : ' · no kingdom: taught functions');
+      row.querySelector('.cg-stats').textContent = statLine(c) + ` · band ${BAND_NAMES[troopBand(c)]}` + (king ? ' · a kingdom troop: fed for stats' : ' · no kingdom: taught functions');
       const q = row.querySelector('.alc-qty'), need = row.querySelector('.alc-need');
       if(king){
         need.textContent = ENH_TRACKS.map(t=>`${t.name} ${e[t.id]||0}/${ENH_MAX}${e[t.id] ? ' (+'+Math.round(t.per*e[t.id]*100)+'% '+t.what+')' : ''}`).join(' · ');
         for(const t of ENH_TRACKS){
-          const lvl = e[t.id]||0, cost = enhCost(lvl, c), item = FOOD_ITEMS.find(x=>x.id===t.food), b = document.createElement('button');
-          b.textContent = lvl>=ENH_MAX ? `${t.name} full` : `${t.name}: ${cost} ${item.name}`;
-          b.disabled = lvl>=ENH_MAX || food[t.food] < cost; b.onclick = ()=>feedTroop(c.name, t.id);
+          const lvl = e[t.id]||0, cost = enhCost(lvl, c), item = foodFor(c, ENH_TRACKS.indexOf(t)), capped = lvl >= penFeedCap(), b = document.createElement('button');
+          b.textContent = lvl>=ENH_MAX ? `${t.name} full` : capped ? `${t.name}: needs War Pen level ${[0,1,2,4,5,6][lvl+1]}` : `${t.name}: ${cost} ${item.name}`;
+          b.disabled = lvl>=ENH_MAX || capped || food[item.id] < cost; b.onclick = ()=>feedTroop(c.name, t.id);
           q.appendChild(b);
         }
       } else {
@@ -7946,10 +8268,11 @@
         if(!cur) need.textContent = fns.map(f=>`${f.name}: ${f.desc}`).join('  ·  ');
         else { const at = e.fn.lvl>=2 ? cur.next : cur; need.textContent = `${at.name}: ${at.desc}`; }
         if(legacy) need.textContent += `  (Fed for stats before: ${legacy}.)`;
-        const mk = (label, fid, cost, food_)=>{ const b = document.createElement('button'); b.textContent = label; b.disabled = food[food_] < cost; b.onclick = ()=>trainFn(c.name, fid); q.appendChild(b); };
-        if(!cur) for(const f of fns) mk(`${f.name}: ${enhCost(0, c)} ${FOOD_ITEMS.find(x=>x.id===f.food).name}`, f.id, enhCost(0, c), f.food);
-        else if(e.fn.lvl<2) mk(`${cur.next.name}: ${enhCost(1, c)} ${FOOD_ITEMS.find(x=>x.id===cur.food).name}`, cur.id, enhCost(1, c), cur.food);
+        const mk = (label, fid, cost, food_, off, retrain)=>{ const b = document.createElement('button'); b.textContent = label; b.disabled = !!off || food[food_] < cost; b.onclick = ()=>retrain ? retrainFn(c.name, fid) : trainFn(c.name, fid); q.appendChild(b); };
+        if(!cur) for(const f of fns){ const it = fnFoodFor(c, f); mk(`${f.name}: ${enhCost(0, c)} ${it.name}`, f.id, enhCost(0, c), it.id); }
+        else if(e.fn.lvl<2){ const it = fnFoodFor(c, cur); if(penFnCap()<2) mk(`${cur.next.name}: needs War Pen level 3`, cur.id, 0, it.id, true); else mk(`${cur.next.name}: ${enhCost(1, c)} ${it.name}`, cur.id, enhCost(1, c), it.id); }
         else { const b = document.createElement('button'); b.textContent = 'Fully taught'; b.disabled = true; q.appendChild(b); }
+        if(cur && baseLvl('yard')>=7){ const other = fns.find(f=>f.id!==cur.id); if(other){ const it = fnFoodFor(c, other); mk(`Retrain to ${other.name}: ${enhCost(0, c)} ${it.name}`, other.id, enhCost(0, c), it.id, false, true); } }
       }
       list.appendChild(row);
     }
@@ -7959,51 +8282,109 @@
     const c = CARD_DEFS.find(x=>x.name===name && enhTroop(x)), fns = FN_DEFS[name]; if(!c || !fns || hasKing(name)) return;
     const f = fns.find(x=>x.id===fid); if(!f) return;
     const e = enhance[name] || (enhance[name] = {hp:0, dmg:0, spd:0}), lvl = e.fn ? (e.fn.id===fid ? e.fn.lvl : 99) : 0;
-    if(lvl>=2) return; const cost = enhCost(lvl, c); if(food[f.food] < cost) return;
-    food[f.food] -= cost; e.fn = {id:fid, lvl:lvl+1}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
+    if(lvl>=2 || lvl >= penFnCap()) return; const cost = enhCost(lvl, c), it = fnFoodFor(c, f); if(food[it.id] < cost) return;
+    food[it.id] -= cost; e.fn = {id:fid, lvl:lvl+1}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
+  }
+  function retrainFn(name, fid){ // War Pen level 7: a taught troop switches to its other function and keeps its level
+    const c = CARD_DEFS.find(x=>x.name===name && enhTroop(x)), fns = FN_DEFS[name], e = enhance[name]; if(!c || !fns || !e || !e.fn || baseLvl('yard')<7) return;
+    const f = fns.find(x=>x.id===fid); if(!f || f.id===e.fn.id) return; const cost = enhCost(0, c), it = fnFoodFor(c, f); if(food[it.id] < cost) return;
+    food[it.id] -= cost; e.fn = {id:fid, lvl:e.fn.lvl}; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(440, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
   }
   function feedTroop(name, trackId){
     const t = ENH_TRACKS.find(x=>x.id===trackId), c = CARD_DEFS.find(x=>x.name===name && enhTroop(x)); if(!t || !c || !hasKing(name)) return; // only a kingdom troop is fed for stats
-    const e = enhance[name] || (enhance[name] = {hp:0, dmg:0, spd:0}), lvl = e[t.id]||0, cost = enhCost(lvl, c);
-    if(lvl>=ENH_MAX || food[t.food] < cost) return;
-    food[t.food] -= cost; e[t.id] = lvl+1; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
+    const e = enhance[name] || (enhance[name] = {hp:0, dmg:0, spd:0}), lvl = e[t.id]||0, cost = enhCost(lvl, c), it = foodFor(c, ENH_TRACKS.indexOf(t));
+    if(lvl>=ENH_MAX || lvl >= penFeedCap() || food[it.id] < cost) return;
+    food[it.id] -= cost; e[t.id] = lvl+1; saveFood(); saveEnhance(); beep(330, 0.2, 'triangle', 0.05); beep(494, 0.3, 'triangle', 0.045, 0.09); renderCamp(true); renderDeckPicker();
   }
   document.getElementById('titleKitchen').onclick = ()=>renderKitchen(false);
   let baseSel = null; // a building chosen to place, or 'move' / a building being moved
   function baseGrants(){ // each building's Mortar arrives when its work unlocks, once
-    let got = 0; for(const b of BASE_BUILDS){ if(b.unlocked() && !camp.granted[b.id]){ camp.granted[b.id] = true; camp.mortar += b.cost; got += b.cost; } }
+    let got = 0; for(const b of BASE_BUILDS){ if(b.unlocked() && !camp.granted[b.id] && (!b.grant || b.grant())){ camp.granted[b.id] = true; camp.mortar += b.cost; got += b.cost; } }
     if(got) saveCamp(); return got;
   }
   function baseAt(x, y){ return BASE_BUILDS.find(b=>{ const p = camp.built[b.id]; return p && p[0]===x && p[1]===y; }) || null; }
-  function baseOpenBuilding(b){ if(b.id==='still') openAlchemy(false); else if(b.id==='kitchen') renderKitchen(false); else renderCamp(false); }
+  function baseUpgrade(id){
+    const lvl = baseLvl(id), next = lvl+1, cost = BASE_LVL_COST[next]; if(next > maxLvl(id) || !hasBlueprint(id, next) || camp.mortar < cost) return false;
+    camp.mortar -= cost; camp.levels[id] = next; saveCamp(); thud(0.35, 0.16, 380); beep(262, 0.12, 'square', 0.03); beep(392, 0.2, 'triangle', 0.04, 0.1); beep(523, 0.25, 'triangle', 0.035, 0.22); haptic(HAPTIC.place); return true;
+  }
+  function baseUpgradeBar(id, rerender){ // the line at the top of a building's screen: its level, what the next one opens, and the way there
+    const B = BASE_BUILDS.find(b=>b.id===id), lvl = baseLvl(id), next = lvl+1, el = document.createElement('div'); el.className = 'base-up';
+    const head = document.createElement('div'); head.className = 'base-up-head'; head.textContent = `${B.name} · level ${lvl} of ${maxLvl(id)} · Mortar ${camp.mortar}`; el.appendChild(head);
+    if(next > maxLvl(id)){ const d = document.createElement('div'); d.textContent = 'Fully raised.'; el.appendChild(d); return el; }
+    const d = document.createElement('div'); d.className = 'base-up-next'; d.textContent = `Level ${next} opens ${BASE_LVL_TEXT[id][next]}.`; el.appendChild(d);
+    const b = document.createElement('button'), bp = hasBlueprint(id, next), cost = BASE_LVL_COST[next];
+    b.textContent = !bp ? `Needs the blueprint from ${blueprintFrom(id, next)}` : camp.mortar < cost ? `Raise to ${next}: ${cost} Mortar (you have ${camp.mortar})` : `Raise to ${next}: ${cost} Mortar`;
+    b.disabled = !bp || camp.mortar < cost; b.onclick = ()=>{ if(baseUpgrade(id)) rerender(); };
+    el.appendChild(b); return el;
+  }
+  function baseOpenBuilding(b){ if(b.id==='still') openAlchemy(false); else if(b.id==='kitchen') renderKitchen(false); else if(b.id==='workshop') renderWorkshop(false); else renderCamp(false); }
+  const baseCost = B => B.costFor ? B.costFor() : B.cost;
+  // ---- the Workshop: fittings for your buildings, kept by building name, used in story fights and the Holdfast alike ----
+  const FITTINGS = [
+    {id:'barbs',  name:'Barbs',        icon:'✕', mat:'bone',  lvl:1, desc:`Rival melee troops that strike it take ${3} per hit.`},
+    {id:'holes',  name:'Murder holes', icon:'⁙', mat:'ash',   lvl:2, desc:'Rival troops within 4 of it take 2 a second.'},
+    {id:'sluice', name:'Sluice',       icon:'∽', mat:'brine', lvl:4, desc:'When it falls, rival troops within 12 move at half speed for 5 s.'},
+  ];
+  const FIT_REFUSE = {'Spike Pit':['barbs','holes']}; // raiders walk over a Spike Pit instead of striking it, and it already hurts what crosses it
+  const fitSockets = () => baseLvl('workshop')>=3 ? 2 : 1, fitCost = () => baseLvl('workshop')>=5 ? 2 : 3;
+  function workshopBuildings(){ // every building you own, and the Holdfast's own once it is open
+    const story = CARD_DEFS.filter(c=>c.isBuilding && !c.brew && cardOwned(c)).map(c=>({name:c.name, icon:c.emoji, where:'story and Holdfast'}));
+    const hold = unlockedTier>=HOLDFAST_TIER ? HF_BUILDS.map(b=>({name:b.name, icon:b.emoji, where:'Holdfast'})) : [];
+    return story.concat(hold);
+  }
+  function renderWorkshop(keep){
+    migrateCampLevels();
+    const o = document.getElementById('workshopOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('workshopList'), mats = document.getElementById('workshopMats');
+    mats.innerHTML = ''; for(const m of MATERIALS){ const sp = document.createElement('span'); sp.className = 'alc-mat'; sp.textContent = `${m.icon} ${m.name} ${materials[m.id]}`; mats.appendChild(sp); }
+    list.innerHTML = ''; list.appendChild(baseUpgradeBar('workshop', ()=>renderWorkshop(true)));
+    const avail = FITTINGS.filter(f=>f.lvl <= baseLvl('workshop'));
+    for(const b of workshopBuildings()){
+      const have = workshop[b.name] || [], row = document.createElement('div'); row.className = 'cg-card alc-row' + (have.length ? ' alc-done' : '');
+      row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="alc-need"></div><div class="alc-qty"></div></div>`;
+      row.querySelector('.spell-preview').textContent = b.icon;
+      row.querySelector('.cg-name').textContent = b.name;
+      row.querySelector('.cg-stats').textContent = `${have.length}/${fitSockets()} sockets · used in the ${b.where}`;
+      row.querySelector('.alc-need').textContent = have.length ? have.map(id=>{ const f = FITTINGS.find(x=>x.id===id); return `${f.name}: ${f.desc}`; }).join('  ·  ') : 'No fittings yet.';
+      const q = row.querySelector('.alc-qty');
+      for(const id of have){ const f = FITTINGS.find(x=>x.id===id), bt = document.createElement('button'); bt.textContent = `Remove ${f.name}`; bt.onclick = ()=>{ workshop[b.name] = have.filter(x=>x!==id); if(!workshop[b.name].length) delete workshop[b.name]; saveWorkshop(); renderWorkshop(true); }; q.appendChild(bt); }
+      for(const f of avail){ if(have.includes(f.id)) continue; const refused = (FIT_REFUSE[b.name]||[]).includes(f.id), m = MATERIALS.find(x=>x.id===f.mat), bt = document.createElement('button');
+        bt.textContent = refused ? `${f.name}: does not fit` : `Fit ${f.name}: ${fitCost()} ${m.name}`; bt.disabled = refused || have.length >= fitSockets() || materials[f.mat] < fitCost();
+        bt.onclick = ()=>{ if(materials[f.mat] < fitCost()) return; materials[f.mat] -= fitCost(); (workshop[b.name] || (workshop[b.name] = [])).push(f.id); saveAlchemy(); saveWorkshop(); thud(0.25, 0.12, 500); beep(330, 0.1, 'square', 0.03); renderWorkshop(true); };
+        q.appendChild(bt); }
+      list.appendChild(row);
+    }
+    o.classList.add('show'); o.scrollTop = top;
+  }
+  document.getElementById('workshopBack').onclick = ()=>document.getElementById('workshopOverlay').classList.remove('show');
   function renderBase(){
     const o = document.getElementById('baseOverlay'), map = document.getElementById('baseMap'), bar = document.getElementById('baseBuild'), hint = document.getElementById('baseHint');
-    const fresh = baseGrants();
+    const fresh = baseGrants(); migrateCampLevels();
     document.getElementById('baseMortar').innerHTML = `<span class="alc-mat">▣ Mortar ${camp.mortar}</span>`;
     map.innerHTML = '';
     const placing = baseSel && baseSel!=='move';
     for(let y=0; y<BASE_ROWS; y++) for(let x=0; x<BASE_COLS; x++){
       const c = document.createElement('div'), fx = BASE_FIXED[x+','+y], b = baseAt(x, y);
       if(fx){ c.className = 'base-cell fixed' + (fx==='*' ? ' fire' : ''); c.textContent = fx; }
-      else if(b){ c.className = 'base-cell bld' + (baseSel && baseSel.moving===b.id ? ' sel' : ''); c.innerHTML = `<b></b><span></span>`; c.querySelector('b').textContent = b.icon; c.querySelector('span').textContent = b.name;
+      else if(b){ c.className = 'base-cell bld' + (baseSel && baseSel.moving===b.id ? ' sel' : ''); c.innerHTML = `<b></b><span></span>`; c.querySelector('b').textContent = b.icon; c.querySelector('span').textContent = `${b.name} · ${baseLvl(b.id)}`;
         c.onclick = ()=>{ if(baseSel==='move'){ baseSel = {moving:b.id}; sfxFatePick(); renderBase(); return; } if(baseSel) return; sfxTutClick(); baseOpenBuilding(b); }; }
       else { const canDrop = placing; c.className = 'base-cell' + (canDrop ? ' open' : '');
         c.onclick = ()=>{
           if(baseSel && baseSel.moving){ camp.built[baseSel.moving] = [x,y]; baseSel = null; saveCamp(); thud(0.2, 0.1, 400); renderBase(); return; }
-          if(!placing) return; const B = BASE_BUILDS.find(k=>k.id===baseSel); if(!B || camp.mortar < B.cost) return;
-          camp.mortar -= B.cost; camp.built[B.id] = [x,y]; baseSel = null; saveCamp(); thud(0.3, 0.14, 420); beep(196, 0.1, 'square', 0.03); beep(294, 0.14, 'triangle', 0.035, 0.08); haptic(HAPTIC.place); renderBase(); }; }
+          if(!placing) return; const B = BASE_BUILDS.find(k=>k.id===baseSel); if(!B || camp.mortar < baseCost(B)) return;
+          camp.mortar -= baseCost(B); camp.built[B.id] = [x,y]; baseSel = null; saveCamp(); thud(0.3, 0.14, 420); beep(196, 0.1, 'square', 0.03); beep(294, 0.14, 'triangle', 0.035, 0.08); haptic(HAPTIC.place); renderBase(); }; }
       map.appendChild(c);
     }
     bar.innerHTML = '';
     for(const B of BASE_BUILDS){ if(!B.unlocked() || camp.built[B.id]) continue;
-      const bt = document.createElement('button'); bt.textContent = `${B.icon} ${B.name} · ${B.cost} Mortar`; bt.disabled = camp.mortar < B.cost; if(baseSel===B.id) bt.classList.add('sel');
+      const bt = document.createElement('button'); bt.textContent = `${B.icon} ${B.name} · ${baseCost(B)} Mortar`; bt.disabled = camp.mortar < baseCost(B); if(baseSel===B.id) bt.classList.add('sel');
       bt.onclick = ()=>{ baseSel = baseSel===B.id ? null : B.id; renderBase(); }; bar.appendChild(bt); }
     if(Object.keys(camp.built).length){ const mv = document.createElement('button'); mv.textContent = baseSel && (baseSel==='move' || baseSel.moving) ? 'Cancel move' : 'Move a building'; if(baseSel==='move' || (baseSel && baseSel.moving)) mv.classList.add('sel');
       mv.onclick = ()=>{ baseSel = (baseSel==='move' || (baseSel && baseSel.moving)) ? null : 'move'; renderBase(); }; bar.appendChild(mv); }
     const left = BASE_BUILDS.filter(B=>B.unlocked() && !camp.built[B.id]);
     hint.textContent = baseSel==='move' ? 'Tap a building to pick it up.' : (baseSel && baseSel.moving) ? 'Tap an empty plot to set it down. Moving is free.'
       : placing ? `Tap an empty plot for the ${BASE_BUILDS.find(k=>k.id===baseSel).name}: ${BASE_BUILDS.find(k=>k.id===baseSel).opens}.`
-      : fresh ? `The stores sent ${fresh} Mortar. Choose a building below, then a plot.` : left.length ? 'Choose a building below, then a plot.' : 'Tap a building to work in it.';
+      : fresh ? `The stores sent ${fresh} Mortar. Choose a building below, then a plot.` : left.length ? 'Choose a building below, then a plot.'
+      : (orrinChoice==='slain' && !camp.built.workshop) ? "Tap a building to work in it. Orrin's Workshop can still be raised: hold the Holdfast to wave 15." : 'Tap a building to work in it.';
     o.classList.add('show');
   }
   // ---- Rematches: one page per fallen challenger, swiped through, with their art, their words before the fight, and a button ----
@@ -8096,10 +8477,10 @@
   function applyLayout(){
     const land = innerWidth > innerHeight, phone = layoutPref==='phone' ? true : layoutPref==='tablet' ? false : (land ? innerHeight <= 500 : innerWidth <= 640);
     document.body.classList.toggle('land', land); document.body.classList.toggle('lay-phone', phone); document.body.classList.toggle('lay-tablet', !phone);
-    lastScale = 0; measureField();
+    syncSideways(); lastScale = 0; measureField();
   }
   try{ document.body.classList.toggle('sw-hand-right', localStorage.getItem('bloodline_swHand')==='1'); document.body.classList.toggle('sw-blood-left', localStorage.getItem('bloodline_swBlood')==='1'); }catch(e){}
-  document.body.classList.toggle('sideways', sideways); applyLayout(); window.addEventListener('resize', applyLayout); // zoom stays right even while paused
+  applyLayout(); window.addEventListener('resize', applyLayout); // also settles the field's direction; zoom stays right even while paused
   if(window.ResizeObserver) new ResizeObserver(measureField).observe(arena); // the arena also changes when the layout around it does
   updateIntroText(); renderTitle(); fitPortraits();
   window.addEventListener('load', fitPortraits); if(document.fonts && document.fonts.ready) document.fonts.ready.then(fitPortraits); // refit once real fonts and text scaling settle
