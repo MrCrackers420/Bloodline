@@ -11211,7 +11211,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         for(let k=0;k<n;k++){ const r = rng(); L.push(fl >= 2 && r < 0.22 ? 'hound' : k%3===2 ? 'viper' : 'jackal'); }
         const beh = fl===1 ? (R.dist >= 3 ? 1 : 0) : 1 + (rng() < 0.35 ? 1 : 0); for(let k=0;k<beh;k++) L.push('behemoth');
         R.foeList = L;
-        if(!R.elite && rng() < 0.3) R.chestKind = rng() < 0.35 ? 'cursed' : 'plain';
+        if(!R.elite && rng() < 0.2) R.chestKind = rng() < 0.35 ? 'cursed' : 'plain';
       }
       if(R.type==='start' && fl===1) R.chestKind = 'plain';
       if(R.type==='shop') R.shop = ufShopStock(rng);
@@ -11542,6 +11542,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const ch = uf.chest; if(!ch || ch.open) return; ch.open = true; uf.mapVer++;
     const k = ch.kind || 'plain';
     ufFx({kind:'ring', x:ch.x, y:ch.y, r:26, t:360, col:k==='cursed' ? '197,138,240' : '224,181,74'}); thud(0.25, 0.14, 500); beep(523, 0.2, 'triangle', 0.04); beep(784, 0.3, 'triangle', 0.035, 0.1);
+    if(k==='plain' && uf.here && uf.here.type!=='start' && Math.random() < 0.55){ // not every chest is a nest: some just hold loot, which spills out
+      const drop = (o, n)=>{ for(let i=0;i<n;i++){ const a = Math.random()*Math.PI*2, r = 14 + Math.random()*16; uf.orbs.push(Object.assign({x:ch.x + Math.cos(a)*r, y:ch.y + 18 + Math.abs(Math.sin(a))*r}, o)); } };
+      const r = Math.random(), mercy = ufHeat('mercy');
+      if(r < 0.4){ drop({t:15000}, 7); uf.banner = {text:'A hoard of blood', t:1400}; }
+      else if(r < 0.7 && !mercy){ drop({t:1e9, heal:1}, 2); drop({t:15000}, 2); uf.banner = {text:'Hearts', t:1400}; }
+      else { drop({t:1e9, key:true}, 1); drop({t:15000}, 3); uf.banner = {text:'A key', t:1400}; }
+      return; }
     ufOffer('chest', ufRollParas(3, k!=='plain'), {bonus:k==='cursed' ? 2 : k==='rare' ? 1 : 0, cursed:k==='cursed', fine:k!=='plain'});
   }
   function ufPickFocus(){ if(!!activePad()) padSet(ufEl('ufPickRow').querySelector('button:not([disabled])') || ufEl('ufPickSkip')); }
