@@ -1,3 +1,4 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -317,6 +318,45 @@
   .road-day{ font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:var(--crimson-lt); } .road-to{ font-size:.95rem; color:var(--bone); letter-spacing:.06em; }
   .road-text{ max-width:34ch; text-align:center; font-style:italic; color:var(--bone); line-height:1.5; margin:0; min-height:3em; opacity:0; transition:opacity 1.1s; } .road-text.on{ opacity:1; }
   #workshopOverlay, #labOverlay, #boilerOverlay, #tavernOverlay, #friendOverlay{ z-index:61 !important; } #friendOverlay{ background:#0a0706; justify-content:flex-start; }
+  #ufOverlay{ z-index:62; background:#0a0706; padding:0 !important; gap:0; justify-content:flex-start; align-items:stretch; overflow:hidden; touch-action:none; }
+  .uf-stage{ position:absolute; inset:0; }
+  .uf-hud{ position:absolute; left:0; right:0; top:0; pointer-events:none; z-index:2; display:flex; justify-content:space-between; align-items:flex-start;
+    padding:max(3vmin, env(safe-area-inset-top,0px)) max(4vmin, env(safe-area-inset-right,0px)) 0 max(4vmin, env(safe-area-inset-left,0px)); font-size:clamp(14px, 2.6vmin, 30px); color:var(--bone); } /* TV-safe margins */
+  .uf-stats{ display:flex; flex-direction:column; gap:.25em; text-shadow:0 0 6px #000, 0 0 3px #000; background:rgba(10,7,6,.62); padding:.35em .6em .5em; border-radius:6px; }
+  .uf-stats span{ font-size:.7em; letter-spacing:.12em; color:var(--bone-dim); }
+  .uf-hp b{ color:#ee5a75; font-size:1.6em; } .uf-blv b{ color:#e0b54a; font-size:1.25em; }
+  .uf-slots{ display:flex; gap:.3em; margin-top:.15em; }
+  .uf-slot{ width:1.7em; height:2.2em; border:2px solid #3a2c27; border-radius:4px; background:rgba(16,11,10,.85); display:flex; align-items:center; justify-content:center; color:#ee5a75; font-size:.95em; }
+  .uf-slot{ flex-direction:column; line-height:1; } .uf-slot i{ font-style:normal; font-size:.55em; color:var(--bone); margin-top:.15em; }
+  .uf-tarots{ display:flex; gap:.3em; font-size:.9em; color:#c58af0; min-height:0; }
+  .uf-pick{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:.8em; background:rgba(10,7,6,.88); z-index:3; font-size:clamp(14px, 2.3vmin, 26px); padding:4vmin; text-align:center; }
+  .uf-pick.on{ display:flex; } #ufPickTitle{ color:var(--bone); letter-spacing:.04em; }
+  .uf-pick-row{ display:flex; gap:.8em; flex-wrap:wrap; justify-content:center; }
+  .overlay .uf-pick .uf-opt{ width:min(11em, 29vw); display:flex; flex-direction:column; align-items:center; gap:.3em; padding:.7em .5em; font-size:.9em; line-height:1.3; }
+  .uf-opt .g{ font-size:2.2em; line-height:1; } .uf-opt .r{ font-size:.75em; } .uf-opt .d{ font-size:.8em; color:var(--bone-dim); }
+  .overlay .uf-pick .uf-opt[disabled]{ opacity:.4; } .overlay .uf-pick #ufPickSkip{ font-size:.8em; opacity:.75; }
+  .uf-mapbox{ display:flex; flex-direction:column; align-items:flex-end; gap:.25em; }
+  #ufMap{ width:6.5em; height:6.5em; background:rgba(10,7,6,.78); border:2px solid #3a2c27; border-radius:6px; }
+  .uf-roomlab{ font-size:.8em; text-shadow:0 0 6px #000; background:rgba(10,7,6,.62); padding:.1em .45em; border-radius:4px; } .uf-roomlab b{ color:#e0b54a; }
+  .overlay button.uf-pause{ position:absolute; right:max(4vmin, env(safe-area-inset-right,0px)); bottom:max(3vmin, env(safe-area-inset-bottom,0px)); z-index:2; font-size:clamp(12px, 2vmin, 20px); opacity:.7; }
+  #ufCanvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  .uf-panel{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:.6em; background:rgba(10,7,6,.9); z-index:3; text-align:center; padding:5vmin; font-size:clamp(14px, 2.3vmin, 26px); line-height:1.45; }
+  .overlay .uf-panel button{ font-size:1em; padding:.45em 1.4em; min-width:8em; }
+  #ufOverlay .pad-focus{ outline-width:3px !important; outline-offset:3px; }
+  .uf-panel.on{ display:flex; }
+  .uf-meta{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:.55em; background:rgba(10,7,6,.95); z-index:4; overflow-y:auto; padding:5vmin 4vmin; font-size:clamp(14px, 2.2vmin, 24px); text-align:center; color:var(--bone); }
+  .uf-meta.on{ display:flex; } #ufOverlay.uf-menu .uf-hud, #ufOverlay.uf-menu .uf-pause{ display:none; }
+  .uf-meta h2{ margin:0; letter-spacing:.2em; font-size:1.5em; color:var(--crimson-lt); }
+  .uf-meta .uf-sub{ color:var(--bone-dim); font-size:.85em; }
+  .uf-meta .uf-h{ margin-top:.5em; font-size:.72em; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); }
+  .uf-row{ display:flex; flex-wrap:wrap; gap:.45em; justify-content:center; max-width:min(46em, 94vw); }
+  .overlay .uf-meta button{ font-size:.85em; padding:.4em .9em; }
+  .overlay .uf-meta button.on{ border-color:#e0b54a; color:#e0b54a; }
+  .overlay .uf-meta button small{ display:block; font-size:.75em; color:var(--bone-dim); margin-top:.15em; font-weight:normal; }
+  .overlay .uf-meta button:disabled{ opacity:.4; }
+  .overlay .uf-meta input.uf-seed{ width:10em; font-size:.8em; padding:.3em .5em; }
+  .uf-meta .uf-help{ white-space:pre-line; max-width:34em; text-align:left; line-height:1.45; font-size:.9em; }
+  .uf-meta .uf-end{ line-height:1.6; font-size:.95em; } .uf-meta .uf-bones{ color:#e0b54a; font-size:1.1em; margin:.3em 0; } #ufMsg{ max-width:min(34em,90vw); white-space:pre-line; }
   .pad-focus{ outline:2px solid #e0b54a !important; outline-offset:2px; box-shadow:0 0 8px rgba(224,181,74,.6) !important; }
   .btn-shake{ animation:btn-shake .4s ease-in-out; } #deckCount.btn-shake{ color:var(--crimson-lt); }
   @keyframes btn-shake{ 0%,100%{ transform:none; } 20%{ transform:translateX(-6px); } 40%{ transform:translateX(6px); } 60%{ transform:translateX(-4px); } 80%{ transform:translateX(4px); } }
@@ -325,7 +365,7 @@
   .watch-cards{ color:var(--bone-dim); font-size:.68rem; line-height:1.5; }
   .deck-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(90px, 1fr)); gap:4px; margin:.4rem 0; }
   .deck-grid button{ font-size:.66rem; padding:.3rem; text-align:left; } .deck-grid button.on{ border-color:#e0b54a; color:#e0b54a; }
-  body.watching .hand{ opacity:.3 !important; pointer-events:none !important; filter:grayscale(.6); } /* watching: the cards are not yours to play */ #friendOverlay{ background:#0a0706; justify-content:flex-start; } #tavernOverlay{ background:#0a0706; justify-content:flex-start; } #boilerOverlay{ background:#0a0706; justify-content:flex-start; }
+  body.watching .hand{ display:none !important; } /* watching: no hand at all, the board takes the room */ #friendOverlay{ background:#0a0706; justify-content:flex-start; } #tavernOverlay{ background:#0a0706; justify-content:flex-start; } #boilerOverlay{ background:#0a0706; justify-content:flex-start; }
   .cg-record{ font-size:.66rem; color:#e0b54a; margin-top:.25rem; letter-spacing:.02em; } .cg-card.unmet .spell-preview{ opacity:.35; }
   .king-note{ color:#e0b54a; text-align:center; }
   .tavern-rumour{ font-style:italic; color:var(--bone); text-align:center; margin:.4rem 0; }
@@ -1117,6 +1157,7 @@
       <button id="exportLog" style="font-size:.65rem; opacity:.6;">Export play log</button>
       <button id="tutorialTest" style="font-size:.65rem; opacity:.6;">Guided fight (test)</button>
       <button id="holdfastTest" style="font-size:.65rem; opacity:.6;">Holdfast (test)</button>
+      <button id="ufTest" style="font-size:.65rem; opacity:.6;">Underfield arena (test)</button>
     </div>
     <div class="tools-tab-content" id="cheats-tab">
       <button id="skipChallenger" style="font-size:.65rem; opacity:.6;">Skip to Next Challenger (test)</button>
@@ -1145,6 +1186,18 @@
     </div>
   </div>
   </div>
+</div>
+
+<div class="overlay" id="ufOverlay">
+    <div class="uf-stage"><canvas id="ufCanvas"></canvas>
+    <div class="uf-panel" id="ufPanel"><div id="ufMsg"></div><button id="ufResume">Resume</button><button id="ufRestart">Give up</button><button id="ufLeave">Leave</button></div>
+    <div class="uf-pick" id="ufPick"><div id="ufPickTitle"></div><div class="uf-pick-row" id="ufPickRow"></div><button id="ufPickSkip">Leave them</button></div>
+    <div class="uf-meta" id="ufMeta"></div></div>
+  <div class="uf-hud">
+    <div class="uf-stats" id="ufStats"><div class="uf-hp"><span>HP</span> <b id="ufHpN">100</b></div><div class="uf-blv"><span>Blood</span> <b id="ufBlood">0</b></div><div class="uf-slots" id="ufSlots"></div><div class="uf-tarots" id="ufTarots"></div></div>
+    <div class="uf-mapbox" id="ufMapBox"><canvas id="ufMap"></canvas><div class="uf-roomlab" id="ufRoomLab"></div></div>
+  </div>
+  <button id="ufPause" class="uf-pause">Pause</button>
 </div>
 
 <div class="overlay" id="holdfastOverlay">
@@ -3317,6 +3370,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   function dealAiDeck(){
     document.body.classList.toggle('watching', !!currentChallenger.watch);
+    if(!duoOn()){ const w = !!currentChallenger.watch; document.querySelector('.meter.p .who').textContent = w ? 'BOTTOM' : 'YOU'; document.querySelector('.meter.a .who').textContent = w ? 'TOP' : 'RIVAL'; }
     if(currentChallenger.watch){ const dk = currentChallenger.watchDeck.slice().sort(()=>Math.random()-0.5); state.watch = true; state.pAI = {aHand:dk.slice(0, HAND_SIZE), aQueue:dk.slice(HAND_SIZE), aPush:null}; }
     if(currentChallenger.friendDeck){ const deck = currentChallenger.friendDeck.slice(); for(let i=deck.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [deck[i],deck[j]]=[deck[j],deck[i]]; } return {aHand:deck.slice(0, HAND_SIZE), aQueue:deck.slice(HAND_SIZE)}; } // a friend's army plays its own deck
     if(currentChallenger.skirmish) return skirmishDeck();
@@ -7737,7 +7791,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     return g.rush ? `Every fire in camp roars at once: ${got.join(', ')}.` : `${g.name} reaches your camp: ${got.join(', ')}.`;
   }
   function exportSave(){
-    const data = {labStock, saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, ysoldeChoice, cassorChoice, wrenChoice, wrenGift, kings, labMade, lab, beatenIds, storyAt, orrinRelic, workshop, fitMade, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp, codes:codesUsed};
+    const data = {labStock, saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, ysoldeChoice, cassorChoice, wrenChoice, wrenGift, kings, labMade, lab, beatenIds, storyAt, orrinRelic, workshop, fitMade, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp, codes:codesUsed, uf:ufMeta};
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -7787,6 +7841,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         else for(const n of brewed) brewStock[n] = BREW_DOSES; // a save from before doses: a full batch of each
         brewing = cleanBrewing(data.brewing); holdfast = cleanHoldfast(data.holdfast); saveHoldfast(); camp = cleanCamp(data.camp); saveCamp(); food = cleanFood(data.food); saveFood(); enhance = cleanEnhance(data.enhance); saveEnhance();
         if(Array.isArray(data.codes)){ codesUsed = data.codes.filter(x=>typeof x==='string' && /^[0-9a-z]{1,24}$/.test(x)); saveCodesUsed(); }
+        if(data.uf && typeof data.uf==='object'){ ufMeta = ufCleanMeta(data.uf); ufSaveMeta(); }
         if(Array.isArray(data.bounties)) bounties = data.bounties.filter(n=>Number.isInteger(n) && n>0 && n<100); saveBounties();
         if(Array.isArray(data.formations)){ formations = data.formations.filter(f=>f && /^f\d+$/.test(String(f.id)) && typeof f.a==='string' && typeof f.b==='string' && FORMATION_SHAPES[f.shape] && CARD_DEFS.some(c=>c.name===f.a) && CARD_DEFS.some(c=>c.name===f.b)).slice(0, FORMATION_MAX); saveFormations(); } // formations travel with the save
         saveAlchemy();
@@ -7843,7 +7898,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(matchStarted && !state.over && !paused){ const pb = document.getElementById('pauseBtn'); if(pb){ pb.click(); return true; } } // mid-fight: pause
     return true;
   }
-  window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ e.preventDefault(); goBack(); } });
+  const ufPadPlaying = () => ufActive && uf && !uf.paused && !uf.over && padAnyPressed(); /* a controller button that Edge also turned into Back */
+  window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ e.preventDefault(); if(!ufPadPlaying()) goBack(); } });
   // ---- a controller in the menus: the D-pad or left stick moves a gold focus between the buttons on the screen in front, A presses, B goes
   // back, Start pauses a fight. Touch or a mouse hides the focus again ----
   let padEl = null, padHeld = {}, padNext = 0, padAny = false;
@@ -7857,10 +7913,18 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function padMove(dx, dy){
     const c = padCands(); if(!c.length){ padSet(null); return; }
     if(!padEl || !c.includes(padEl)){ padSet(c.find(e=>e.classList.contains('title-main')) || c[0]); return; }
-    const r = padEl.getBoundingClientRect(), cx = r.left + r.width/2, cy = r.top + r.height/2; let best = null, bs = Infinity;
-    for(const e of c){ if(e===padEl) continue; const q = e.getBoundingClientRect(), ex = q.left + q.width/2 - cx, ey = q.top + q.height/2 - cy, along = ex*dx + ey*dy;
-      if(along <= 2) continue; const side = Math.abs(ex*dy - ey*dx), score = along + side*2; if(score < bs){ bs = score; best = e; } }
-    if(best){ padSet(best); beep(660, 0.03, 'triangle', 0.02); }
+    // Rows and columns, like a keyboard: up and down go to the nearest row in that direction, then the button most nearly in line
+    // (a tie goes to the leftmost); left and right only move along the same row, and do nothing if nothing shares it
+    const r = padEl.getBoundingClientRect(), vert = dy!==0, dir = vert ? dy : dx, rc = vert ? r.top + r.height/2 : r.left + r.width/2;
+    const box = e => e.getBoundingClientRect();
+    const gap = q => Math.max(0, vert ? (dy>0 ? q.top - r.bottom : r.top - q.bottom) : (dx>0 ? q.left - r.right : r.left - q.right));
+    let pool = c.filter(e=>{ if(e===padEl) return false; const q = box(e), m = vert ? q.top + q.height/2 : q.left + q.width/2; return (m - rc)*dir > 2; });
+    if(!vert) pool = pool.filter(e=>{ const q = box(e); return q.bottom > r.top + 2 && q.top < r.bottom - 2; });
+    if(!pool.length) return;
+    const g0 = Math.min(...pool.map(e=>gap(box(e)))), row = pool.filter(e=>gap(box(e)) <= g0 + 10);
+    const off = e => { const q = box(e); return Math.abs(vert ? (q.left + q.width/2) - (r.left + r.width/2) : (q.top + q.height/2) - (r.top + r.height/2)); };
+    row.sort((a,b)=>{ const d = off(a) - off(b); return Math.abs(d) > 12 ? d : (box(a).left - box(b).left) || (box(a).top - box(b).top); });
+    padSet(row[0]); beep(660, 0.03, 'triangle', 0.02);
   }
   function padPress(){
     const t = document.getElementById('titleOverlay');
@@ -7870,14 +7934,26 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(padEl.tagName==='INPUT' || padEl.tagName==='TEXTAREA'){ padEl.focus(); if(padEl.type==='checkbox'){ padEl.checked = !padEl.checked; padEl.dispatchEvent(new Event('change')); } return; }
     padEl.click();
   }
-  function padPoll(){
-    const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
-    if(pads.length){ const g = pads[0], b = k => !!(g.buttons[k] && g.buttons[k].pressed), ax = g.axes[0]||0, ay = g.axes[1]||0;
+  // the controller to read: a connected one with the standard layout, the most recently used first (Edge on Xbox can list more than one)
+  function activePad(){ if(!navigator.getGamepads) return null; let best = null;
+    for(const g of navigator.getGamepads()){ if(!g || g.connected===false) continue; const st = g.mapping==='standard', bs = best && best.mapping==='standard';
+      if(!best || (st && !bs) || (st===bs && (g.timestamp||0) > (best.timestamp||0))) best = g; }
+    return best; }
+  const padAnyPressed = () => { const g = activePad(); return !!g && g.buttons.some(b=>b && b.pressed); };
+  const ON_XBOX = /xbox/i.test(navigator.userAgent||'');
+  try{ if('gamepadInputEmulation' in navigator) navigator.gamepadInputEmulation = 'gamepad'; }catch(e){} /* older Edge on Xbox: hand the controller to the page */
+  function padWakeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
+  for(const ev of ['keydown','pointerdown']) window.addEventListener(ev, padWakeAudio, true);
+  function padPoll(){ if(ufActive && uf && !uf.paused && !uf.over){ /* the arena reads the pad itself while you play; menus take over when its panel is up */
+      const g0 = activePad(); if(g0){ for(const k of [0,1,8,9]) padHeld[k] = !!(g0.buttons[k] && g0.buttons[k].pressed); padHeld.dir = true; }
+      requestAnimationFrame(padPoll); return; }
+    const g = activePad();
+    if(g){ if(g.buttons.some(x=>x && x.pressed)) padWakeAudio(); const b = k => !!(g.buttons[k] && g.buttons[k].pressed), ax = g.axes[0]||0, ay = g.axes[1]||0;
       const dir = (b(12) || ay < -0.5) ? [0,-1] : (b(13) || ay > 0.5) ? [0,1] : (b(14) || ax < -0.5) ? [-1,0] : (b(15) || ax > 0.5) ? [1,0] : null, now = performance.now();
       if(dir){ if(!padHeld.dir || now >= padNext){ padNext = now + (padHeld.dir ? 130 : 380); padAny = true; padMove(dir[0], dir[1]); } padHeld.dir = true; } else padHeld.dir = false;
       const edge = (k, fn)=>{ if(b(k) && !padHeld[k]){ padAny = true; fn(); } padHeld[k] = b(k); };
       edge(0, padPress); edge(1, ()=>goBack());
-      edge(9, ()=>{ if(matchStarted && !state.over && !document.querySelector('.overlay.show')) document.getElementById('pauseBtn').click(); else goBack(); });
+      const startFn = ()=>{ if(matchStarted && !state.over && !document.querySelector('.overlay.show')) document.getElementById('pauseBtn').click(); else goBack(); }; edge(9, startFn); edge(8, startFn); /* Menu or View */
     }
     if(padEl && !document.contains(padEl)) padSet(null);
     requestAnimationFrame(padPoll);
@@ -7885,7 +7961,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   window.addEventListener('pointerdown', ()=>{ if(padEl) padSet(null); }, true);
   window.addEventListener('gamepadconnected', ()=>{ if(!padAny) padMove(0, 1); });
   requestAnimationFrame(padPoll);
-  try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} // one step of history keeps the phone's Back inside the game
+  try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(ufPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} // one step of history keeps the phone's Back inside the game
   document.getElementById('roadTestBtn').onclick = ()=>{ const nx = storyNext(), tt = document.getElementById('titleOverlay'); tt.classList.remove('show'); showRoad({from:nx.id-1, to:nx.id}, ()=>{ tt.classList.add('show'); }); }; // the road to the story's next fight
   { const b = document.getElementById('labTestBtn'), lbl = ()=>{ b.textContent = `Laboratory (test): ${labTest ? 'open' : 'locked'}`; }; lbl(); b.onclick = ()=>{ labTest = !labTest; try{ localStorage.setItem('bloodline_labTest', labTest ? '1' : '0'); }catch(e){} lbl(); }; }
   for(const [id, k] of [['musicWorst','worst'], ['musicBest','best']]) document.getElementById(id).onclick = ()=>{ musicTest = musicTest===k ? null : k; musicTestLabels(); initAudio(); };
@@ -7907,7 +7983,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       return;
     }
     resetArmed = false;
-    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); setYsoldeChoice(''); setCassorChoice(''); setWrenChoice(''); setWrenGift(''); kings = {}; setKing('pack', ''); labMade = []; saveLabMade(); labStock = {}; saveLabStock(); lab = {slots:[null,null,null], breed:null, mature:null, log:[], known:[], notes:[], learned:[], found:[], parts:{}, res:{spell:null, troop:null}}; saveLab(); beatenIds = []; saveBeaten(); setStoryAt(1); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; fitMade = []; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
+    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); setYsoldeChoice(''); setCassorChoice(''); setWrenChoice(''); setWrenGift(''); kings = {}; setKing('pack', ''); labMade = []; saveLabMade(); labStock = {}; saveLabStock(); lab = {slots:[null,null,null], breed:null, mature:null, log:[], known:[], notes:[], learned:[], found:[], parts:{}, res:{spell:null, troop:null}}; saveLab(); beatenIds = []; saveBeaten(); setStoryAt(1); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; fitMade = []; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); ufMeta = ufCleanMeta(null); ufSaveMeta(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
     try{ ['bloodline_unlockedTier','bloodline_challengerId','bloodline_deck'].forEach(k=>localStorage.removeItem(k)); }catch(err){}
     setChallenger(CHALLENGERS[0]);
     if(matchStarted && !state.over){ document.getElementById('pauseOverlay').classList.remove('show'); fullRestart(); } // abandon the match in progress
@@ -10928,6 +11004,1008 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   spawnDefenses();
   renderHand(); renderHUD(); renderPentagons();
   requestAnimationFrame(loop);
+  // ======================= THE UNDERFIELD: test arena =======================
+  // A room for getting movement and attacks right before the mode is built. Self-contained: it borrows only the sound effects, haptics,
+  // the error log and the menu focus from the rest of the game, and touches no story state. Reached from Test tools.
+  // Controls follow Cult of the Lamb as closely as we can: melee first, attacks go where you are moving with a soft lock onto the nearest
+  // enemy, a curse that costs a meter (here blood, which kills drop and hits build), and no touch controls (they would cover the room).
+  // Controller: left stick move, X attack (a three-hit combo), Y heavy, A roll, hold RT to aim the curse and release to cast, LT relic, Start pause.
+  // Keyboard: WASD move, J or left click attack, K heavy, Space roll, hold L or the right mouse button to aim the curse (the mouse or WASD aims), Q relic.
+  // Every number here is a first guess.
+  var ufActive = false;
+  let UF_W = 360, UF_H = 520; const UF_WALL = 14; // set per run in ufNew: a tall room on a tall screen, a wide one on a wide screen
+  // the smallest whole numbers that keep every hits-to-kill the same as the first version (sword 3 to kill a Jackal, 9 a Behemoth, and so on)
+  const UF = {hp:29, spd:125, bloodCap:12, hitBlood:0.2,
+    rollSpd:400, rollMs:190, rollCd:250, iframes:260,
+    combo:[{dmg:2, knock:80, ms:230, lunge:8}, {dmg:2, knock:80, ms:230, lunge:8}, {dmg:4, knock:230, ms:380, lunge:20}],
+    comboWindow:380, swingR:38, swingArc:2.0, swingMove:0.25, lockR:80, lockCone:1.3,
+    heavyWind:420, heavyCd:1400, heavyR:48, heavyArc:2.4, heavyDmg:6, heavyKnock:330,
+    curseCost:3, curseDmg:4, curseSpd:380, curseRange:300, curseMove:0.35,
+    relicCost:6, relicR:64, relicDmg:5};
+  const UF_FOES = {
+    jackal:  {name:'a Jackal', emoji:'ϟ', hp:5,  spd:72, r:10, dmg:3, kind:'melee',  reach:14, iv:900,  wind:320, blood:1},
+    viper:   {name:'a Viper', emoji:'≋', hp:3,  spd:55, r:9,  dmg:2,  kind:'ranged', reach:170, iv:1500, wind:380, blood:1},
+    behemoth:{name:'a Behemoth', emoji:'⬢', hp:17, spd:38, r:15, dmg:6, kind:'melee',  reach:18, iv:1600, wind:520, blood:3},
+    hound:   {name:'a Bloodhound', emoji:'ϖ', hp:6, spd:92, r:10, dmg:3, kind:'melee', reach:14, iv:1300, wind:380, blood:1, lunge:34}, /* from floor 2: it lunges at the end of its wind-up */
+  };
+  const UF_FLOORS = 3; // the dungeon ends: three floors, a guardian at the bottom of each, and the way out under the last
+  const UF_BOSSES = [
+    {name:'The Pen-Keeper', emoji:'Ω', hp:60, dmg:4, r:22},
+    {name:'The Drowned Sow', emoji:'Ѳ', hp:90, dmg:5, r:24},
+    {name:'The Thing Below', emoji:'Ж', hp:130, dmg:6, r:26},
+  ];
+  const UF_LAYOUTS = [
+    [{x:90,y:170,r:18},{x:270,y:170,r:18},{x:180,y:290,r:22},{x:90,y:400,r:16},{x:270,y:400,r:16}],
+    [{x:120,y:190,r:20},{x:240,y:190,r:20},{x:120,y:340,r:20},{x:240,y:340,r:20}],
+    [{x:180,y:170,r:26},{x:80,y:320,r:14},{x:280,y:320,r:14},{x:180,y:410,r:16}],
+    [{x:180,y:265,r:34}],
+    [{x:70,y:140,r:16},{x:290,y:140,r:16},{x:70,y:390,r:16},{x:290,y:390,r:16},{x:180,y:265,r:14}],
+  ];
+  const ufMakeDoors = () => ({t:{x:UF_W/2, y:0, w:40, h:UF_WALL}, b:{x:UF_W/2, y:UF_H-UF_WALL, w:40, h:UF_WALL}, l:{x:0, y:UF_H/2-20, w:UF_WALL, h:40}, r:{x:UF_W-UF_WALL, y:UF_H/2-20, w:UF_WALL, h:40}});
+  let UF_DOORS = ufMakeDoors();
+  const UF_OPPOSITE = {t:'b', b:'t', l:'r', r:'l'};
+  const UF_HELP = "THE UNDERFIELD\n\nThree floors down. Something waits at the bottom of each one, in front of the stairs.\n\nYour attacks go the way you are moving, and lock onto the nearest enemy in front of you. Clear a room and its doors open. Every enemy pauses with a pale ring before it strikes: roll through it. Hits and kills give blood, which pays for the curse, the relic and anything you buy.\n\nController: left stick move, X attack (press again for a combo), Y heavy, A roll, hold RT to aim the curse and release to cast it, LT relic, hold RB to open your cards, hold the right stick on one and release RB to play it, Start pause.\n\nKeyboard: WASD, J or left click attack, K heavy, Space roll, hold L or the right mouse button for the curse, Q relic, hold E for your cards, point the mouse at one (or hold 1 to 4) and let go of E.\n\nWhen you die, the bones you earned stay behind. Spend them in the bone pit before you go down again.";
+  // weapons you can start with; whole numbers, like everything down here
+  const UF_WEAPONS = {
+    sword:  {name:'Sword', text:'Three hits, the last one heavy.', reach:0, combo:UF.combo},
+    cleaver:{name:'Cleaver', lock:'cleaver', text:'Slow and wide. Two hits drop most things.', reach:8, combo:[{dmg:3, knock:110, ms:330, lunge:6}, {dmg:3, knock:110, ms:330, lunge:6}, {dmg:6, knock:300, ms:520, lunge:16}]},
+    knives: {name:'Knives', lock:'knives', text:'Four quick cuts.', reach:-8, combo:[{dmg:2, knock:40, ms:150, lunge:10}, {dmg:2, knock:40, ms:150, lunge:10}, {dmg:2, knock:40, ms:150, lunge:10}, {dmg:3, knock:180, ms:280, lunge:22}]},
+  };
+  const UF_HEAT = [ // optional, after the first guardian falls: each one adds a quarter more bones
+    {id:'swift', name:'Swift', text:'Enemies move a quarter faster.'},
+    {id:'hide',  name:'Hide', text:'Enemies have half again as much health.'},
+    {id:'lean',  name:'Lean', text:'You hold 4 less blood.'},
+    {id:'mercy', name:'No mercy', text:'No hearts in the rubble, no food from the merchant.'},
+    {id:'crowd', name:'Crowds', text:'Two more enemies in every fight.'},
+  ];
+  const UF_CURSES = [ // a cursed chest's price
+    {id:'haste',  name:'Haste',  glyph:'»', text:'Enemies wind up a third faster.'},
+    {id:'frail',  name:'Frailty', glyph:'÷', text:'Healing does half.'},
+    {id:'thirst', name:'Thirst', glyph:'∅', text:'Kills drop one less blood.'},
+    {id:'lead',   name:'Lead',   glyph:'⊥', text:'Your roll takes twice as long to recover.'},
+    {id:'wound',  name:'The Wound', glyph:'✗', text:'Lose 1 health in every new room.'},
+  ];
+  const UF_PIT = [ // the bone pit: spent between runs, kept forever
+    {id:'hp1', name:'Thick blood', text:'Start with 2 more health.', cost:10},
+    {id:'hp2', name:'Thicker blood', text:'2 more again.', cost:20, need:'hp1'},
+    {id:'hp3', name:'Black blood', text:'2 more again.', cost:35, need:'hp2'},
+    {id:'vein0', name:'A full vein', text:'Start every run with 3 blood.', cost:12},
+    {id:'key0', name:'The keyring', text:'Start every floor with a key.', cost:25},
+    {id:'startpara', name:'A pet', text:'Choose a parasite to start with.', cost:20},
+    {id:'lamprey', name:'Lampreys', text:'Lampreys can turn up in chests.', cost:20},
+    {id:'botfly', name:'Botflies', text:'Botflies can turn up in chests.', cost:35},
+    {id:'t_mother', name:'The Mother', text:'The Mother can turn up in readings.', cost:15},
+    {id:'t_nest', name:'The Nest', text:'The Nest can turn up in readings.', cost:15},
+    {id:'t_feast', name:'The Feast', text:'The Feast can turn up in readings.', cost:15},
+    {id:'cleaver', name:'The cleaver', text:'A slow, heavy weapon to start with.', cost:25},
+    {id:'knives', name:'The knives', text:'Quick blades, a four-hit combo.', cost:25},
+  ];
+  function ufCleanMeta(v){
+    const o = {bones:0, pit:[], bossKills:0, runs:0, wins:0, best:0, daily:{}, weapon:'sword', start:'', heat:[]};
+    if(!v || typeof v!=='object') return o;
+    const n = k => Math.max(0, Math.min(1e6, parseInt(v[k],10)||0));
+    o.bones = n('bones'); o.bossKills = n('bossKills'); o.runs = n('runs'); o.wins = n('wins'); o.best = Math.min(UF_FLOORS, n('best'));
+    if(Array.isArray(v.pit)) o.pit = [...new Set(v.pit.filter(x=>UF_PIT.some(p=>p.id===x)))];
+    if(Array.isArray(v.heat)) o.heat = [...new Set(v.heat.filter(x=>UF_HEAT.some(h=>h.id===x)))];
+    if(typeof v.weapon==='string' && UF_WEAPONS[v.weapon]) o.weapon = v.weapon;
+    if(typeof v.start==='string') o.start = v.start.slice(0, 12);
+    if(v.daily && typeof v.daily==='object') for(const k of Object.keys(v.daily).sort().slice(-30)){ const d = v.daily[k]; if(/^\d{4}-\d\d-\d\d$/.test(k) && d && typeof d==='object') o.daily[k] = {floor:Math.min(UF_FLOORS, parseInt(d.floor,10)||1), rooms:parseInt(d.rooms,10)||0, won:!!d.won}; }
+    return o;
+  }
+  let ufMeta = ufCleanMeta(null);
+  try{ ufMeta = ufCleanMeta(JSON.parse(localStorage.getItem('bloodline_uf')||'null')); }catch(e){}
+  function ufSaveMeta(){ try{ localStorage.setItem('bloodline_uf', JSON.stringify(ufMeta)); }catch(e){} }
+  let uf = null, ufRaf = 0, ufLast = 0, ufSeedText = '';
+  const ufIn = {keys:{}, mouse:null, mouseCurse:false, pad:{}};
+  const ufEl = id => document.getElementById(id);
+  const ufPitOn = id => uf ? uf.pit(id) : ufMeta.pit.includes(id);
+  const ufHeat = id => !!(uf && uf.heat.includes(id));
+  const ufCursed = id => !!(uf && uf.curses.includes(id));
+  const ufWindMul = () => ufCursed('haste') ? 0.67 : 1;
+  const ufParaPool = () => Object.keys(UF_PARAS).filter(k=>!UF_PARAS[k].lock || ufPitOn(UF_PARAS[k].lock));
+  const ufTarotOk = t => !t.lock || ufPitOn(t.lock);
+  function ufRng(str){ // a seeded generator, so a seed (or today's date) always gives the same floors
+    str = String(str); let h = 1779033703 ^ str.length;
+    for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h<<13 | h>>>19; }
+    let a = h>>>0;
+    return ()=>{ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; };
+  }
+  const ufNewSeed = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+  const ufToday = () => new Date().toLocaleDateString('en-CA');
+
+  function ufNew(S){
+    S = S || {mode:'normal', seed:ufNewSeed(), weapon:'sword', start:'', heat:[]};
+    const wide = window.innerWidth > window.innerHeight*1.15; UF_W = wide ? 640 : 360; UF_H = wide ? 360 : 520; /* wide: 16:9, so it fills a TV */ UF_DOORS = ufMakeDoors();
+    const daily = S.mode==='daily', pit = id => !daily && ufMeta.pit.includes(id);
+    const hp = UF.hp + 2*['hp1','hp2','hp3'].filter(pit).length, wid = !daily && UF_WEAPONS[S.weapon] && (!UF_WEAPONS[S.weapon].lock || pit(UF_WEAPONS[S.weapon].lock)) ? S.weapon : 'sword', W = UF_WEAPONS[wid];
+    uf = {p:{x:UF_W/2, y:UF_H-50, r:10, hp, fx:0, fy:-1, dx:0, dy:-1, rollT:0, rollCd:0, inv:0, combo:0, comboT:0, swingT:0, queued:false,
+        heavyT:0, heavyCd:0, hx:0, hy:-1, cursing:false, cx:0, cy:-1, maxHp:hp},
+      foes:[], shots:[], orbs:[], fx:[], allies:[], chest:null, card:null, cards:[], slots:[null,null,null,null], tarot:[], cap:UF.bloodCap, choosing:null, altar:null, props:[], spikes:[], told:false, lastSlot:0, radial:null,
+      blood:pit('vein0') ? 3 : 0, kills:0, cleared:false, entry:null, pillars:[], pos:{x:0,y:0}, rooms:{}, here:null, paused:false, over:false, shake:0, banner:null, lastI:null, view:null,
+      seed:S.seed, mode:S.mode, daily, pit, rng:ufRng(S.seed), floor:1, keys:pit('key0') ? 1 : 0, curses:[], mapAll:false, mapVer:0, heat:daily ? [] : (S.heat||[]).slice(),
+      weaponId:wid, combo:W.combo, reach:W.reach, time:0, roomsCleared:0, bosses:0, killer:null, wave2:null, end:null};
+    if(ufHeat('lean')) uf.cap -= 4;
+    if(pit('startpara') && S.start && UF_PARAS[S.start] && ufParaPool().includes(S.start)) uf.slots[0] = {name:S.start, uses:UF_PARAS[S.start].uses};
+    uf.rooms = ufGenFloor(1, uf.rng);
+    ufPanel(null); ufEl('ufPause').textContent = 'Pause';
+    ufEnterRoom(null);
+  }
+  function ufFx(o){ o.t0 = o.t; if(uf.fx.length < 140) uf.fx.push(o); }
+  function ufSpot(minFromPlayer, pad){ // a free spot on the floor: clear of pillars, the chest and what stands in the room, and far enough from you
+    const R = uf.here;
+    for(let k=0;k<60;k++){ const x = UF_WALL+40 + Math.random()*(UF_W-2*UF_WALL-80), y = UF_WALL+50 + Math.random()*(UF_H-2*UF_WALL-100);
+      if(UF_W > UF_H && y < 120 && (x < 150 || x > UF_W - 150)) continue; /* not under the HUD in the corners of a wide room */
+      if(uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r + pad)) continue;
+      if(uf.chest && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r + pad) continue;
+      if(uf.altar && Math.hypot(x-uf.altar.x, y-uf.altar.y) < 18 + pad) continue;
+      if(R && R.npc && Math.hypot(x-R.npc.x, y-R.npc.y) < 30 + pad) continue;
+      if(uf.props.some(q=>!q.broken && Math.hypot(x-q.x, y-q.y) < q.r + pad)) continue;
+      if(Math.hypot(x-uf.p.x, y-uf.p.y) < minFromPlayer) continue;
+      return {x, y}; }
+    return {x:UF_W/2, y:UF_WALL+60};
+  }
+  const UF_STEP = {t:[0,-1], b:[0,1], l:[-1,0], r:[1,0]};
+  // A floor is laid out in full before you set foot on it: mostly a tree, so there are dead ends. The farthest dead end holds the guardian,
+  // another sits behind a locked door, and one wall somewhere hides a room of its own
+  function ufGenFloor(fl, rng){
+    const ri = n => Math.floor(rng()*n), K = (x,y)=>x+','+y, DIRS = ['t','b','l','r'], rooms = {};
+    const mk = (x,y)=>(rooms[K(x,y)] = {x, y, n:0, type:'fight', links:{}, cleared:false, visited:false, dist:0});
+    const nb = R => k => rooms[K(R.x+UF_STEP[k][0], R.y+UF_STEP[k][1])];
+    mk(0,0).type = 'start';
+    const target = 7 + fl*2; let guard = 0;
+    while(Object.keys(rooms).length < target && guard++ < 4000){
+      const list = Object.values(rooms), R = list[ri(list.length)], d = DIRS[ri(4)], nx = R.x+UF_STEP[d][0], ny = R.y+UF_STEP[d][1];
+      if(rooms[K(nx,ny)] || Object.keys(R.links).length >= 3) continue;
+      if(DIRS.filter(k=>rooms[K(nx+UF_STEP[k][0], ny+UF_STEP[k][1])]).length > 1) continue;
+      const N = mk(nx, ny); R.links[d] = 'open'; N.links[UF_OPPOSITE[d]] = 'open';
+    }
+    { const q = [rooms['0,0']], seen = new Set(q); while(q.length){ const R = q.shift(); for(const k of Object.keys(R.links)){ const N = nb(R)(k); if(N && !seen.has(N)){ seen.add(N); N.dist = R.dist + 1; q.push(N); } } } }
+    const list = Object.values(rooms);
+    const dead = list.filter(R=>R.type!=='start' && Object.keys(R.links).length===1).sort((a,b)=>b.dist-a.dist);
+    const boss = dead.shift() || list.slice().sort((a,b)=>b.dist-a.dist)[0]; boss.type = 'boss';
+    if(dead.length){ const T = dead.splice(ri(dead.length), 1)[0], k = Object.keys(T.links)[0]; T.type = 'treasure'; T.links[k] = 'locked'; nb(T)(k).links[UF_OPPOSITE[k]] = 'locked'; }
+    const take = ()=>{ const f = list.filter(R=>R.type==='fight' && R.dist>=1); return f.length ? f[ri(f.length)] : null; };
+    let S = dead.length ? dead.splice(ri(dead.length), 1)[0] : take(); if(S) S.type = 'shop';
+    S = take(); if(S) S.type = 'shrine';
+    if(rng() < 0.6){ S = take(); if(S) S.type = 'altar'; }
+    for(let e=0; e<(fl>=2 ? 2 : 1); e++){ const E = list.filter(R=>R.type==='fight' && !R.elite && R.dist>=1); if(E.length) E[ri(E.length)].elite = true; }
+    { const cand = []; // the hidden room: an empty cell beside the floor, joined by a wall that breaks
+      for(const R of list){ if(R.type==='boss' || R.type==='treasure') continue; for(const d of DIRS){ const x = R.x+UF_STEP[d][0], y = R.y+UF_STEP[d][1]; if(!rooms[K(x,y)]) cand.push({x, y, R, d}); } }
+      if(cand.length){ const c = cand[ri(cand.length)], N = mk(c.x, c.y); N.type = 'secret'; N.dist = c.R.dist + 1; c.R.links[c.d] = 'secret'; N.links[UF_OPPOSITE[c.d]] = 'secret'; } }
+    const all = Object.values(rooms).sort((a,b)=>a.dist-b.dist); all.forEach((R,i)=>{ R.n = i+1; });
+    for(const R of all){
+      R.layout = ri(UF_LAYOUTS.length);
+      if(R.type==='fight'){
+        R.trap = rng() < 0.3; R.dark = fl >= 2 && rng() < 0.3; R.ambush = !R.elite && rng() < 0.2;
+        const n = 2 + fl + Math.floor(R.dist/2) + (ufHeat('crowd') ? 2 : 0), L = [];
+        for(let k=0;k<n;k++){ const r = rng(); L.push(fl >= 2 && r < 0.22 ? 'hound' : k%3===2 ? 'viper' : 'jackal'); }
+        const beh = fl===1 ? (R.dist >= 3 ? 1 : 0) : 1 + (rng() < 0.35 ? 1 : 0); for(let k=0;k<beh;k++) L.push('behemoth');
+        R.foeList = L;
+        if(!R.elite && rng() < 0.3) R.chestKind = rng() < 0.35 ? 'cursed' : 'plain';
+      }
+      if(R.type==='start' && fl===1) R.chestKind = 'plain';
+      if(R.type==='shop') R.shop = ufShopStock(rng);
+    }
+    return rooms;
+  }
+  const UF_PRICE = {Common:4, Rare:7, Epic:10};
+  function ufShopStock(rng){
+    const pool = ufParaPool(), items = [];
+    const pick = ()=>{ const left = pool.filter(k=>!items.some(i=>i.name===k)); if(!left.length) return null;
+      let r = rng()*left.reduce((t,k)=>t + UF_RARITY[UF_PARAS[k].rarity].w, 0); for(const k of left){ r -= UF_RARITY[UF_PARAS[k].rarity].w; if(r <= 0) return k; } return left[left.length-1]; };
+    for(let k=0;k<2;k++){ const n = pick(); if(n) items.push({type:'para', name:n, price:UF_PRICE[UF_PARAS[n].rarity]}); }
+    items.push({type:'heal', price:4}, {type:'tarot', price:10}, {type:'key', price:5}, {type:'map', price:4});
+    return {items, rerolled:false};
+  }
+  function ufMakeFoe(kind, at, spawnT, elite){
+    const B = UF_FOES[kind], fl = uf.floor, D = Object.assign({}, B);
+    D.hp = Math.round(B.hp*(1 + 0.4*(fl-1))); D.dmg = B.dmg + (fl-1);
+    if(ufHeat('hide')) D.hp = Math.ceil(D.hp*1.5); if(ufHeat('swift')) D.spd *= 1.25;
+    if(elite){ D.hp *= 3; D.dmg += 1; D.r = Math.round(B.r*1.35); D.blood += 2; D.name = 'a great ' + B.name.slice(2); }
+    return {kind, D, x:at.x, y:at.y, hp:D.hp, maxHp:D.hp, r:D.r, spawnT, atkT:500+Math.random()*700, wind:0, hit:0, kx:0, ky:0, side:Math.random()<.5 ? 1 : -1, elite:!!elite};
+  }
+  function ufMakeBoss(at){
+    const B = UF_BOSSES[Math.min(uf.floor, UF_BOSSES.length)-1], hp = ufHeat('hide') ? Math.ceil(B.hp*1.5) : B.hp;
+    const D = {name:B.name, emoji:B.emoji, hp, spd:ufHeat('swift') ? 50 : 40, r:B.r, dmg:B.dmg, kind:'boss', reach:20, iv:0, wind:0, blood:6};
+    return {kind:'boss', boss:true, D, x:at.x, y:at.y, hp, maxHp:hp, r:B.r, spawnT:700, atkT:0, actT:1800, act:null, wind:0, hit:0, kx:0, ky:0, side:1, dashT:0, summons:[0.66, 0.33]};
+  }
+  function ufLink(k, state){ const R = uf.here, N = uf.rooms[(R.x+UF_STEP[k][0])+','+(R.y+UF_STEP[k][1])]; R.links[k] = state; if(N) N.links[UF_OPPOSITE[k]] = state; uf.mapVer++; }
+  function ufEnterRoom(from){
+    const p = uf.p, old = uf.here;
+    if(old) old.card = uf.card; // a card left lying stays where it fell
+    if(from) uf.pos = {x:uf.pos.x + UF_STEP[from][0], y:uf.pos.y + UF_STEP[from][1]};
+    const R = uf.rooms[uf.pos.x + ',' + uf.pos.y], fresh = !R.visited;
+    R.visited = true; uf.here = R; uf.mapVer++;
+    const bare = R.type==='boss' || R.type==='shop';
+    if(!R.pillars) R.pillars = bare ? [] : UF_LAYOUTS[R.layout].map(q=> UF_W > UF_H ? {x:q.y/520*UF_W, y:q.x/360*UF_H, r:q.r} : {x:q.x/360*UF_W, y:q.y/520*UF_H, r:q.r});
+    uf.pillars = R.pillars; uf.entry = from ? UF_OPPOSITE[from] : null; uf.cleared = R.cleared;
+    uf.foes = []; uf.shots = []; uf.orbs = []; uf.fx = []; uf.allies = []; uf.wave2 = null; uf.card = R.card; uf.chest = R.chest; uf.radial = null;
+    uf.altar = R.tarot || null; uf.props = R.props || []; uf.spikes = R.spikes || [];
+    const e = uf.entry && UF_DOORS[uf.entry]; // you come in at the door opposite the one you left by
+    if(uf.entry==='b'){ p.x = UF_W/2; p.y = UF_H - UF_WALL - p.r - 8; p.fx = 0; p.fy = -1; }
+    else if(uf.entry==='t'){ p.x = UF_W/2; p.y = UF_WALL + p.r + 8; p.fx = 0; p.fy = 1; }
+    else if(uf.entry==='l'){ p.x = UF_WALL + p.r + 8; p.y = e.y + e.h/2; p.fx = 1; p.fy = 0; }
+    else if(uf.entry==='r'){ p.x = UF_W - UF_WALL - p.r - 8; p.y = e.y + e.h/2; p.fx = -1; p.fy = 0; }
+    else { p.x = UF_W/2; p.y = UF_H/2 + 40; p.fx = 0; p.fy = -1; } // down the stairs, or the first room of the run
+    p.rollT = 0; p.swingT = 0; p.heavyT = 0; p.cursing = false; p.inv = 600;
+    if(!fresh){ uf.banner = {text:'Room '+R.n, t:900}; return; } // somewhere you have been: as you left it
+    if(from && ufCursed('wound') && p.hp > 1){ p.hp -= 1; ufFx({kind:'num', x:p.x, y:p.y-16, text:'-1', col:'#c73a5c', t:650}); }
+    if(R.type==='shop') R.npc = {kind:'shop', x:UF_W/2, y:UF_WALL + 70, armed:true};
+    if(R.type==='shrine') R.npc = {kind:'shrine', x:UF_W/2, y:UF_H/2, armed:true};
+    if(!bare){ R.props = uf.props = []; const np = 3 + Math.floor(Math.random()*4); // a few urns and crates to smash
+      for(let k=0; k<np; k++){ const at = ufSpot(60, 20), crate = Math.random() < 0.4; uf.props.push({x:at.x, y:at.y, r:crate ? 8 : 7, crate, broken:false}); } }
+    if(R.trap){ R.spikes = uf.spikes = []; const n = 3 + Math.floor(Math.random()*3); for(let k=0;k<n;k++){ const at = ufSpot(70, 24); uf.spikes.push({x:at.x, y:at.y}); } }
+    const chestAt = kind => { const c = R.type==='start' ? {x:UF_W/2, y:UF_H - 80} : ufSpot(70, 30); uf.chest = R.chest = {x:c.x, y:c.y, r:12, open:false, kind}; };
+    if(R.chestKind) chestAt(R.chestKind);
+    let banner = 'Room '+R.n;
+    if(R.type==='start'){ R.cleared = uf.cleared = true; banner = 'Floor '+uf.floor; }
+    else if(R.type==='shop' || R.type==='shrine'){ R.cleared = uf.cleared = true; }
+    else if(R.type==='treasure'){ R.cleared = uf.cleared = true; chestAt('rare'); if(!uf.mapAll){ const m = ufSpot(40, 24); R.mapItem = {x:m.x, y:m.y}; } }
+    else if(R.type==='secret'){ R.cleared = uf.cleared = true; chestAt('rare'); for(let k=0;k<2;k++){ const h = ufSpot(40, 16); uf.orbs.push({x:h.x, y:h.y, t:1e9, heal:1}); } banner = 'A hidden room'; }
+    else if(R.type==='altar'){ R.cleared = uf.cleared = true;
+      const offered = new Set(); for(const r of Object.values(uf.rooms)) if(r.tarot && !r.tarot.taken) r.tarot.opts.forEach(o=>offered.add(o));
+      const left = UF_TAROT.filter(t=>ufTarotOk(t) && !uf.tarot.includes(t.id) && !offered.has(t.id));
+      if(left.length >= 2){ const at = ufSpot(80, 34); uf.altar = R.tarot = {x:at.x, y:at.y, opts:left.sort(()=>Math.random()-0.5).slice(0, 2).map(t=>t.id), taken:false, armed:true}; beep(220, 0.8, 'sine', 0.03); beep(330, 0.8, 'sine', 0.025, 0.2); } }
+    else if(R.type==='boss'){ const at = ufSpot(170, 40); uf.foes.push(ufMakeBoss(at)); banner = UF_BOSSES[Math.min(uf.floor, UF_BOSSES.length)-1].name; thud(0.9, 0.22, 140); beep(55, 1.2, 'sawtooth', 0.05); }
+    else { const L = R.foeList || [], first = R.ambush ? L.slice(0, Math.ceil(L.length/2)) : L; uf.wave2 = R.ambush ? L.slice(first.length) : null;
+      first.forEach((kind, i)=>{ const D = UF_FOES[kind], at = ufSpot(150, D.r + 14); uf.foes.push(ufMakeFoe(kind, at, 500 + i*180, R.elite && i===0)); }); }
+    uf.banner = {text:banner, t:R.type==='boss' ? 2200 : 1400}; if(R.type!=='boss'){ thud(0.5, 0.14, 200); beep(110, 0.5, 'triangle', 0.04); }
+  }
+  function ufNextFloor(){
+    uf.floor++; uf.rooms = ufGenFloor(uf.floor, uf.rng); uf.pos = {x:0, y:0}; uf.here = null; uf.mapAll = false;
+    if(uf.pit('key0')) uf.keys++;
+    ufEnterRoom(null); thud(0.8, 0.22, 140); beep(82, 0.9, 'sawtooth', 0.04);
+  }
+  function ufEndRun(won){
+    if(uf.end) return;
+    uf.over = true; uf.paused = false; uf.choosing = null; ufEl('ufPick').classList.remove('on'); ufPanel(null);
+    const heat = uf.heat.length, base = uf.roomsCleared + Math.floor(uf.kills/5) + 5*uf.bosses + (won ? 10 : 0), bones = Math.round(base*(1 + 0.25*heat)), M = ufMeta;
+    M.bones += bones; M.runs++; if(won) M.wins++; M.best = Math.max(M.best, won ? UF_FLOORS : uf.floor);
+    if(uf.daily){ const d = ufToday(), old = M.daily[d], sc = r => r ? (r.won ? 1000 : 0) + r.floor*100 + r.rooms : -1, now = {floor:uf.floor, rooms:uf.roomsCleared, won};
+      if(sc(now) > sc(old)) M.daily[d] = now; }
+    ufSaveMeta(); uf.end = {won, bones, heat};
+    won ? sfxVictory() : sfxDefeat(); ufMenu('end');
+  }
+  // the screens before and after a run: the bone pit, the run type, the weapon, heat, and the summary of a run just ended
+  function ufMenu(mode){
+    const m = ufEl('ufMeta'), M = ufMeta, pad = !!activePad();
+    const keep = padEl && m.contains(padEl) ? [...m.querySelectorAll('button')].indexOf(padEl) : -1;
+    ufEl('ufOverlay').classList.add('uf-menu'); m.classList.add('on'); m.innerHTML = ''; if(keep < 0) m.scrollTop = 0;
+    const add = (tag, cls, text, parent)=>{ const e = document.createElement(tag); if(cls) e.className = cls; if(text!=null) e.textContent = text; (parent || m).appendChild(e); return e; };
+    const btn = (label, fn, parent, opt)=>{ opt = opt || {}; const b = add('button', opt.on ? 'on' : '', null, parent); b.innerHTML = label; b.disabled = !!opt.off; b.onclick = ()=>{ sfxTutClick(); fn(); }; return b; };
+    const row = ()=>add('div', 'uf-row');
+    let first = null;
+    if(mode==='help'){ add('div', 'uf-help', UF_HELP); first = btn('Back', ()=>ufMenu('setup')); }
+    else if(mode==='end'){
+      const E = uf.end, t = Math.floor(uf.time/1000), clock = `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
+      add('h2', '', E.won ? 'Out of the Underfield' : 'You fell');
+      const box = add('div', 'uf-end'), line = s=>add('div', '', s, box);
+      line(E.won ? `All ${UF_FLOORS} floors, in ${clock}.` : `Floor ${uf.floor} of ${UF_FLOORS}, ${clock} in.`);
+      if(!E.won) line(uf.gaveUp ? 'You gave up.' : `Killed by ${uf.killer || 'something in the dark'}.`);
+      line(`${uf.roomsCleared} rooms cleared · ${uf.kills} kills · ${uf.bosses} guardian${uf.bosses===1 ? '' : 's'} dead`);
+      if(uf.tarot.length) line('Cards: ' + uf.tarot.map(id=>UF_TAROT.find(x=>x.id===id).name).join(', '));
+      if(uf.curses.length) line('Curses: ' + uf.curses.map(id=>UF_CURSES.find(x=>x.id===id).name).join(', '));
+      line(`Seed: ${uf.seed}`);
+      add('div', 'uf-bones', `+${E.bones} bones${E.heat ? ` (heat ${E.heat})` : ''} · ${M.bones} in the pit`);
+      const r = row(); first = btn('Again', ()=>{ uf = null; ufMenu('setup'); }, r); btn('Leave', ufClose, r);
+    } else {
+      add('h2', '', 'THE UNDERFIELD');
+      add('div', 'uf-sub', `${M.bones} bones · deepest floor ${M.best} of ${UF_FLOORS} · out ${M.wins} time${M.wins===1 ? '' : 's'}`);
+      const today = M.daily[ufToday()], r1 = row();
+      first = btn('Descend', ()=>ufStart('normal'), r1);
+      btn('Daily run' + (today ? `<small>today: floor ${today.floor}${today.won ? ', and out' : ''}</small>` : '<small>the same floors for everyone today</small>'), ()=>ufStart('daily'), r1);
+      btn('Seeded run<small>uses the seed below</small>', ()=>ufStart('seed'), r1);
+      const inp = add('input', 'uf-seed'); inp.placeholder = 'Seed'; inp.maxLength = 16; inp.value = ufSeedText; inp.oninput = ()=>{ ufSeedText = inp.value; };
+      add('div', 'uf-h', 'Weapon'); const r2 = row();
+      for(const [id, W] of Object.entries(UF_WEAPONS)) if(!W.lock || M.pit.includes(W.lock)) btn(`${W.name}<small>${W.text}</small>`, ()=>{ M.weapon = id; ufSaveMeta(); ufMenu('setup'); }, r2, {on:M.weapon===id});
+      if(M.pit.includes('startpara')){ add('div', 'uf-h', 'Start with'); const r3 = row();
+        btn('Nothing', ()=>{ M.start = ''; ufSaveMeta(); ufMenu('setup'); }, r3, {on:!M.start});
+        for(const k of ufParaPool()) btn(`<span style="color:${UF_PARAS[k].col}">${UF_PARAS[k].emoji}</span> ${k}`, ()=>{ M.start = k; ufSaveMeta(); ufMenu('setup'); }, r3, {on:M.start===k}); }
+      if(M.bossKills){ add('div', 'uf-h', `Heat ${M.heat.length}: +${25*M.heat.length}% bones`); const r4 = row();
+        for(const H of UF_HEAT) btn(`${H.name}<small>${H.text}</small>`, ()=>{ M.heat = M.heat.includes(H.id) ? M.heat.filter(x=>x!==H.id) : M.heat.concat(H.id); ufSaveMeta(); ufMenu('setup'); }, r4, {on:M.heat.includes(H.id)}); }
+      add('div', 'uf-h', 'The bone pit'); const r5 = row();
+      for(const U of UF_PIT){ if(M.pit.includes(U.id) || (U.need && !M.pit.includes(U.need))) continue;
+        btn(`${U.name} · ${U.cost}<small>${U.text}</small>`, ()=>{ if(M.bones < U.cost) return; M.bones -= U.cost; M.pit.push(U.id); ufSaveMeta(); beep(523, 0.2, 'triangle', 0.04); beep(784, 0.3, 'triangle', 0.035, 0.1); ufMenu('setup'); }, r5, {off:M.bones < U.cost}); }
+      if(!r5.children.length) add('div', 'uf-sub', 'Nothing left to dig up.', r5);
+      const r6 = row(); btn('How to play', ()=>ufMenu('help'), r6);
+      if(document.fullscreenEnabled) btn(document.fullscreenElement ? 'Leave full screen' : 'Full screen', ()=>{ (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(()=>{}); setTimeout(()=>ufMenu('setup'), 300); }, r6);
+      btn('Leave', ufClose, r6);
+      if(ON_XBOX) add('div', 'uf-sub', activePad() ? 'Controller ready.' : 'On Xbox: if the stick moves a cursor, hold the Menu button and choose game controls. Then press any button.');
+    }
+    if(pad){ const bs = [...m.querySelectorAll('button')]; padSet((keep >= 0 && bs[keep] && !bs[keep].disabled) ? bs[keep] : first); }
+  }
+  function ufStart(mode){
+    const M = ufMeta, seed = mode==='daily' ? 'DAY-' + ufToday() : mode==='seed' && ufSeedText.trim() ? ufSeedText.trim().toUpperCase() : ufNewSeed();
+    ufEl('ufMeta').classList.remove('on'); ufEl('ufOverlay').classList.remove('uf-menu'); padSet(null);
+    ufNew({mode, seed, weapon:M.weapon, start:M.start, heat:M.bossKills ? M.heat : []});
+    ufHudLast = ''; uf.toggledAt = performance.now(); ufIn.keys = {};
+    const g = activePad(); // the button that started the run is not read as a roll
+    if(g) g.buttons.forEach((b,k)=>{ ufIn.pad[k] = !!(b && (b.pressed || b.value > 0.4)); });
+  }
+  function ufSolid(o){
+    const lo = UF_WALL + o.r; o.x = Math.max(lo, Math.min(UF_W-lo, o.x)); o.y = Math.max(lo, Math.min(UF_H-lo, o.y));
+    for(const c of uf.pillars){ const dx = o.x-c.x, dy = o.y-c.y, d = Math.hypot(dx,dy), m = c.r+o.r;
+      if(d < m){ if(d > 0.01){ o.x = c.x + dx*m/d; o.y = c.y + dy*m/d; } else o.y = c.y + m; } }
+    if(uf) for(const q of uf.props){ if(q.broken) continue; const dx = o.x-q.x, dy = o.y-q.y, d = Math.hypot(dx,dy), m = q.r+o.r; if(d < m && d > 0.01){ o.x = q.x + dx*m/d; o.y = q.y + dy*m/d; } }
+    const ch = uf && uf.chest; if(ch && !ch.open && o!==ch){ const dx = o.x-ch.x, dy = o.y-ch.y, d = Math.hypot(dx,dy), m = ch.r+o.r; if(d < m && d > 0.01){ o.x = ch.x + dx*m/d; o.y = ch.y + dy*m/d; } }
+  }
+  const ufBlocked = (x, y) => x<UF_WALL || x>UF_W-UF_WALL || y<UF_WALL || y>UF_H-UF_WALL || uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r) || !!(uf && uf.chest && !uf.chest.open && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r) || !!(uf && uf.props.some(q=>!q.broken && Math.hypot(x-q.x, y-q.y) < q.r));
+
+  // ---- input ----
+  function ufPad(){
+    const g = activePad(); if(!g) return null;
+    const b = k => { const x = g.buttons[k]; return !!(x && (x.pressed || x.value > 0.4)); }, dz = v => Math.abs(v) < 0.2 ? 0 : v, P = ufIn.pad;
+    const edge = k => { const now = b(k), was = !!P[k]; P[k] = now; return now && !was; };
+    const o = {mx:dz(g.axes[0]||0), my:dz(g.axes[1]||0)};
+    if(b(12)) o.my = -1; if(b(13)) o.my = 1; if(b(14)) o.mx = -1; if(b(15)) o.mx = 1;
+    const eA = edge(0), eX = edge(2), eY = edge(3), eLT = edge(6), eStart = edge(9), eView = edge(8); if(eA||eX||eY||eStart) padWakeAudio();
+    o.roll = eA; o.attack = eX; o.heavy = eY; o.relic = eLT; o.start = eStart || eView; o.rb = b(5); o.rx = g.axes[2]||0; o.ry = g.axes[3]||0; o.curse = b(7);
+    return o;
+  }
+  function ufRead(g){
+    const K = ufIn.keys; let mx = (K.KeyD||K.ArrowRight ? 1 : 0) - (K.KeyA||K.ArrowLeft ? 1 : 0), my = (K.KeyS||K.ArrowDown ? 1 : 0) - (K.KeyW||K.ArrowUp ? 1 : 0);
+    let curse = !!K.KeyL || ufIn.mouseCurse, mouseAim = null;
+    if(g){ if(g.mx || g.my){ mx = g.mx; my = g.my; } if(g.curse) curse = true; }
+    if(ufIn.mouse && (ufIn.mouseCurse || K.KeyL) && !(mx || my)){ const ax = ufIn.mouse.x - uf.p.x, ay = ufIn.mouse.y - uf.p.y, l = Math.hypot(ax, ay) || 1; mouseAim = {x:ax/l, y:ay/l}; }
+    const ml = Math.hypot(mx, my); if(ml > 1){ mx /= ml; my /= ml; }
+    return {mx, my, curse, mouseAim};
+  }
+
+  // ---- what you do ----
+  const ufBusy = () => uf.p.rollT > 0 || uf.p.heavyT > 0;
+  function ufAimAt(range, cone){ // the soft lock: the nearest enemy roughly in front of you, or anything right beside you
+    const p = uf.p; let best = null, bd = Infinity;
+    for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d > range + f.r) continue;
+      const ang = Math.acos(Math.max(-1, Math.min(1, (dx*p.fx + dy*p.fy)/d))); if(ang > cone && d > p.r + f.r + 8) continue;
+      if(d < bd){ bd = d; best = {x:dx/d, y:dy/d}; } }
+    return best || {x:p.fx, y:p.fy};
+  }
+  function ufHitArc(dir, reach, arc, dmg, knock){
+    const p = uf.p; let hits = 0;
+    for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d > reach + f.r) continue;
+      if(d > f.r + p.r && Math.acos(Math.max(-1, Math.min(1, (dx*dir.x + dy*dir.y)/d))) > arc/2) continue;
+      ufHurtF(f, dmg, dx/d*knock, dy/d*knock); hits++; }
+    for(const sh of uf.shots) if(!sh.mine){ const dx = sh.x-p.x, dy = sh.y-p.y; if(Math.hypot(dx,dy) < reach + 6 && dx*dir.x + dy*dir.y > 0){ sh.dead = true; ufFx({kind:'num', x:sh.x, y:sh.y, text:'x', col:'#e0b54a', t:300}); } }
+    for(const q of uf.props){ if(q.broken) continue; const dx = q.x-p.x, dy = q.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d <= reach + q.r && (d <= q.r + p.r + 4 || Math.acos(Math.max(-1, Math.min(1, (dx*dir.x + dy*dir.y)/d))) <= arc/2)) ufBreak(q); }
+    const ch = uf.chest; if(ch && !ch.open){ const dx = ch.x-p.x, dy = ch.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d <= reach + ch.r && (d <= ch.r + p.r + 4 || dx*dir.x + dy*dir.y > 0)) ufOpenChest(); }
+    if(hits) uf.blood = Math.min(uf.cap, uf.blood + hits*UF.hitBlood);
+    return hits;
+  }
+  function ufSwing(){
+    const p = uf.p, W = uf.combo, last = W.length, step = p.comboT > 0 && p.combo < last ? p.combo + 1 : 1, C = W[step-1], fin = step===last;
+    const dir = ufAimAt(UF.lockR, UF.lockCone), dmg = C.dmg + (fin && ufHas('butcher') ? 2 : 0), reach = UF.swingR + uf.reach + (fin ? 6 : 0);
+    p.fx = dir.x; p.fy = dir.y; p.x += dir.x*C.lunge; p.y += dir.y*C.lunge; ufSolid(p);
+    ufHitArc(dir, reach, UF.swingArc, dmg, C.knock);
+    ufFx({kind:'slash', x:p.x, y:p.y, ax:dir.x, ay:dir.y, r:reach, arc:UF.swingArc, t:150, big:fin});
+    p.sword = {a:Math.atan2(dir.y, dir.x), arc:UF.swingArc*1.15, side:step%2===0 ? -1 : 1, t:0, dur:Math.min(C.ms, 170)};
+    p.combo = step; p.swingT = C.ms; p.comboT = C.ms + UF.comboWindow; p.queued = false;
+    thud(0.08, fin ? 0.16 : 0.1, fin ? 900 : 1600); beep(fin ? 140 : 180 + step*20, 0.06, 'sawtooth', 0.03);
+  }
+  function ufAttack(){
+    if(!uf || uf.over || uf.paused) return; const p = uf.p;
+    if(p.cursing || ufBusy()) return;
+    if(p.swingT > 0){ p.queued = true; return; } // pressed mid-swing: the next hit of the combo follows straight on
+    ufSwing();
+  }
+  function ufHeavy(){
+    if(!uf || uf.over || uf.paused) return; const p = uf.p;
+    if(p.cursing || ufBusy() || p.swingT > 0 || p.heavyCd > 0) return;
+    const dir = ufAimAt(UF.lockR + 10, UF.lockCone); p.hx = dir.x; p.hy = dir.y; p.fx = dir.x; p.fy = dir.y;
+    p.heavyT = UF.heavyWind; p.combo = 0; p.comboT = 0; beep(90, 0.4, 'sawtooth', 0.03);
+  }
+  function ufHeavyLand(){
+    const p = uf.p, dir = {x:p.hx, y:p.hy}; p.heavyCd = UF.heavyCd;
+    p.x += dir.x*12; p.y += dir.y*12; ufSolid(p);
+    p.sword = {a:Math.atan2(dir.y, dir.x), arc:UF.heavyArc*1.1, side:1, t:0, dur:200};
+    ufHitArc(dir, UF.heavyR, UF.heavyArc, UF.heavyDmg, UF.heavyKnock);
+    ufFx({kind:'slash', x:p.x, y:p.y, ax:dir.x, ay:dir.y, r:UF.heavyR, arc:UF.heavyArc, t:220, big:true});
+    uf.shake = 140; thud(0.3, 0.2, 260); haptic(25); ufSecretCheck(UF.heavyR + 34);
+  }
+  function ufRoll(){
+    if(!uf || uf.over || uf.paused) return; const p = uf.p, I = uf.lastI; if(p.rollCd > 0 || p.rollT > 0) return;
+    let dx = I ? I.mx : 0, dy = I ? I.my : 0, l = Math.hypot(dx, dy); if(l < 0.2){ dx = p.fx; dy = p.fy; l = 1; }
+    p.dx = dx/l; p.dy = dy/l; p.fx = p.dx; p.fy = p.dy; p.rollT = UF.rollMs; p.rollCd = UF.rollCd*(ufCursed('lead') ? 2 : 1); p.inv = Math.max(p.inv, UF.iframes);
+    p.swingT = 0; p.queued = false; p.heavyT = 0; p.cursing = false; p.combo = 0; p.comboT = 0; // a roll cancels whatever you were doing
+    thud(0.1, 0.08, 900);
+  }
+  function ufCurseCast(){
+    const p = uf.p; p.cursing = false;
+    if(uf.blood < UF.curseCost){ beep(140, 0.1, 'square', 0.02); return; }
+    uf.blood -= UF.curseCost;
+    uf.shots.push({x:p.x + p.cx*12, y:p.y + p.cy*12, vx:p.cx*UF.curseSpd, vy:p.cy*UF.curseSpd, left:UF.curseRange, mine:true, dmg:UF.curseDmg, pierce:true, hit:new Set()});
+    p.fx = p.cx; p.fy = p.cy; sfxFire(0.8); beep(260, 0.15, 'sawtooth', 0.03);
+  }
+  // the parasites a chest can hold, from the main game's family. Health and drain are scaled like everything else (enemies have 5, 3 and 17)
+  const UF_PARAS = {
+    Leach:  {emoji:'☋', col:'#c73a5c', rarity:'Common', uses:2, hp:2, spd:80, dps:2/3, regen:0.25, text:'Latches on and drains its host.'},
+    Flea:   {emoji:'ʎ', col:'#d98a5a', rarity:'Common', uses:3, hp:1, spd:70, hop:true, bite:1, text:'Leaps from enemy to enemy, biting each one.'},
+    Bleeder:{emoji:'ϕ', col:'#b8303c', rarity:'Common', uses:1, hp:10, spd:0, lure:true, scent:130, dmg:1, iv:1200, text:'Stays where it lands. Enemies near it go for it instead of you.'},
+    Tick:   {emoji:'Ѫ', col:'#9a7ae0', rarity:'Rare', uses:1, hp:3, spd:75, dps:0.5, store:4, gain:0.8, text:'Feeds until it is full, then crawls back and heals you.'},
+    Lamprey:{lock:'lamprey', emoji:'∂', col:'#5a9ad0', rarity:'Rare', uses:1, hp:3, spd:70, dps:0.5, regen:0.25, numb:true, text:'Latches on and numbs its host. Every hit on it does 1 more.'},
+    Botfly: {lock:'botfly', emoji:'ѵ', col:'#e0b54a', rarity:'Epic', uses:1, hp:2, spd:95, flies:true, dps:0.5, brood:2, text:'Flies over anything to its host. When the host dies, two Leaches crawl out.'},
+  };
+  const UF_RARITY = {Common:{w:6, col:'#d9c9a3'}, Rare:{w:3, col:'#6aa8e0'}, Epic:{w:1, col:'#c58af0'}};
+  const UF_PARA_WASTE = 1/6, UF_PARA_SIGHT = 170, UF_PARA_MAX = 4, UF_BITE = 600;
+  // tarot cards: found on altars in some rooms, they last the whole run
+  const UF_TAROT = [
+    {id:'heart',   name:'The Heart',   glyph:'♡', text:'4 more health, and heal 4.'},
+    {id:'butcher', name:'The Butcher', glyph:'†', text:'The last hit of your combo does 2 more.'},
+    {id:'well',    name:'The Well',    glyph:'◎', text:'Kills drop one more drop of blood.'},
+    {id:'vein',    name:'The Vein',    glyph:'∿', text:'Hold 6 more blood.'},
+    {id:'brood',   name:'The Brood',   glyph:'✶', text:'A card you play has a 1 in 3 chance to stay in your hand.'},
+    {id:'nest', lock:'t_nest', name:'The Nest',    glyph:'❂', text:'An enemy that dies with a parasite on it lets a Leach crawl out.'},
+    {id:'mother', lock:'t_mother', name:'The Mother',  glyph:'☾', text:'Your parasites have 1 more health.'},
+    {id:'thorn',   name:'The Thorn',   glyph:'✠', text:'Whatever hits you takes 2 damage.'},
+    {id:'feast', lock:'t_feast', name:'The Feast',   glyph:'☉', text:'Every 10 kills heal 2.'},
+  ];
+  const ufHas = id => !!(uf && uf.tarot && uf.tarot.includes(id));
+  function ufBreak(q){ // an urn or a crate: splinters, and sometimes blood, a heart or a key
+    q.broken = true; thud(0.12, 0.1, q.crate ? 900 : 1900); beep(q.crate ? 160 : 620, 0.05, 'square', 0.015);
+    for(let k=0; k<6; k++){ const a = Math.random()*Math.PI*2, v = 40 + Math.random()*70; ufFx({kind:'chip', x:q.x, y:q.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:q.crate ? '#7a5a36' : '#8a6a5a', t:420}); }
+    const r = Math.random(); if(r < 0.06) uf.orbs.push({x:q.x, y:q.y, t:1e9, key:true}); else if(r < 0.14 && !ufHeat('mercy')) uf.orbs.push({x:q.x, y:q.y, t:12000, heal:1}); else if(r < 0.6) uf.orbs.push({x:q.x, y:q.y, t:9000});
+  }
+  function ufHeal(n){ if(ufCursed('frail')) n = Math.ceil(n/2); const p = uf.p, before = p.hp; p.hp = Math.min(p.maxHp, p.hp + n); const got = Math.floor(p.hp) - Math.floor(before);
+    ufFx({kind:'num', x:p.x, y:p.y-16, text:got > 0 ? '+'+got : 'full', col:'#8fe08a', t:650}); beep(660, 0.12, 'sine', 0.03); beep(990, 0.18, 'sine', 0.025, 0.06); }
+  function ufRollParas(n, fine){ // distinct, weighted by rarity; a fine chest leans rare
+    const out = [], base = ufParaPool(), w = k => fine ? {Common:1, Rare:4, Epic:3}[UF_PARAS[k].rarity] : UF_RARITY[UF_PARAS[k].rarity].w;
+    while(out.length < n){ const pool = base.filter(k=>!out.includes(k)); if(!pool.length) break;
+      let r = Math.random()*pool.reduce((t,k)=>t + w(k), 0), pick = pool[pool.length-1];
+      for(const k of pool){ r -= w(k); if(r <= 0){ pick = k; break; } }
+      out.push(pick); }
+    return out;
+  }
+  function ufOpenChest(){
+    const ch = uf.chest; if(!ch || ch.open) return; ch.open = true; uf.mapVer++;
+    const k = ch.kind || 'plain';
+    ufFx({kind:'ring', x:ch.x, y:ch.y, r:26, t:360, col:k==='cursed' ? '197,138,240' : '224,181,74'}); thud(0.25, 0.14, 500); beep(523, 0.2, 'triangle', 0.04); beep(784, 0.3, 'triangle', 0.035, 0.1);
+    ufOffer('chest', ufRollParas(3, k!=='plain'), {bonus:k==='cursed' ? 2 : k==='rare' ? 1 : 0, cursed:k==='cursed', fine:k!=='plain'});
+  }
+  function ufPickFocus(){ if(!!activePad()) padSet(ufEl('ufPickRow').querySelector('button:not([disabled])') || ufEl('ufPickSkip')); }
+  function ufOffer(kind, opts, extra){ // the room stops while you choose
+    extra = extra || {};
+    uf.choosing = {kind, opts, bonus:extra.bonus||0, cursed:!!extra.cursed}; uf.paused = true; uf.radial = null; p0Stop();
+    ufEl('ufPickTitle').textContent = kind==='chest' ? (extra.cursed ? 'A cursed chest. Take one, and something comes with it.' : extra.fine ? 'A fine chest. Take one.' : 'The chest holds three. Take one.') : 'A reading. Take one card.';
+    ufEl('ufPickSkip').textContent = kind==='chest' ? 'Leave them' : 'Not now';
+    const row = ufEl('ufPickRow'); row.innerHTML = '';
+    for(const o of opts){ const b = document.createElement('button'); b.className = 'uf-opt';
+      if(kind==='chest'){ const P = UF_PARAS[o], full = !uf.slots.some(x=>!x || x.name===o), u = P.uses + (extra.bonus||0);
+        b.innerHTML = `<span class="g" style="color:${P.col}">${P.emoji}</span><b>${o}</b><span class="r" style="color:${UF_RARITY[P.rarity].col}">${P.rarity} · ${u} use${u > 1 ? 's' : ''}</span><span class="d">${full ? 'Your hand is full.' : P.text}</span>`;
+        b.disabled = full; }
+      else { const T = UF_TAROT.find(t=>t.id===o); b.innerHTML = `<span class="g" style="color:#c58af0">${T.glyph}</span><b>${T.name}</b><span class="d">${T.text}</span>`; }
+      b.onclick = ()=>ufTake(o); row.appendChild(b); }
+    ufEl('ufPick').classList.add('on'); beep(392, 0.2, 'triangle', 0.03); ufPickFocus();
+  }
+  function p0Stop(){ const p = uf.p; p.cursing = false; p.queued = false; }
+  function ufClosePick(){ uf.choosing = null; ufEl('ufPick').classList.remove('on'); padSet(null); uf.paused = false; uf.toggledAt = performance.now(); ufHudLast = ''; }
+  function ufGainTarot(o){
+    uf.tarot.push(o); const T = UF_TAROT.find(t=>t.id===o);
+    if(o==='heart'){ uf.p.maxHp += 4; ufHeal(4); } if(o==='vein') uf.cap += 6;
+    uf.banner = {text:T.name, t:1800}; beep(523, 0.3, 'sine', 0.035); beep(659, 0.3, 'sine', 0.03, 0.12); beep(784, 0.5, 'sine', 0.03, 0.24);
+  }
+  function ufAddCurse(){
+    const left = UF_CURSES.filter(c=>!uf.curses.includes(c.id)); if(!left.length) return;
+    const C = left[Math.floor(Math.random()*left.length)]; uf.curses.push(C.id);
+    uf.banner = {text:'Cursed: ' + C.name, t:2400}; beep(98, 0.8, 'sawtooth', 0.04); beep(92, 0.8, 'sawtooth', 0.035, 0.06); haptic([30,40,60]);
+  }
+  function ufTake(o){
+    const C = uf.choosing; if(!C) return;
+    if(C.kind==='chest'){ ufGive(o, C.bonus); ufClosePick(); if(C.cursed) ufAddCurse(); return; }
+    if(uf.altar) uf.altar.taken = true; uf.mapVer++;
+    ufGainTarot(o); ufClosePick();
+  }
+  function ufGive(name, extra){
+    const P = UF_PARAS[name]; let i = uf.slots.findIndex(x=>x && x.name===name); if(i < 0) i = uf.slots.indexOf(null); if(i < 0) return false;
+    const n = P.uses + (extra||0);
+    if(uf.slots[i]) uf.slots[i].uses += n; else uf.slots[i] = {name, uses:n};
+    uf.banner = {text:uf.told ? name : name + ': hold RB, hold the stick on it, let go of RB', t:uf.told ? 1200 : 2800}; uf.told = true;
+    beep(659, 0.15, 'triangle', 0.04); beep(988, 0.25, 'triangle', 0.035, 0.08); return true;
+  }
+  const ufTarotLeft = () => UF_TAROT.filter(t=>ufTarotOk(t) && !uf.tarot.includes(t.id));
+  function ufShop(){ // the merchant: what he has, for blood
+    const S = uf.here.shop; uf.choosing = {kind:'shop'}; uf.paused = true; uf.radial = null; p0Stop();
+    ufEl('ufPickTitle').textContent = `The merchant. You have ${Math.floor(uf.blood)} blood.`;
+    ufEl('ufPickSkip').textContent = 'Leave';
+    const row = ufEl('ufPickRow'); row.innerHTML = '';
+    const opt = (g, col, name, price, d, off, fn)=>{ const b = document.createElement('button'); b.className = 'uf-opt';
+      b.innerHTML = `<span class="g" style="color:${col}">${g}</span><b>${name}</b><span class="r" style="color:#e0b54a">${price} blood</span><span class="d">${d}</span>`;
+      b.disabled = off || uf.blood < price; b.onclick = ()=>{ if(uf.blood < price) return; uf.blood -= price; fn(); beep(1046, 0.06, 'square', 0.02); beep(1318, 0.08, 'square', 0.02, 0.05); ufShop(); }; row.appendChild(b); };
+    for(const it of S.items){ if(it.sold) continue; const sell = ()=>{ it.sold = true; };
+      if(it.type==='para'){ const P = UF_PARAS[it.name], full = !uf.slots.some(x=>!x || x.name===it.name);
+        opt(P.emoji, P.col, it.name, it.price, full ? 'Your hand is full.' : `${P.uses} use${P.uses > 1 ? 's' : ''}. ${P.text}`, full, ()=>{ sell(); ufGive(it.name); }); }
+      else if(it.type==='heal'){ if(ufHeat('mercy')) continue; opt('♥', '#ee5a75', 'Salted meat', it.price, 'Heal 6.', uf.p.hp >= uf.p.maxHp, ()=>{ sell(); ufHeal(6); }); }
+      else if(it.type==='tarot'){ const L = ufTarotLeft(); if(!L.length) continue; opt('✦', '#c58af0', 'A sealed card', it.price, 'A tarot card. You see it when you open it.', false, ()=>{ sell(); ufGainTarot(L[Math.floor(Math.random()*L.length)].id); }); }
+      else if(it.type==='key') opt('⚷', '#e0b54a', 'A key', it.price, 'Opens one locked door.', false, ()=>{ sell(); uf.keys++; });
+      else if(it.type==='map'){ if(uf.mapAll) continue; opt('▤', '#e0b54a', 'A map', it.price, 'Shows every room on this floor.', false, ()=>{ sell(); uf.mapAll = true; uf.mapVer++; }); }
+    }
+    if(!S.rerolled) opt('↻', '#d9c9a3', 'Something else', 2, 'He lays out different parasites. Once.', false, ()=>{ S.rerolled = true; S.items = ufShopStock(Math.random).items.filter(i=>i.type==='para').concat(S.items.filter(i=>i.type!=='para')); });
+    ufEl('ufPick').classList.add('on'); ufPickFocus();
+  }
+  function ufShrine(){
+    const np = uf.here.npc, p = uf.p; uf.choosing = {kind:'shrine'}; uf.paused = true; uf.radial = null; p0Stop();
+    ufEl('ufPickTitle').textContent = 'An old shrine, black with blood. It wants some of yours.';
+    ufEl('ufPickSkip').textContent = 'Walk away';
+    const row = ufEl('ufPickRow'); row.innerHTML = '';
+    const opt = (g, col, name, d, off, fn)=>{ const b = document.createElement('button'); b.className = 'uf-opt'; b.innerHTML = `<span class="g" style="color:${col}">${g}</span><b>${name}</b><span class="d">${d}</span>`; b.disabled = off; b.onclick = ()=>{ np.spent = true; uf.mapVer++; thud(0.5, 0.16, 180); beep(98, 0.6, 'sawtooth', 0.03); fn(); }; row.appendChild(b); };
+    const L = ufTarotLeft();
+    opt('✦', '#c58af0', 'Bleed 5', 'Choose one of two tarot cards.', p.hp <= 5 || !L.length, ()=>{ p.hp -= 5; ufFx({kind:'num', x:p.x, y:p.y-16, text:'-5', col:'#c73a5c', t:650}); ufOffer('tarot', L.sort(()=>Math.random()-0.5).slice(0, 2).map(t=>t.id)); });
+    opt('♥', '#ee5a75', 'Give 3 health for good', 'Choose from three fine parasites, with a use more.', p.maxHp <= 8 || !uf.slots.some(x=>!x), ()=>{ p.maxHp -= 3; p.hp = Math.min(p.hp, p.maxHp); ufOffer('chest', ufRollParas(3, true), {bonus:1, fine:true}); });
+    ufEl('ufPick').classList.add('on'); ufPickFocus();
+  }
+  function ufSummon(name, at){ // from your hand, or crawling out of a body (at)
+    const P = UF_PARAS[name], p = uf.p;
+    if(!at && uf.allies.length >= UF_PARA_MAX){ beep(140, 0.1, 'square', 0.02); return false; }
+    const hp = P.hp + (ufHas('mother') ? 1 : 0);
+    const a = {kind:name, P, x:at ? at.x : p.x + p.fx*16, y:at ? at.y : p.y + p.fy*16, r:P.lure ? 8 : 6, hp, maxHp:hp, host:null, bite:0, drained:0, store:0, homing:false, atkT:0, last:null};
+    if(!P.flies) ufSolid(a);
+    uf.allies.push(a); ufFx({kind:'ring', x:a.x, y:a.y, r:16, t:300, col:'199,58,92'}); sfxSpawn(1.2); return true;
+  }
+  const ufNumbed = f => uf.allies.some(a=>a.host===f && a.P.numb);
+  function ufHurtA(a, dmg){ a.hp -= dmg; ufFx({kind:'num', x:a.x, y:a.y-12, text:'-'+dmg, col:'#e9a0b0', t:450}); sfxHit(1.4); }
+  function ufAllies(dt){
+    const s = dt/1000, p = uf.p;
+    const step = (a, tx, ty, spd)=>{ const dx = tx-a.x, dy = ty-a.y, d = Math.hypot(dx,dy) || 1, st = Math.min(d, spd*s); a.x += dx/d*st; a.y += dy/d*st;
+      if(a.P.flies){ a.x = Math.max(UF_WALL+a.r, Math.min(UF_W-UF_WALL-a.r, a.x)); a.y = Math.max(UF_WALL+a.r, Math.min(UF_H-UF_WALL-a.r, a.y)); } else ufSolid(a); return d; };
+    for(const a of uf.allies){
+      const P = a.P;
+      if(a.host && (a.host.hp <= 0 || a.host.dead)) a.host = null;
+      if(P.lure){ // the Bleeder stays put, bleeds, and bites whatever comes close
+        if(a.atkT > 0) a.atkT -= dt;
+        if(a.atkT <= 0){ const f = uf.foes.find(f=>f.spawnT <= 0 && Math.hypot(f.x-a.x, f.y-a.y) < f.r + a.r + 6); if(f){ ufHurtF(f, P.dmg, 0, 0); a.atkT = P.iv; } }
+        continue; }
+      if(a.homing){ // a full Tick, crawling back to you with what it took
+        if(step(a, p.x, p.y, P.spd*1.4) <= p.r + a.r + 2){ ufHeal(Math.max(1, Math.floor(a.store))); a.store = 0; a.homing = false; }
+        continue; }
+      if(a.host){ const h = a.host; a.x = h.x + h.r*0.7; a.y = h.y - h.r*0.7;
+        if(a.bite > 0){ a.bite -= dt; continue; }
+        if(P.hop){ ufHurtF(h, P.bite, 0, 0); a.last = h; a.host = null; continue; } // a Flea bites once and is gone again
+        const d = Math.min(h.hp, P.dps*s); h.hp -= d; h.hit = Math.max(h.hit, 40); a.drained += d;
+        if(P.regen) a.hp = Math.min(a.maxHp, a.hp + P.regen*s);
+        if(P.store){ a.store = Math.min(P.store, a.store + P.gain*s); if(a.store >= P.store){ a.host = null; a.homing = true; } }
+        if(a.drained >= 1){ a.drained -= 1; ufFx({kind:'num', x:h.x, y:h.y-12, text:'1', col:'#c73a5c', t:500}); } // shown a whole point at a time
+        continue; }
+      if(P.store && a.store >= 1){ a.homing = true; continue; } // its host died first: it brings back what it has
+      let best = null, bd = UF_PARA_SIGHT;
+      for(const f of uf.foes){ if(f.hp <= 0 || f.spawnT > 0) continue;
+        if(P.hop ? (f===a.last && uf.foes.length > 1) : uf.allies.some(o=>o!==a && o.host===f && !o.P.hop)) continue;
+        const d = Math.hypot(f.x-a.x, f.y-a.y); if(d < bd){ bd = d; best = f; } }
+      if(!best){ a.hp -= UF_PARA_WASTE*s; continue; } // nothing to feed on: it wastes away
+      if(step(a, best.x, best.y, P.hop ? P.spd*3 : P.spd) <= best.r + a.r + 2){ a.host = best; a.bite = P.hop ? 150 : UF_BITE; }
+    }
+    uf.allies = uf.allies.filter(a=>a.hp > 0);
+  }
+  const UF_SLOT_DIRS = [[0,-1],[1,0],[0,1],[-1,0]];
+  function ufRadial(g, dt){
+    const held = !!(g && g.rb) || !!ufIn.keys.KeyE;
+    if(held && !uf.radial){ uf.radial = {sel:-1, t:0}; beep(392, 0.06, 'triangle', 0.02); }
+    const r = uf.radial; if(!r) return;
+    r.t += dt;
+    let ax = 0, ay = 0;
+    if(g && Math.hypot(g.rx||0, g.ry||0) > 0.5){ ax = g.rx; ay = g.ry; }
+    else if(ufIn.mouse){ const mx = ufIn.mouse.x - uf.p.x, my = ufIn.mouse.y - uf.p.y; if(Math.hypot(mx, my) > 30){ ax = mx; ay = my; } }
+    let sel = -1; // only what the stick points at right now: let it go back to the middle and nothing is chosen
+    if(ax || ay) sel = Math.abs(ax) > Math.abs(ay) ? (ax > 0 ? 1 : 3) : (ay > 0 ? 2 : 0);
+    for(let i=0;i<4;i++) if(ufIn.keys['Digit'+(i+1)]) sel = i;
+    if(sel!==r.sel){ r.sel = sel; if(sel >= 0) beep(520 + sel*40, 0.03, 'triangle', 0.02); }
+    if(held) return;
+    uf.radial = null; // released: play the card the stick is still holding, or nothing
+    sel = r.sel; if(sel < 0) return;
+    const slot = uf.slots[sel]; if(!slot){ beep(140, 0.1, 'square', 0.02); return; }
+    uf.lastSlot = sel;
+    if(ufSummon(slot.name)){ if(ufHas('brood') && Math.random() < 1/3) ufFx({kind:'num', x:uf.p.x, y:uf.p.y-18, text:'kept', col:'#c58af0', t:600}); else if(--slot.uses <= 0) uf.slots[sel] = null; }
+  }
+  function ufRelic(){
+    if(!uf || uf.over || uf.paused) return; const p = uf.p;
+    if(uf.blood < UF.relicCost){ beep(140, 0.1, 'square', 0.02); return; }
+    uf.blood -= UF.relicCost;
+    for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 1; if(d <= UF.relicR + f.r) ufHurtF(f, UF.relicDmg, dx/d*280, dy/d*280); }
+    for(const sh of uf.shots) if(!sh.mine && Math.hypot(sh.x-p.x, sh.y-p.y) <= UF.relicR) sh.dead = true;
+    for(const q of uf.props) if(!q.broken && Math.hypot(q.x-p.x, q.y-p.y) <= UF.relicR + q.r) ufBreak(q);
+    ufFx({kind:'ring', x:p.x, y:p.y, r:UF.relicR, t:380, col:'199,58,92'}); sfxSpell(); haptic(20); ufSecretCheck(UF.relicR + 24);
+  }
+
+  // ---- what is done to you ----
+  function ufHurtP(dmg, src, name){
+    const p = uf.p; if(p.inv > 0 || p.rollT > 0 || uf.over) return;
+    p.hp -= dmg; p.inv = 500; uf.shake = 160; haptic(30); sfxHit(0.8);
+    uf.killer = name || (src && src.D && src.D.name) || uf.killer;
+    ufFx({kind:'num', x:p.x, y:p.y-14, text:'-'+dmg, col:'#c73a5c', t:650});
+    if(src){ const dx = p.x-src.x, dy = p.y-src.y, l = Math.hypot(dx,dy) || 1; p.x += dx/l*8; p.y += dy/l*8; ufSolid(p); if(ufHas('thorn') && src.D) ufHurtF(src, 2, -dx/l*120, -dy/l*120); }
+    if(p.hp <= 0){ p.hp = 0; ufEndRun(false); }
+  }
+  function ufHurtF(f, dmg, kx, ky){ if(ufNumbed(f)) dmg += 1; if(f.boss){ kx *= 0.15; ky *= 0.15; } f.hp -= dmg; f.hit = 90; f.kx += kx; f.ky += ky; sfxHit(1.2); ufFx({kind:'num', x:f.x, y:f.y-12, text:String(Math.round(dmg)), col:'#d9c9a3', t:500}); }
+  function ufFoeStrike(f){
+    const t = f.tg && f.tg!==uf.p && uf.allies.includes(f.tg) ? f.tg : uf.p; let dx = t.x-f.x, dy = t.y-f.y, d = Math.hypot(dx,dy) || 1;
+    if(f.D.kind==='melee'){
+      if(f.D.lunge && d > f.D.reach + f.r + t.r){ const go = Math.min(f.D.lunge, d - (f.r + t.r + 4)); f.x += dx/d*go; f.y += dy/d*go; ufSolid(f); ufFx({kind:'trail', x:f.x, y:f.y, t:160}); dx = t.x-f.x; dy = t.y-f.y; d = Math.hypot(dx,dy) || 1; }
+      ufFx({kind:'swipe', x:f.x, y:f.y, ax:dx/d, ay:dy/d, r:f.D.reach+f.r+6, arc:1.2, t:140}); thud(0.08, 0.08, 700);
+      if(d <= f.D.reach + f.r + t.r + 4){ if(t===uf.p) ufHurtP(f.D.dmg, f); else ufHurtA(t, f.D.dmg); } }
+    else { const sp = 170; uf.shots.push({x:f.x, y:f.y, vx:dx/d*sp, vy:dy/d*sp, left:340, mine:false, dmg:f.D.dmg, src:f.D.name}); beep(300, 0.05, 'triangle', 0.02); }
+  }
+  // a guardian: it walks at you, and between steps it slams the floor around it, throws a ring of bolts, or charges. Twice it calls for help
+  function ufBossAct(f, dt, s){
+    const p = uf.p, dx = p.x-f.x, dy = p.y-f.y, d = Math.hypot(dx,dy) || 1;
+    if(f.dashT > 0){ f.dashT -= dt; f.x += f.dvx*s; f.y += f.dvy*s; if(!f.dashHit && d < f.r + p.r + 2){ f.dashHit = true; ufHurtP(f.D.dmg, f); } return; }
+    if(f.wind > 0){ f.wind -= dt; if(f.wind <= 0) ufBossDo(f); return; }
+    if(f.summons.length && f.hp/f.maxHp < f.summons[0]){ f.summons.shift(); for(let k=0;k<2;k++){ const at = ufSpot(80, 24); uf.foes.push(ufMakeFoe(uf.floor >= 2 && k ? 'hound' : 'jackal', at, 500)); } uf.banner = {text:'It calls for help', t:1200}; }
+    f.x += dx/d*f.D.spd*s; f.y += dy/d*f.D.spd*s;
+    f.actT -= dt; if(f.actT > 0) return;
+    f.act = d < 70 ? 'slam' : Math.random() < 0.5 ? 'ring' : 'charge';
+    f.wind = ({slam:650, ring:600, charge:560})[f.act] * ufWindMul(); f.actT = 1700 - 250*(uf.floor-1);
+    if(f.act==='charge'){ f.dvx = dx/d*330; f.dvy = dy/d*330; }
+    beep(f.act==='slam' ? 70 : 110, 0.4, 'sawtooth', 0.035);
+  }
+  function ufBossDo(f){
+    const p = uf.p, d = Math.hypot(p.x-f.x, p.y-f.y);
+    if(f.act==='slam'){ ufFx({kind:'ring', x:f.x, y:f.y, r:48, t:320, col:'243,227,211'}); uf.shake = 160; thud(0.4, 0.2, 200); if(d < 48 + p.r) ufHurtP(f.D.dmg, f); for(const a of uf.allies) if(Math.hypot(a.x-f.x, a.y-f.y) < 48) ufHurtA(a, 2); }
+    else if(f.act==='ring'){ const n = 8 + 2*(uf.floor-1), o = Math.random()*Math.PI; for(let i=0;i<n;i++){ const a = o + i/n*Math.PI*2; uf.shots.push({x:f.x, y:f.y, vx:Math.cos(a)*150, vy:Math.sin(a)*150, left:420, mine:false, dmg:Math.max(2, f.D.dmg-2), src:f.D.name}); } beep(300, 0.1, 'triangle', 0.03); }
+    else { f.dashT = 560; f.dashHit = false; thud(0.3, 0.14, 300); }
+  }
+  function ufSpikes(){ // spike plates: down, a warning, then up; anything standing on them when they rise is cut, once a rise
+    const sp = uf.spikes; if(!sp || !sp.length) return;
+    const t = uf.time % 2600, cyc = Math.floor(uf.time/2600), st = t < 1500 ? 0 : t < 2000 ? 1 : 2;
+    if(st!==uf.spikeState){ uf.spikeState = st; if(st===2) { thud(0.06, 0.06, 2400); beep(880, 0.04, 'square', 0.012); } }
+    if(st!==2) return;
+    const on = o => sp.some(q=>Math.abs(o.x-q.x) < 13 + o.r*0.5 && Math.abs(o.y-q.y) < 13 + o.r*0.5);
+    const p = uf.p; if(p._spk!==cyc && p.rollT <= 0 && on(p)){ p._spk = cyc; ufHurtP(2, null, 'the spikes'); }
+    for(const f of uf.foes) if(f._spk!==cyc && f.spawnT <= 0 && !f.boss && on(f)){ f._spk = cyc; ufHurtF(f, 2, 0, 0); }
+  }
+  function ufDoorC(k){ const d = UF_DOORS[k]; return k==='t' || k==='b' ? {x:d.x, y:d.y + d.h/2} : {x:d.x + d.w/2, y:d.y + d.h/2}; }
+  function ufSecretCheck(r){ // a heavy blow or the relic near a cracked wall breaks it open
+    const p = uf.p;
+    for(const [k, link] of Object.entries(uf.here.links)){ if(link!=='secret') continue; const c = ufDoorC(k); if(Math.hypot(p.x-c.x, p.y-c.y) > r) continue;
+      ufLink(k, 'open'); uf.banner = {text:'The wall gives way', t:1600}; uf.shake = 200; thud(0.6, 0.2, 180); beep(70, 0.5, 'sawtooth', 0.04);
+      for(let i=0;i<10;i++){ const a = Math.random()*Math.PI*2, v = 40 + Math.random()*80; ufFx({kind:'chip', x:c.x, y:c.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:'#5a4a40', t:500}); } }
+  }
+  function ufStep(dt, I){
+    const p = uf.p, s = dt/1000; uf.time += dt;
+    for(const k of ['rollCd','inv','heavyCd']) if(p[k] > 0) p[k] -= dt;
+    if(p.comboT > 0){ p.comboT -= dt; if(p.comboT <= 0) p.combo = 0; }
+    if(p.swingT > 0){ p.swingT -= dt; if(p.swingT <= 0 && p.queued) ufSwing(); }
+    if(p.heavyT > 0){ p.heavyT -= dt; if(p.heavyT <= 0) ufHeavyLand(); }
+    // the curse: hold to aim (left stick, or the mouse), release to cast
+    if(I.curse && !p.cursing && !ufBusy() && p.swingT <= 0){ if(uf.blood >= UF.curseCost){ p.cursing = true; p.cx = p.fx; p.cy = p.fy; } else if(!p.curseNoted){ p.curseNoted = true; beep(140, 0.1, 'square', 0.02); } }
+    if(!I.curse) p.curseNoted = false;
+    if(p.cursing){ const l = Math.hypot(I.mx, I.my); if(I.mouseAim){ p.cx = I.mouseAim.x; p.cy = I.mouseAim.y; } else if(l > 0.3){ p.cx = I.mx/l; p.cy = I.my/l; } if(!I.curse) ufCurseCast(); }
+    const ml = Math.hypot(I.mx, I.my);
+    if(ml > 0.2 && !p.cursing && p.swingT <= 0 && p.heavyT <= 0 && p.rollT <= 0){ p.fx = I.mx/ml; p.fy = I.my/ml; }
+    if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*UF.rollSpd*s; p.y += p.dy*UF.rollSpd*s; ufFx({kind:'trail', x:p.x, y:p.y, t:180}); }
+    else { const m = p.heavyT > 0 ? 0.15 : p.swingT > 0 ? UF.swingMove : p.cursing ? UF.curseMove : 1; p.x += I.mx*UF.spd*m*s; p.y += I.my*UF.spd*m*s; }
+    ufSolid(p);
+    // the enemies
+    const decay = Math.pow(0.0005, s);
+    for(const f of uf.foes){
+      if(f.spawnT > 0){ f.spawnT -= dt; continue; } // still rising out of the floor
+      if(f.hit > 0) f.hit -= dt;
+      f.x += f.kx*s; f.y += f.ky*s; f.kx *= decay; f.ky *= decay;
+      if(f.boss){ f.tg = p; ufBossAct(f, dt, s); ufSolid(f); continue; }
+      let tg = p; for(const a of uf.allies) if(a.P.lure && Math.hypot(a.x-f.x, a.y-f.y) < a.P.scent){ tg = a; break; } // a Bleeder's smell wins over you
+      f.tg = tg; const dx = tg.x-f.x, dy = tg.y-f.y, d = Math.hypot(dx,dy) || 1, D = f.D;
+      if(f.wind > 0){ f.wind -= dt; if(f.wind <= 0) ufFoeStrike(f); ufSolid(f); continue; } // winding up: it stands still, and that is the moment to roll
+      if(f.atkT > 0) f.atkT -= dt;
+      if(D.kind==='melee'){
+        if(d <= D.reach + f.r + tg.r + (D.lunge||0)*0.7){ if(f.atkT <= 0){ f.wind = D.wind*ufWindMul(); f.atkT = D.iv; } }
+        else { f.x += dx/d*D.spd*s; f.y += dy/d*D.spd*s; }
+      } else {
+        const want = d > D.reach ? 1 : d < 110 ? -1 : 0;
+        if(want){ f.x += dx/d*D.spd*s*want; f.y += dy/d*D.spd*s*want; }
+        else { f.x += -dy/d*D.spd*0.45*s*f.side; f.y += dx/d*D.spd*0.45*s*f.side; if(Math.random() < s*0.4) f.side = -f.side; }
+        if(d <= D.reach + 20 && f.atkT <= 0){ f.wind = D.wind*ufWindMul(); f.atkT = D.iv; }
+      }
+      ufSolid(f);
+    }
+    // bodies push each other apart; a roll passes straight through
+    const F = uf.foes;
+    for(let i=0; i<F.length; i++){
+      const a = F[i];
+      for(let j=i+1; j<F.length; j++){ const b = F[j], dx = a.x-b.x, dy = a.y-b.y, d = Math.hypot(dx,dy), m = a.r+b.r;
+        if(d < m && d > 0.01){ const k = (m-d)/2/d; a.x += dx*k; a.y += dy*k; b.x -= dx*k; b.y -= dy*k; } }
+      if(p.rollT <= 0){ const dx = a.x-p.x, dy = a.y-p.y, d = Math.hypot(dx,dy), m = a.r+p.r;
+        if(d < m && d > 0.01){ const k = (m-d)/d; a.x += dx*k*0.7; a.y += dy*k*0.7; p.x -= dx*k*0.3; p.y -= dy*k*0.3; } }
+    }
+    for(const f of F) ufSolid(f); ufSolid(p);
+    // shots
+    for(const sh of uf.shots){
+      if(sh.dead) continue;
+      const sp = Math.hypot(sh.vx, sh.vy); sh.x += sh.vx*s; sh.y += sh.vy*s; sh.left -= sp*s;
+      if(sh.mine){ const q = uf.props.find(q=>!q.broken && Math.hypot(q.x-sh.x, q.y-sh.y) < q.r + 3); if(q){ ufBreak(q); if(!sh.pierce){ sh.dead = true; continue; } } }
+      if(sh.left <= 0 || ufBlocked(sh.x, sh.y)){ sh.dead = true; continue; }
+      if(!sh.mine){ const a = uf.allies.find(a=>a.P.lure && Math.hypot(a.x-sh.x, a.y-sh.y) < a.r + 3); if(a){ ufHurtA(a, sh.dmg); sh.dead = true; continue; } }
+      if(sh.mine && uf.chest && !uf.chest.open && Math.hypot(sh.x-uf.chest.x, sh.y-uf.chest.y) < uf.chest.r + 3){ ufOpenChest(); sh.dead = true; continue; }
+      if(sh.mine){ for(const f of F){ if(f.hp > 0 && !sh.hit.has(f) && Math.hypot(f.x-sh.x, f.y-sh.y) < f.r+4){ sh.hit.add(f); ufHurtF(f, sh.dmg, sh.vx/sp*90, sh.vy/sp*90); if(!sh.pierce){ sh.dead = true; break; } } } }
+      else if(Math.hypot(p.x-sh.x, p.y-sh.y) < p.r+3 && !(p.inv > 0) && !(p.rollT > 0)){ ufHurtP(sh.dmg, null, sh.src); sh.dead = true; }
+    }
+    uf.shots = uf.shots.filter(x=>!x.dead);
+    // deaths, and the blood they drop
+    for(const f of F) if(f.hp <= 0){ f.dead = true; uf.kills++; sfxDeath();
+      ufFx({kind:'ring', x:f.x, y:f.y, r:f.r*2.2, t:320, col:'63,133,128'});
+      const on = uf.allies.filter(a=>a.host===f);
+      for(const a of on) if(a.P.brood) for(let k=0; k<a.P.brood; k++) ufSummon('Leach', {x:f.x + (k ? 6 : -6), y:f.y});
+      if(ufHas('nest') && on.some(a=>!a.P.brood && !a.P.hop)) ufSummon('Leach', {x:f.x, y:f.y + 6});
+      if(ufHas('feast') && uf.kills % 10 === 0) ufHeal(2);
+      if(f.elite) uf.orbs.push({x:f.x, y:f.y, t:1e9, key:true});
+      for(let k=0; k<Math.max(0, f.D.blood + (ufHas('well') ? 1 : 0) - (ufCursed('thirst') ? 1 : 0)); k++) uf.orbs.push({x:f.x+(Math.random()-.5)*14, y:f.y+(Math.random()-.5)*14, t:9000}); }
+    uf.foes = F.filter(x=>!x.dead);
+    for(const o of uf.orbs){
+      o.t -= dt; const dx = p.x-o.x, dy = p.y-o.y, d = Math.hypot(dx,dy) || 1;
+      if(d < 70){ const st = Math.min(d, 230*s); o.x += dx/d*st; o.y += dy/d*st; } // always drawn in: at the cap, the extra is simply lost
+      if(d < p.r + 6 && o.key){ o.t = 0; uf.keys++; beep(988, 0.08, 'square', 0.02); beep(1318, 0.12, 'square', 0.02, 0.06); continue; }
+      if(d < p.r + 6 && o.heal){ o.t = 0; ufHeal(o.heal); continue; }
+      if(d < p.r + 6){ o.t = 0; const full = uf.blood >= uf.cap; uf.blood = Math.min(uf.cap, uf.blood + 1); beep(full ? 520 : 880, 0.05, 'sine', 0.025); if(full) ufFx({kind:'num', x:p.x, y:p.y-16, text:'full', col:'#e9a0b0', t:400}); }
+    }
+    uf.orbs = uf.orbs.filter(o=>o.t > 0);
+    ufAllies(dt);
+    const al = uf.altar; if(al && !al.taken){ const d = Math.hypot(p.x-al.x, p.y-al.y); if(d > 40) al.armed = true; else if(al.armed && d < p.r + 14){ al.armed = false; ufOffer('tarot', al.opts); return; } }
+    { const R = uf.here, np = R.npc; if(np && !np.spent){ const d = Math.hypot(p.x-np.x, p.y-np.y); if(d > 46) np.armed = true; else if(np.armed && d < p.r + 18){ np.armed = false; np.kind==='shop' ? ufShop() : ufShrine(); return; } }
+      const mi = R.mapItem; if(mi && !mi.taken && Math.hypot(p.x-mi.x, p.y-mi.y) < p.r + 10){ mi.taken = true; uf.mapAll = true; uf.mapVer++; uf.banner = {text:'A map of this floor', t:1600}; beep(523, 0.2, 'triangle', 0.04); beep(784, 0.3, 'triangle', 0.035, 0.1); }
+      const st = R.stairs; if(st && uf.cleared){ const d = Math.hypot(p.x-st.x, p.y-st.y); if(d > 36) st.armed = true; else if(st.armed && d < p.r + 10){ if(uf.floor >= UF_FLOORS) ufEndRun(true); else ufNextFloor(); return; } } }
+    ufSpikes(); if(uf.over) return;
+    // the room: cleared when nothing is left, then any door but the one you came in by leads on
+    if(!uf.cleared && !uf.foes.length){
+      if(uf.wave2 && uf.wave2.length){ const L = uf.wave2; uf.wave2 = null; L.forEach((kind, i)=>{ const D = UF_FOES[kind], at = ufSpot(130, D.r + 14); uf.foes.push(ufMakeFoe(kind, at, 400 + i*160)); }); uf.banner = {text:'More of them', t:1200}; thud(0.5, 0.14, 200); }
+      else { const R = uf.here; uf.cleared = true; R.cleared = true; uf.roomsCleared++; uf.mapVer++;
+        beep(392, 0.3, 'triangle', 0.05); beep(587, 0.4, 'triangle', 0.045, 0.12);
+        if(R.type==='boss'){ uf.bosses++; ufMeta.bossKills++; ufSaveMeta(); R.stairs = {x:UF_W/2, y:UF_H/2, armed:false};
+          if(uf.floor < UF_FLOORS){ const c = {x:UF_W/2, y:UF_H/2 + 60}; uf.chest = R.chest = {x:c.x, y:c.y, r:12, open:false, kind:'rare'}; }
+          uf.banner = {text:uf.floor >= UF_FLOORS ? 'The way out is open' : 'The way down is open', t:2200}; }
+        else { if(R.elite){ const c = ufSpot(40, 30); uf.chest = R.chest = {x:c.x, y:c.y, r:12, open:false, kind:'rare'}; } uf.banner = {text:'Room cleared', t:1600}; } }
+    }
+    if(uf.cleared){ const R = uf.here; if(uf.lockT > 0) uf.lockT -= dt;
+      for(const [k, link] of Object.entries(R.links)){ if(link==='secret') continue;
+        const near = k==='t' ? p.y <= UF_WALL + p.r + 1.5 && Math.abs(p.x - UF_W/2) < 22 : k==='b' ? p.y >= UF_H - UF_WALL - p.r - 1.5 && Math.abs(p.x - UF_W/2) < 22
+          : k==='l' ? p.x <= UF_WALL + p.r + 1.5 && Math.abs(p.y - UF_H/2) < 22 : p.x >= UF_W - UF_WALL - p.r - 1.5 && Math.abs(p.y - UF_H/2) < 22;
+        if(!near) continue;
+        if(link==='locked'){ if(uf.keys > 0){ uf.keys--; ufLink(k, 'open'); uf.banner = {text:'Unlocked', t:900}; thud(0.2, 0.12, 1200); beep(660, 0.1, 'square', 0.025); }
+          else if(!(uf.lockT > 0)){ uf.lockT = 1500; uf.banner = {text:'Locked', t:900}; beep(140, 0.1, 'square', 0.02); } continue; }
+        ufEnterRoom(k); return; } }
+  }
+  function ufDraw(dt){
+    const cv = ufEl('ufCanvas'), st = cv.parentNode, dpr = Math.min(2, window.devicePixelRatio || 1), w = st.clientWidth, h = st.clientHeight;
+    if(!w || !h) return;
+    if(cv._w!==w || cv._h!==h || cv._d!==dpr){ cv._w = w; cv._h = h; cv._d = dpr; cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+    const sr = st.getBoundingClientRect(), hb = Math.max(ufEl('ufStats').getBoundingClientRect().bottom, ufEl('ufMapBox').getBoundingClientRect().bottom) - sr.top + 8;
+    const hw = Math.max(ufEl('ufStats').getBoundingClientRect().right - sr.left, sr.right - ufEl('ufMapBox').getBoundingClientRect().left) + 8;
+    const sc0 = Math.min(w/UF_W, h/UF_H), top = UF_W > UF_H ? 0 : (w - UF_W*sc0)/2 < hw ? hb : 0; // a wide room fills the screen, with the HUD over its corners // the HUD keeps to the sides when there is room, otherwise the room sits below it
+    const c = cv.getContext('2d'), sc = Math.min(w/UF_W, (h - top - 8)/UF_H), ox = (w - UF_W*sc)/2, oy = top + (h - top - UF_H*sc)/2;
+    uf.view = {sc, ox, oy};
+    c.setTransform(1,0,0,1,0,0); c.fillStyle = '#0a0706'; c.fillRect(0, 0, cv.width, cv.height);
+    const sh = uf.shake > 0 ? 3 : 0;
+    c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(ox + (Math.random()-.5)*sh), dpr*(oy + (Math.random()-.5)*sh));
+    c.fillStyle = '#241a17'; c.fillRect(0, 0, UF_W, UF_H);
+    c.fillStyle = 'rgba(0,0,0,.22)'; for(let y=UF_WALL+9; y<UF_H-UF_WALL; y+=18) for(let x=UF_WALL+9; x<UF_W-UF_WALL; x+=18) c.fillRect(x, y, 1.5, 1.5);
+    c.fillStyle = '#15100f'; c.fillRect(0, 0, UF_W, UF_WALL); c.fillRect(0, UF_H-UF_WALL, UF_W, UF_WALL); c.fillRect(0, 0, UF_WALL, UF_H); c.fillRect(UF_W-UF_WALL, 0, UF_WALL, UF_H);
+    c.strokeStyle = '#3a2c27'; c.lineWidth = 1; c.strokeRect(UF_WALL+.5, UF_WALL+.5, UF_W-2*UF_WALL-1, UF_H-2*UF_WALL-1);
+    const txt = (t, x, y, size, col)=>{ c.font = `bold ${size}px ui-monospace,Menlo,Consolas,monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = col; c.fillText(t, x, y); };
+    for(const [k, d] of Object.entries(UF_DOORS)){ const link = uf.here.links[k]; if(!link) continue; // only the doors this room has
+      const x = k==='t' || k==='b' ? d.x - d.w/2 : d.x, y = d.y;
+      if(link==='secret'){ c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = 1; c.beginPath(); c.moveTo(x+d.w*0.3, y+d.h*0.15); c.lineTo(x+d.w*0.5, y+d.h*0.55); c.lineTo(x+d.w*0.42, y+d.h*0.9); c.moveTo(x+d.w*0.5, y+d.h*0.55); c.lineTo(x+d.w*0.72, y+d.h*0.42); c.stroke(); continue; }
+      const N = uf.rooms[(uf.pos.x+UF_STEP[k][0])+','+(uf.pos.y+UF_STEP[k][1])], boss = N && N.type==='boss';
+      c.fillStyle = '#060404'; c.fillRect(x, y, d.w, d.h);
+      if(link==='locked'){ c.strokeStyle = '#e0b54a'; c.lineWidth = 1.5; c.strokeRect(x+.75, y+.75, d.w-1.5, d.h-1.5); txt('⚷', x+d.w/2, y+d.h/2, 11, '#e0b54a'); continue; }
+      if(uf.cleared){ c.strokeStyle = boss ? 'rgba(214,48,79,.9)' : 'rgba(224,181,74,.75)'; c.lineWidth = 1.5; c.strokeRect(x+.75, y+.75, d.w-1.5, d.h-1.5); }
+      else { c.strokeStyle = '#5a3d22'; c.lineWidth = 2; c.beginPath(); for(let i=1;i<4;i++){ if(d.w > d.h){ c.moveTo(x + d.w*i/4, y); c.lineTo(x + d.w*i/4, y + d.h); } else { c.moveTo(x, y + d.h*i/4); c.lineTo(x + d.w, y + d.h*i/4); } } c.stroke(); } }
+    for(const q of uf.pillars){ c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI*2); c.fillStyle = '#2b201c'; c.fill(); c.strokeStyle = '#3a2c27'; c.stroke(); txt('#', q.x, q.y, q.r, 'rgba(0,0,0,.35)'); }
+    { const st = uf.spikeState||0; for(const q of uf.spikes){ c.fillStyle = '#1c1412'; c.fillRect(q.x-13, q.y-13, 26, 26); c.strokeStyle = st===2 ? '#d9c9a3' : st===1 ? '#8a6a5a' : '#3a2c27'; c.lineWidth = 1; c.strokeRect(q.x-12.5, q.y-12.5, 25, 25);
+      for(let i=0;i<3;i++) for(let j=0;j<3;j++){ const sx = q.x-8+i*8, sy = q.y-8+j*8; if(st===2) txt('▲', sx, sy, 7, '#d9c9a3'); else { c.fillStyle = st===1 ? '#8a6a5a' : '#2b201c'; c.fillRect(sx-1, sy-1, 2, 2); } } } }
+    { const R = uf.here, np = R.npc; if(np){ if(np.kind==='shop'){ c.fillStyle = '#4a3420'; c.fillRect(np.x-28, np.y+14, 56, 10); txt('¤ ¤ ¤', np.x, np.y+19, 7, '#e0b54a'); c.beginPath(); c.arc(np.x, np.y, 11, 0, Math.PI*2); c.fillStyle = '#d9c9a3'; c.fill(); txt('¤', np.x, np.y+.5, 12, '#3a2a1a'); }
+        else { c.fillStyle = np.spent ? '#2b201c' : '#3a1418'; c.fillRect(np.x-12, np.y-14, 24, 28); c.strokeStyle = np.spent ? '#3a2c27' : '#c73a5c'; c.lineWidth = 1; c.strokeRect(np.x-11.5, np.y-13.5, 23, 27); txt('†', np.x, np.y, 14, np.spent ? '#5a4a40' : '#ee5a75'); } }
+      const mi = R.mapItem; if(mi && !mi.taken) txt('▤', mi.x, mi.y + Math.sin(performance.now()/300)*2, 14, '#e0b54a');
+      const st = R.stairs; if(st){ c.fillStyle = '#060404'; c.fillRect(st.x-14, st.y-14, 28, 28); c.strokeStyle = uf.floor >= UF_FLOORS ? '#f3d27a' : '#8a7650'; c.lineWidth = 1.5; c.strokeRect(st.x-13.5, st.y-13.5, 27, 27);
+        for(let i=0;i<3;i++){ c.fillStyle = `rgba(217,201,163,${0.5 - i*0.15})`; c.fillRect(st.x-10+i*2, st.y-8+i*6, 20-i*4, 3); } } }
+    for(const q of uf.props){ if(q.broken){ c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.arc(q.x, q.y+2, q.r*0.8, 0, Math.PI*2); c.fill(); continue; }
+      if(q.crate){ c.fillStyle = '#4a3420'; c.fillRect(q.x-q.r, q.y-q.r, q.r*2, q.r*2); c.strokeStyle = '#7a5a36'; c.lineWidth = 1; c.strokeRect(q.x-q.r+.5, q.y-q.r+.5, q.r*2-1, q.r*2-1); c.beginPath(); c.moveTo(q.x-q.r, q.y-q.r); c.lineTo(q.x+q.r, q.y+q.r); c.stroke(); }
+      else { c.beginPath(); c.ellipse(q.x, q.y+1, q.r*0.85, q.r, 0, 0, Math.PI*2); c.fillStyle = '#5a4038'; c.fill(); c.strokeStyle = '#8a6a5a'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#1a1210'; c.fillRect(q.x-3, q.y-q.r-1, 6, 3); } }
+    { const al = uf.altar; if(al && !al.taken){ const bob = Math.sin(performance.now()/300)*2; // an altar with a card standing over it
+      c.fillStyle = '#2b2030'; c.fillRect(al.x-14, al.y-4, 28, 12); c.strokeStyle = '#c58af0'; c.lineWidth = 1; c.strokeRect(al.x-14, al.y-4, 28, 12);
+      c.fillStyle = '#1d1613'; c.fillRect(al.x-7, al.y-27+bob, 14, 20); c.strokeRect(al.x-7, al.y-27+bob, 14, 20); txt('✦', al.x, al.y-17+bob, 9, '#c58af0'); } }
+    for(const o of uf.orbs){ c.globalAlpha = o.t < 2000 && Math.floor(o.t/150)%2 ? 0.35 : 1; // a drop of blood: round below, pointed above
+      if(o.key){ txt('⚷', o.x, o.y, 12, '#e0b54a'); c.globalAlpha = 1; continue; }
+      if(o.heal){ txt('♥', o.x, o.y, 11, '#ee5a75'); c.globalAlpha = 1; continue; }
+      c.beginPath(); c.arc(o.x, o.y+1, 3, 0, Math.PI); c.lineTo(o.x, o.y-5); c.closePath(); c.fillStyle = '#d6304f'; c.fill(); c.globalAlpha = 1; }
+    for(const f of uf.foes){
+      if(f.wind > 0){ c.beginPath(); c.arc(f.x, f.y, f.r + 4 + (f.wind%160)/40, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.8)'; c.lineWidth = 1.5; c.stroke(); }
+      if(ufNumbed(f)){ c.beginPath(); c.arc(f.x, f.y, f.r + 3, 0, Math.PI*2); c.strokeStyle = 'rgba(90,154,208,.85)'; c.lineWidth = 1.5; c.stroke(); }
+      if(f.elite){ c.beginPath(); c.arc(f.x, f.y, f.r + 2, 0, Math.PI*2); c.strokeStyle = '#e0b54a'; c.lineWidth = 2; c.stroke(); }
+      c.globalAlpha = f.spawnT > 0 ? 0.35 : 1;
+      c.beginPath(); c.arc(f.x, f.y, f.r, 0, Math.PI*2); c.fillStyle = f.hit > 0 ? '#bfe3df' : '#3f8580'; c.fill();
+      txt(f.D.emoji, f.x, f.y+0.5, f.r*1.15, '#100b0a');
+      txt(String(Math.max(0, Math.floor(f.hp))), f.x, f.y - f.r - 6, 8, f.hp < f.maxHp ? '#9fd0cb' : 'rgba(159,208,203,.55)'); c.globalAlpha = 1;
+    }
+    { const ch = uf.chest; if(ch && !ch.open){ const cur = ch.kind==='cursed', col = cur ? '#c58af0' : ch.kind==='rare' ? '#6aa8e0' : '#e0b54a'; c.fillStyle = cur ? '#2a1530' : '#5a3d22'; c.fillRect(ch.x-12, ch.y-9, 24, 18); c.strokeStyle = col; c.lineWidth = 1.2; c.strokeRect(ch.x-12, ch.y-9, 24, 18);
+        c.beginPath(); c.moveTo(ch.x-12, ch.y-2); c.lineTo(ch.x+12, ch.y-2); c.stroke(); c.fillStyle = col; c.fillRect(ch.x-2, ch.y-4, 4, 5); } }
+    if(uf.card){ const cd = uf.card, bob = Math.sin(cd.t/200)*2; c.fillStyle = '#1d1613'; c.fillRect(cd.x-8, cd.y-11+bob, 16, 22); c.strokeStyle = '#e0b54a'; c.lineWidth = 1; c.strokeRect(cd.x-8, cd.y-11+bob, 16, 22); txt('☋', cd.x, cd.y+bob, 10, '#c73a5c'); }
+    for(const a of uf.allies){ const P = a.P;
+      if(P.lure){ c.beginPath(); c.arc(a.x, a.y, P.scent, 0, Math.PI*2); c.strokeStyle = 'rgba(184,48,60,.13)'; c.lineWidth = 1; c.stroke(); c.beginPath(); c.arc(a.x, a.y, a.r, 0, Math.PI*2); c.fillStyle = P.col; c.fill(); }
+      else { c.beginPath(); c.moveTo(a.x, a.y-7); c.lineTo(a.x+6, a.y+5); c.lineTo(a.x-6, a.y+5); c.closePath(); c.fillStyle = P.col; c.globalAlpha = a.host || a.homing ? 1 : 0.85; c.fill(); c.globalAlpha = 1; }
+      txt(P.emoji, a.x, a.y+1.5, 6, '#100b0a'); txt(String(Math.max(0, Math.floor(a.hp))), a.x, a.y-12, 7, '#e9a0b0');
+      if(P.store && a.store >= 1) txt('+'+Math.floor(a.store), a.x+10, a.y-3, 7, '#8fe08a'); }
+    for(const s of uf.shots){ c.beginPath(); c.arc(s.x, s.y, s.pierce ? 4 : 3, 0, Math.PI*2); c.fillStyle = s.mine ? '#c73a5c' : '#3f8580'; c.fill(); }
+    for(const e of uf.fx){
+      const k = Math.max(0, e.t/e.t0);
+      if(e.kind==='trail'){ c.beginPath(); c.arc(e.x, e.y, 9, 0, Math.PI*2); c.fillStyle = `rgba(199,58,92,${0.3*k})`; c.fill(); }
+      else if(e.kind==='slash' || e.kind==='swipe'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2;
+        c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a-half, a+half); c.closePath();
+        c.fillStyle = e.kind==='slash' ? `rgba(217,201,163,${(e.big ? 0.3 : 0.16)*k})` : `rgba(63,133,128,${0.4*k})`; c.fill(); }
+      else if(e.kind==='ring'){ c.beginPath(); c.arc(e.x, e.y, e.r*(0.35 + 0.65*(1-k)), 0, Math.PI*2); c.strokeStyle = `rgba(${e.col},${k})`; c.lineWidth = 2; c.stroke(); }
+      else if(e.kind==='chip'){ const age = (e.t0 - e.t)/1000; c.fillStyle = e.col; c.globalAlpha = k; c.fillRect(e.x + e.vx*age - 1.5, e.y + e.vy*age + 60*age*age - 1.5, 3, 3); c.globalAlpha = 1; }
+      else if(e.kind==='num'){ c.globalAlpha = k; txt(e.text, e.x, e.y - 14*(1-k), 9, e.col); c.globalAlpha = 1; }
+    }
+    const p = uf.p;
+    if(!uf.over){
+      if(p.cursing){ const L = 60, ex = p.x + p.cx*L, ey = p.y + p.cy*L; // the curse's aim
+        c.strokeStyle = 'rgba(224,181,74,.85)'; c.lineWidth = 2; c.setLineDash([4,4]); c.beginPath(); c.moveTo(p.x + p.cx*14, p.y + p.cy*14); c.lineTo(ex, ey); c.stroke(); c.setLineDash([]);
+        c.beginPath(); c.moveTo(ex + p.cx*6, ey + p.cy*6); c.lineTo(ex - p.cy*5, ey + p.cx*5); c.lineTo(ex + p.cy*5, ey - p.cx*5); c.closePath(); c.fillStyle = 'rgba(224,181,74,.85)'; c.fill(); }
+      if(p.heavyT > 0){ const k = 1 - p.heavyT/UF.heavyWind; c.beginPath(); c.arc(p.x, p.y, p.r + 3 + 10*k, 0, Math.PI*2); c.strokeStyle = `rgba(217,201,163,${0.3 + 0.6*k})`; c.lineWidth = 2; c.stroke(); }
+      { let ang = null; // the sword is only drawn while it is swung, or drawn back for a heavy blow
+        const sw = p.sword; if(sw && sw.t < sw.dur + 120){ sw.t += dt; const k = Math.min(1, sw.t/sw.dur), e = 1 - Math.pow(1-k, 3); ang = sw.a + sw.side*(-sw.arc/2 + sw.arc*e); }
+        else if(p.heavyT > 0){ ang = Math.atan2(p.hy, p.hx) - 1.6*(1 - p.heavyT/UF.heavyWind) - 0.4; } // drawn back for the heavy blow
+        if(ang!==null){
+        const cx = Math.cos(ang), cy = Math.sin(ang), h0 = p.r - 2, g = p.r + 3, tip = p.r + 20;
+        c.lineCap = 'round'; c.strokeStyle = '#7a2a3a'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(p.x + cx*h0, p.y + cy*h0); c.lineTo(p.x + cx*g, p.y + cy*g); c.stroke(); // grip
+        c.strokeStyle = '#e0b54a'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x + cx*g - cy*4, p.y + cy*g + cx*4); c.lineTo(p.x + cx*g + cy*4, p.y + cy*g - cx*4); c.stroke(); // crossguard
+        c.strokeStyle = '#e8dcc0'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(p.x + cx*g, p.y + cy*g); c.lineTo(p.x + cx*tip, p.y + cy*tip); c.stroke(); c.lineCap = 'butt'; } }
+      c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
+      c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI*2); c.fillStyle = '#c73a5c'; c.fill(); txt('@', p.x, p.y+0.5, 12, '#100b0a'); c.globalAlpha = 1;
+    }
+    if(uf.here.dark && !uf.over){ const g = c.createRadialGradient(p.x, p.y, 28, p.x, p.y, 125); g.addColorStop(0, 'rgba(6,4,3,0)'); g.addColorStop(1, 'rgba(6,4,3,.95)'); c.fillStyle = g; c.fillRect(0, 0, UF_W, UF_H);
+      for(const f of uf.foes) if(f.wind > 0){ c.beginPath(); c.arc(f.x, f.y, f.r + 4, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.8)'; c.lineWidth = 1.5; c.stroke(); } } // a wind-up shows even in the dark
+    { const b = uf.foes.find(f=>f.boss); if(b){ txt(b.D.name, UF_W/2, UF_WALL + 12, 10, '#ee5a75'); txt(String(Math.max(0, Math.ceil(b.hp))), UF_W/2, UF_WALL + 26, 12, '#d9c9a3');
+      if(b.act==='slam' && b.wind > 0){ c.beginPath(); c.arc(b.x, b.y, 48, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.35)'; c.lineWidth = 1.5; c.stroke(); } } }
+    if(uf.radial && !uf.over){
+      c.fillStyle = 'rgba(10,7,6,.45)'; c.fillRect(0, 0, UF_W, UF_H);
+      const R = 46, cx = Math.max(UF_WALL+R+16, Math.min(UF_W-UF_WALL-R-16, p.x)), cy = Math.max(UF_WALL+R+18, Math.min(UF_H-UF_WALL-R-18, p.y));
+      c.beginPath(); c.arc(cx, cy, R, 0, Math.PI*2); c.strokeStyle = 'rgba(217,201,163,.18)'; c.lineWidth = 1; c.stroke();
+      for(let i=0;i<4;i++){ const [dx,dy] = UF_SLOT_DIRS[i], x = cx + dx*R, y = cy + dy*R, on = uf.radial.sel===i, name = uf.slots[i];
+        c.fillStyle = on ? '#2a1f1a' : '#1d1613'; c.fillRect(x-12, y-16, 24, 32); c.strokeStyle = on ? '#e0b54a' : '#3a2c27'; c.lineWidth = on ? 2 : 1; c.strokeRect(x-12, y-16, 24, 32);
+        if(name){ const P = UF_PARAS[name.name]; txt(P.emoji, x, y-3, 12, P.col); txt('x'+name.uses, x, y+10, 7, '#d9c9a3'); }
+        else txt('·', x, y, 12, '#5a4a40'); }
+      const sn = uf.radial.sel >= 0 ? uf.slots[uf.radial.sel] : null;
+      txt(sn ? sn.name : uf.radial.sel >= 0 ? 'empty' : 'choose a card', cx, cy, 8, '#d9c9a3');
+    }
+    if(uf.banner){ uf.banner.t -= dt; const k = Math.min(1, uf.banner.t/400); c.globalAlpha = Math.max(0, k); txt(uf.banner.text, UF_W/2, UF_H*0.42, 22, '#d9c9a3'); c.globalAlpha = 1; if(uf.banner.t <= 0) uf.banner = null; }
+  }
+  let ufHudLast = '';
+  function ufHud(){
+    const R = uf.here, key = [Math.floor(uf.p.hp), uf.p.maxHp, Math.floor(uf.blood), uf.cap, uf.floor, R.n, uf.cleared, uf.kills, uf.keys, uf.slots.map(x=>x ? x.name + x.uses : '').join(','), uf.tarot.length, uf.curses.length, uf.mapVer, ufEl('ufMap').clientWidth].join('|');
+    if(key===ufHudLast) return; ufHudLast = key;
+    ufEl('ufHpN').innerHTML = Math.max(0, Math.floor(uf.p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${uf.p.maxHp}</small>`;
+    ufEl('ufBlood').textContent = Math.floor(uf.blood) + '/' + uf.cap;
+    ufEl('ufSlots').innerHTML = uf.slots.map(x=>{ if(!x) return '<div class="uf-slot"></div>'; const P = UF_PARAS[x.name]; return `<div class="uf-slot"><span style="color:${P.col}">${P.emoji}</span><i>x${x.uses}</i></div>`; }).join('');
+    ufEl('ufTarots').innerHTML = uf.tarot.map(id=>{ const T = UF_TAROT.find(t=>t.id===id); return `<span title="${T.name}">${T.glyph}</span>`; }).join('')
+      + uf.curses.map(id=>{ const C = UF_CURSES.find(t=>t.id===id); return `<span title="${C.name}: ${C.text}" style="color:#d6304f">${C.glyph}</span>`; }).join('');
+    ufEl('ufRoomLab').innerHTML = `Floor <b>${uf.floor}</b> · Room ${R.n}${uf.keys ? ` · <b>⚷${uf.keys}</b>` : ''} · ${uf.kills} kills`;
+    ufDrawMap();
+  }
+  function ufDrawMap(){ // only what you have seen: rooms you have been in, and the doors out of them. A map shows the whole floor
+    const cv = ufEl('ufMap'), dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight; if(!w) return;
+    if(cv.width !== Math.round(w*dpr)){ cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+    const c = cv.getContext('2d'); c.setTransform(dpr,0,0,dpr,0,0); c.clearRect(0, 0, w, h);
+    const rooms = uf.rooms, K = (x,y)=>x+','+y, cell = w/4.5, cx = uf.pos.x, cy = uf.pos.y, rw = cell*0.66, rh = cell*0.66;
+    const at = R => [w/2 + (R.x - cx)*cell, h/2 + (R.y - cy)*cell];
+    const nbr = (R, k) => rooms[K(R.x+UF_STEP[k][0], R.y+UF_STEP[k][1])];
+    const known = R => R.visited || (uf.mapAll && R.type!=='secret') || Object.entries(R.links).some(([k,v])=>v!=='secret' && nbr(R,k) && nbr(R,k).visited);
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `bold ${Math.max(7, cell*0.42)}px ui-monospace,Menlo,Consolas,monospace`;
+    for(const R of Object.values(rooms)){ if(!known(R)) continue; const [x, y] = at(R); if(x < -cell || x > w+cell || y < -cell || y > h+cell) continue;
+      for(const [k, v] of Object.entries(R.links)){ if(v==='secret' || (k!=='r' && k!=='b')) continue; const N = nbr(R,k); if(!N || !known(N)) continue; const [dx, dy] = UF_STEP[k];
+        c.strokeStyle = 'rgba(217,201,163,.5)'; c.lineWidth = 2; c.beginPath(); c.moveTo(x + dx*rw/2, y + dy*rh/2); c.lineTo(x + dx*(cell - rw/2), y + dy*(cell - rh/2)); c.stroke();
+        if(v==='locked'){ c.fillStyle = '#e0b54a'; c.fillRect(x + dx*cell/2 - 2, y + dy*cell/2 - 2, 4, 4); } }
+      const here = R===uf.here;
+      c.globalAlpha = R.visited ? 1 : 0.45; c.fillStyle = here ? '#c73a5c' : R.cleared ? '#5a4a40' : '#2b201c'; c.fillRect(x - rw/2, y - rh/2, rw, rh);
+      c.strokeStyle = here ? '#f3d27a' : '#3a2c27'; c.lineWidth = here ? 2 : 1; c.strokeRect(x - rw/2, y - rh/2, rw, rh); c.globalAlpha = 1;
+      if(here) continue;
+      const seen = R.visited || uf.mapAll, mark = (t, col)=>{ c.fillStyle = col; c.fillText(t, x, y + 0.5); };
+      if(seen && R.type==='boss') mark(R.cleared ? '▼' : '☠', R.cleared ? '#d9c9a3' : '#ee5a75');
+      else if(seen && R.type==='shop') mark('¤', '#e0b54a');
+      else if(seen && R.type==='shrine' && !(R.npc && R.npc.spent)) mark('†', '#ee5a75');
+      else if(seen && R.type==='treasure' && !(R.chest && R.chest.open)) mark('◆', '#6aa8e0');
+      else if(R.tarot && !R.tarot.taken){ c.fillStyle = '#c58af0'; c.beginPath(); c.arc(x, y, Math.max(2, cell*0.08), 0, Math.PI*2); c.fill(); }
+      else if((R.chest && !R.chest.open) || R.card){ c.fillStyle = '#e0b54a'; c.beginPath(); c.arc(x, y, Math.max(2, cell*0.08), 0, Math.PI*2); c.fill(); } }
+  }
+  function ufPanel(msg){
+    const pn = ufEl('ufPanel'); if(msg==null){ pn.classList.remove('on'); return; }
+    ufEl('ufMsg').textContent = msg; pn.classList.add('on');
+    if(!!activePad()) padSet(ufEl('ufResume')); // a controller starts on the first choice
+  }
+  function ufTogglePause(){
+    if(!uf || uf.over){ if(ufEl('ufMeta').classList.contains('on')) ufClose(); return; } // Back on the menu screens leaves
+    if(uf.choosing) return; uf.paused = !uf.paused; uf.toggledAt = performance.now();
+    const lines = [`Paused\n\nFloor ${uf.floor} of ${UF_FLOORS} · seed ${uf.seed}`];
+    for(const id of uf.tarot){ const T = UF_TAROT.find(t=>t.id===id); lines.push(`${T.glyph} ${T.name}: ${T.text}`); }
+    for(const id of uf.curses){ const C = UF_CURSES.find(t=>t.id===id); lines.push(`${C.glyph} ${C.name}: ${C.text}`); }
+    ufPanel(uf.paused ? lines.join('\n') : null); ufEl('ufPause').textContent = uf.paused ? 'Resume' : 'Pause';
+  }
+  function ufLoop(ts){
+    if(!ufActive){ ufRaf = 0; return; }
+    const dt = Math.min(50, ts - ufLast); ufLast = ts;
+    if(uf) try{
+      const g = ufPad();
+      if(g && g.start && !uf.paused && !uf.over && performance.now() - (uf.toggledAt||0) > 300) ufTogglePause(); // once paused, the menu code drives the panel's buttons
+      if(!uf.paused && !uf.over){
+        const I = ufRead(g); uf.lastI = I;
+        if(g){ if(g.roll) ufRoll(); if(g.attack) ufAttack(); if(g.heavy) ufHeavy(); if(g.relic) ufRelic(); }
+        if(uf && !uf.over && !uf.paused){
+          ufRadial(g, dt);
+          const gdt = uf.radial ? dt*0.3 : dt; // the wheel slows the room
+          ufStep(gdt, I);
+          for(const e of uf.fx) e.t -= gdt; uf.fx = uf.fx.filter(e=>e.t > 0);
+          if(uf.shake > 0) uf.shake -= gdt;
+        }
+      }
+      if(uf){ ufDraw(uf.paused || uf.over ? 0 : dt); ufHud(); }
+    }catch(e){ noteError(e); }
+    ufRaf = requestAnimationFrame(ufLoop);
+  }
+  // the Underfield's own score: slow D minor at about 100, with a dark C-sharp. In a cleared room only the drone, a slow pad and a
+  // sparse pluck; while anything is alive a bass in 3+3+2, a kick and a snap come in under the full line. Nothing under 70 Hz
+  const UF_EIGHTH = 0.3;
+  const UF_LINE = [[62,0,0,65,0,64,0,60],[62,0,0,57,0,0,61,0],[58,0,62,0,65,0,64,62],[61,0,0,64,0,0,57,0]];
+  const UF_ROOT = [38, 38, 34, 33]; // D, D, B-flat, A
+  const UF_CHORD = [[[146.8,-4],[174.6,3],[220,0]], [[146.8,-4],[174.6,3],[220,0]], [[116.5,-4],[146.8,3],[174.6,0]], [[110,-4],[138.6,3],[164.8,0]]];
+  let ufMus = null;
+  function ufMusicStep(step, at, fight){
+    const B = ufMus.bus, bar = Math.floor(step/8), i = step%8, ph = bar%4, d = at - audioCtx.currentTime;
+    if(i===0 && bar%2===0) grPad(at, 2*8*UF_EIGHTH, B, UF_CHORD[ph]);
+    if(fight){
+      if(i===0 || i===3 || i===6) grBass(midiHz(UF_ROOT[ph]), at, B);
+      if(i===0 || i===4) thud(0.16, 0.09, 260, d, B);
+      if(i===2 || i===6) thud(0.06, 0.04, 1500, d, B);
+      const n = UF_LINE[ph][i]; if(n) grPluck(midiHz(n + (bar%8 >= 4 ? 12 : 0)), at, B);
+    } else {
+      if(i===0) grBass(midiHz(UF_ROOT[ph]), at, B);
+      const n = UF_LINE[ph][i]; if(n && i%2===0 && bar%2===1) grPluck(midiHz(n + 12), at, B);
+      if(Math.random() < 0.04) beep(1760 + Math.random()*900, 0.25, 'sine', 0.012, d, B); // water dripping somewhere
+    }
+  }
+  function ufMusicTick(){
+    if(!ufMus || !audioCtx) return;
+    try{ const t = audioCtx.currentTime, lvl = soundGain('music') * (uf && uf.paused ? 0.35 : 1);
+      if(ufMus.lvl!==lvl){ ufMus.lvl = lvl; ufMus.bus.gain.setTargetAtTime(lvl, t, 0.3); }
+      if(ufMus.next < t) ufMus.next = t + 0.05;
+      const fight = !!uf && !uf.cleared && !uf.over;
+      while(ufMus.next < t + 0.35){ ufMusicStep(ufMus.step, ufMus.next, fight); ufMus.next += UF_EIGHTH; ufMus.step++; }
+    }catch(e){ noteError(e); }
+  }
+  function ufMusicStart(){
+    if(!audioCtx) return;
+    try{ if(!ufMus){ const g = audioCtx.createGain(); g.gain.value = 0; g.connect(busMaster || audioCtx.destination); ufMus = {bus:g, step:0, next:0, timer:0, lvl:-1}; }
+      ufMus.lvl = -1; ufMus.step = 0; ufMus.next = audioCtx.currentTime + 0.3; clearInterval(ufMus.timer); ufMus.timer = setInterval(ufMusicTick, 100);
+    }catch(e){ noteError(e); }
+  }
+  function ufMusicStop(){ if(!ufMus) return; clearInterval(ufMus.timer); ufMus.timer = 0; try{ ufMus.bus.gain.setTargetAtTime(0, audioCtx.currentTime, 0.4); }catch(e){} }
+  function ufOpen(){
+    document.getElementById('titleOverlay').classList.remove('show'); setTitleMusic(false); initAudio();
+    ufActive = true; uf = null; ufHudLast = ''; ufPanel(null); ufEl('ufPick').classList.remove('on');
+    ufEl('ufOverlay').classList.add('show'); ufMenu('setup'); ufMusicStart();
+    cancelAnimationFrame(ufRaf); ufLast = performance.now(); ufRaf = requestAnimationFrame(ufLoop);
+  }
+  function ufClose(){
+    ufActive = false; cancelAnimationFrame(ufRaf); ufRaf = 0; uf = null;
+    ufIn.keys = {}; ufIn.mouseCurse = false;
+    ufEl('ufMeta').classList.remove('on'); ufEl('ufOverlay').classList.remove('uf-menu');
+    ufEl('ufOverlay').classList.remove('show'); ufEl('ufPick').classList.remove('on'); ufMusicStop(); showTitle();
+  }
+  ufEl('ufPause').onclick = ufTogglePause;
+  ufEl('ufResume').onclick = ()=>{ if(!uf) return; uf.paused = false; uf.toggledAt = performance.now(); ufPanel(null); ufEl('ufPause').textContent = 'Pause'; };
+  ufEl('ufRestart').onclick = ()=>{ if(uf && !uf.over){ uf.gaveUp = true; ufPanel(null); ufEndRun(false); } };
+  ufEl('ufLeave').onclick = ufClose;
+  ufEl('ufPickSkip').onclick = ()=>{ if(uf && uf.choosing) ufClosePick(); };
+  ufEl('ufTest').onclick = ufOpen;
+  BACK_BUTTONS.ufOverlay = 'ufPause'; // Escape, or the phone's Back, pauses
+  window.addEventListener('keydown', e=>{
+    if(!ufActive) return; const k = e.code;
+    if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyJ','KeyK','KeyL','KeyQ','KeyE'].includes(k)) e.preventDefault();
+    if(e.repeat) return; ufIn.keys[k] = true;
+    if(k==='Space') ufRoll(); else if(k==='KeyJ') ufAttack(); else if(k==='KeyK') ufHeavy(); else if(k==='KeyQ') ufRelic();
+  });
+  window.addEventListener('keyup', e=>{ ufIn.keys[e.code] = false; });
+  { const cv = ufEl('ufCanvas');
+    const world = e=>{ const r = cv.getBoundingClientRect(), v = uf && uf.view; return v ? {x:(e.clientX - r.left - v.ox)/v.sc, y:(e.clientY - r.top - v.oy)/v.sc} : null; };
+    cv.addEventListener('pointermove', e=>{ if(e.pointerType==='mouse') ufIn.mouse = world(e); });
+    cv.addEventListener('pointerdown', e=>{ if(e.pointerType!=='mouse') return; ufIn.mouse = world(e); if(e.button===2) ufIn.mouseCurse = true; else if(e.button===0) ufAttack(); });
+    cv.addEventListener('pointerleave', e=>{ if(e.pointerType==='mouse') ufIn.mouse = null; });
+    cv.addEventListener('contextmenu', e=>e.preventDefault());
+    window.addEventListener('pointerup', e=>{ if(e.pointerType==='mouse' && e.button===2) ufIn.mouseCurse = false; }); }
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden && uf && !uf.paused && !uf.over) ufTogglePause(); });
+
   { /* page transitions */
     const PAGES = ['titleOverlay','introOverlay','pauseOverlay','soundOverlay','creditsOverlay','helpOverlay','cardsOverlay','changelogOverlay','battleOverlay','moreOverlay','rematchOverlay',
       'friendOverlay','tavernOverlay','boilerOverlay','labOverlay','workshopOverlay','baseOverlay','kitchenOverlay','campOverlay','alchemyOverlay'];
@@ -10941,3 +12019,5 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
 </script>
 </body>
 </html>
+
+</body></html>
