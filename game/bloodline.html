@@ -10340,6 +10340,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const list = document.getElementById('tavernList'); list.innerHTML = '';
     const add = (t, cls)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; list.appendChild(d); return d; };
     add(tavernLinked() ? 'Full tonight, and loud.' : 'Quiet tonight.', 'base-up-head');
+    if(ufMeta.freed.length){ add('Back from the Underfield', 'base-up-head'); for(const id of ufMeta.freed){ const q = ufPrisoner(id); add(`${q.name}, ${q.role}. ${q.tavern}`); } }
     for(const [who, how, words] of tavernRumours()){ const d = add('', 'tavern-rumour'); const w = document.createElement('div'); w.className = 'tavern-who'; w.textContent = `${who} ${how}:`; const q = document.createElement('div'); q.textContent = `"${words.charAt(0).toUpperCase() + words.slice(1)}"`; d.appendChild(w); d.appendChild(q); }
     document.getElementById('tavernOverlay').classList.add('show');
   }
@@ -11079,14 +11080,29 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     {id:'cleaver', name:'The cleaver', text:'A slow, heavy weapon to start with.', cost:25},
     {id:'knives', name:'The knives', text:'Quick blades, a four-hit combo.', cost:25},
   ];
+  // Prisoners: chained in a room on each floor. Free one and they move into your Tavern, and from then on you can take them down instead of
+  // going yourself. Like Cult of the Lamb's fleeces, each plays differently, and every upside has a cost
+  const UF_PRISONERS = [
+    {id:'leaper', name:'Isk', role:'the Leaper', glyph:'ʌ', text:'No roll. Leaps over enemies, spikes and water, and lands hard.',
+      freed:"Took you long enough. Mind the drop, I can get us out of here faster than you can walk.", tavern:"Isk sits on the rafters and won't come down for anybody."},
+    {id:'thresher', name:'Barra', role:'the Thresher', glyph:'✣', text:'No roll. Hold the roll button to spin, cutting everything around you.',
+      freed:"Get this iron off me and give me room. I don't dodge. Never have.", tavern:"Barra takes up a whole bench and nobody argues."},
+    {id:'angler', name:'Hobb', role:'the Angler', glyph:'ʃ', text:'No roll and no curse. Casts a line that drags enemies to him.',
+      freed:"Fished these rivers forty years. Then the rivers went underground and took me with them.", tavern:"Hobb mends his line by the fire and tells the same story about a pike."},
+    {id:'picker', name:'Nell', role:'the Bone-picker', glyph:'☠', text:'A fifth less health. One kill in four, a Leach crawls out for her.',
+      freed:"Don't step on those, they're mine. Everything down here is somebody's.", tavern:"Nell keeps a jar of something under the table and feeds it scraps."},
+  ];
+  const ufPrisoner = id => UF_PRISONERS.find(q=>q.id===id);
   function ufCleanMeta(v){
-    const o = {bones:0, pit:[], bossKills:0, runs:0, wins:0, best:0, daily:{}, weapon:'sword', start:'', heat:[]};
+    const o = {bones:0, pit:[], bossKills:0, runs:0, wins:0, best:0, daily:{}, weapon:'sword', start:'', heat:[], freed:[], who:'you'};
     if(!v || typeof v!=='object') return o;
     const n = k => Math.max(0, Math.min(1e6, parseInt(v[k],10)||0));
     o.bones = n('bones'); o.bossKills = n('bossKills'); o.runs = n('runs'); o.wins = n('wins'); o.best = Math.min(UF_FLOORS, n('best'));
     if(Array.isArray(v.pit)) o.pit = [...new Set(v.pit.filter(x=>UF_PIT.some(p=>p.id===x)))];
     if(Array.isArray(v.heat)) o.heat = [...new Set(v.heat.filter(x=>UF_HEAT.some(h=>h.id===x)))];
     if(typeof v.weapon==='string' && UF_WEAPONS[v.weapon]) o.weapon = v.weapon;
+    if(Array.isArray(v.freed)) o.freed = [...new Set(v.freed.filter(x=>UF_PRISONERS.some(q=>q.id===x)))];
+    if(typeof v.who==='string' && (v.who==='you' || o.freed.includes(v.who))) o.who = v.who;
     if(typeof v.start==='string') o.start = v.start.slice(0, 12);
     if(v.daily && typeof v.daily==='object') for(const k of Object.keys(v.daily).sort().slice(-30)){ const d = v.daily[k]; if(/^\d{4}-\d\d-\d\d$/.test(k) && d && typeof d==='object') o.daily[k] = {floor:Math.min(UF_FLOORS, parseInt(d.floor,10)||1), rooms:parseInt(d.rooms,10)||0, won:!!d.won}; }
     return o;
@@ -11116,10 +11132,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     S = S || {mode:'normal', seed:ufNewSeed(), weapon:'sword', start:'', heat:[]};
     const wide = window.innerWidth > window.innerHeight*1.15; UF_W = wide ? 640 : 360; UF_H = wide ? 360 : 520; /* wide: 16:9, so it fills a TV */ UF_DOORS = ufMakeDoors();
     const daily = S.mode==='daily', pit = id => !daily && ufMeta.pit.includes(id);
-    const hp = UF.hp + 2*['hp1','hp2','hp3'].filter(pit).length, wid = !daily && UF_WEAPONS[S.weapon] && (!UF_WEAPONS[S.weapon].lock || pit(UF_WEAPONS[S.weapon].lock)) ? S.weapon : 'sword', W = UF_WEAPONS[wid];
+    const who = !daily && S.who && S.who!=='you' && ufMeta.freed.includes(S.who) ? S.who : 'you', hp = Math.round((UF.hp + 2*['hp1','hp2','hp3'].filter(pit).length)*(who==='picker' ? 0.8 : 1)), wid = !daily && UF_WEAPONS[S.weapon] && (!UF_WEAPONS[S.weapon].lock || pit(UF_WEAPONS[S.weapon].lock)) ? S.weapon : 'sword', W = UF_WEAPONS[wid];
     uf = {p:{x:UF_W/2, y:UF_H-50, r:10, hp, fx:0, fy:-1, dx:0, dy:-1, rollT:0, rollCd:0, inv:0, combo:0, comboT:0, swingT:0, queued:false,
         heavyT:0, heavyCd:0, hx:0, hy:-1, cursing:false, cx:0, cy:-1, maxHp:hp},
-      foes:[], shots:[], orbs:[], fx:[], allies:[], chest:null, card:null, cards:[], slots:[null,null,null,null], tarot:[], cap:UF.bloodCap, choosing:null, altar:null, props:[], spikes:[], told:false, lastSlot:0, radial:null,
+      foes:[], shots:[], orbs:[], fx:[], allies:[], chest:null, card:null, cards:[], slots:[null,null,null,null], tarot:[], who, offered:[], hook:null, cap:UF.bloodCap, choosing:null, altar:null, props:[], spikes:[], told:false, lastSlot:0, radial:null,
       blood:pit('vein0') ? 3 : 0, kills:0, cleared:false, entry:null, pillars:[], pos:{x:0,y:0}, rooms:{}, here:null, paused:false, over:false, shake:0, banner:null, lastI:null, view:null,
       seed:S.seed, mode:S.mode, daily, pit, rng:ufRng(S.seed), floor:1, keys:pit('key0') ? 1 : 0, curses:[], mapAll:false, mapVer:0, heat:daily ? [] : (S.heat||[]).slice(),
       weaponId:wid, combo:W.combo, reach:W.reach, time:0, roomsCleared:0, bosses:0, killer:null, wave2:null, end:null};
@@ -11132,10 +11148,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function ufFx(o){ o.t0 = o.t; if(uf.fx.length < 140) uf.fx.push(o); }
   // ---- the stream in each floor's first room, and cobwebs ----
   const UF_CURRENT = 34, UF_WADE = 0.6, UF_WEB_SLOW = 0.45;
-  function ufWet(o){ const w = uf && uf.here && uf.here.water; return !!w && Math.abs(o.y - w.y) < w.h/2 && Math.abs(o.x - w.bx) > w.bw/2 && o.x > w.x0; }
+  function ufWet(o){ const w = uf && uf.here && uf.here.water; return !!w && !(o.jumpT > 0) && Math.abs(o.y - w.y) < w.h/2 && Math.abs(o.x - w.bx) > w.bw/2 && o.x > w.x0; }
   function ufFlow(o){ const w = uf.here.water; return 1 + 1.6*Math.max(0, 1 - (o.x - w.x0 - w.fw/2)/80); } /* stronger by the waterfall */
   function ufFallRect(){ const w = uf && uf.here && uf.here.water; return w ? {l:w.x0, r:w.x0 + w.fw, t:UF_WALL, b:w.y - w.h/2} : null; }
-  function ufWebAt(o){ const R = uf && uf.here; return R && R.floorWebs ? R.floorWebs.find(w=>!w.cut && Math.hypot(o.x-w.x, o.y-w.y) < w.r) : null; }
+  function ufWebAt(o){ const R = uf && uf.here; return R && R.floorWebs && !(o.jumpT > 0) ? R.floorWebs.find(w=>!w.cut && Math.hypot(o.x-w.x, o.y-w.y) < w.r) : null; }
   const ufSlow = o => (ufWet(o) ? UF_WADE : 1) * (ufWebAt(o) ? UF_WEB_SLOW : 1);
   function ufCutWeb(w){ if(w.cut) return; w.cut = true; thud(0.05, 0.04, 3200); beep(1400, 0.04, 'triangle', 0.01);
     for(let k=0;k<5;k++){ const a = Math.random()*Math.PI*2, v = 20 + Math.random()*40; ufFx({kind:'chip', x:w.x, y:w.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:'#cfc8b8', t:380}); } }
@@ -11181,6 +11197,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     let S = dead.length ? dead.splice(ri(dead.length), 1)[0] : take(); if(S) S.type = 'shop';
     S = take(); if(S) S.type = 'shrine';
     if(rng() < 0.6){ S = take(); if(S) S.type = 'altar'; }
+    { const C = list.filter(R=>R.type==='fight' && R.dist>=2); if(C.length) C[ri(C.length)].cell = true; } /* a room with someone chained in it */
     for(let e=0; e<(fl>=2 ? 2 : 1); e++){ const E = list.filter(R=>R.type==='fight' && !R.elite && R.dist>=1); if(E.length) E[ri(E.length)].elite = true; }
     { const cand = []; // the hidden room: an empty cell beside the floor, joined by a wall that breaks
       for(const R of list){ if(R.type==='boss' || R.type==='treasure') continue; for(const d of DIRS){ const x = R.x+UF_STEP[d][0], y = R.y+UF_STEP[d][1]; if(!rooms[K(x,y)]) cand.push({x, y, R, d}); } }
@@ -11247,6 +11264,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(R.type==='shrine') R.npc = {kind:'shrine', x:UF_W/2, y:UF_H/2, armed:true};
     if(R.type==='start'){ const h = 42, y = Math.round(UF_H*0.28); R.water = {y, h, bx:UF_W/2, bw:34, x0:UF_W > UF_H ? Math.round(UF_W*0.18) : UF_WALL, fw:44};
       R.pillars = uf.pillars = R.pillars.filter(q=>Math.abs(q.y - y) > h/2 + q.r + 6); }
+    if(R.cell && !uf.daily){ const q = UF_PRISONERS.find(q=>!ufMeta.freed.includes(q.id) && !uf.offered.includes(q.id));
+      if(q){ uf.offered.push(q.id); const at = ufSpot(90, 34); R.prisoner = {id:q.id, x:at.x, y:at.y, freed:false}; } }
     R.cornerWebs = [0,1,2,3].filter(()=>Math.random() < (R.type==='start' ? 0.6 : 0.35)).map(i=>({i, L:22 + Math.random()*18}));
     if(R.type==='fight' && Math.random() < 0.4 + 0.1*uf.floor){ R.floorWebs = []; const n = 1 + Math.floor(Math.random()*(uf.floor >= 2 ? 3 : 2));
       for(let k=0;k<n;k++){ const at = ufSpot(80, 30); R.floorWebs.push({x:at.x, y:at.y, r:20 + Math.random()*8, rot:Math.random()*Math.PI, cut:false}); } }
@@ -11270,7 +11289,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     uf.banner = {text:banner, t:R.type==='boss' ? 2200 : 1400}; if(R.type!=='boss'){ thud(0.5, 0.14, 200); beep(110, 0.5, 'triangle', 0.04); }
   }
   function ufNextFloor(){
-    uf.floor++; uf.rooms = ufGenFloor(uf.floor, uf.rng); uf.pos = {x:0, y:0}; uf.here = null; uf.mapAll = false;
+    uf.floor++; uf.rooms = ufGenFloor(uf.floor, uf.rng); uf.pos = {x:0, y:0}; uf.here = null; uf.mapAll = ufHas('sight');
     if(uf.pit('key0')) uf.keys++;
     ufEnterRoom(null); thud(0.8, 0.22, 140); beep(82, 0.9, 'sawtooth', 0.04);
   }
@@ -11314,6 +11333,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       btn('Daily run' + (today ? `<small>today: floor ${today.floor}${today.won ? ', and out' : ''}</small>` : '<small>the same floors for everyone today</small>'), ()=>ufStart('daily'), r1);
       btn('Seeded run<small>uses the seed below</small>', ()=>ufStart('seed'), r1);
       const inp = add('input', 'uf-seed'); inp.placeholder = 'Seed'; inp.maxLength = 16; inp.value = ufSeedText; inp.oninput = ()=>{ ufSeedText = inp.value; };
+      if(M.freed.length){ add('div', 'uf-h', 'Who goes down'); const rw = row();
+        btn('You<small>Rolls, curses, the usual.</small>', ()=>{ M.who = 'you'; ufSaveMeta(); ufMenu('setup'); }, rw, {on:M.who==='you'});
+        for(const q of UF_PRISONERS) if(M.freed.includes(q.id)) btn(`${q.glyph} ${q.name}, ${q.role}<small>${q.text}</small>`, ()=>{ M.who = q.id; ufSaveMeta(); ufMenu('setup'); }, rw, {on:M.who===q.id}); }
       add('div', 'uf-h', 'Weapon'); const r2 = row();
       for(const [id, W] of Object.entries(UF_WEAPONS)) if(!W.lock || M.pit.includes(W.lock)) btn(`${W.name}<small>${W.text}</small>`, ()=>{ M.weapon = id; ufSaveMeta(); ufMenu('setup'); }, r2, {on:M.weapon===id});
       if(M.pit.includes('startpara')){ add('div', 'uf-h', 'Start with'); const r3 = row();
@@ -11335,7 +11357,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function ufStart(mode){
     const M = ufMeta, seed = mode==='daily' ? 'DAY-' + ufToday() : mode==='seed' && ufSeedText.trim() ? ufSeedText.trim().toUpperCase() : ufNewSeed();
     ufEl('ufMeta').classList.remove('on'); ufEl('ufOverlay').classList.remove('uf-menu'); padSet(null);
-    ufNew({mode, seed, weapon:M.weapon, start:M.start, heat:M.bossKills ? M.heat : []});
+    ufNew({mode, seed, weapon:M.weapon, start:M.start, who:M.who, heat:M.bossKills ? M.heat : []});
     ufHudLast = ''; uf.toggledAt = performance.now(); ufIn.keys = {};
     const g = activePad(); // the button that started the run is not read as a roll
     if(g) g.buttons.forEach((b,k)=>{ ufIn.pad[k] = !!(b && (b.pressed || b.value > 0.4)); });
@@ -11358,7 +11380,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const o = {mx:dz(g.axes[0]||0), my:dz(g.axes[1]||0)};
     if(b(12)) o.my = -1; if(b(13)) o.my = 1; if(b(14)) o.mx = -1; if(b(15)) o.mx = 1;
     const eA = edge(0), eX = edge(2), eY = edge(3), eLT = edge(6), eStart = edge(9), eView = edge(8); if(eA||eX||eY||eStart) padWakeAudio();
-    o.roll = eA; o.attack = eX; o.heavy = eY; o.relic = eLT; o.start = eStart || eView; o.rb = b(5); o.rx = g.axes[2]||0; o.ry = g.axes[3]||0; o.curse = b(7);
+    o.roll = eA; o.rollHeld = b(0); o.attack = eX; o.heavy = eY; o.relic = eLT; o.start = eStart || eView; o.rb = b(5); o.rx = g.axes[2]||0; o.ry = g.axes[3]||0; o.curse = b(7);
     return o;
   }
   function ufRead(g){
@@ -11367,11 +11389,11 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(g){ if(g.mx || g.my){ mx = g.mx; my = g.my; } if(g.curse) curse = true; }
     if(ufIn.mouse && (ufIn.mouseCurse || K.KeyL) && !(mx || my)){ const ax = ufIn.mouse.x - uf.p.x, ay = ufIn.mouse.y - uf.p.y, l = Math.hypot(ax, ay) || 1; mouseAim = {x:ax/l, y:ay/l}; }
     const ml = Math.hypot(mx, my); if(ml > 1){ mx /= ml; my /= ml; }
-    return {mx, my, curse, mouseAim};
+    return {mx, my, curse:curse && uf.who!=='angler', mouseAim, rollHeld:!!K.Space || !!(g && g.rollHeld)};
   }
 
   // ---- what you do ----
-  const ufBusy = () => uf.p.rollT > 0 || uf.p.heavyT > 0;
+  const ufBusy = () => uf.p.rollT > 0 || uf.p.heavyT > 0 || uf.p.jumpT > 0 || !!uf.p.spinning;
   function ufAimAt(range, cone){ // the soft lock: the nearest enemy roughly in front of you, or anything right beside you
     const p = uf.p; let best = null, bd = Infinity;
     for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d > range + f.r) continue;
@@ -11393,16 +11415,16 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   function ufSwing(){
     const p = uf.p, W = uf.combo, last = W.length, step = p.comboT > 0 && p.combo < last ? p.combo + 1 : 1, C = W[step-1], fin = step===last;
-    const dir = ufAimAt(UF.lockR, UF.lockCone), dmg = C.dmg + (fin && ufHas('butcher') ? 2 : 0), reach = UF.swingR + uf.reach + (fin ? 6 : 0);
+    const dir = ufAimAt(UF.lockR, UF.lockCone), dmg = C.dmg + (ufHas('butcher') ? ((uf.dmgCarry = (uf.dmgCarry||0) + C.dmg*0.2) >= 1 ? (uf.dmgCarry -= 1, 1) : 0) : 0), reach = UF.swingR + uf.reach + (fin ? 6 : 0);
     p.fx = dir.x; p.fy = dir.y; p.x += dir.x*C.lunge; p.y += dir.y*C.lunge; ufSolid(p);
     ufHitArc(dir, reach, UF.swingArc, dmg, C.knock);
     ufFx({kind:'slash', x:p.x, y:p.y, ax:dir.x, ay:dir.y, r:reach, arc:UF.swingArc, t:150, big:fin});
     p.sword = {a:Math.atan2(dir.y, dir.x), arc:UF.swingArc*1.15, side:step%2===0 ? -1 : 1, t:0, dur:Math.min(C.ms, 170)};
-    p.combo = step; p.swingT = C.ms; p.comboT = C.ms + UF.comboWindow; p.queued = false;
+    p.combo = step; { const ms = C.ms/(ufHas('haste') ? 1.25 : 1); p.swingT = ms; p.comboT = ms + UF.comboWindow; } p.queued = false;
     thud(0.08, fin ? 0.16 : 0.1, fin ? 900 : 1600); beep(fin ? 140 : 180 + step*20, 0.06, 'sawtooth', 0.03);
   }
   function ufAttack(){
-    if(!uf || uf.over || uf.paused) return; const p = uf.p;
+    if(!uf || uf.over || uf.paused) return; const p = uf.p; if(p.spinning || p.jumpT > 0) return;
     if(p.cursing || ufBusy()) return;
     if(p.swingT > 0){ p.queued = true; return; } // pressed mid-swing: the next hit of the combo follows straight on
     ufSwing();
@@ -11421,8 +11443,42 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     ufFx({kind:'slash', x:p.x, y:p.y, ax:dir.x, ay:dir.y, r:UF.heavyR, arc:UF.heavyArc, t:220, big:true});
     uf.shake = 140; thud(0.3, 0.2, 260); haptic(25); ufSecretCheck(UF.heavyR + 34);
   }
+  const UF_LEAP = {ms:420, dist:120, cd:700, slamR:32, dmg:3}, UF_SPIN = {iv:220, r:40, dmg:1, move:0.7}, UF_HOOK = {range:230, spd:520, pull:560, cd:850, dmg:1};
+  function ufLeap(){
+    const p = uf.p, I = uf.lastI; if(p.jumpT > 0 || p.rollCd > 0) return;
+    let dx = I ? I.mx : 0, dy = I ? I.my : 0, l = Math.hypot(dx, dy); if(l < 0.2){ dx = p.fx; dy = p.fy; l = 1; }
+    p.dx = dx/l; p.dy = dy/l; p.fx = p.dx; p.fy = p.dy; p.jumpT = UF_LEAP.ms; p.rollCd = UF_LEAP.cd; p.inv = Math.max(p.inv, UF_LEAP.ms);
+    p.swingT = 0; p.queued = false; p.heavyT = 0; p.cursing = false; p.combo = 0; p.comboT = 0; beep(330, 0.12, 'triangle', 0.03);
+  }
+  function ufLand(){
+    const p = uf.p; ufSolid(p); uf.shake = 90; thud(0.25, 0.16, 300);
+    for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 1; if(f.spawnT <= 0 && d <= UF_LEAP.slamR + f.r) ufHurtF(f, UF_LEAP.dmg, dx/d*140, dy/d*140); }
+    for(const q of uf.props) if(!q.broken && Math.hypot(q.x-p.x, q.y-p.y) <= UF_LEAP.slamR + q.r) ufBreak(q);
+    ufCutWebsNear(p.x, p.y, UF_LEAP.slamR); ufFx({kind:'ring', x:p.x, y:p.y, r:UF_LEAP.slamR, t:260, col:'217,201,163'});
+  }
+  function ufCast(){
+    const p = uf.p; if(uf.hook || (p.castCd||0) > 0 || p.heavyT > 0) return;
+    const dir = uf.lastI && uf.lastI.mouseAim ? uf.lastI.mouseAim : ufAimAt(UF_HOOK.range, 0.6); p.fx = dir.x; p.fy = dir.y;
+    uf.hook = {x:p.x + dir.x*12, y:p.y + dir.y*12, vx:dir.x*UF_HOOK.spd, vy:dir.y*UF_HOOK.spd, left:UF_HOOK.range, state:'out', t:null};
+    p.castCd = UF_HOOK.cd; beep(700, 0.08, 'triangle', 0.025); thud(0.05, 0.04, 2400);
+  }
+  function ufHookStep(dt){ // the line goes out, hooks the first enemy it meets and drags it in; the enemy is not stopped, only moved
+    const h = uf.hook; if(!h) return; const p = uf.p, s = dt/1000;
+    if(h.state==='out'){ h.x += h.vx*s; h.y += h.vy*s; h.left -= UF_HOOK.spd*s;
+      const f = uf.foes.find(f=>f.spawnT <= 0 && f.hp > 0 && Math.hypot(f.x-h.x, f.y-h.y) < f.r + 4);
+      if(f){ ufHurtF(f, UF_HOOK.dmg, 0, 0); h.state = f.boss ? 'back' : 'pull'; h.t = f; beep(440, 0.1, 'square', 0.02); }
+      else if(h.left <= 0 || ufBlocked(h.x, h.y)) h.state = 'back'; return; }
+    if(h.state==='pull'){ const f = h.t; if(!f || f.dead || f.hp <= 0){ uf.hook = null; return; }
+      const dx = p.x-f.x, dy = p.y-f.y, d = Math.hypot(dx,dy) || 1, stop = p.r + f.r + 12;
+      if(d <= stop){ uf.hook = null; return; }
+      const st = Math.min(d - stop, UF_HOOK.pull*s); f.x += dx/d*st; f.y += dy/d*st; ufSolid(f); h.x = f.x; h.y = f.y; return; }
+    const dx = p.x-h.x, dy = p.y-h.y, d = Math.hypot(dx,dy) || 1; if(d < 14){ uf.hook = null; return; }
+    const st = Math.min(d, UF_HOOK.spd*1.4*s); h.x += dx/d*st; h.y += dy/d*st;
+  }
   function ufRoll(){
-    if(!uf || uf.over || uf.paused) return; const p = uf.p, I = uf.lastI; if(p.rollCd > 0 || p.rollT > 0) return;
+    if(!uf || uf.over || uf.paused) return;
+    if(uf.who==='leaper') return ufLeap(); if(uf.who==='angler') return ufCast(); if(uf.who==='thresher') return; /* the roll button does their own thing */
+    const p = uf.p, I = uf.lastI; if(p.rollCd > 0 || p.rollT > 0) return;
     let dx = I ? I.mx : 0, dy = I ? I.my : 0, l = Math.hypot(dx, dy); if(l < 0.2){ dx = p.fx; dy = p.fy; l = 1; }
     p.dx = dx/l; p.dy = dy/l; p.fx = p.dx; p.fy = p.dy; p.rollT = UF.rollMs; p.rollCd = UF.rollCd*(ufCursed('lead') ? 2 : 1); p.inv = Math.max(p.inv, UF.iframes);
     p.swingT = 0; p.queued = false; p.heavyT = 0; p.cursing = false; p.combo = 0; p.comboT = 0; // a roll cancels whatever you were doing
@@ -11430,8 +11486,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   function ufCurseCast(){
     const p = uf.p; p.cursing = false;
-    if(uf.blood < UF.curseCost){ beep(140, 0.1, 'square', 0.02); return; }
-    uf.blood -= UF.curseCost;
+    if(uf.blood < ufCurseCost()){ beep(140, 0.1, 'square', 0.02); return; }
+    uf.blood -= ufCurseCost();
     uf.shots.push({x:p.x + p.cx*12, y:p.y + p.cy*12, vx:p.cx*UF.curseSpd, vy:p.cy*UF.curseSpd, left:UF.curseRange, mine:true, dmg:UF.curseDmg, pierce:true, hit:new Set()});
     p.fx = p.cx; p.fy = p.cy; sfxFire(0.8); beep(260, 0.15, 'sawtooth', 0.03);
   }
@@ -11448,23 +11504,31 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   const UF_PARA_WASTE = 1/6, UF_PARA_SIGHT = 170, UF_PARA_MAX = 4, UF_BITE = 600;
   // tarot cards: found on altars in some rooms, they last the whole run
   const UF_TAROT = [
-    {id:'heart',   name:'The Heart',   glyph:'♡', text:'4 more health, and heal 4.'},
-    {id:'butcher', name:'The Butcher', glyph:'†', text:'The last hit of your combo does 2 more.'},
-    {id:'well',    name:'The Well',    glyph:'◎', text:'Kills drop one more drop of blood.'},
-    {id:'vein',    name:'The Vein',    glyph:'∿', text:'Hold 6 more blood.'},
+    // sized like Cult of the Lamb's: one small bump each (half a heart there is about 5 health here)
+    {id:'heart1',  name:'The Heart I',   glyph:'♡', text:'3 more health, and heal 3.'},
+    {id:'heart2',  name:'The Heart II',  glyph:'♡', text:'5 more health, and heal 5.'},
+    {id:'heart3',  name:'The Heart III', glyph:'♥', text:'10 more health, and heal 10.'},
+    {id:'butcher', name:'The Butcher', glyph:'†', text:'Your weapon does a fifth more damage.'},
+    {id:'haste',   name:'Quick Hands', glyph:'⟳', text:'You swing a quarter faster.'},
+    {id:'path',    name:'The Path',    glyph:'»', text:'You move a quarter faster.'},
+    {id:'well',    name:'The Well',    glyph:'◎', text:'Kills drop twice the blood.'},
+    {id:'vein',    name:'The Vein',    glyph:'∿', text:'The curse and the relic cost a quarter less.'},
+    {id:'faith',   name:'Faith',       glyph:'⛨', text:'A 1 in 10 chance to shrug off a hit.'},
+    {id:'sight',   name:'The Telescope', glyph:'◉', text:'Every floor is mapped from the start.'},
     {id:'brood',   name:'The Brood',   glyph:'✶', text:'A card you play has a 1 in 3 chance to stay in your hand.'},
     {id:'nest', lock:'t_nest', name:'The Nest',    glyph:'❂', text:'An enemy that dies with a parasite on it lets a Leach crawl out.'},
     {id:'mother', lock:'t_mother', name:'The Mother',  glyph:'☾', text:'Your parasites have 1 more health.'},
-    {id:'thorn',   name:'The Thorn',   glyph:'✠', text:'Whatever hits you takes 2 damage.'},
-    {id:'feast', lock:'t_feast', name:'The Feast',   glyph:'☉', text:'Every 10 kills heal 2.'},
+    {id:'thorn',   name:'The Thorn',   glyph:'✠', text:'When you are hit, every enemy in the room takes 2.'},
+    {id:'feast', lock:'t_feast', name:'The Feast',   glyph:'☉', text:'Healing does twice as much.'},
   ];
   const ufHas = id => !!(uf && uf.tarot && uf.tarot.includes(id));
+  const ufCurseCost = () => ufHas('vein') ? Math.floor(UF.curseCost*0.75) : UF.curseCost, ufRelicCost = () => ufHas('vein') ? Math.floor(UF.relicCost*0.75) : UF.relicCost;
   function ufBreak(q){ // an urn or a crate: splinters, and sometimes blood, a heart or a key
     q.broken = true; thud(0.12, 0.1, q.crate ? 900 : 1900); beep(q.crate ? 160 : 620, 0.05, 'square', 0.015);
     for(let k=0; k<6; k++){ const a = Math.random()*Math.PI*2, v = 40 + Math.random()*70; ufFx({kind:'chip', x:q.x, y:q.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:q.crate ? '#7a5a36' : '#8a6a5a', t:420}); }
     const r = Math.random(); if(r < 0.06) uf.orbs.push({x:q.x, y:q.y, t:1e9, key:true}); else if(r < 0.14 && !ufHeat('mercy')) uf.orbs.push({x:q.x, y:q.y, t:12000, heal:1}); else if(r < 0.6) uf.orbs.push({x:q.x, y:q.y, t:9000});
   }
-  function ufHeal(n){ if(ufCursed('frail')) n = Math.ceil(n/2); const p = uf.p, before = p.hp; p.hp = Math.min(p.maxHp, p.hp + n); const got = Math.floor(p.hp) - Math.floor(before);
+  function ufHeal(n){ if(ufHas('feast')) n *= 2; if(ufCursed('frail')) n = Math.ceil(n/2); const p = uf.p, before = p.hp; p.hp = Math.min(p.maxHp, p.hp + n); const got = Math.floor(p.hp) - Math.floor(before);
     ufFx({kind:'num', x:p.x, y:p.y-16, text:got > 0 ? '+'+got : 'full', col:'#8fe08a', t:650}); beep(660, 0.12, 'sine', 0.03); beep(990, 0.18, 'sine', 0.025, 0.06); }
   function ufRollParas(n, fine){ // distinct, weighted by rarity; a fine chest leans rare
     const out = [], base = ufParaPool(), w = k => fine ? {Common:1, Rare:4, Epic:3}[UF_PARAS[k].rarity] : UF_RARITY[UF_PARAS[k].rarity].w;
@@ -11499,7 +11563,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function ufClosePick(){ uf.choosing = null; ufEl('ufPick').classList.remove('on'); padSet(null); uf.paused = false; uf.toggledAt = performance.now(); ufHudLast = ''; }
   function ufGainTarot(o){
     uf.tarot.push(o); const T = UF_TAROT.find(t=>t.id===o);
-    if(o==='heart'){ uf.p.maxHp += 4; ufHeal(4); } if(o==='vein') uf.cap += 6;
+    const hh = {heart1:3, heart2:5, heart3:10}[o]; if(hh){ uf.p.maxHp += hh; ufHeal(hh); } if(o==='sight'){ uf.mapAll = true; uf.mapVer++; }
     uf.banner = {text:T.name, t:1800}; beep(523, 0.3, 'sine', 0.035); beep(659, 0.3, 'sine', 0.03, 0.12); beep(784, 0.5, 'sine', 0.03, 0.24);
   }
   function ufAddCurse(){
@@ -11615,8 +11679,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   function ufRelic(){
     if(!uf || uf.over || uf.paused) return; const p = uf.p;
-    if(uf.blood < UF.relicCost){ beep(140, 0.1, 'square', 0.02); return; }
-    uf.blood -= UF.relicCost;
+    if(uf.blood < ufRelicCost()){ beep(140, 0.1, 'square', 0.02); return; }
+    uf.blood -= ufRelicCost();
     for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 1; if(d <= UF.relicR + f.r) ufHurtF(f, UF.relicDmg, dx/d*280, dy/d*280); }
     for(const sh of uf.shots) if(!sh.mine && Math.hypot(sh.x-p.x, sh.y-p.y) <= UF.relicR) sh.dead = true;
     for(const q of uf.props) if(!q.broken && Math.hypot(q.x-p.x, q.y-p.y) <= UF.relicR + q.r) ufBreak(q);
@@ -11627,10 +11691,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // ---- what is done to you ----
   function ufHurtP(dmg, src, name){
     const p = uf.p; if(p.inv > 0 || p.rollT > 0 || uf.over) return;
+    if(ufHas('faith') && Math.random() < 0.1){ p.inv = 400; ufFx({kind:'num', x:p.x, y:p.y-16, text:'shrugged off', col:'#e0b54a', t:600}); beep(988, 0.08, 'triangle', 0.03); return; }
     p.hp -= dmg; p.inv = 500; uf.shake = 160; haptic(30); sfxHit(0.8);
     uf.killer = name || (src && src.D && src.D.name) || uf.killer;
     ufFx({kind:'num', x:p.x, y:p.y-14, text:'-'+dmg, col:'#c73a5c', t:650});
-    if(src){ const dx = p.x-src.x, dy = p.y-src.y, l = Math.hypot(dx,dy) || 1; p.x += dx/l*8; p.y += dy/l*8; ufSolid(p); if(ufHas('thorn') && src.D) ufHurtF(src, 2, -dx/l*120, -dy/l*120); }
+    if(src){ const dx = p.x-src.x, dy = p.y-src.y, l = Math.hypot(dx,dy) || 1; p.x += dx/l*8; p.y += dy/l*8; ufSolid(p); }
+    if(ufHas('thorn')){ for(const f of uf.foes) if(f.spawnT <= 0 && f.hp > 0) ufHurtF(f, 2, 0, 0); ufFx({kind:'ring', x:p.x, y:p.y, r:60, t:300, col:'214,48,79'}); }
     if(p.hp <= 0){ p.hp = 0; ufEndRun(false); }
   }
   function ufHurtF(f, dmg, kx, ky){ if(ufNumbed(f)) dmg += 1; if(f.boss){ kx *= 0.15; ky *= 0.15; } f.hp -= dmg; f.hit = 90; f.kx += kx; f.ky += ky; sfxHit(1.2); ufFx({kind:'num', x:f.x, y:f.y-12, text:String(Math.round(dmg)), col:'#d9c9a3', t:500}); }
@@ -11693,7 +11759,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(rose && uf.time - (uf._spkSnd||0) > 120){ uf._spkSnd = uf.time; thud(0.06, 0.05, 2400); beep(880, 0.04, 'square', 0.01); }
     if(!up.length) return;
     const on = o => up.some(q=>Math.abs(o.x-q.x) < 13 + o.r*0.5 && Math.abs(o.y-q.y) < 13 + o.r*0.5);
-    const p = uf.p; if(uf.time - (p._spkT||-1e9) > 700 && p.rollT <= 0 && on(p)){ p._spkT = uf.time; ufHurtP(2, null, 'the spikes'); }
+    const p = uf.p; if(uf.time - (p._spkT||-1e9) > 700 && p.rollT <= 0 && !(p.jumpT > 0) && on(p)){ p._spkT = uf.time; ufHurtP(2, null, 'the spikes'); }
     for(const f of uf.foes) if(uf.time - (f._spkT||-1e9) > 700 && f.spawnT <= 0 && !f.boss && on(f)){ f._spkT = uf.time; ufHurtF(f, 2, 0, 0); }
   }
   function ufDoorC(k){ const d = UF_DOORS[k]; return k==='t' || k==='b' ? {x:d.x, y:d.y + d.h/2} : {x:d.x + d.w/2, y:d.y + d.h/2}; }
@@ -11710,16 +11776,25 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(p.swingT > 0){ p.swingT -= dt; if(p.swingT <= 0 && p.queued) ufSwing(); }
     if(p.heavyT > 0){ p.heavyT -= dt; if(p.heavyT <= 0) ufHeavyLand(); }
     // the curse: hold to aim (left stick, or the mouse), release to cast
-    if(I.curse && !p.cursing && !ufBusy() && p.swingT <= 0){ if(uf.blood >= UF.curseCost){ p.cursing = true; p.cx = p.fx; p.cy = p.fy; } else if(!p.curseNoted){ p.curseNoted = true; beep(140, 0.1, 'square', 0.02); } }
+    if(I.curse && !p.cursing && !ufBusy() && p.swingT <= 0){ if(uf.blood >= ufCurseCost()){ p.cursing = true; p.cx = p.fx; p.cy = p.fy; } else if(!p.curseNoted){ p.curseNoted = true; beep(140, 0.1, 'square', 0.02); } }
     if(!I.curse) p.curseNoted = false;
     if(p.cursing){ const l = Math.hypot(I.mx, I.my); if(I.mouseAim){ p.cx = I.mouseAim.x; p.cy = I.mouseAim.y; } else if(l > 0.3){ p.cx = I.mx/l; p.cy = I.my/l; } if(!I.curse) ufCurseCast(); }
     const ml = Math.hypot(I.mx, I.my);
     if(ml > 0.2 && !p.cursing && p.swingT <= 0 && p.heavyT <= 0 && p.rollT <= 0){ p.fx = I.mx/ml; p.fy = I.my/ml; }
-    if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*UF.rollSpd*s; p.y += p.dy*UF.rollSpd*s; ufFx({kind:'trail', x:p.x, y:p.y, t:180}); }
-    else { const m = (p.heavyT > 0 ? 0.15 : p.swingT > 0 ? UF.swingMove : p.cursing ? UF.curseMove : 1) * ufSlow(p); p.x += I.mx*UF.spd*m*s; p.y += I.my*UF.spd*m*s; }
+    if(p.castCd > 0) p.castCd -= dt; ufHookStep(dt);
+    p.spinning = uf.who==='thresher' && I.rollHeld && !p.cursing && p.heavyT <= 0;
+    if(p.spinning){ p.swingT = 0; p.queued = false; p.spinA = (p.spinA||0) + dt*0.018; p.spinT = (p.spinT||0) - dt;
+      if(p.spinT <= 0){ p.spinT = UF_SPIN.iv; let hits = 0; thud(0.04, 0.05, 1700);
+        for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 1; if(f.spawnT <= 0 && d <= UF_SPIN.r + f.r){ ufHurtF(f, UF_SPIN.dmg, dx/d*50, dy/d*50); hits++; } }
+        for(const q of uf.props) if(!q.broken && Math.hypot(q.x-p.x, q.y-p.y) <= UF_SPIN.r + q.r) ufBreak(q);
+        ufCutWebsNear(p.x, p.y, UF_SPIN.r); if(hits) uf.blood = Math.min(uf.cap, uf.blood + hits*UF.hitBlood); } }
+    if(p.jumpT > 0){ p.jumpT -= dt; const sp = UF_LEAP.dist/UF_LEAP.ms*1000; p.x += p.dx*sp*s; p.y += p.dy*sp*s;
+      const lo = UF_WALL + p.r; p.x = Math.max(lo, Math.min(UF_W-lo, p.x)); p.y = Math.max(lo, Math.min(UF_H-lo, p.y)); if(p.jumpT <= 0) ufLand(); }
+    else if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*UF.rollSpd*s; p.y += p.dy*UF.rollSpd*s; ufFx({kind:'trail', x:p.x, y:p.y, t:180}); }
+    else { const m = (p.heavyT > 0 ? 0.15 : p.swingT > 0 ? UF.swingMove : p.cursing ? UF.curseMove : p.spinning ? UF_SPIN.move : 1) * ufSlow(p); const sp0 = UF.spd*(ufHas('path') ? 1.25 : 1); p.x += I.mx*sp0*m*s; p.y += I.my*sp0*m*s; }
     { const wet = ufWet(p); if(wet && p.rollT <= 0) p.x += UF_CURRENT*ufFlow(p)*s; /* the current carries you */
       if(wet!==!!p._wet){ p._wet = wet; thud(0.12, wet ? 0.1 : 0.05, wet ? 1300 : 2200); for(let k=0;k<6;k++){ const a = -Math.PI*Math.random(), v = 40 + Math.random()*60; ufFx({kind:'chip', x:p.x, y:p.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:'#8fd0dc', t:380}); } } }
-    ufSolid(p);
+    if(!(p.jumpT > 0)) ufSolid(p); /* in the air over pillars and props */
     // the enemies
     const decay = Math.pow(0.0005, s);
     for(const f of uf.foes){
@@ -11749,7 +11824,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const a = F[i];
       for(let j=i+1; j<F.length; j++){ const b = F[j], dx = a.x-b.x, dy = a.y-b.y, d = Math.hypot(dx,dy), m = a.r+b.r;
         if(d < m && d > 0.01){ const k = (m-d)/2/d; a.x += dx*k; a.y += dy*k; b.x -= dx*k; b.y -= dy*k; } }
-      if(p.rollT <= 0){ const dx = a.x-p.x, dy = a.y-p.y, d = Math.hypot(dx,dy), m = a.r+p.r;
+      if(p.rollT <= 0 && !(p.jumpT > 0)){ const dx = a.x-p.x, dy = a.y-p.y, d = Math.hypot(dx,dy), m = a.r+p.r;
         if(d < m && d > 0.01){ const k = (m-d)/d; a.x += dx*k*0.7; a.y += dy*k*0.7; p.x -= dx*k*0.3; p.y -= dy*k*0.3; } }
     }
     for(const f of F) ufSolid(f); ufSolid(p);
@@ -11768,13 +11843,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     uf.shots = uf.shots.filter(x=>!x.dead);
     // deaths, and the blood they drop
     for(const f of F) if(f.hp <= 0){ f.dead = true; uf.kills++; sfxDeath();
+      if(uf.who==='picker' && Math.random() < 0.25 && uf.allies.length < UF_PARA_MAX) ufSummon('Leach', {x:f.x, y:f.y});
       ufFx({kind:'ring', x:f.x, y:f.y, r:f.r*2.2, t:320, col:'63,133,128'});
       const on = uf.allies.filter(a=>a.host===f);
       for(const a of on) if(a.P.brood) for(let k=0; k<a.P.brood; k++) ufSummon('Leach', {x:f.x + (k ? 6 : -6), y:f.y});
       if(ufHas('nest') && on.some(a=>!a.P.brood && !a.P.hop)) ufSummon('Leach', {x:f.x, y:f.y + 6});
-      if(ufHas('feast') && uf.kills % 10 === 0) ufHeal(2);
       if(f.elite) uf.orbs.push({x:f.x, y:f.y, t:1e9, key:true});
-      for(let k=0; k<Math.max(0, f.D.blood + (ufHas('well') ? 1 : 0) - (ufCursed('thirst') ? 1 : 0)); k++) uf.orbs.push({x:f.x+(Math.random()-.5)*14, y:f.y+(Math.random()-.5)*14, t:9000}); }
+      for(let k=0; k<Math.max(0, f.D.blood*(ufHas('well') ? 2 : 1) - (ufCursed('thirst') ? 1 : 0)); k++) uf.orbs.push({x:f.x+(Math.random()-.5)*14, y:f.y+(Math.random()-.5)*14, t:9000}); }
     uf.foes = F.filter(x=>!x.dead);
     for(const o of uf.orbs){
       o.t -= dt; if(ufWet(o)){ o.x += UF_CURRENT*1.3*ufFlow(o)*s; if(o.x > UF_W - UF_WALL - 4) o.t = 0; } /* blood floats away downstream */
@@ -11789,6 +11864,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const al = uf.altar; if(al && !al.taken){ const d = Math.hypot(p.x-al.x, p.y-al.y); if(d > 40) al.armed = true; else if(al.armed && d < p.r + 14){ al.armed = false; ufOffer('tarot', al.opts); return; } }
     { const R = uf.here, np = R.npc; if(np && !np.spent){ const d = Math.hypot(p.x-np.x, p.y-np.y); if(d > 46) np.armed = true; else if(np.armed && d < p.r + 18){ np.armed = false; np.kind==='shop' ? ufShop() : ufShrine(); return; } }
       const mi = R.mapItem; if(mi && !mi.taken && Math.hypot(p.x-mi.x, p.y-mi.y) < p.r + 10){ mi.taken = true; uf.mapAll = true; uf.mapVer++; uf.banner = {text:'A map of this floor', t:1600}; beep(523, 0.2, 'triangle', 0.04); beep(784, 0.3, 'triangle', 0.035, 0.1); }
+      const pr = R.prisoner; if(pr && !pr.freed && uf.cleared && Math.hypot(p.x-pr.x, p.y-pr.y) < p.r + 16){ pr.freed = true; const q = ufPrisoner(pr.id);
+        if(!ufMeta.freed.includes(q.id)){ ufMeta.freed.push(q.id); ufSaveMeta(); }
+        uf.banner = {text:`${q.name}: "${q.freed}"`, t:4200}; ufFx({kind:'ring', x:pr.x, y:pr.y, r:30, t:500, col:'224,181,74'}); thud(0.3, 0.14, 700); beep(523, 0.25, 'triangle', 0.04); beep(659, 0.35, 'triangle', 0.035, 0.12); uf.mapVer++; }
       const st = R.stairs; if(st && uf.cleared){ const d = Math.hypot(p.x-st.x, p.y-st.y); if(d > 36) st.armed = true; else if(st.armed && d < p.r + 10){ if(uf.floor >= UF_FLOORS) ufEndRun(true); else ufNextFloor(); return; } } }
     ufSpikes(); if(uf.over) return;
     // the room: cleared when nothing is left, then any door but the one you came in by leads on
@@ -11844,6 +11922,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const mi = R.mapItem; if(mi && !mi.taken) txt('▤', mi.x, mi.y + Math.sin(performance.now()/300)*2, 14, '#e0b54a');
       const st = R.stairs; if(st){ c.fillStyle = '#060404'; c.fillRect(st.x-14, st.y-14, 28, 28); c.strokeStyle = uf.floor >= UF_FLOORS ? '#f3d27a' : '#8a7650'; c.lineWidth = 1.5; c.strokeRect(st.x-13.5, st.y-13.5, 27, 27);
         for(let i=0;i<3;i++){ c.fillStyle = `rgba(217,201,163,${0.5 - i*0.15})`; c.fillRect(st.x-10+i*2, st.y-8+i*6, 20-i*4, 3); } } }
+    { const pr = uf.here.prisoner; if(pr && !pr.freed){ const q = ufPrisoner(pr.id); // chained to the floor
+      c.strokeStyle = '#6a5a4a'; c.lineWidth = 1.5; c.setLineDash([2,2]); c.beginPath(); for(const a of [-2.4, -0.7, 0.7, 2.4]){ c.moveTo(pr.x, pr.y); c.lineTo(pr.x + Math.cos(a)*22, pr.y + Math.sin(a)*16); } c.stroke(); c.setLineDash([]);
+      c.beginPath(); c.arc(pr.x, pr.y, 10, 0, Math.PI*2); c.fillStyle = '#8a6a5a'; c.fill(); txt(q.glyph, pr.x, pr.y + 0.5, 11, '#1a1210');
+      if(uf.cleared) txt(q.name, pr.x, pr.y - 18, 8, '#e0b54a'); } }
     for(const q of uf.props){ if(q.broken){ c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.arc(q.x, q.y+2, q.r*0.8, 0, Math.PI*2); c.fill(); continue; }
       if(q.crate){ c.fillStyle = '#4a3420'; c.fillRect(q.x-q.r, q.y-q.r, q.r*2, q.r*2); c.strokeStyle = '#7a5a36'; c.lineWidth = 1; c.strokeRect(q.x-q.r+.5, q.y-q.r+.5, q.r*2-1, q.r*2-1); c.beginPath(); c.moveTo(q.x-q.r, q.y-q.r); c.lineTo(q.x+q.r, q.y+q.r); c.stroke(); }
       else { c.beginPath(); c.ellipse(q.x, q.y+1, q.r*0.85, q.r, 0, 0, Math.PI*2); c.fillStyle = '#5a4038'; c.fill(); c.strokeStyle = '#8a6a5a'; c.lineWidth = 1; c.stroke(); c.fillStyle = '#1a1210'; c.fillRect(q.x-3, q.y-q.r-1, 6, 3); } }
@@ -11897,7 +11979,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         c.strokeStyle = '#e0b54a'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x + cx*g - cy*4, p.y + cy*g + cx*4); c.lineTo(p.x + cx*g + cy*4, p.y + cy*g - cx*4); c.stroke(); // crossguard
         c.strokeStyle = '#e8dcc0'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(p.x + cx*g, p.y + cy*g); c.lineTo(p.x + cx*tip, p.y + cy*tip); c.stroke(); c.lineCap = 'butt'; } }
       c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
-      c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI*2); c.fillStyle = '#c73a5c'; c.fill(); txt('@', p.x, p.y+0.5, 12, '#100b0a'); c.globalAlpha = 1;
+      const lift = p.jumpT > 0 ? Math.sin(Math.PI*(1 - p.jumpT/UF_LEAP.ms))*16 : 0, q = ufPrisoner(uf.who);
+      if(lift){ c.globalAlpha = 1; c.beginPath(); c.ellipse(p.x, p.y + 4, p.r*(1 - lift/40), p.r*0.4, 0, 0, Math.PI*2); c.fillStyle = 'rgba(0,0,0,.35)'; c.fill(); }
+      if(p.spinning){ c.strokeStyle = 'rgba(232,220,192,.85)'; c.lineWidth = 2.2; c.lineCap = 'round'; c.beginPath(); for(let k=0;k<2;k++){ const a = p.spinA + k*Math.PI; c.moveTo(p.x + Math.cos(a)*6, p.y + Math.sin(a)*6); c.lineTo(p.x + Math.cos(a)*(UF_SPIN.r - 4), p.y + Math.sin(a)*(UF_SPIN.r - 4)); } c.stroke(); c.lineCap = 'butt';
+        c.beginPath(); c.arc(p.x, p.y, UF_SPIN.r - 2, 0, Math.PI*2); c.strokeStyle = 'rgba(232,220,192,.15)'; c.lineWidth = 1; c.stroke(); }
+      c.beginPath(); c.arc(p.x, p.y - lift, p.r*(1 + lift/60), 0, Math.PI*2); c.fillStyle = '#c73a5c'; c.fill(); txt(q ? q.glyph : '@', p.x, p.y + 0.5 - lift, 12, '#100b0a'); c.globalAlpha = 1;
+      if(uf.hook){ const h = uf.hook; c.strokeStyle = 'rgba(217,201,163,.8)'; c.lineWidth = 1; c.beginPath(); c.moveTo(p.x, p.y); c.quadraticCurveTo((p.x + h.x)/2, (p.y + h.y)/2 + (h.state==='pull' ? 0 : 6), h.x, h.y); c.stroke(); txt('ʃ', h.x, h.y, 9, '#e8dcc0'); }
     }
     if(uf.here.water){ const tt = performance.now()/1000;
       for(const o of [p].concat(uf.foes, uf.allies)){ if(!ufWet(o) || (o===p && uf.over)) continue;
