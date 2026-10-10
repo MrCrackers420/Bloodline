@@ -11147,6 +11147,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r + pad)) continue;
       if(R && R.water && Math.abs(y - R.water.y) < R.water.h/2 + pad) continue;
       if(uf.chest && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r + pad) continue;
+      if(uf.spikes.some(q=>Math.abs(x-q.x) < 13 + pad*0.6 && Math.abs(y-q.y) < 13 + pad*0.6)) continue;
       if(uf.altar && Math.hypot(x-uf.altar.x, y-uf.altar.y) < 18 + pad) continue;
       if(R && R.npc && Math.hypot(x-R.npc.x, y-R.npc.y) < 30 + pad) continue;
       if(uf.props.some(q=>!q.broken && Math.hypot(x-q.x, y-q.y) < q.r + pad)) continue;
@@ -11249,7 +11250,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       for(let k=0;k<n;k++){ const at = ufSpot(80, 30); R.floorWebs.push({x:at.x, y:at.y, r:20 + Math.random()*8, rot:Math.random()*Math.PI, cut:false}); } }
     if(!bare){ R.props = uf.props = []; const np = 3 + Math.floor(Math.random()*4); // a few urns and crates to smash
       for(let k=0; k<np; k++){ const at = ufSpot(60, 20), crate = Math.random() < 0.4; uf.props.push({x:at.x, y:at.y, r:crate ? 8 : 7, crate, broken:false}); } }
-    if(R.trap){ R.spikes = uf.spikes = []; const n = 3 + Math.floor(Math.random()*3); for(let k=0;k<n;k++){ const at = ufSpot(70, 24); uf.spikes.push({x:at.x, y:at.y}); } }
+    if(R.trap) R.spikes = uf.spikes = ufSpikeStrips(R);
     const chestAt = kind => { const c = R.type==='start' ? {x:UF_W/2, y:UF_H - 80} : ufSpot(70, 30); uf.chest = R.chest = {x:c.x, y:c.y, r:12, open:false, kind}; };
     if(R.chestKind) chestAt(R.chestKind);
     let banner = 'Room '+R.n;
@@ -11657,14 +11658,40 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     else if(f.act==='ring'){ const n = 8 + 2*(uf.floor-1), o = Math.random()*Math.PI; for(let i=0;i<n;i++){ const a = o + i/n*Math.PI*2; uf.shots.push({x:f.x, y:f.y, vx:Math.cos(a)*150, vy:Math.sin(a)*150, left:420, mine:false, dmg:Math.max(2, f.D.dmg-2), src:f.D.name}); } beep(300, 0.1, 'triangle', 0.03); }
     else { f.dashT = 560; f.dashHit = false; thud(0.3, 0.14, 300); }
   }
-  function ufSpikes(){ // spike plates: down, a warning, then up; anything standing on them when they rise is cut, once a rise
+  // Spike strips: rows of floor tiles, one or two wide, across a good part of the room. Each tile goes down, warns, then rises. A strip either
+  // rises as a wave running along it, or all at once with the strip beside it rising half a beat later, so there is always a way through
+  const UF_SPK = 2600, UF_TILE = 26;
+  const ufSpikeState = q => { const t = (uf.time + q.ph) % UF_SPK; return t < 1500 ? 0 : t < 2000 ? 1 : 2; };
+  function ufSpikeStrips(R){
+    const T = UF_TILE, cols = Math.floor((UF_W - 2*UF_WALL)/T), rows = Math.floor((UF_H - 2*UF_WALL)/T);
+    const ox = UF_WALL + (UF_W - 2*UF_WALL - cols*T)/2 + T/2, oy = UF_WALL + (UF_H - 2*UF_WALL - rows*T)/2 + T/2;
+    const out = [], taken = new Set(), doors = Object.keys(R.links).map(ufDoorC), p = uf.p;
+    const ok = (x, y) => !(Math.hypot(x - p.x, y - p.y) < 64 || uf.pillars.some(c=>Math.hypot(x - c.x, y - c.y) < c.r + 10) || doors.some(d=>Math.hypot(x - d.x, y - d.y) < 46)
+      || uf.props.some(q=>!q.broken && Math.hypot(x - q.x, y - q.y) < q.r + 12) || (R.water && Math.abs(y - R.water.y) < R.water.h/2 + 14));
+    const n = 3 + Math.floor(Math.random()*2 + (uf.floor >= 2 ? 0.5 : 0)), horiz = Math.random() < 0.5; // the strips of a room run the same way
+    for(let s=0, tries=0; s<n && tries<60; tries++){
+      const along = horiz ? cols : rows, across = horiz ? rows : cols, len = Math.max(4, Math.floor(along*(0.5 + Math.random()*0.35))), thick = Math.random() < 0.55 ? 2 : 1;
+      const a0 = Math.floor(Math.random()*(along - len + 1)), b0 = 1 + Math.floor(Math.random()*Math.max(1, across - thick - 1));
+      const tiles = [];
+      for(let i=0;i<len;i++) for(let j=0;j<thick;j++){ const cx = horiz ? a0 + i : b0 + j, cy = horiz ? b0 + j : a0 + i, k = cx + ',' + cy;
+        const nearTaken = [-1,0,1].some(d=>taken.has((horiz ? cx : cx + d) + ',' + (horiz ? cy + d : cy))); // a row of floor is left between strips
+        if(taken.has(k) || nearTaken) continue; const x = ox + cx*T, y = oy + cy*T; if(ok(x, y)) tiles.push({x, y, i, k}); }
+      if(tiles.length < len*thick*0.7) continue;
+      const wave = Math.random() < 0.55, dir = Math.random() < 0.5 ? 1 : -1, beat = s*(UF_SPK/2);
+      for(const t of tiles){ taken.add(t.k); out.push({x:t.x, y:t.y, ph:Math.round(wave ? ((dir > 0 ? t.i : len - t.i)*190 + beat) % UF_SPK : beat), s}); }
+      s++;
+    }
+    return out;
+  }
+  function ufSpikes(){ // anything standing on a tile as it rises is cut; a roll goes over
     const sp = uf.spikes; if(!sp || !sp.length) return;
-    const t = uf.time % 2600, cyc = Math.floor(uf.time/2600), st = t < 1500 ? 0 : t < 2000 ? 1 : 2;
-    if(st!==uf.spikeState){ uf.spikeState = st; if(st===2) { thud(0.06, 0.06, 2400); beep(880, 0.04, 'square', 0.012); } }
-    if(st!==2) return;
-    const on = o => sp.some(q=>Math.abs(o.x-q.x) < 13 + o.r*0.5 && Math.abs(o.y-q.y) < 13 + o.r*0.5);
-    const p = uf.p; if(p._spk!==cyc && p.rollT <= 0 && on(p)){ p._spk = cyc; ufHurtP(2, null, 'the spikes'); }
-    for(const f of uf.foes) if(f._spk!==cyc && f.spawnT <= 0 && !f.boss && on(f)){ f._spk = cyc; ufHurtF(f, 2, 0, 0); }
+    let rose = 0; const up = [];
+    for(const q of sp){ const st = ufSpikeState(q); if(st===2){ up.push(q); if(q._st!==2) rose++; } q._st = st; }
+    if(rose && uf.time - (uf._spkSnd||0) > 120){ uf._spkSnd = uf.time; thud(0.06, 0.05, 2400); beep(880, 0.04, 'square', 0.01); }
+    if(!up.length) return;
+    const on = o => up.some(q=>Math.abs(o.x-q.x) < 13 + o.r*0.5 && Math.abs(o.y-q.y) < 13 + o.r*0.5);
+    const p = uf.p; if(uf.time - (p._spkT||-1e9) > 700 && p.rollT <= 0 && on(p)){ p._spkT = uf.time; ufHurtP(2, null, 'the spikes'); }
+    for(const f of uf.foes) if(uf.time - (f._spkT||-1e9) > 700 && f.spawnT <= 0 && !f.boss && on(f)){ f._spkT = uf.time; ufHurtF(f, 2, 0, 0); }
   }
   function ufDoorC(k){ const d = UF_DOORS[k]; return k==='t' || k==='b' ? {x:d.x, y:d.y + d.h/2} : {x:d.x + d.w/2, y:d.y + d.h/2}; }
   function ufSecretCheck(r){ // a heavy blow or the relic near a cracked wall breaks it open
@@ -11807,7 +11834,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       else { c.strokeStyle = '#5a3d22'; c.lineWidth = 2; c.beginPath(); for(let i=1;i<4;i++){ if(d.w > d.h){ c.moveTo(x + d.w*i/4, y); c.lineTo(x + d.w*i/4, y + d.h); } else { c.moveTo(x, y + d.h*i/4); c.lineTo(x + d.w, y + d.h*i/4); } } c.stroke(); } }
     { const tt = performance.now()/1000; if(uf.here.water) ufDrawWater(c, uf.here.water, tt); ufDrawWebs(c, uf.here, tt); }
     for(const q of uf.pillars){ c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI*2); c.fillStyle = '#2b201c'; c.fill(); c.strokeStyle = '#3a2c27'; c.stroke(); txt('#', q.x, q.y, q.r, 'rgba(0,0,0,.35)'); }
-    { const st = uf.spikeState||0; for(const q of uf.spikes){ c.fillStyle = '#1c1412'; c.fillRect(q.x-13, q.y-13, 26, 26); c.strokeStyle = st===2 ? '#d9c9a3' : st===1 ? '#8a6a5a' : '#3a2c27'; c.lineWidth = 1; c.strokeRect(q.x-12.5, q.y-12.5, 25, 25);
+    { for(const q of uf.spikes){ const st = ufSpikeState(q); c.fillStyle = '#1c1412'; c.fillRect(q.x-13, q.y-13, 26, 26); c.strokeStyle = st===2 ? '#d9c9a3' : st===1 ? '#8a6a5a' : '#3a2c27'; c.lineWidth = 1; c.strokeRect(q.x-12.5, q.y-12.5, 25, 25);
       for(let i=0;i<3;i++) for(let j=0;j<3;j++){ const sx = q.x-8+i*8, sy = q.y-8+j*8; if(st===2) txt('▲', sx, sy, 7, '#d9c9a3'); else { c.fillStyle = st===1 ? '#8a6a5a' : '#2b201c'; c.fillRect(sx-1, sy-1, 2, 2); } } } }
     { const R = uf.here, np = R.npc; if(np){ if(np.kind==='shop'){ c.fillStyle = '#4a3420'; c.fillRect(np.x-28, np.y+14, 56, 10); txt('¤ ¤ ¤', np.x, np.y+19, 7, '#e0b54a'); c.beginPath(); c.arc(np.x, np.y, 11, 0, Math.PI*2); c.fillStyle = '#d9c9a3'; c.fill(); txt('¤', np.x, np.y+.5, 12, '#3a2a1a'); }
         else { c.fillStyle = np.spent ? '#2b201c' : '#3a1418'; c.fillRect(np.x-12, np.y-14, 24, 28); c.strokeStyle = np.spent ? '#3a2c27' : '#c73a5c'; c.lineWidth = 1; c.strokeRect(np.x-11.5, np.y-13.5, 23, 27); txt('†', np.x, np.y, 14, np.spent ? '#5a4a40' : '#ee5a75'); } }
