@@ -888,9 +888,10 @@
   .place-preview.invalid .place-ring{ border-color:rgba(160,160,160,.7); background:rgba(80,80,80,.18); }
   .place-preview.invalid .place-ghost{ background:rgba(120,120,120,.5); }
   .card{ touch-action:none; }
-  .bridge.closed{ background:var(--river); color:rgba(255,255,255,.14); border-color:transparent; }
+  .bridge.closed{ background:transparent; border-color:transparent; }
+  .zone.rriver, .zone.priver{ animation:none; padding:0; } .river-cv{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; }
   .bridge.lever{ cursor:pointer; box-shadow:0 0 0 1px var(--crimson-lt) inset; }
-  .bridge.lever.cooling{ opacity:.55; }
+  .bridge.lever.cooling{ filter:brightness(.6); } /* dimmed, but still solid planks over the water */
   /* enemies on your bridge and the lever is ready: seal it and they drown */
   .bridge.lever.bait{ animation: bait-pulse .7s ease-in-out infinite; }
   @keyframes bait-pulse{ 0%,100%{ box-shadow:0 0 0 1px var(--crimson-lt) inset; } 50%{ box-shadow:0 0 0 3px var(--crimson-lt) inset, 0 0 10px var(--crimson-lt); } }
@@ -3884,7 +3885,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     state.bridgeMs[owner][i] = BRIDGE_CLOSE_MS;
     state.bridgeCd[owner] = BRIDGE_COOLDOWN_MS;
     const el = bridgeEl(owner,i);
-    if(el){ el.classList.add('closed'); el.textContent = '~ '.repeat(60); }
+    if(el){ el.classList.add('closed'); el.textContent = ''; } /* the river's own water shows through */
     const band = RIVER_BANDS[owner==='a' ? 0 : 1];
     asciiFx(BRIDGE_X[i], (band.min+band.max)/2, FX.bridge()); // the planks drop into the water
     sfxBridgeClose();
@@ -10972,14 +10973,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const dt = Math.min(80, now-last); last=now;
       try{ tick(dt); if(state && state.watch) for(let k=1; k<watchSpeed; k++) tick(dt); }catch(e){ noteError(e); } // Watch can run faster
       try{ ambientTick(); }catch(e){}
+      if((matchStarted || state.over) && !document.hidden && !ufActive && !hf) try{ drawRivers(now/1000); }catch(e){ noteError(e); }
       try{ fxWatch(dt); }catch(e){ noteError(e); }
       if(matchStarted===!!document.body.classList.contains('prematch')) document.body.classList.toggle('prematch', !matchStarted); // written only when it changes
     }catch(e){ noteError(e); }
     requestAnimationFrame(loop);
   }
-  document.querySelectorAll('.zone.rriver, .zone.priver').forEach(el=>{
-    el.textContent = '~ '.repeat(140);
-  });
+  /* the rivers are drawn by drawRivers, from the first frame of a fight */
   document.querySelectorAll('.bridge').forEach(el=>{
     el.textContent = '≡ '.repeat(60);
   });
@@ -11132,7 +11132,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function ufFx(o){ o.t0 = o.t; if(uf.fx.length < 140) uf.fx.push(o); }
   // ---- the stream in each floor's first room, and cobwebs ----
   const UF_CURRENT = 34, UF_WADE = 0.6, UF_WEB_SLOW = 0.45;
-  function ufWet(o){ const w = uf && uf.here && uf.here.water; return !!w && Math.abs(o.y - w.y) < w.h/2 && Math.abs(o.x - w.bx) > w.bw/2; }
+  function ufWet(o){ const w = uf && uf.here && uf.here.water; return !!w && Math.abs(o.y - w.y) < w.h/2 && Math.abs(o.x - w.bx) > w.bw/2 && o.x > w.x0; }
+  function ufFlow(o){ const w = uf.here.water; return 1 + 1.6*Math.max(0, 1 - (o.x - w.x0 - w.fw/2)/80); } /* stronger by the waterfall */
+  function ufFallRect(){ const w = uf && uf.here && uf.here.water; return w ? {l:w.x0, r:w.x0 + w.fw, t:UF_WALL, b:w.y - w.h/2} : null; }
   function ufWebAt(o){ const R = uf && uf.here; return R && R.floorWebs ? R.floorWebs.find(w=>!w.cut && Math.hypot(o.x-w.x, o.y-w.y) < w.r) : null; }
   const ufSlow = o => (ufWet(o) ? UF_WADE : 1) * (ufWebAt(o) ? UF_WEB_SLOW : 1);
   function ufCutWeb(w){ if(w.cut) return; w.cut = true; thud(0.05, 0.04, 3200); beep(1400, 0.04, 'triangle', 0.01);
@@ -11145,7 +11147,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     for(let k=0;k<60;k++){ const x = UF_WALL+40 + Math.random()*(UF_W-2*UF_WALL-80), y = UF_WALL+50 + Math.random()*(UF_H-2*UF_WALL-100);
       if(UF_W > UF_H && y < 120 && (x < 150 || x > UF_W - 150)) continue; /* not under the HUD in the corners of a wide room */
       if(uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r + pad)) continue;
-      if(R && R.water && Math.abs(y - R.water.y) < R.water.h/2 + pad) continue;
+      if(R && R.water && (Math.abs(y - R.water.y) < R.water.h/2 + pad || (x > R.water.x0 - pad && x < R.water.x0 + R.water.fw + pad && y < R.water.y))) continue;
       if(uf.chest && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r + pad) continue;
       if(uf.spikes.some(q=>Math.abs(x-q.x) < 13 + pad*0.6 && Math.abs(y-q.y) < 13 + pad*0.6)) continue;
       if(uf.altar && Math.hypot(x-uf.altar.x, y-uf.altar.y) < 18 + pad) continue;
@@ -11243,7 +11245,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(from && ufCursed('wound') && p.hp > 1){ p.hp -= 1; ufFx({kind:'num', x:p.x, y:p.y-16, text:'-1', col:'#c73a5c', t:650}); }
     if(R.type==='shop') R.npc = {kind:'shop', x:UF_W/2, y:UF_WALL + 70, armed:true};
     if(R.type==='shrine') R.npc = {kind:'shrine', x:UF_W/2, y:UF_H/2, armed:true};
-    if(R.type==='start'){ const h = 42, y = Math.round(UF_H*0.28); R.water = {y, h, bx:UF_W/2, bw:34};
+    if(R.type==='start'){ const h = 42, y = Math.round(UF_H*0.28); R.water = {y, h, bx:UF_W/2, bw:34, x0:UF_W > UF_H ? Math.round(UF_W*0.18) : UF_WALL, fw:44};
       R.pillars = uf.pillars = R.pillars.filter(q=>Math.abs(q.y - y) > h/2 + q.r + 6); }
     R.cornerWebs = [0,1,2,3].filter(()=>Math.random() < (R.type==='start' ? 0.6 : 0.35)).map(i=>({i, L:22 + Math.random()*18}));
     if(R.type==='fight' && Math.random() < 0.4 + 0.1*uf.floor){ R.floorWebs = []; const n = 1 + Math.floor(Math.random()*(uf.floor >= 2 ? 3 : 2));
@@ -11343,9 +11345,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     for(const c of uf.pillars){ const dx = o.x-c.x, dy = o.y-c.y, d = Math.hypot(dx,dy), m = c.r+o.r;
       if(d < m){ if(d > 0.01){ o.x = c.x + dx*m/d; o.y = c.y + dy*m/d; } else o.y = c.y + m; } }
     if(uf) for(const q of uf.props){ if(q.broken) continue; const dx = o.x-q.x, dy = o.y-q.y, d = Math.hypot(dx,dy), m = q.r+o.r; if(d < m && d > 0.01){ o.x = q.x + dx*m/d; o.y = q.y + dy*m/d; } }
+    { const F = ufFallRect(); if(F && o.x > F.l - o.r && o.x < F.r + o.r && o.y < F.b + o.r){ const pl = F.l - o.r < UF_WALL + o.r ? Infinity : o.x - (F.l - o.r), pr = (F.r + o.r) - o.x, pb = (F.b + o.r) - o.y, m = Math.min(pl, pr, pb); /* never into the wall */ if(m===pb) o.y = F.b + o.r; else if(m===pl) o.x = F.l - o.r; else o.x = F.r + o.r; } }
     const ch = uf && uf.chest; if(ch && !ch.open && o!==ch){ const dx = o.x-ch.x, dy = o.y-ch.y, d = Math.hypot(dx,dy), m = ch.r+o.r; if(d < m && d > 0.01){ o.x = ch.x + dx*m/d; o.y = ch.y + dy*m/d; } }
   }
-  const ufBlocked = (x, y) => x<UF_WALL || x>UF_W-UF_WALL || y<UF_WALL || y>UF_H-UF_WALL || uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r) || !!(uf && uf.chest && !uf.chest.open && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r) || !!(uf && uf.props.some(q=>!q.broken && Math.hypot(x-q.x, y-q.y) < q.r));
+  const ufBlocked = (x, y) => (()=>{ const F = ufFallRect(); return !!F && x > F.l && x < F.r && y < F.b; })() || x<UF_WALL || x>UF_W-UF_WALL || y<UF_WALL || y>UF_H-UF_WALL || uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r) || !!(uf && uf.chest && !uf.chest.open && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r) || !!(uf && uf.props.some(q=>!q.broken && Math.hypot(x-q.x, y-q.y) < q.r));
 
   // ---- input ----
   function ufPad(){
@@ -11714,7 +11717,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(ml > 0.2 && !p.cursing && p.swingT <= 0 && p.heavyT <= 0 && p.rollT <= 0){ p.fx = I.mx/ml; p.fy = I.my/ml; }
     if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*UF.rollSpd*s; p.y += p.dy*UF.rollSpd*s; ufFx({kind:'trail', x:p.x, y:p.y, t:180}); }
     else { const m = (p.heavyT > 0 ? 0.15 : p.swingT > 0 ? UF.swingMove : p.cursing ? UF.curseMove : 1) * ufSlow(p); p.x += I.mx*UF.spd*m*s; p.y += I.my*UF.spd*m*s; }
-    { const wet = ufWet(p); if(wet && p.rollT <= 0) p.x += UF_CURRENT*s; /* the current carries you */
+    { const wet = ufWet(p); if(wet && p.rollT <= 0) p.x += UF_CURRENT*ufFlow(p)*s; /* the current carries you */
       if(wet!==!!p._wet){ p._wet = wet; thud(0.12, wet ? 0.1 : 0.05, wet ? 1300 : 2200); for(let k=0;k<6;k++){ const a = -Math.PI*Math.random(), v = 40 + Math.random()*60; ufFx({kind:'chip', x:p.x, y:p.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:'#8fd0dc', t:380}); } } }
     ufSolid(p);
     // the enemies
@@ -11774,7 +11777,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       for(let k=0; k<Math.max(0, f.D.blood + (ufHas('well') ? 1 : 0) - (ufCursed('thirst') ? 1 : 0)); k++) uf.orbs.push({x:f.x+(Math.random()-.5)*14, y:f.y+(Math.random()-.5)*14, t:9000}); }
     uf.foes = F.filter(x=>!x.dead);
     for(const o of uf.orbs){
-      o.t -= dt; if(ufWet(o)){ o.x += UF_CURRENT*1.3*s; if(o.x > UF_W - UF_WALL - 4) o.t = 0; } /* blood floats away downstream */
+      o.t -= dt; if(ufWet(o)){ o.x += UF_CURRENT*1.3*ufFlow(o)*s; if(o.x > UF_W - UF_WALL - 4) o.t = 0; } /* blood floats away downstream */
       const dx = p.x-o.x, dy = p.y-o.y, d = Math.hypot(dx,dy) || 1;
       if(d < 70){ const st = Math.min(d, 230*s); o.x += dx/d*st; o.y += dy/d*st; } // always drawn in: at the cap, the extra is simply lost
       if(d < p.r + 6 && o.key){ o.t = 0; uf.keys++; beep(988, 0.08, 'square', 0.02); beep(1318, 0.12, 'square', 0.02, 0.06); continue; }
@@ -11923,35 +11926,67 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   let ufHudLast = '';
   // the stream: a channel cut across the room. From the player's view the far bank's wall shows, light plays on it, and the water runs left to
   // right, fastest down the middle. It comes out of a culvert in the left wall and leaves under a grate on the right
-  function ufDrawWater(c, w, t){
-    const top = w.y - w.h/2, bot = w.y + w.h/2, x0 = UF_WALL, x1 = UF_W - UF_WALL, D = 8, wy0 = top + D;
-    let g = c.createLinearGradient(0, top, 0, wy0); g.addColorStop(0, '#2c1f18'); g.addColorStop(1, '#0d0907'); c.fillStyle = g; c.fillRect(x0, top, x1-x0, D); // the far bank's face
-    c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(x0, top - 2, x1-x0, 2);
-    g = c.createLinearGradient(0, wy0, 0, bot); g.addColorStop(0, '#0c2329'); g.addColorStop(0.35, '#153f4a'); g.addColorStop(1, '#1e5965'); c.fillStyle = g; c.fillRect(x0, wy0 - 1, x1-x0, bot - wy0 + 1);
-    for(let x = x0; x < x1; x += 5){ const a = 0.5 + 0.5*Math.sin(x*0.08 + t*2.2 + 2*Math.sin(x*0.027 - t*1.1)); // light thrown up onto the far wall
-      c.fillStyle = `rgba(130,205,215,${0.05 + 0.2*a*a})`; c.fillRect(x, top + 1.5 + (1-a)*4, 4, 1.4); }
-    c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(x0, wy0, x1-x0, 3); // the far wall's shadow on the water
-    const rows = 7, deep = bot - wy0 - 4;
+  // Moving water, shared by the story's rivers and the Underfield's stream: a channel seen from a little above and to the south, so the far
+  // bank's wall shows with light playing on it. The water runs along it (dir 1 to the right, -1 to the left), fastest down the middle
+  function waterBody(c, x0, x1, top, bot, t, dir, D){
+    const W = x1 - x0, wy0 = top + D, fx = u => dir > 0 ? x0 + u : x1 - u;
+    let g = c.createLinearGradient(0, top, 0, wy0); g.addColorStop(0, '#2c1f18'); g.addColorStop(1, '#0d0907'); c.fillStyle = g; c.fillRect(x0, top, W, D); // the far bank's face
+    g = c.createLinearGradient(0, wy0, 0, bot); g.addColorStop(0, '#0c2329'); g.addColorStop(0.35, '#153f4a'); g.addColorStop(1, '#1e5965'); c.fillStyle = g; c.fillRect(x0, wy0 - 1, W, bot - wy0 + 1);
+    for(let x = x0; x < x1; x += 5){ const a = 0.5 + 0.5*Math.sin(x*0.08 - dir*t*2.2 + 2*Math.sin(x*0.027 + dir*t*1.1)); // light thrown up onto the far wall
+      c.fillStyle = `rgba(130,205,215,${0.05 + 0.2*a*a})`; c.fillRect(x, top + 1 + (1-a)*(D*0.5), 4, 1.4); }
+    c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(x0, wy0, W, 3); // the far wall's shadow on the water
+    const deep = bot - wy0 - 4, rows = Math.max(4, Math.min(7, Math.round(deep/5)));
     for(let i=0;i<rows;i++){ const v = (i + 0.5)/rows, y = wy0 + 2 + v*deep, prof = 1 - Math.pow(2*v - 1, 2), sp = 16 + 60*prof, gap = 34 + i*3, off = (t*sp + i*17) % gap, len = 8 + 10*prof;
       c.strokeStyle = `rgba(165,222,230,${0.08 + 0.2*prof})`; c.lineWidth = 1; c.beginPath();
-      for(let x = x0 - gap + off; x < x1; x += gap){ const yy = y + Math.sin(x*0.06 + t*3.1 + i)*1.3; c.moveTo(x, yy); c.quadraticCurveTo(x + len/2, yy - 1.6, x + len, yy); }
+      for(let u = -gap + off; u < W + gap; u += gap){ const x = fx(u), yy = y + Math.sin(x*0.06 - dir*t*3.1 + i)*1.3; c.moveTo(x, yy); c.quadraticCurveTo(x + dir*len/2, yy - 1.6, x + dir*len, yy); }
       c.stroke(); }
-    for(let k=0;k<18;k++){ const v = (k*0.618) % 1, y = wy0 + 3 + v*(deep - 2), sp = 24 + 60*(1 - Math.pow(2*v - 1, 2)), x = x0 + ((k*97 + t*sp) % (x1 - x0)), a = 0.5 + 0.5*Math.sin(t*6 + k*2.3);
+    for(let k=0;k<Math.round(W/20);k++){ const v = (k*0.618) % 1, y = wy0 + 3 + v*(deep - 2), sp = 24 + 60*(1 - Math.pow(2*v - 1, 2)), x = fx((k*97 + t*sp) % W), a = 0.5 + 0.5*Math.sin(t*6 + k*2.3);
       c.fillStyle = `rgba(235,252,252,${0.12 + 0.4*a})`; c.fillRect(x, y, 2, 1); } // glints riding the current
-    for(let x = x0; x < x1; x += 7){ const a = 0.5 + 0.5*Math.sin(x*0.15 - t*4); c.fillStyle = `rgba(220,240,240,${0.1 + 0.25*a})`; c.fillRect(x, bot - 2.5 - a*1.2, 4, 1); } // foam along the near bank
-    c.fillStyle = '#3d2c22'; c.fillRect(x0, bot - 0.5, x1-x0, 2); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x0, bot + 1.5, x1-x0, 3); // the near lip, and its shadow on the floor
-    // the culvert on the left: water pours out of the wall and churns where it lands
-    c.fillStyle = '#050303'; c.beginPath(); c.ellipse(UF_WALL, wy0 + 6, 6, 9, 0, -Math.PI/2, Math.PI/2); c.fill();
-    for(let k=0;k<4;k++){ const yy = wy0 + 1 + k*3.5, ph = (t*3 + k*0.3) % 1; c.strokeStyle = `rgba(190,235,240,${0.35 + 0.3*Math.sin(t*9 + k)})`; c.lineWidth = 1.2;
-      c.beginPath(); c.moveTo(UF_WALL, yy); c.quadraticCurveTo(UF_WALL + 8, yy + 1, UF_WALL + 12 + ph*4, yy + 6 + k); c.stroke(); }
-    for(let k=0;k<3;k++){ const ph = (t*1.1 + k/3) % 1, cx = UF_WALL + 16, cy = wy0 + 13; c.beginPath(); c.ellipse(cx + ph*10, cy, 3 + ph*12, (3 + ph*12)*0.4, 0, 0, Math.PI*2); c.strokeStyle = `rgba(220,245,248,${0.5*(1 - ph)})`; c.lineWidth = 1; c.stroke(); }
-    // the grate on the right
-    c.fillStyle = '#050303'; c.fillRect(x1 - 3, wy0, 3, bot - wy0); c.strokeStyle = '#4a3a30'; c.lineWidth = 1.2; c.beginPath(); for(let y = wy0 + 3; y < bot; y += 5){ c.moveTo(x1 - 4, y); c.lineTo(x1, y); } c.stroke();
-    // the footbridge: planks over the water, with its shadow downstream
-    const bl = w.bx - w.bw/2; c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(bl + w.bw, wy0, 6, bot - wy0);
+    for(let x = x0; x < x1; x += 7){ const a = 0.5 + 0.5*Math.sin(x*0.15 + dir*t*4); c.fillStyle = `rgba(220,240,240,${0.1 + 0.25*a})`; c.fillRect(x, bot - 2.5 - a*1.2, 4, 1); } // foam along the near bank
+    c.fillStyle = '#3d2c22'; c.fillRect(x0, bot - 0.5, W, 2); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x0, bot + 1.5, W, 3); // the near lip, and its shadow on the floor
+  }
+  // the Underfield's stream: it falls into the room down a cliff in the north wall, churns in a plunge pool, and runs away east under a grate
+  function ufDrawWater(c, w, t){
+    const top = w.y - w.h/2, bot = w.y + w.h/2, x1 = UF_W - UF_WALL, D = 8, wy0 = top + D;
+    waterBody(c, w.x0, x1, top, bot, t, 1, D);
+    c.fillStyle = '#050303'; c.fillRect(x1 - 3, wy0, 3, bot - wy0); c.strokeStyle = '#4a3a30'; c.lineWidth = 1.2; c.beginPath(); for(let y = wy0 + 3; y < bot; y += 5){ c.moveTo(x1 - 4, y); c.lineTo(x1, y); } c.stroke(); // the grate
+    const bl = w.bx - w.bw/2; c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(bl + w.bw, wy0, 6, bot - wy0); // the footbridge, its shadow downstream
     c.fillStyle = '#4a3420'; c.fillRect(bl, top - 3, w.bw, w.h + 6); c.strokeStyle = '#2a1c12'; c.lineWidth = 1; c.beginPath();
     for(let y = top + 3; y < bot + 3; y += 6){ c.moveTo(bl, y); c.lineTo(bl + w.bw, y); } c.stroke();
     c.strokeStyle = '#7a5a36'; c.strokeRect(bl + .5, top - 2.5, w.bw - 1, w.h + 5);
+    // the waterfall: a cliff from the wall down to the stream, with the water sheeting down its face
+    const l = w.x0, fw = w.fw, ft = UF_WALL, fb = top, H = fb - ft, sl = l + 7, sw = fw - 14;
+    c.fillStyle = 'rgba(0,0,0,.45)'; c.fillRect(l + fw, ft, 5, H + 2); // the cliff's shadow on the floor
+    let g = c.createLinearGradient(l, 0, l + fw, 0); g.addColorStop(0, '#2a1e18'); g.addColorStop(0.5, '#1a1210'); g.addColorStop(1, '#120c0a'); c.fillStyle = g; c.fillRect(l, ft, fw, H);
+    c.strokeStyle = 'rgba(0,0,0,.45)'; c.lineWidth = 1; c.beginPath(); for(let y = ft + 8; y < fb - 4; y += 11){ c.moveTo(l + 1, y); c.lineTo(l + 5, y + 3); c.moveTo(l + fw - 1, y + 5); c.lineTo(l + fw - 5, y + 8); } c.stroke();
+    c.strokeStyle = '#3a2a20'; c.strokeRect(l + .5, ft + .5, fw - 1, H);
+    g = c.createLinearGradient(0, ft, 0, fb); g.addColorStop(0, '#245b66'); g.addColorStop(0.6, '#4f9aa6'); g.addColorStop(1, '#a9dde4'); c.fillStyle = g; c.fillRect(sl, ft, sw, H + D);
+    c.fillStyle = 'rgba(225,246,248,.4)'; c.fillRect(sl, ft, 1.5, H + D); c.fillRect(sl + sw - 1.5, ft, 1.5, H + D);
+    for(let k=0;k<18;k++){ const x = sl + 2 + ((k*7.3) % (sw - 4)), sp = 130 + (k*31) % 90, len = 9 + (k*13) % 14, y = ft + ((t*sp + k*41) % (H + D + len)) - len;
+      c.strokeStyle = `rgba(238,252,252,${0.3 + 0.35*((k*0.37) % 1)})`; c.lineWidth = 1; c.beginPath(); c.moveTo(x, Math.max(ft, y)); c.lineTo(x + Math.sin(t*3 + k)*0.6, Math.min(fb + D, y + len)); c.stroke(); }
+    c.fillStyle = 'rgba(232,249,250,.8)'; for(let i=0;i<sw;i+=3) c.fillRect(sl + i, ft + 1 + Math.sin(t*8 + i)*1, 3, 2); // where it spills over
+    const px = l + fw/2, py = wy0 + 5; // the plunge pool
+    for(let k=0;k<4;k++){ const ph = (t*1.4 + k/4) % 1, rx = 7 + ph*22; c.beginPath(); c.ellipse(px + ph*10, py + 2, rx, rx*0.35, 0, 0, Math.PI*2); c.strokeStyle = `rgba(225,246,248,${0.6*(1-ph)})`; c.lineWidth = 1.2; c.stroke(); }
+    c.fillStyle = 'rgba(238,251,251,.55)'; for(let k=0;k<12;k++){ const a = (k*2.4 + t*2) % (Math.PI*2), r = 3 + ((t*20 + k*7) % 11); c.fillRect(px + Math.cos(a)*r*1.5 - 1, py + Math.sin(a)*r*0.45 - 1, 2, 2); }
+    for(let k=0;k<8;k++){ const ph = (t*0.5 + k/8) % 1, mx = px + Math.sin(k*1.7 + t)*11, my = py - ph*30; c.beginPath(); c.arc(mx, my, 4 + ph*8, 0, Math.PI*2); c.fillStyle = `rgba(205,232,238,${0.13*(1-ph)})`; c.fill(); } // mist
+  }
+  // the story's rivers: the same water on a canvas inside each river band. The rival's river runs west, yours runs east
+  const RIVER_H = 0.07*FH;
+  let riverCvs = null, riverFrame = 0;
+  function drawRivers(t){
+    if(!riverCvs) riverCvs = [...document.querySelectorAll('.zone.rriver, .zone.priver')].map(z=>{ const cv = document.createElement('canvas'); cv.className = 'river-cv'; z.textContent = ''; z.appendChild(cv); return cv; });
+    if(lowFx && (riverFrame++ % 3)) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), s = lastScale || 1;
+    riverCvs.forEach((cv, bi)=>{
+      const W = Math.round(FW*s*dpr), H = Math.round(RIVER_H*s*dpr); if(cv.width!==W || cv.height!==H){ cv.width = W; cv.height = H; }
+      const c = cv.getContext('2d'), dir = bi===0 ? -1 : 1, owner = BAND_OWNER[bi];
+      c.setTransform(W/FW, 0, 0, H/RIVER_H, 0, 0); c.clearRect(0, 0, FW, RIVER_H);
+      waterBody(c, 0, FW, 0, RIVER_H + 1, t, dir, 6);
+      BRIDGE_X.forEach((bx, i)=>{ if(state.bridgeMs[owner][i] > 0) return; const x = bx/100*FW, hw = 0.08*FW, d = dir > 0 ? x + hw : x - hw; // an open bridge: its shadow downstream, the water piling up against it upstream
+        c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(dir > 0 ? d : d - 6, 6, 6, RIVER_H - 6);
+        const u = dir > 0 ? x - hw : x + hw; c.fillStyle = 'rgba(225,245,248,.4)';
+        for(let y = 8; y < RIVER_H - 3; y += 4){ const a = 0.5 + 0.5*Math.sin(t*7 + y); c.fillRect(u - dir*(2 + a*3) - 1, y, 2, 1.4); } });
+    });
   }
   // cobwebs: in some corners of the walls, and now and then across the floor, where they slow anything that walks through until they are cut
   function ufDrawWebs(c, R, t){
