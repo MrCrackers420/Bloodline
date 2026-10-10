@@ -11130,11 +11130,22 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     ufEnterRoom(null);
   }
   function ufFx(o){ o.t0 = o.t; if(uf.fx.length < 140) uf.fx.push(o); }
+  // ---- the stream in each floor's first room, and cobwebs ----
+  const UF_CURRENT = 34, UF_WADE = 0.6, UF_WEB_SLOW = 0.45;
+  function ufWet(o){ const w = uf && uf.here && uf.here.water; return !!w && Math.abs(o.y - w.y) < w.h/2 && Math.abs(o.x - w.bx) > w.bw/2; }
+  function ufWebAt(o){ const R = uf && uf.here; return R && R.floorWebs ? R.floorWebs.find(w=>!w.cut && Math.hypot(o.x-w.x, o.y-w.y) < w.r) : null; }
+  const ufSlow = o => (ufWet(o) ? UF_WADE : 1) * (ufWebAt(o) ? UF_WEB_SLOW : 1);
+  function ufCutWeb(w){ if(w.cut) return; w.cut = true; thud(0.05, 0.04, 3200); beep(1400, 0.04, 'triangle', 0.01);
+    for(let k=0;k<5;k++){ const a = Math.random()*Math.PI*2, v = 20 + Math.random()*40; ufFx({kind:'chip', x:w.x, y:w.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:'#cfc8b8', t:380}); } }
+  function ufCutWebsNear(x, y, r, dir){ const R = uf.here; if(!R.floorWebs) return;
+    for(const w of R.floorWebs){ if(w.cut) continue; const dx = w.x-x, dy = w.y-y, d = Math.hypot(dx,dy) || 0.01; if(d > r + w.r*0.6) continue;
+      if(dir && d > w.r && (dx*dir.x + dy*dir.y)/d < 0) continue; ufCutWeb(w); } }
   function ufSpot(minFromPlayer, pad){ // a free spot on the floor: clear of pillars, the chest and what stands in the room, and far enough from you
     const R = uf.here;
     for(let k=0;k<60;k++){ const x = UF_WALL+40 + Math.random()*(UF_W-2*UF_WALL-80), y = UF_WALL+50 + Math.random()*(UF_H-2*UF_WALL-100);
       if(UF_W > UF_H && y < 120 && (x < 150 || x > UF_W - 150)) continue; /* not under the HUD in the corners of a wide room */
       if(uf.pillars.some(c=>Math.hypot(x-c.x, y-c.y) < c.r + pad)) continue;
+      if(R && R.water && Math.abs(y - R.water.y) < R.water.h/2 + pad) continue;
       if(uf.chest && Math.hypot(x-uf.chest.x, y-uf.chest.y) < uf.chest.r + pad) continue;
       if(uf.altar && Math.hypot(x-uf.altar.x, y-uf.altar.y) < 18 + pad) continue;
       if(R && R.npc && Math.hypot(x-R.npc.x, y-R.npc.y) < 30 + pad) continue;
@@ -11231,6 +11242,11 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(from && ufCursed('wound') && p.hp > 1){ p.hp -= 1; ufFx({kind:'num', x:p.x, y:p.y-16, text:'-1', col:'#c73a5c', t:650}); }
     if(R.type==='shop') R.npc = {kind:'shop', x:UF_W/2, y:UF_WALL + 70, armed:true};
     if(R.type==='shrine') R.npc = {kind:'shrine', x:UF_W/2, y:UF_H/2, armed:true};
+    if(R.type==='start'){ const h = 42, y = Math.round(UF_H*0.28); R.water = {y, h, bx:UF_W/2, bw:34};
+      R.pillars = uf.pillars = R.pillars.filter(q=>Math.abs(q.y - y) > h/2 + q.r + 6); }
+    R.cornerWebs = [0,1,2,3].filter(()=>Math.random() < (R.type==='start' ? 0.6 : 0.35)).map(i=>({i, L:22 + Math.random()*18}));
+    if(R.type==='fight' && Math.random() < 0.4 + 0.1*uf.floor){ R.floorWebs = []; const n = 1 + Math.floor(Math.random()*(uf.floor >= 2 ? 3 : 2));
+      for(let k=0;k<n;k++){ const at = ufSpot(80, 30); R.floorWebs.push({x:at.x, y:at.y, r:20 + Math.random()*8, rot:Math.random()*Math.PI, cut:false}); } }
     if(!bare){ R.props = uf.props = []; const np = 3 + Math.floor(Math.random()*4); // a few urns and crates to smash
       for(let k=0; k<np; k++){ const at = ufSpot(60, 20), crate = Math.random() < 0.4; uf.props.push({x:at.x, y:at.y, r:crate ? 8 : 7, crate, broken:false}); } }
     if(R.trap){ R.spikes = uf.spikes = []; const n = 3 + Math.floor(Math.random()*3); for(let k=0;k<n;k++){ const at = ufSpot(70, 24); uf.spikes.push({x:at.x, y:at.y}); } }
@@ -11365,6 +11381,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(d > f.r + p.r && Math.acos(Math.max(-1, Math.min(1, (dx*dir.x + dy*dir.y)/d))) > arc/2) continue;
       ufHurtF(f, dmg, dx/d*knock, dy/d*knock); hits++; }
     for(const sh of uf.shots) if(!sh.mine){ const dx = sh.x-p.x, dy = sh.y-p.y; if(Math.hypot(dx,dy) < reach + 6 && dx*dir.x + dy*dir.y > 0){ sh.dead = true; ufFx({kind:'num', x:sh.x, y:sh.y, text:'x', col:'#e0b54a', t:300}); } }
+    ufCutWebsNear(p.x, p.y, reach, dir);
     for(const q of uf.props){ if(q.broken) continue; const dx = q.x-p.x, dy = q.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d <= reach + q.r && (d <= q.r + p.r + 4 || Math.acos(Math.max(-1, Math.min(1, (dx*dir.x + dy*dir.y)/d))) <= arc/2)) ufBreak(q); }
     const ch = uf.chest; if(ch && !ch.open){ const dx = ch.x-p.x, dy = ch.y-p.y, d = Math.hypot(dx,dy) || 0.01; if(d <= reach + ch.r && (d <= ch.r + p.r + 4 || dx*dir.x + dy*dir.y > 0)) ufOpenChest(); }
     if(hits) uf.blood = Math.min(uf.cap, uf.blood + hits*UF.hitBlood);
@@ -11419,7 +11436,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     Leach:  {emoji:'☋', col:'#c73a5c', rarity:'Common', uses:2, hp:2, spd:80, dps:2/3, regen:0.25, text:'Latches on and drains its host.'},
     Flea:   {emoji:'ʎ', col:'#d98a5a', rarity:'Common', uses:3, hp:1, spd:70, hop:true, bite:1, text:'Leaps from enemy to enemy, biting each one.'},
     Bleeder:{emoji:'ϕ', col:'#b8303c', rarity:'Common', uses:1, hp:10, spd:0, lure:true, scent:130, dmg:1, iv:1200, text:'Stays where it lands. Enemies near it go for it instead of you.'},
-    Tick:   {emoji:'Ѫ', col:'#9a7ae0', rarity:'Rare', uses:1, hp:3, spd:75, dps:0.5, store:4, gain:0.8, text:'Feeds until it is full, then crawls back and heals you.'},
+    Tick:   {emoji:'Ѫ', col:'#9a7ae0', rarity:'Rare', uses:1, hp:3, spd:75, dps:0.5, store:4, gain:0.8, text:'Feeds until it is full, then crawls back and gives it all to you.'},
     Lamprey:{lock:'lamprey', emoji:'∂', col:'#5a9ad0', rarity:'Rare', uses:1, hp:3, spd:70, dps:0.5, regen:0.25, numb:true, text:'Latches on and numbs its host. Every hit on it does 1 more.'},
     Botfly: {lock:'botfly', emoji:'ѵ', col:'#e0b54a', rarity:'Epic', uses:1, hp:2, spd:95, flies:true, dps:0.5, brood:2, text:'Flies over anything to its host. When the host dies, two Leaches crawl out.'},
   };
@@ -11552,7 +11569,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         if(a.atkT <= 0){ const f = uf.foes.find(f=>f.spawnT <= 0 && Math.hypot(f.x-a.x, f.y-a.y) < f.r + a.r + 6); if(f){ ufHurtF(f, P.dmg, 0, 0); a.atkT = P.iv; } }
         continue; }
       if(a.homing){ // a full Tick, crawling back to you with what it took
-        if(step(a, p.x, p.y, P.spd*1.4) <= p.r + a.r + 2){ ufHeal(Math.max(1, Math.floor(a.store))); a.store = 0; a.homing = false; }
+        if(step(a, p.x, p.y, P.spd*1.4) <= p.r + a.r + 2){ ufHeal(Math.max(1, Math.floor(a.store))); a.store = 0; a.hp = 0; ufFx({kind:'ring', x:a.x, y:a.y, r:14, t:300, col:'143,224,138'}); } /* spent: it dies giving it */
         continue; }
       if(a.host){ const h = a.host; a.x = h.x + h.r*0.7; a.y = h.y - h.r*0.7;
         if(a.bite > 0){ a.bite -= dt; continue; }
@@ -11599,6 +11616,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     for(const f of uf.foes){ const dx = f.x-p.x, dy = f.y-p.y, d = Math.hypot(dx,dy) || 1; if(d <= UF.relicR + f.r) ufHurtF(f, UF.relicDmg, dx/d*280, dy/d*280); }
     for(const sh of uf.shots) if(!sh.mine && Math.hypot(sh.x-p.x, sh.y-p.y) <= UF.relicR) sh.dead = true;
     for(const q of uf.props) if(!q.broken && Math.hypot(q.x-p.x, q.y-p.y) <= UF.relicR + q.r) ufBreak(q);
+    ufCutWebsNear(p.x, p.y, UF.relicR);
     ufFx({kind:'ring', x:p.x, y:p.y, r:UF.relicR, t:380, col:'199,58,92'}); sfxSpell(); haptic(20); ufSecretCheck(UF.relicR + 24);
   }
 
@@ -11668,7 +11686,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const ml = Math.hypot(I.mx, I.my);
     if(ml > 0.2 && !p.cursing && p.swingT <= 0 && p.heavyT <= 0 && p.rollT <= 0){ p.fx = I.mx/ml; p.fy = I.my/ml; }
     if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*UF.rollSpd*s; p.y += p.dy*UF.rollSpd*s; ufFx({kind:'trail', x:p.x, y:p.y, t:180}); }
-    else { const m = p.heavyT > 0 ? 0.15 : p.swingT > 0 ? UF.swingMove : p.cursing ? UF.curseMove : 1; p.x += I.mx*UF.spd*m*s; p.y += I.my*UF.spd*m*s; }
+    else { const m = (p.heavyT > 0 ? 0.15 : p.swingT > 0 ? UF.swingMove : p.cursing ? UF.curseMove : 1) * ufSlow(p); p.x += I.mx*UF.spd*m*s; p.y += I.my*UF.spd*m*s; }
+    { const wet = ufWet(p); if(wet && p.rollT <= 0) p.x += UF_CURRENT*s; /* the current carries you */
+      if(wet!==!!p._wet){ p._wet = wet; thud(0.12, wet ? 0.1 : 0.05, wet ? 1300 : 2200); for(let k=0;k<6;k++){ const a = -Math.PI*Math.random(), v = 40 + Math.random()*60; ufFx({kind:'chip', x:p.x, y:p.y, vx:Math.cos(a)*v, vy:Math.sin(a)*v, col:'#8fd0dc', t:380}); } } }
     ufSolid(p);
     // the enemies
     const decay = Math.pow(0.0005, s);
@@ -11683,10 +11703,11 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(f.atkT > 0) f.atkT -= dt;
       if(D.kind==='melee'){
         if(d <= D.reach + f.r + tg.r + (D.lunge||0)*0.7){ if(f.atkT <= 0){ f.wind = D.wind*ufWindMul(); f.atkT = D.iv; } }
-        else { f.x += dx/d*D.spd*s; f.y += dy/d*D.spd*s; }
+        else { const sl = ufSlow(f); f.x += dx/d*D.spd*sl*s; f.y += dy/d*D.spd*sl*s; }
       } else {
         const want = d > D.reach ? 1 : d < 110 ? -1 : 0;
-        if(want){ f.x += dx/d*D.spd*s*want; f.y += dy/d*D.spd*s*want; }
+        if(want){ const sl = ufSlow(f); f.x += dx/d*D.spd*sl*s*want; f.y += dy/d*D.spd*sl*s*want; }
+        if(ufWet(f)) f.x += UF_CURRENT*0.7*s;
         else { f.x += -dy/d*D.spd*0.45*s*f.side; f.y += dx/d*D.spd*0.45*s*f.side; if(Math.random() < s*0.4) f.side = -f.side; }
         if(d <= D.reach + 20 && f.atkT <= 0){ f.wind = D.wind*ufWindMul(); f.atkT = D.iv; }
       }
@@ -11708,6 +11729,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const sp = Math.hypot(sh.vx, sh.vy); sh.x += sh.vx*s; sh.y += sh.vy*s; sh.left -= sp*s;
       if(sh.mine){ const q = uf.props.find(q=>!q.broken && Math.hypot(q.x-sh.x, q.y-sh.y) < q.r + 3); if(q){ ufBreak(q); if(!sh.pierce){ sh.dead = true; continue; } } }
       if(sh.left <= 0 || ufBlocked(sh.x, sh.y)){ sh.dead = true; continue; }
+      if(sh.mine){ const w = ufWebAt(sh); if(w) ufCutWeb(w); }
       if(!sh.mine){ const a = uf.allies.find(a=>a.P.lure && Math.hypot(a.x-sh.x, a.y-sh.y) < a.r + 3); if(a){ ufHurtA(a, sh.dmg); sh.dead = true; continue; } }
       if(sh.mine && uf.chest && !uf.chest.open && Math.hypot(sh.x-uf.chest.x, sh.y-uf.chest.y) < uf.chest.r + 3){ ufOpenChest(); sh.dead = true; continue; }
       if(sh.mine){ for(const f of F){ if(f.hp > 0 && !sh.hit.has(f) && Math.hypot(f.x-sh.x, f.y-sh.y) < f.r+4){ sh.hit.add(f); ufHurtF(f, sh.dmg, sh.vx/sp*90, sh.vy/sp*90); if(!sh.pierce){ sh.dead = true; break; } } } }
@@ -11725,7 +11747,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       for(let k=0; k<Math.max(0, f.D.blood + (ufHas('well') ? 1 : 0) - (ufCursed('thirst') ? 1 : 0)); k++) uf.orbs.push({x:f.x+(Math.random()-.5)*14, y:f.y+(Math.random()-.5)*14, t:9000}); }
     uf.foes = F.filter(x=>!x.dead);
     for(const o of uf.orbs){
-      o.t -= dt; const dx = p.x-o.x, dy = p.y-o.y, d = Math.hypot(dx,dy) || 1;
+      o.t -= dt; if(ufWet(o)){ o.x += UF_CURRENT*1.3*s; if(o.x > UF_W - UF_WALL - 4) o.t = 0; } /* blood floats away downstream */
+      const dx = p.x-o.x, dy = p.y-o.y, d = Math.hypot(dx,dy) || 1;
       if(d < 70){ const st = Math.min(d, 230*s); o.x += dx/d*st; o.y += dy/d*st; } // always drawn in: at the cap, the extra is simply lost
       if(d < p.r + 6 && o.key){ o.t = 0; uf.keys++; beep(988, 0.08, 'square', 0.02); beep(1318, 0.12, 'square', 0.02, 0.06); continue; }
       if(d < p.r + 6 && o.heal){ o.t = 0; ufHeal(o.heal); continue; }
@@ -11782,6 +11805,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(link==='locked'){ c.strokeStyle = '#e0b54a'; c.lineWidth = 1.5; c.strokeRect(x+.75, y+.75, d.w-1.5, d.h-1.5); txt('⚷', x+d.w/2, y+d.h/2, 11, '#e0b54a'); continue; }
       if(uf.cleared){ c.strokeStyle = boss ? 'rgba(214,48,79,.9)' : 'rgba(224,181,74,.75)'; c.lineWidth = 1.5; c.strokeRect(x+.75, y+.75, d.w-1.5, d.h-1.5); }
       else { c.strokeStyle = '#5a3d22'; c.lineWidth = 2; c.beginPath(); for(let i=1;i<4;i++){ if(d.w > d.h){ c.moveTo(x + d.w*i/4, y); c.lineTo(x + d.w*i/4, y + d.h); } else { c.moveTo(x, y + d.h*i/4); c.lineTo(x + d.w, y + d.h*i/4); } } c.stroke(); } }
+    { const tt = performance.now()/1000; if(uf.here.water) ufDrawWater(c, uf.here.water, tt); ufDrawWebs(c, uf.here, tt); }
     for(const q of uf.pillars){ c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI*2); c.fillStyle = '#2b201c'; c.fill(); c.strokeStyle = '#3a2c27'; c.stroke(); txt('#', q.x, q.y, q.r, 'rgba(0,0,0,.35)'); }
     { const st = uf.spikeState||0; for(const q of uf.spikes){ c.fillStyle = '#1c1412'; c.fillRect(q.x-13, q.y-13, 26, 26); c.strokeStyle = st===2 ? '#d9c9a3' : st===1 ? '#8a6a5a' : '#3a2c27'; c.lineWidth = 1; c.strokeRect(q.x-12.5, q.y-12.5, 25, 25);
       for(let i=0;i<3;i++) for(let j=0;j<3;j++){ const sx = q.x-8+i*8, sy = q.y-8+j*8; if(st===2) txt('▲', sx, sy, 7, '#d9c9a3'); else { c.fillStyle = st===1 ? '#8a6a5a' : '#2b201c'; c.fillRect(sx-1, sy-1, 2, 2); } } } }
@@ -11845,6 +11869,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
       c.beginPath(); c.arc(p.x, p.y, p.r, 0, Math.PI*2); c.fillStyle = '#c73a5c'; c.fill(); txt('@', p.x, p.y+0.5, 12, '#100b0a'); c.globalAlpha = 1;
     }
+    if(uf.here.water){ const tt = performance.now()/1000;
+      for(const o of [p].concat(uf.foes, uf.allies)){ if(!ufWet(o) || (o===p && uf.over)) continue;
+        c.save(); c.beginPath(); c.rect(o.x - o.r - 3, o.y + o.r*0.15, o.r*2 + 6, o.r + 4); c.clip();
+        c.beginPath(); c.arc(o.x, o.y, o.r + 0.5, 0, Math.PI*2); c.fillStyle = 'rgba(22,68,80,.78)'; c.fill(); c.restore();
+        for(let k=0;k<2;k++){ const ph = (tt*1.3 + k*0.5 + o.x*0.01) % 1, rr = o.r + 2 + ph*9;
+          c.beginPath(); c.ellipse(o.x + ph*6, o.y + o.r*0.2, rr, rr*0.32, 0, 0, Math.PI*2); c.strokeStyle = `rgba(190,235,240,${0.45*(1-ph)})`; c.lineWidth = 1; c.stroke(); }
+        c.strokeStyle = 'rgba(210,240,245,.35)'; c.beginPath(); c.moveTo(o.x + o.r, o.y + o.r*0.2); c.lineTo(o.x + o.r + 10, o.y + o.r*0.2 - 2); c.moveTo(o.x + o.r, o.y + o.r*0.3); c.lineTo(o.x + o.r + 9, o.y + o.r*0.3 + 2); c.stroke(); } }
     if(uf.here.dark && !uf.over){ const g = c.createRadialGradient(p.x, p.y, 28, p.x, p.y, 125); g.addColorStop(0, 'rgba(6,4,3,0)'); g.addColorStop(1, 'rgba(6,4,3,.95)'); c.fillStyle = g; c.fillRect(0, 0, UF_W, UF_H);
       for(const f of uf.foes) if(f.wind > 0){ c.beginPath(); c.arc(f.x, f.y, f.r + 4, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.8)'; c.lineWidth = 1.5; c.stroke(); } } // a wind-up shows even in the dark
     { const b = uf.foes.find(f=>f.boss); if(b){ txt(b.D.name, UF_W/2, UF_WALL + 12, 10, '#ee5a75'); txt(String(Math.max(0, Math.ceil(b.hp))), UF_W/2, UF_WALL + 26, 12, '#d9c9a3');
@@ -11863,6 +11894,57 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(uf.banner){ uf.banner.t -= dt; const k = Math.min(1, uf.banner.t/400); c.globalAlpha = Math.max(0, k); txt(uf.banner.text, UF_W/2, UF_H*0.42, 22, '#d9c9a3'); c.globalAlpha = 1; if(uf.banner.t <= 0) uf.banner = null; }
   }
   let ufHudLast = '';
+  // the stream: a channel cut across the room. From the player's view the far bank's wall shows, light plays on it, and the water runs left to
+  // right, fastest down the middle. It comes out of a culvert in the left wall and leaves under a grate on the right
+  function ufDrawWater(c, w, t){
+    const top = w.y - w.h/2, bot = w.y + w.h/2, x0 = UF_WALL, x1 = UF_W - UF_WALL, D = 8, wy0 = top + D;
+    let g = c.createLinearGradient(0, top, 0, wy0); g.addColorStop(0, '#2c1f18'); g.addColorStop(1, '#0d0907'); c.fillStyle = g; c.fillRect(x0, top, x1-x0, D); // the far bank's face
+    c.fillStyle = 'rgba(0,0,0,.4)'; c.fillRect(x0, top - 2, x1-x0, 2);
+    g = c.createLinearGradient(0, wy0, 0, bot); g.addColorStop(0, '#0c2329'); g.addColorStop(0.35, '#153f4a'); g.addColorStop(1, '#1e5965'); c.fillStyle = g; c.fillRect(x0, wy0 - 1, x1-x0, bot - wy0 + 1);
+    for(let x = x0; x < x1; x += 5){ const a = 0.5 + 0.5*Math.sin(x*0.08 + t*2.2 + 2*Math.sin(x*0.027 - t*1.1)); // light thrown up onto the far wall
+      c.fillStyle = `rgba(130,205,215,${0.05 + 0.2*a*a})`; c.fillRect(x, top + 1.5 + (1-a)*4, 4, 1.4); }
+    c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(x0, wy0, x1-x0, 3); // the far wall's shadow on the water
+    const rows = 7, deep = bot - wy0 - 4;
+    for(let i=0;i<rows;i++){ const v = (i + 0.5)/rows, y = wy0 + 2 + v*deep, prof = 1 - Math.pow(2*v - 1, 2), sp = 16 + 60*prof, gap = 34 + i*3, off = (t*sp + i*17) % gap, len = 8 + 10*prof;
+      c.strokeStyle = `rgba(165,222,230,${0.08 + 0.2*prof})`; c.lineWidth = 1; c.beginPath();
+      for(let x = x0 - gap + off; x < x1; x += gap){ const yy = y + Math.sin(x*0.06 + t*3.1 + i)*1.3; c.moveTo(x, yy); c.quadraticCurveTo(x + len/2, yy - 1.6, x + len, yy); }
+      c.stroke(); }
+    for(let k=0;k<18;k++){ const v = (k*0.618) % 1, y = wy0 + 3 + v*(deep - 2), sp = 24 + 60*(1 - Math.pow(2*v - 1, 2)), x = x0 + ((k*97 + t*sp) % (x1 - x0)), a = 0.5 + 0.5*Math.sin(t*6 + k*2.3);
+      c.fillStyle = `rgba(235,252,252,${0.12 + 0.4*a})`; c.fillRect(x, y, 2, 1); } // glints riding the current
+    for(let x = x0; x < x1; x += 7){ const a = 0.5 + 0.5*Math.sin(x*0.15 - t*4); c.fillStyle = `rgba(220,240,240,${0.1 + 0.25*a})`; c.fillRect(x, bot - 2.5 - a*1.2, 4, 1); } // foam along the near bank
+    c.fillStyle = '#3d2c22'; c.fillRect(x0, bot - 0.5, x1-x0, 2); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x0, bot + 1.5, x1-x0, 3); // the near lip, and its shadow on the floor
+    // the culvert on the left: water pours out of the wall and churns where it lands
+    c.fillStyle = '#050303'; c.beginPath(); c.ellipse(UF_WALL, wy0 + 6, 6, 9, 0, -Math.PI/2, Math.PI/2); c.fill();
+    for(let k=0;k<4;k++){ const yy = wy0 + 1 + k*3.5, ph = (t*3 + k*0.3) % 1; c.strokeStyle = `rgba(190,235,240,${0.35 + 0.3*Math.sin(t*9 + k)})`; c.lineWidth = 1.2;
+      c.beginPath(); c.moveTo(UF_WALL, yy); c.quadraticCurveTo(UF_WALL + 8, yy + 1, UF_WALL + 12 + ph*4, yy + 6 + k); c.stroke(); }
+    for(let k=0;k<3;k++){ const ph = (t*1.1 + k/3) % 1, cx = UF_WALL + 16, cy = wy0 + 13; c.beginPath(); c.ellipse(cx + ph*10, cy, 3 + ph*12, (3 + ph*12)*0.4, 0, 0, Math.PI*2); c.strokeStyle = `rgba(220,245,248,${0.5*(1 - ph)})`; c.lineWidth = 1; c.stroke(); }
+    // the grate on the right
+    c.fillStyle = '#050303'; c.fillRect(x1 - 3, wy0, 3, bot - wy0); c.strokeStyle = '#4a3a30'; c.lineWidth = 1.2; c.beginPath(); for(let y = wy0 + 3; y < bot; y += 5){ c.moveTo(x1 - 4, y); c.lineTo(x1, y); } c.stroke();
+    // the footbridge: planks over the water, with its shadow downstream
+    const bl = w.bx - w.bw/2; c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(bl + w.bw, wy0, 6, bot - wy0);
+    c.fillStyle = '#4a3420'; c.fillRect(bl, top - 3, w.bw, w.h + 6); c.strokeStyle = '#2a1c12'; c.lineWidth = 1; c.beginPath();
+    for(let y = top + 3; y < bot + 3; y += 6){ c.moveTo(bl, y); c.lineTo(bl + w.bw, y); } c.stroke();
+    c.strokeStyle = '#7a5a36'; c.strokeRect(bl + .5, top - 2.5, w.bw - 1, w.h + 5);
+  }
+  // cobwebs: in some corners of the walls, and now and then across the floor, where they slow anything that walks through until they are cut
+  function ufDrawWebs(c, R, t){
+    const sag = (cx, cy, ax, ay, bx, by, k) => { const mx = (ax + bx)/2, my = (ay + by)/2; c.moveTo(ax, ay); c.quadraticCurveTo(mx + (cx - mx)*k, my + (cy - my)*k, bx, by); };
+    c.lineWidth = 0.7;
+    for(const cw of (R.cornerWebs||[])){ const sx = cw.i%2 ? -1 : 1, sy = cw.i < 2 ? 1 : -1, cx = cw.i%2 ? UF_W - UF_WALL : UF_WALL, cy = cw.i < 2 ? UF_WALL : UF_H - UF_WALL, L = cw.L, n = 5;
+      c.strokeStyle = 'rgba(225,220,205,.3)'; c.beginPath();
+      const pt = (a, r) => [cx + sx*Math.cos(a)*r, cy + sy*Math.sin(a)*r];
+      for(let i=0;i<n;i++){ const [x, y] = pt(i/(n-1)*Math.PI/2, L); c.moveTo(cx, cy); c.lineTo(x, y); }
+      for(let r = L*0.28; r < L; r += L*0.2){ for(let i=0;i<n-1;i++){ const [ax, ay] = pt(i/(n-1)*Math.PI/2, r), [bx, by] = pt((i+1)/(n-1)*Math.PI/2, r); sag(cx, cy, ax, ay, bx, by, 0.25 + 0.04*Math.sin(t*1.3 + r)); } }
+      c.stroke(); }
+    for(const w of (R.floorWebs||[])){ const n = 8;
+      if(w.cut){ c.strokeStyle = 'rgba(200,195,180,.18)'; c.beginPath(); for(let i=0;i<n;i+=2){ const a = w.rot + i/n*Math.PI*2; c.moveTo(w.x + Math.cos(a)*w.r*0.7, w.y + Math.sin(a)*w.r*0.7); c.lineTo(w.x + Math.cos(a + 0.2)*w.r, w.y + Math.sin(a + 0.2)*w.r); } c.stroke(); continue; }
+      c.fillStyle = 'rgba(200,195,180,.05)'; c.beginPath(); c.arc(w.x, w.y, w.r, 0, Math.PI*2); c.fill();
+      c.strokeStyle = 'rgba(225,220,205,.36)'; c.beginPath();
+      for(let i=0;i<n;i++){ const a = w.rot + i/n*Math.PI*2; c.moveTo(w.x, w.y); c.lineTo(w.x + Math.cos(a)*w.r, w.y + Math.sin(a)*w.r); }
+      for(let r = w.r*0.2; r < w.r; r += w.r*0.18){ for(let i=0;i<n;i++){ const a0 = w.rot + i/n*Math.PI*2, a1 = w.rot + (i+1)/n*Math.PI*2;
+        sag(w.x, w.y, w.x + Math.cos(a0)*r, w.y + Math.sin(a0)*r, w.x + Math.cos(a1)*r, w.y + Math.sin(a1)*r, 0.22); } }
+      c.stroke(); }
+  }
   function ufHud(){
     const R = uf.here, key = [Math.floor(uf.p.hp), uf.p.maxHp, Math.floor(uf.blood), uf.cap, uf.floor, R.n, uf.cleared, uf.kills, uf.keys, uf.slots.map(x=>x ? x.name + x.uses : '').join(','), uf.tarot.length, uf.curses.length, uf.mapVer, ufEl('ufMap').clientWidth].join('|');
     if(key===ufHudLast) return; ufHudLast = key;
