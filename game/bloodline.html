@@ -255,11 +255,15 @@
   .hf-bar i{ display:block; height:100%; width:100%; background:var(--crimson-lt); }
   .overlay button.hf-btn{ font-size:.62rem; padding:.15rem .5rem; }
   .hf-arena{ flex:1 1 auto; min-height:0; position:relative; overflow:hidden; }
-  .hf-stage{ position:absolute; left:50%; top:50%; width:640px; height:360px; margin:-180px 0 0 -320px; transform:scale(var(--hs,1)); transform-origin:50% 50%;
+  .hf-stage{ background-size:120px 120px; position:absolute; left:50%; top:50%; width:640px; height:360px; margin:-180px 0 0 -320px; transform:scale(var(--hs,1)); transform-origin:50% 50%;
     background:var(--field); border:1px solid var(--line); overflow:hidden; touch-action:none; }
   .hf-river{ position:absolute; background:var(--river); box-shadow:inset 0 0 0 1px rgba(255,255,255,.04); }
-  .hf-road{ position:absolute; background:var(--island); }
+  body:not(.bare) .hf-river{ background:repeating-linear-gradient(160deg, rgba(150,210,220,.16) 0 2px, transparent 2px 11px), #1b4a55; box-shadow:inset 0 0 0 1.5px #0b1d22; } /* toon water: flat blue, light streaks, a dark edge */
+  .hf-road{ position:absolute; background:var(--island); } body:not(.bare) .hf-road{ background:var(--hf-road, none) 0 0/120px 120px, var(--island); }
   .hf-bridge{ position:absolute; background:var(--plank); border:1px solid var(--line); }
+  body:not(.bare) .hf-bridge{ background:var(--hf-plank-we) center/100% 100% no-repeat, var(--plank); border:0; box-shadow:0 2px 0 rgba(0,0,0,.35); z-index:1; } body:not(.bare) .hf-bridge.ns{ background:var(--hf-plank-ns) center/100% 100% no-repeat, var(--plank); }
+  .hf-river-cv{ position:absolute; left:0; top:0; width:100%; height:100%; display:block; }
+  body:not(.bare) .hf-road{ border-top:1.5px solid #140e0b; border-bottom:1.5px solid #140e0b; } body:not(.bare) .hf-road.ns{ border:0; border-left:1.5px solid #140e0b; border-right:1.5px solid #140e0b; }
   .hf-ground{ position:absolute; border:1px dashed rgba(217,201,163,.14); pointer-events:none;
     /* the building grid: 26px cells, lines running between them, with the Keep at the centre of a cell */
     background-image:linear-gradient(to right, rgba(217,201,163,.09) 1px, transparent 1px), linear-gradient(to bottom, rgba(217,201,163,.09) 1px, transparent 1px);
@@ -340,7 +344,7 @@
   .uf-slot{ flex-direction:column; line-height:1; } .uf-slot i{ font-style:normal; font-size:.55em; color:var(--bone); margin-top:.15em; }
   .uf-tarots{ display:flex; gap:.3em; font-size:.9em; color:#c58af0; min-height:0; }
   .uf-pick{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:.8em; background:rgba(10,7,6,.88); z-index:3; font-size:clamp(15px, 3.4vmin, 44px); padding:4vmin; text-align:center; }
-  .uf-pick.on{ display:flex; } #ufPickTitle{ color:var(--bone); letter-spacing:.04em; }
+  .uf-pick.on{ display:flex; } .uf-pick.shop{ font-size:clamp(12px, 2.3vmin, 26px); gap:.6em; } .overlay .uf-pick.shop .uf-opt{ width:min(9em, 22vw); padding:.5em .4em; } .uf-pick.shop .uf-opt .g{ font-size:1.7em; } /* the merchant's stock: smaller, so it all fits */ #ufPickTitle{ color:var(--bone); letter-spacing:.04em; }
   .uf-pick-row{ display:flex; gap:.8em; flex-wrap:wrap; justify-content:center; }
   .overlay .uf-pick .uf-opt{ width:min(12em, 30vw); display:flex; flex-direction:column; align-items:center; gap:.3em; padding:.7em .5em; font-size:.9em; line-height:1.3; }
   .uf-opt .g{ font-size:2.2em; line-height:1; } .uf-opt .r{ font-size:.8em; } .uf-opt .d{ font-size:.85em; line-height:1.35; color:#c9b994; }
@@ -531,8 +535,16 @@
   @keyframes fire-glow{ from{ opacity:.65; } to{ opacity:1; } }
   @keyframes fire-smoke{ 0%{ transform:translate(0,0) scale(.5); opacity:0; } 20%{ opacity:.8; } 100%{ transform:translate(6px,-30px) scale(2); opacity:0; } }
   .zone.land{ background-size:100% 100%; } .zone.rland{ top:0; height:26.33%; } .zone.pland{ top:73.67%; height:26.33%; }
+  /* Bare Bones: the newer art switched off. Flat island and bridges, no home-land terrain, no scorch or smoke, the old ^^ fires, plain troops, plain boulders */
+  body.bare .zone.island{ background:var(--island) !important; } body.bare .zone.land{ display:none; }
+  body.bare .bridge{ background:var(--plank); } body.bare .bridge.closed{ background:transparent; }
+  body.bare .burnfx .scorch, body.bare .smokefx{ display:none; }
+  body.bare .edgefire b, body.bare .edgefire i, body.bare .edgefire::before{ display:none; }
+  body.bare .edgefire::after{ content:'^^'; position:absolute; left:50%; bottom:0; transform:translateX(-50%); font:700 .9rem ui-monospace,Menlo,Consolas,monospace; color:#ff8a30; text-shadow:0 0 6px rgba(255,110,30,.9); }
+  body.bare .unit::before{ display:none; } body.bare .unit-core{ background-image:none; text-shadow:none; } body.bare .unit.shape-tri .unit-core::after, body.bare .unit.shape-diamond .unit-core::after{ background-image:none; }
+  body.bare .rock{ background:#3a2e28 !important; border:1px solid var(--line); border-radius:50%; transform:translate(-50%,-50%) scale(.85); }
   .rock{ position:absolute; transform:translate(-50%,-50%); background-size:100% 100%; pointer-events:none; z-index:1; }
-  body.lowfx .edgefire b, body.lowfx .edgefire::before{ animation:none; } body.lowfx .edgefire i{ display:none; } /* the burned land looks the same on every device: low effects only stills the flames */
+  body.lowfx .edgefire b, body.lowfx .edgefire::before{ animation:none; } body.lowfx .smokefx i{ animation:none; } body.lowfx .burnfx .ash:nth-child(2n), body.lowfx .burnfx .ember:nth-child(2n){ display:none; } body.lowfx .unit::before{ display:none; } body.lowfx .edgefire i{ display:none; } /* the burned land looks the same on every device: low effects only stills the flames */
   .ash.flake{ width:4px; height:2px; border-radius:1px; background:rgba(120,112,104,.6); } .ash.big{ width:4px; height:4px; background:rgba(195,186,176,.55); }
   .burnfx .scorch{ position:absolute; inset:0; background-size:100% 100%; }
   .smokefx{ position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:7; } /* smoke drifting between the field and the sky: its shadow darkens the ground and everything on it */
@@ -588,6 +600,14 @@
   .wren-pick button{ width:min(280px,80vw); font-size:.85rem; }
   .unit.oncredit .unit-ring{ outline:1px dashed #e0b54a; outline-offset:2px; }
   .unit.liened .unit-ring{ outline:1px solid #e0b54a; outline-offset:3px; }
+  /* depth for every troop without redrawing any: a soft shadow on the ground (lit from the top left, like the boulders),
+     a raised, shaded body, and an embossed icon. Fliers keep their own drop shadow; anything in the air or underground casts none here */
+  .unit::before{ content:''; position:absolute; left:3px; right:-3px; bottom:-4px; height:6px; border-radius:50%; z-index:-1; pointer-events:none; background:rgba(0,0,0,.42); } /* toon style: a flat, hard-edged shadow */
+  .unit.flying::before, .unit.flea-jump::before, .unit.tunnelling::before, .unit.burrowed::before, .unit.leach-attached::before{ display:none; }
+  .unit-core{ background-image:radial-gradient(circle at 33% 28%, rgba(255,255,255,.5) 0 15%, rgba(255,255,255,0) 16%), radial-gradient(circle at 50% 135%, rgba(0,0,0,.24) 0 52%, rgba(0,0,0,0) 53%); } /* a hard highlight and a hard shaded crescent, cel style */
+  .unit.shape-tri .unit-core::after, .unit.shape-diamond .unit-core::after{ background-image:radial-gradient(circle at 40% 36%, rgba(255,255,255,.5) 0 12%, rgba(255,255,255,0) 13%), radial-gradient(circle at 50% 140%, rgba(0,0,0,.24) 0 55%, rgba(0,0,0,0) 56%); }
+  .unit.card-preview::before, body.flatunits .unit::before{ display:none; } /* menu cards stay flat, and the switch in Settings turns it all off */
+  .unit.card-preview:not(.shape-tri):not(.shape-diamond) .unit-core, body.flatunits .unit:not(.shape-tri):not(.shape-diamond) .unit-core, .unit.card-preview .unit-core::after, body.flatunits .unit.shape-tri .unit-core::after, body.flatunits .unit.shape-diamond .unit-core::after{ background-image:none; }
   .unit.fitted::after{ content:'+'; position:absolute; right:-3px; top:-5px; font-size:.6rem; color:#e0b54a; pointer-events:none; }
   /* page transitions: a page rises in as it opens and fades as it closes (scenes and stories keep their own) */
   @keyframes page-in{ from{ opacity:0; transform:translateY(14px); } to{ opacity:1; transform:none; } }
@@ -794,6 +814,7 @@
   .dad-tag{ font-size:.62rem; letter-spacing:.14em; text-transform:uppercase; color:#e6cf8a; min-height:.8rem; }
   .overlay button.title-main{ font-size:1rem; padding:.6rem 2.2rem; border-color:var(--crimson-lt); }
   .presets{ display:flex; gap:.35rem; flex-wrap:wrap; justify-content:center; align-items:center; max-width:320px; }
+    .my-deck{ display:inline-flex; gap:1px; } .overlay button.my-deck-x{ padding:.25rem .4rem; opacity:.5; } .overlay button.preset:disabled{ opacity:.35; cursor:default; }
   .presets .presets-label{ font-size:.6rem; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); margin-right:.15rem; }
   .overlay button.preset{ font-size:.7rem; padding:.25rem .6rem; opacity:.7; }
   .overlay button.preset.on{ opacity:1; border-color:var(--crimson-lt); color:var(--crimson-lt); }
@@ -1139,6 +1160,9 @@
     <button id="layoutMode" style="font-size:.75rem;">Layout: auto</button>
     <div style="font-size:.62rem; color:var(--bone-dim); margin-top:-.3rem;">Auto picks the phone or tablet layout for your screen. Either can be forced.</div>
     <button id="fxMode" style="font-size:.75rem;">Effects: auto</button>
+    <button id="bareMode" style="font-size:.75rem;">Graphics: detailed</button>
+    <button id="unitFxMode" style="font-size:.75rem;">Troop shading: on</button>
+    <div style="display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap;"><button id="padABMode" style="font-size:.7rem;">Controller A/B: normal</button><button id="padXYMode" style="font-size:.7rem;">Controller X/Y: normal</button></div>
     <button id="fsMode" style="font-size:.75rem;">Full screen: off</button>
     <div style="display:flex; gap:.4rem; justify-content:center; flex-wrap:wrap;"><button id="exportSave" style="font-size:.7rem;">Export Save</button><button id="importSave" style="font-size:.7rem;">Import Save</button></div>
     <div style="display:flex; gap:.4rem; justify-content:center;"><input id="giftCode" type="text" placeholder="Secret code" maxlength="24" autocomplete="off" style="width:9rem; font-size:.75rem;"><button id="giftRedeem" style="font-size:.7rem;">Redeem</button></div>
@@ -1192,7 +1216,7 @@
       <button id="exportLog" style="font-size:.65rem; opacity:.6;">Export play log</button>
       <button id="tutorialTest" style="font-size:.65rem; opacity:.6;">Guided fight (test)</button>
       <button id="holdfastTest" style="font-size:.65rem; opacity:.6;">Holdfast (test)</button>
-      <button id="ufTest" style="font-size:.65rem; opacity:.6;">Underfield arena (test)</button>
+      <button id="ufTest" style="font-size:.65rem; opacity:.6;">Catacombs (test)</button>
     </div>
     <div class="tools-tab-content" id="cheats-tab">
       <button id="skipChallenger" style="font-size:.65rem; opacity:.6;">Skip to Next Challenger (test)</button>
@@ -1407,7 +1431,7 @@
   <div class="sheet-list">
     <button id="titleSkirmish" class="sheet-btn">Skirmish<small>A wandering army. Earns Mortar, never moves the story.</small></button>
     <button id="titleHoldfast" class="sheet-btn" style="display:none">Holdfast<small>Hold the Keep against wave after wave.</small></button>
-    <button id="titleUnderfield" class="sheet-btn" style="display:none">The Underfield<small>Three floors down, and something at the bottom of each.</small></button>
+    <button id="titleUnderfield" class="sheet-btn" style="display:none">The Catacombs<small>Three floors down, and something at the bottom of each.</small></button>
     <div class="sheet-head">Armies</div>
     <button id="titleFriend" class="sheet-btn">Army codes<small>Send your army to a friend, or face the army they sent you.</small></button>
     <button id="titleDuo" class="sheet-btn">Two players<small>Two people, one tablet, one board. Hold it flat between you.</small></button>
@@ -1615,58 +1639,58 @@
     // ---- the Spike Pit, from the Holdfast's Undermaster: rival melee troops walk over it and are hurt; only ranged troops can attack it
     {name:"Spike Pit",  cost:3, hp:60, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, emoji:"▲", unlockTier:1, undermaster:true, playerOnly:true, spikes:{dps:8, r:3}},
     // ---- two weapons at once: a melee weapon that leads, and a second, ranged one that fires on its own at the other kind of target
-    {name:"Breacher",   cost:5, hp:70, dmg:12, spd:8.5, range:4, atkStyle:'interval-melee', targets:'buildings', atkInterval:1400, emoji:"Ŧ", unlockTier:14, noHoldfast:true, second:{targets:'troops', dmg:4, range:9, atkInterval:900}},   // hacks at buildings, shoots troops that come near
-    {name:"Harrier",    cost:4, hp:50, dmg:8,  spd:10,  range:4, atkStyle:'interval-melee', targets:'troops',    atkInterval:1000, emoji:"⋔", unlockTier:14, noHoldfast:true, second:{targets:'buildings', dmg:5, range:12, atkInterval:1200}}, // fights troops hand to hand, shoots at buildings in reach
+    {name:"Breacher",   cost:5, hp:70, dmg:12, spd:8.5, range:4, atkStyle:'interval-melee', targets:'buildings', atkInterval:1400, emoji:"Ŧ", unlockTier:14, second:{targets:'troops', dmg:4, range:9, atkInterval:900}},   // hacks at buildings, shoots troops that come near
+    {name:"Harrier",    cost:4, hp:50, dmg:8,  spd:10,  range:4, atkStyle:'interval-melee', targets:'troops',    atkInterval:1000, emoji:"⋔", unlockTier:14, second:{targets:'buildings', dmg:5, range:12, atkInterval:1200}}, // fights troops hand to hand, shoots at buildings in reach
     // ---- Ysolde's troupe (beat Ysolde, challenger 13): copying, borrowed shapes, and the encore
     {name:"Mummer",     cost:3, hp:30, dmg:6,  spd:9,  range:5,  atkStyle:'interval-melee', targets:'troops', atkInterval:1000, emoji:"¤", unlockTier:14, mummer:{hp:0.5}}, // when it falls, it stands up again as whatever killed it, on your side
     {name:"Stage",      cost:5, hp:140, dmg:0, spd:0,  range:0,  atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"⊓", unlockTier:14, stage:{every:12000, hp:0.5}}, // replays your last troop beside it
     {name:"Echo",       cost:3, cardType:'spell', radius:3, echo:{hp:0.7}, emoji:"↺", unlockTier:14}, // your last troop again, here
     {name:"Encore",     cost:5, cardType:'spell', radius:3, encore:{hp:0.7}, emoji:"⇄", unlockTier:14, needsLab:true, brew:{a:'Echo', b:'Oath', mats:{ichor:4, ash:3}, ms:600000}}, // the rival's last troop, playing for you
     // ---- Cassor's house (beat Cassor, challenger 14): blood that comes back, debts that pay, a discount and a bank
-    {name:"Bondsman",   cost:4, hp:44, dmg:6, spd:9, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1000, emoji:"§", unlockTier:15, noHoldfast:true, bond:0.5}, // when it falls, half its price comes back: its killer's pay, refunded
-    {name:"Counting House", cost:4, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"∑", unlockTier:15, noHoldfast:true, counts:1}, // while it stands, your troops cost 1 less
+    {name:"Bondsman",   cost:4, hp:44, dmg:6, spd:9, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1000, emoji:"§", unlockTier:15, bond:0.5}, // when it falls, half its price comes back: its killer's pay, refunded
+    {name:"Counting House", cost:4, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"∑", unlockTier:15, counts:1}, // while it stands, your troops cost 1 less
     {name:"Lien",       cost:2, cardType:'spell', radius:6, lien:1, emoji:"£", unlockTier:15, playerOnly:true}, // marks the dearest rival troop in reach: when it falls, its price is paid to you again
-    {name:"Strongbox",  cost:3, hp:120, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▣", unlockTier:15, cassor:'slain', playerOnly:true, noHoldfast:true, bank:{over:10, max:15, rate:2, low:3, pay:1, spill:0.5}}, // banks blood above 10, pays it back when you run low
+    {name:"Strongbox",  cost:3, hp:120, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▣", unlockTier:15, cassor:'slain', playerOnly:true, bank:{over:10, max:15, rate:2, low:3, pay:1, spill:0.5}}, // banks blood above 10, pays it back when you run low
     {name:"Interest",   cost:4, cardType:'spell', radius:4, interest:{ms:10000}, emoji:"%", unlockTier:15, needsLab:true, brew:{a:'Lien', b:'Blood Burst', mats:{ichor:4, ash:4}, ms:600000}}, // for 10 s, every blood the rival spends pays you 1
     // ---- Wren's gleanings (beat Wren, challenger 15): what falls on the field is worth something
-    {name:"Gleaner",    cost:4, hp:48, dmg:7, spd:9, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1000, emoji:"ɣ", unlockTier:16, noHoldfast:true, gleans:{r:10, hp:4, dmg:1, max:8}}, // grows with every troop that falls near it, either side
-    {name:"Midden",     cost:4, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"⌓", unlockTier:16, noHoldfast:true, midden:{r:12, per:3}}, // every third body that falls near it gets up as a Scrap, for its owner
+    {name:"Gleaner",    cost:4, hp:48, dmg:7, spd:9, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1000, emoji:"ɣ", unlockTier:16, gleans:{r:10, hp:4, dmg:1, max:8}}, // grows with every troop that falls near it, either side
+    {name:"Midden",     cost:4, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"⌓", unlockTier:16, midden:{r:12, per:3}}, // every third body that falls near it gets up as a Scrap, for its owner
     {name:"Pick Over",  cost:2, cardType:'spell', radius:10, pickover:{ms:10000, frac:0.5}, emoji:"⌕", unlockTier:16, playerOnly:true}, // half the price of your troops that fell here in the last 10 s, back
     {name:"Exhume",     cost:5, cardType:'spell', radius:10, exhume:{n:2, hp:0.5, ms:12000}, emoji:"⍝", unlockTier:16, needsLab:true, brew:{a:'Pick Over', b:'Mercy', mats:{bone:4, ichor:3}, ms:600000}}, // your last two troops to fall here, back on their feet at half health
     // ---- Ulgar's batch (beat Ulgar, challenger 16): plain soldiers again, and the pack
-    {name:"Spearman",   cost:2, hp:24, dmg:4, spd:9, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1000, emoji:"↑", unlockTier:17, noHoldfast:true}, // plain and cheap: a body in the line
-    {name:"Slinger",    cost:2, hp:14, dmg:5, spd:9, range:14, atkStyle:'interval-ranged', targets:'any', atkInterval:1200, emoji:"⁃", unlockTier:17, noHoldfast:true}, // plain and cheap: stones from behind the line
-    {name:"Stockade",   cost:3, hp:200, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▥", unlockTier:17, noHoldfast:true}, // a cheap wall
-    {name:"Houndmaster", cost:5, hp:60, dmg:8, spd:8, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1200, emoji:"Ψ", unlockTier:17, noHoldfast:true, king:'held', playerOnly:true, kennel:{every:8000, max:3}}, // looses a Jackal every 8 s, three at a time; yours if you keep your pack from Ulgar
+    {name:"Spearman",   cost:2, hp:24, dmg:4, spd:9, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1000, emoji:"↑", unlockTier:17}, // plain and cheap: a body in the line
+    {name:"Slinger",    cost:2, hp:14, dmg:5, spd:9, range:14, atkStyle:'interval-ranged', targets:'any', atkInterval:1200, emoji:"⁃", unlockTier:17}, // plain and cheap: stones from behind the line
+    {name:"Stockade",   cost:3, hp:200, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▥", unlockTier:17}, // a cheap wall
+    {name:"Houndmaster", cost:5, hp:60, dmg:8, spd:8, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1200, emoji:"Ψ", unlockTier:17, king:'held', playerOnly:true, kennel:{every:8000, max:3}}, // looses a Jackal every 8 s, three at a time; yours if you keep your pack from Ulgar
     {name:"Howl",       cost:3, cardType:'spell', radius:8, howl:{ms:4000, reach:16}, emoji:"ɷ", unlockTier:17, playerOnly:true}, // your troops in it all go for the toughest rival troop near it
     {name:"Bloodlust",  cost:4, cardType:'spell', radius:10, lust:{ms:6000, frac:0.5}, emoji:"ʬ", unlockTier:17, needsLab:true, brew:{a:'Howl', b:'Blood Burst', mats:{ichor:4, bone:3}, ms:600000}}, // hand-to-hand blows heal half what they deal
     // ---- answers to a horde and to a tank (tier 17, with Ulgar's batch): three for many strong bodies, three for one huge one
-    {name:"Halberdier", cost:4, hp:46, dmg:8, spd:8, range:6, atkStyle:'interval-melee', targets:'troops', atkInterval:1300, emoji:"⍭", unlockTier:17, noHoldfast:true, cleave:{r:4, frac:0.6}}, // each blow also cuts every rival troop within 4 of its target
-    {name:"Thresher",   cost:5, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"✣", unlockTier:17, noHoldfast:true, thresh:{r:6, dps:6}}, // blades that cut every rival troop that comes close
+    {name:"Halberdier", cost:4, hp:46, dmg:8, spd:8, range:6, atkStyle:'interval-melee', targets:'troops', atkInterval:1300, emoji:"⍭", unlockTier:17, cleave:{r:4, frac:0.6}}, // each blow also cuts every rival troop within 4 of its target
+    {name:"Thresher",   cost:5, hp:150, dmg:0, spd:0, range:0, atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"✣", unlockTier:17, thresh:{r:6, dps:6}}, // blades that cut every rival troop that comes close
     {name:"Firepot",    cost:4, cardType:'spell', radius:7, pot:{ms:6000, dps:6}, emoji:"⊛", unlockTier:17, playerOnly:true}, // a patch of burning pitch: rival troops standing in it burn
-    {name:"Harpooner",  cost:4, hp:30, dmg:6, spd:8, range:13, atkStyle:'interval-ranged', targets:'troops', atkInterval:1600, emoji:"⥽", unlockTier:17, noHoldfast:true, harpoon:{pct:0.05, ms:1500}}, // each hit takes 5% of the target's full health as well, and drags it to half speed
-    {name:"Duelist",    cost:4, hp:40, dmg:7, spd:10, range:5, atkStyle:'interval-melee', targets:'troops', atkInterval:900, emoji:"ϯ", unlockTier:17, noHoldfast:true, duel:{ratio:2, mult:3}}, // triple damage to a troop with at least twice its full health
+    {name:"Harpooner",  cost:4, hp:30, dmg:6, spd:8, range:13, atkStyle:'interval-ranged', targets:'troops', atkInterval:1600, emoji:"⥽", unlockTier:17, harpoon:{pct:0.05, ms:1500}}, // each hit takes 5% of the target's full health as well, and drags it to half speed
+    {name:"Duelist",    cost:4, hp:40, dmg:7, spd:10, range:5, atkStyle:'interval-melee', targets:'troops', atkInterval:900, emoji:"ϯ", unlockTier:17, duel:{ratio:2, mult:3}}, // triple damage to a troop with at least twice its full health
     {name:"Hamstring",  cost:3, cardType:'spell', radius:8, ham:{ms:6000, more:0.5}, emoji:"⌐", unlockTier:17, playerOnly:true}, // the toughest rival troop in it: half speed, and half again as much damage, for 6 s
     // ---- the Foundry (a Workshop and a Laboratory both beside a hot Boiler): buildings no rival ever has
-    {name:"Mortar Pit",  cost:5, hp:140, dmg:6,  spd:0, range:18, atkStyle:'interval-ranged', targets:'troops', atkInterval:3500, isBuilding:true, uniquePerOwner:true, emoji:"ø", unlockTier:98, forged:1, playerOnly:true, noHoldfast:true, leachShot:true}, // Cannon + Leech Bog: every shot carries a Leach
-    {name:"Hive Wall",   cost:6, hp:280, dmg:0,  spd:0, range:0,  atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▩", unlockTier:98, forged:1, playerOnly:true, noHoldfast:true, hive:{per:40, max:6}}, // Wall + Eggs: a spider for every 40 damage it takes
-    {name:"Spotter",     cost:4, hp:110, dmg:4,  spd:0, range:18, atkStyle:'interval-ranged', targets:'troops', atkInterval:1000, isBuilding:true, uniquePerOwner:true, emoji:"⌖", unlockTier:98, forged:1, playerOnly:true, noHoldfast:true, spots:4000}, // Watchtower + Cannon: what it hits, your ranged troops shoot
-    {name:"Plague Ballista", cost:6, hp:130, dmg:14, spd:0, range:20, atkStyle:'interval-ranged', targets:'troops', atkInterval:2500, isBuilding:true, uniquePerOwner:true, emoji:"⇛", unlockTier:98, forged:2, playerOnly:true, noHoldfast:true, pierceLine:1.6, plague:3, leachShot:true}, // Mortar Pit + Ballista
-    {name:"Charnel Wall", cost:6, hp:300, dmg:0, spd:0, range:0,  atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▤", unlockTier:98, forged:2, playerOnly:true, noHoldfast:true, midden:{r:12, per:3}, mends:{r:12, hp:15}}, // Hive Wall + Midden
-    {name:"Siege Engine", cost:8, hp:260, dmg:18, spd:0, range:22, atkStyle:'interval-ranged', targets:'any', atkInterval:2200, isBuilding:true, uniquePerOwner:true, emoji:"⊞", unlockTier:98, forged:3, playerOnly:true, noHoldfast:true, crawls:{pps:0.8}}, // Plague Ballista + Charnel Wall: the only building that moves
-    // ---- the tier 1 replacements (spec of Oct 7). Tier 14 is a placeholder until the challenger that unlocks them exists; none
-    // reaches the Holdfast yet (noHoldfast). The Stakewall waits for the Workshop
-    {name:"Lamprey",    cost:2, hp:16,  dmg:5,  spd:10.7, range:3,  atkStyle:'continuous',      targets:'troops',    emoji:"∂", needsTarget:true, unlockTier:99, labOnly:true, noHoldfast:true, numbs:{mult:1.35}},
-    {name:"Fusebearer", cost:5, hp:100, dmg:14, spd:9,    range:4,  atkStyle:'interval-melee',  targets:'buildings', atkInterval:1500, emoji:"Ø", unlockTier:99, labOnly:true, noHoldfast:true, fuse:{ms:2000, dmg:56, splash:18, r:6}},
-    {name:"Bombard",    cost:4, hp:34,  dmg:5,  spd:8,    range:44, atkStyle:'interval-ranged', targets:'any',       atkInterval:3000, emoji:"⌒", unlockTier:99, labOnly:true, noHoldfast:true, sniper:true, lob:{flight:1600, r:8, splashFrac:1}}, // the first sniper: lobs light stones with a wide splash from the island's far edge onto a Pentagon; anything nearer draws its aim
-    {name:"Mourner",    cost:5, hp:48,  dmg:11, spd:8,    range:6,  atkStyle:'interval-melee',  targets:'any',       atkInterval:1100, emoji:"‡", unlockTier:99, labOnly:true, noHoldfast:true, grieves:{r:10, heal:6, haste:0.3, ms:4000, gap:2000}},
-    {name:"Abomination", cost:7, hp:130, dmg:11, spd:8, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1200, emoji:"Ж", unlockTier:99, labOnly:true, noHoldfast:true,
+    {name:"Mortar Pit",  cost:5, hp:140, dmg:6,  spd:0, range:18, atkStyle:'interval-ranged', targets:'troops', atkInterval:3500, isBuilding:true, uniquePerOwner:true, emoji:"ø", unlockTier:98, forged:1, playerOnly:true, leachShot:true}, // Cannon + Leech Bog: every shot carries a Leach
+    {name:"Hive Wall",   cost:6, hp:280, dmg:0,  spd:0, range:0,  atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▩", unlockTier:98, forged:1, playerOnly:true, hive:{per:40, max:6}}, // Wall + Eggs: a spider for every 40 damage it takes
+    {name:"Spotter",     cost:4, hp:110, dmg:4,  spd:0, range:18, atkStyle:'interval-ranged', targets:'troops', atkInterval:1000, isBuilding:true, uniquePerOwner:true, emoji:"⌖", unlockTier:98, forged:1, playerOnly:true, spots:4000}, // Watchtower + Cannon: what it hits, your ranged troops shoot
+    {name:"Plague Ballista", cost:6, hp:130, dmg:14, spd:0, range:20, atkStyle:'interval-ranged', targets:'troops', atkInterval:2500, isBuilding:true, uniquePerOwner:true, emoji:"⇛", unlockTier:98, forged:2, playerOnly:true, pierceLine:1.6, plague:3, leachShot:true}, // Mortar Pit + Ballista
+    {name:"Charnel Wall", cost:6, hp:300, dmg:0, spd:0, range:0,  atkStyle:'none', targets:'none', isBuilding:true, uniquePerOwner:true, emoji:"▤", unlockTier:98, forged:2, playerOnly:true, midden:{r:12, per:3}, mends:{r:12, hp:15}}, // Hive Wall + Midden
+    {name:"Siege Engine", cost:8, hp:260, dmg:18, spd:0, range:22, atkStyle:'interval-ranged', targets:'any', atkInterval:2200, isBuilding:true, uniquePerOwner:true, emoji:"⊞", unlockTier:98, forged:3, playerOnly:true, crawls:{pps:0.8}}, // Plague Ballista + Charnel Wall: the only building that moves
+    // ---- the tier 1 replacements (spec of Oct 7). Tier 14 is a placeholder until the challenger that unlocks them exists; they
+    // work in the Holdfast as in a story fight. The Stakewall waits for the Workshop
+    {name:"Lamprey",    cost:2, hp:16,  dmg:5,  spd:10.7, range:3,  atkStyle:'continuous',      targets:'troops',    emoji:"∂", needsTarget:true, unlockTier:99, labOnly:true, numbs:{mult:1.35}},
+    {name:"Fusebearer", cost:5, hp:100, dmg:14, spd:9,    range:4,  atkStyle:'interval-melee',  targets:'buildings', atkInterval:1500, emoji:"Ø", unlockTier:99, labOnly:true, fuse:{ms:2000, dmg:56, splash:18, r:6}},
+    {name:"Bombard",    cost:4, hp:34,  dmg:5,  spd:8,    range:44, atkStyle:'interval-ranged', targets:'any',       atkInterval:3000, emoji:"⌒", unlockTier:99, labOnly:true, sniper:true, lob:{flight:1600, r:8, splashFrac:1}}, // the first sniper: lobs light stones with a wide splash from the island's far edge onto a Pentagon; anything nearer draws its aim
+    {name:"Mourner",    cost:5, hp:48,  dmg:11, spd:8,    range:6,  atkStyle:'interval-melee',  targets:'any',       atkInterval:1100, emoji:"‡", unlockTier:99, labOnly:true, grieves:{r:10, heal:6, haste:0.3, ms:4000, gap:2000}},
+    {name:"Abomination", cost:7, hp:130, dmg:11, spd:8, range:5, atkStyle:'interval-melee', targets:'any', atkInterval:1200, emoji:"Ж", unlockTier:99, labOnly:true,
      numbs:{mult:1.35}, fuse:{ms:2000, dmg:56, splash:18, r:6}, grieves:{r:10, heal:6, haste:0.3, ms:4000, gap:2000}, bursts:2}, // bred from three bred troops: a Lamprey's numbing blows, a Fusebearer's charge, a Mourner's grief, and Leaches when it dies
     // ---- raised in the Brood Pit: one card per species, owned while one of its kind is grown (level 10). Never a rival's
-    {name:"Silkmite",  cost:2, hp:14, dmg:2.5, spd:10, range:3, atkStyle:'continuous', targets:'troops', emoji:"ϻ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true, noHoldfast:true},
-    {name:"Glowgrub",  cost:3, hp:16, dmg:2,   spd:9,  range:3, atkStyle:'continuous', targets:'troops', emoji:"ϑ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true, noHoldfast:true},
-    {name:"Needlefly", cost:3, hp:8,  dmg:3,   spd:14, range:3, atkStyle:'continuous', targets:'troops', emoji:"ϫ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true, noHoldfast:true},
-    {name:"Mawworm",   cost:4, hp:30, dmg:6,   spd:8,  range:3, atkStyle:'continuous', targets:'troops', emoji:"ϱ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true, noHoldfast:true},
+    {name:"Silkmite",  cost:2, hp:14, dmg:2.5, spd:10, range:3, atkStyle:'continuous', targets:'troops', emoji:"ϻ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true},
+    {name:"Glowgrub",  cost:3, hp:16, dmg:2,   spd:9,  range:3, atkStyle:'continuous', targets:'troops', emoji:"ϑ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true},
+    {name:"Needlefly", cost:3, hp:8,  dmg:3,   spd:14, range:3, atkStyle:'continuous', targets:'troops', emoji:"ϫ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true},
+    {name:"Mawworm",   cost:4, hp:30, dmg:6,   spd:8,  range:3, atkStyle:'continuous', targets:'troops', emoji:"ϱ", needsTarget:true, unlockTier:97, pit:true, playerOnly:true},
     {name:"Bloodletting", cost:3, cardType:'spell', radius:10, opens:6000, emoji:"⌇", unlockTier:10}, // Grael's: opens rival troops to your parasites
     // brewed in Alchemy from two spells and materials won from wandering rivals; each is its own new spell, cheaper than its parts
     {name:"Transfusion", cost:5, cardType:'spell', radius:10, transfuse:10, emoji:"⇅", unlockTier:4, brew:{a:'Blood Burst', b:'Mercy', mats:{ichor:4, bone:3}, ms:120000}},
@@ -2362,7 +2386,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
     else { for(const n of labMade) labStock[n] = LAB_DOSES; localStorage.setItem('bloodline_labStock', JSON.stringify(labStock)); } // older saves kept a bred troop for good: they start with a full brood
   }catch(e){}
   function saveLabStock(){ try{ localStorage.setItem('bloodline_labStock', JSON.stringify(labStock)); }catch(e){} }
-  // ---- the Brood Pit: parasites raised from larvae carried out of the Underfield. Levels 1 to 100; a larva until level 10, then a card of
+  // ---- the Brood Pit: parasites raised from larvae carried out of the Catacombs. Levels 1 to 100; a larva until level 10, then a card of
   // its own species. A new function every 25 levels. Belly, health and sanity run on the real clock (tickPit). Any dish fills the belly; a
   // full belly turns dishes into XP. Two parasites 25 levels apart: the stronger eats the weaker, which goes back to a larva. Friendly kinds
   // never eat or get eaten, and are better company. An aggressive kind eats any grown parasite of another kind. Larvae are never eaten.
@@ -2551,7 +2575,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
     {id:'boiler', name:'Boiler', icon:'◘', cost:6, opens:'an iron belly that eats Ember', unlocked:()=>unlockedTier >= ALCHEMY_TIER},
     {id:'tavern', name:'Tavern', icon:'⌸', cost:8, opens:'tables and a fire', unlocked:()=>unlockedTier >= HOLDFAST_TIER},
     {id:'lab', name:'Laboratory', icon:'⌬', cost:6, opens:'work you do not understand yet', unlocked:()=>unlockedTier > LAB_FROM || labTest}, // challenger 15's blueprint (or Test tools)
-    {id:'pit', name:'Brood Pit', icon:'❍', cost:6, opens:'somewhere for things to grow', unlocked:()=>pitState.list.length > 0}, // once a larva comes home from the Underfield
+    {id:'pit', name:'Brood Pit', icon:'❍', cost:6, opens:'somewhere for things to grow', unlocked:()=>pitState.list.length > 0}, // once a larva comes home from the Catacombs
   ];
   const baseFixed = () => ({[baseHome().join(',')]:'♜'}); // your base: a piece of its own that blocks its plot; hold it to move it
   // ---- building levels (1 to 7). An odd level needs that building's blueprint, won by a challenger's first defeat; every level after the
@@ -3228,44 +3252,55 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(!spent) state.queue.push(def);
   }
   // ---- preset decks: one tap fills all 8 slots; shown only once you own every card in them ----
-  // preset decks: each is eight slots, and each slot lists cards from best to fallback. A preset picks, slot by slot, the
-  // first card you own that it has not already taken, then fills any gap from your collection in obtain order. So every
-  // preset works at every tier, and swaps in newer cards (Fracture for Blood Burst, the Revenant for a Jackal...) as you earn them.
-  // A preset shows once you have more than eight cards and own its key card
+  // preset decks: each has a role. Every card you own is scored for that role, newer cards a little higher, and the best fill the deck
+  // (at most two spells and two buildings, three for Fortress), so a preset keeps up with every tier you reach. A preset shows once at
+  // least three of your cards fit its role
+  const isParaCard = c => PARA_NAMES.includes(c.name);
+  const isTroop = c => c.cardType!=='spell' && !c.isBuilding;
   const PRESETS = [
-    {name:'Fortress', key:'Wall', slots:[['Wall'],['Ballista','Cannon'],['Stolen Standard','Shieldbearer','Behemoth'],['Revenant','Behemoth','Mourner','Bondsman','Jackal'],['Eggs','Counting House','Behemoth','Mourner','Jackal'],['Arquebus','Camel'],['Overseer','Viper','Camel'],['Oath','Mercy','Leach'],['Fracture','Blood Burst']]},
-    {name:'Siege',    key:'Ramhorn', slots:[['Fusebearer','Ramhorn'],['Ashfang','Bombard','Camel'],['Borer','Lamprey','Leach'],['Revenant','Behemoth','Jackal'],['Behemoth','Jackal'],['Wall','Cannon'],['Overseer','Viper'],['Fracture','Blood Burst'],['Oath','Mercy','Leach']]},
-    {name:'Swarm',    key:'Viper', slots:[['Spearman','Shardlings'],['Shardlings','Viper'],['Viper','Jackal'],['Gleaner','Bondsman','Jackal'],['Eggs','Leach'],['Overseer','Camel'],['Blood Burst'],['Mercy','Leach'],['Confusion','Camel']]},
-    {name:'Marksman', key:'Camel', slots:[['Arquebus','Camel'],['Camel'],['Viper'],['Cannon','Wall'],['Revenant','Behemoth','Jackal'],['Overseer','Ramhorn'],['Fracture','Blood Burst'],['Confusion','Oath','Leach']]},
-    {name:'Blood Feast', key:'Revenant', slots:[['Revenant'],['Leach'],['Tick','Flea'],['Flea','Viper'],['Bleeder','Jackal'],['Bloodletting','Blood Burst'],['Blood Burst','Mercy'],['Mercy','Camel']]},
-    {name:'Bloodsucker', key:'Flea', slots:[['Leach'],['Flea'],['Botfly','Tick','Viper'],['Bleeder','Behemoth','Jackal'],['Bloodletting','Blood Burst'],['Leech Bog','Overseer','Jackal'],['Bloodhound','Behemoth','Camel'],['Mercy','Camel']]},
+    {name:'Fortress', bld:3, fit:c=>(c.isBuilding ? 4 : 0) + (isTroop(c) && c.hp>=100 ? 3 : 0) + (c.wardDuration || c.zone || c.heal || c.guards ? 2 : 0) + (isTroop(c) && c.atkStyle==='interval-ranged' ? 1 : 0)},
+    {name:'Siege', fit:c=>(c.targets==='buildings' ? 4 : 0) + (c.ram || c.fuse || c.burn || c.lob || c.bores || c.crawls ? 2 : 0) + (isTroop(c) && c.hp>=80 ? 2 : 0) + (c.pctDamage || c.undermine || c.sunder ? 1 : 0)},
+    {name:'Swarm', spells:3, fit:c=>(c.squad ? 4 : 0) + (isTroop(c) && c.cost<=3 && !isParaCard(c) ? 3 : 0) + (c.cardType==='spell' && (c.dmg || c.pot || c.lust) ? 2 : 0) + (c.drives || c.gleans || c.hatch || c.kennel || c.midden ? 2 : 0)},
+    {name:'Marksman', fit:c=>(isTroop(c) && c.atkStyle==='interval-ranged' ? 4 : 0) + (isTroop(c) && c.range>=13 ? 1 : 0) + (isTroop(c) && c.hp>=100 ? 1 : 0) + (c.watch || c.spots ? 2 : 0)},
+    {name:'Blood Feast', fit:c=>(c.revive || c.mummer || c.exhume || c.pickover || c.bond ? 4 : 0) + (isParaCard(c) ? 2 : 0) + (c.heal || c.transfuse || c.lust || c.grieves ? 2 : 0)},
+    {name:'Bloodsucker', fit:c=>(isParaCard(c) ? 4 : 0) + (c.scent || c.opens || c.breeds || c.brood || c.leachShot ? 3 : 0) + (c.finisher ? 1 : 0)},
   ];
   function presetCards(p){
-    const owned = n => { const c = CARD_DEFS.find(d=>d.name===n); return !!c && cardOwned(c); };
-    const out = [];
-    for(const slot of p.slots){ const n = slot.find(n=>owned(n) && !out.includes(n)); if(n) out.push(n); }
-    for(const c of unlockedCards()){ if(out.length>=deckSize()) break; if(!out.includes(c.name)) out.push(c.name); } // nothing fitting: fill from the collection
-    return out.slice(0, deckSize());
+    const bound = boundNames(), pool = unlockedCards().filter(c=>!bound.has(c.name));
+    const rec = c => 0.12*Math.min(c.unlockTier||1, unlockedTier); // newer cards edge out older ones that do the same job
+    const sc = c => p.fit(c) + rec(c), ranked = pool.slice().sort((a,b)=>sc(b)-sc(a));
+    const out = [], caps = {spell:p.spells||2, bld:p.bld||2}, kind = c => c.cardType==='spell' ? 'spell' : c.isBuilding ? 'bld' : 'troop', n = {spell:0, bld:0, troop:0};
+    const take = c => { const k = kind(c); if(out.includes(c) || (k!=='troop' && n[k] >= caps[k]) || out.length>=deckSize()) return; out.push(c); n[k]++; };
+    for(const c of ranked) if(p.fit(c) > 0) take(c);
+    for(const c of pool.slice().sort((a,b)=>rec(b)-rec(a))) take(c); // anything left: the newest of the rest
+    if(!out.some(c=>isTroop(c) && c.targets!=='buildings' && !isParaCard(c))){ // always something that fights troops
+      const d = pool.filter(c=>isTroop(c) && c.targets!=='buildings' && !isParaCard(c)).sort((a,b)=>rec(b)-rec(a))[0]; if(d && out.length) out[out.length-1] = d; }
+    return {cards:out.map(c=>c.name), fits:pool.filter(c=>p.fit(c) > 0).length};
   }
+  const MY_DECKS_MAX = 4;
+  let myDecks = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_mydecks')||'[]'); if(Array.isArray(v)) myDecks = v.filter(d=>d && typeof d.name==='string' && Array.isArray(d.cards)).map(d=>({name:d.name.slice(0,16), cards:cleanDeck(d.cards)})).slice(0, MY_DECKS_MAX); }catch(e){}
+  function saveMyDecks(){ try{ localStorage.setItem('bloodline_mydecks', JSON.stringify(myDecks)); }catch(e){} }
+  function useDeck(cards){ selectedDeck = cards.slice(); try{ localStorage.setItem('bloodline_deck', JSON.stringify(selectedDeck)); }catch(e){} renderDeckPicker(); }
+  const sameDeck = cards => cards.length===selectedDeck.length && cards.every(n=>selectedDeck.includes(n));
   function renderPresets(choosing){
     const el = document.getElementById('deckPresets'); if(!el) return;
     el.innerHTML = '';
-    const owned = n => { const c = CARD_DEFS.find(d=>d.name===n); return c && cardOwned(c); };
-    const avail = PRESETS.filter(p=>owned(p.key)).map(p=>({name:p.name, cards:presetCards(p)})).filter(p=>p.cards.length===deckSize());
-    if(!choosing || !avail.length){ el.style.display = 'none'; return; }
+    if(!choosing){ el.style.display = 'none'; return; }
     el.style.display = 'flex';
-    const lab = document.createElement('span'); lab.className = 'presets-label'; lab.textContent = 'Presets'; el.appendChild(lab);
-    avail.forEach(p=>{
-      const b = document.createElement('button');
-      const same = p.cards.length===selectedDeck.length && p.cards.every(n=>selectedDeck.includes(n));
-      b.className = 'preset' + (same ? ' on' : ''); b.textContent = p.name;
-      b.onclick = ()=>{
-        selectedDeck = p.cards.slice();
-        try{ localStorage.setItem('bloodline_deck', JSON.stringify(selectedDeck)); }catch(e){}
-        renderDeckPicker();
-      };
-      el.appendChild(b);
-    });
+    const label = t => { const l = document.createElement('span'); l.className = 'presets-label'; l.textContent = t; el.appendChild(l); };
+    const avail = PRESETS.map(p=>Object.assign({name:p.name}, presetCards(p))).filter(p=>p.fits>=3 && p.cards.length===deckSize());
+    if(avail.length){ label('Presets');
+      for(const p of avail){ const b = document.createElement('button'); b.className = 'preset' + (sameDeck(p.cards) ? ' on' : ''); b.textContent = p.name; b.onclick = ()=>useDeck(p.cards); el.appendChild(b); } }
+    const br = document.createElement('div'); br.style.flexBasis = '100%'; br.style.height = '0'; el.appendChild(br);
+    label('My decks');
+    for(const d of myDecks){ const g = document.createElement('span'); g.className = 'my-deck';
+      const b = document.createElement('button'); b.className = 'preset' + (sameDeck(d.cards) ? ' on' : ''); b.textContent = d.name; b.onclick = ()=>useDeck(d.cards); g.appendChild(b);
+      const x = document.createElement('button'); x.className = 'preset my-deck-x'; x.textContent = '✕'; x.setAttribute('aria-label', 'Forget ' + d.name);
+      x.onclick = ()=>{ if(x.dataset.armed){ myDecks = myDecks.filter(e=>e!==d); saveMyDecks(); renderPresets(true); return; } x.dataset.armed = '1'; x.textContent = 'Forget?'; setTimeout(()=>{ if(x.isConnected){ delete x.dataset.armed; x.textContent = '✕'; } }, 2500); };
+      g.appendChild(x); el.appendChild(g); }
+    if(myDecks.length < MY_DECKS_MAX){ const full = slotsOf(selectedDeck)===deckSize(), b = document.createElement('button'); b.className = 'preset'; b.textContent = full ? '+ Save this deck' : '+ Save (fill the deck first)'; b.disabled = !full;
+      b.onclick = ()=>{ let k = 1; while(myDecks.some(d=>d.name==='Deck '+k)) k++; myDecks.push({name:'Deck '+k, cards:selectedDeck.slice()}); saveMyDecks(); renderPresets(true); }; el.appendChild(b); }
+    else if(!myDecks.length) el.lastChild && el.lastChild.remove();
   }
   // the formation tiles sit at the end of the picker: each one carried or not, with a cross to separate it, then a
   // tile to bind a new one. Building one: tap the lead troop, then the second, then pick its shape
@@ -5314,11 +5349,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // ---- low effects, for slow phones: fewer flying characters and damage numbers, no position easing, no idle sway or
   // glows. 'auto' switches it on for the session once a live match runs under about 30 frames a second for a few seconds;
   // the Settings menu can also force it on or off (saved per device as bloodline_fx) ----
+  let bareGfx = false; try{ bareGfx = localStorage.getItem('bloodline_bare')==='1'; }catch(e){} // Bare Bones: the plain board, without the newer art
   let fxMode = 'auto'; try{ fxMode = localStorage.getItem('bloodline_fx') || 'auto'; }catch(e){}
   let lowFx = fxMode==='low', fxEma = 16, fxSlowMs = 0;
-  function applyFx(){ document.body.classList.toggle('lowfx', lowFx); const b = document.getElementById('fxMode'); if(b) b.textContent = 'Effects: ' + (fxMode==='auto' ? (lowFx ? 'auto (low now)' : 'auto') : fxMode); }
-  function fxWatch(dt){
-    if(fxMode!=='auto' || lowFx || !matchStarted || paused || state.over) return;
+  function applyFx(){ document.body.classList.toggle('lowfx', lowFx); document.body.classList.toggle('bare', bareGfx); const bb = document.getElementById('bareMode'); if(bb) bb.textContent = 'Graphics: ' + (bareGfx ? 'Bare Bones' : 'detailed'); const b = document.getElementById('fxMode'); if(b) b.textContent = 'Effects: ' + (fxMode==='auto' ? (lowFx ? 'auto (low now)' : 'auto') : fxMode); }
+  function fxWatch(dt){ /* any live play counts: a story fight, the Catacombs or the Holdfast */
+    const live = (matchStarted && !paused && !state.over) || (ufActive && uf && !uf.paused && !uf.over) || (hf && hf.on && !hf.paused && !hf.over);
+    if(fxMode!=='auto' || lowFx || !live) return;
     fxEma += (dt - fxEma)*0.05;
     fxSlowMs = fxEma > 33 ? fxSlowMs + dt : 0;
     if(fxSlowMs > 3000){ lowFx = true; applyFx(); }
@@ -7166,7 +7203,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(u.silenceMs>0) u.silenceMs -= dt; if(u.underMs>0) u.underMs -= dt; if(u.floodMs>0) u.floodMs -= dt;
       { const nb = u.numbMs>0; if(nb!==!!u._numbed){ u._numbed = nb; u.el.classList.toggle('numbed', nb); } const gr = u.hasteMs>0; if(gr!==!!u._grief){ u._grief = gr; u.el.classList.toggle('grieving', gr); } }
       { const dv = driveMult(u)>1; if(dv!==!!u._driven){ u._driven = dv; u.el.classList.toggle('driven', dv); } }
-      if(u.scent && !u.isAskel){ u.dripMs = (u.dripMs||0) - dt; if(u.dripMs<=0){ u.dripMs = 600 + Math.random()*400; asciiFx(u.x, u.y+1, {chars:",.'", n:2, dist:[2,5], dur:700, cls:'p', mode:'down', size:.55}); } } // it bleeds as it walks
+      if(u.scent && !u.isAskel){ u.dripMs = (u.dripMs||0) - dt; if(u.dripMs<=0){ u.dripMs = 600 + Math.random()*400; asciiFx(u.x, u.y+1, {chars:",.'", n:2, dist:[2,5], dur:700, cls:u.owner, mode:'down', size:.55}); } } // it bleeds as it walks
       if(u.snareMs>0){ u.snareMs -= dt; if(u.snareMs<=0){ u.snareMs = 0; u.el.classList.remove('snared'); } }
       if(u.turnMs>0){ u.turnMs -= dt; if(u.turnMs<=0){ u.turnMs = 0; u.el.classList.remove('turned'); u.atkTarget = null; u.attached = false; } }
       if(u.confuseMs>0){
@@ -8029,7 +8066,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     return g.rush ? `Every fire in camp roars at once: ${got.join(', ')}.` : `${g.name} reaches your camp: ${got.join(', ')}.`;
   }
   function exportSave(){
-    const data = {labStock, pit:pitState, saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, ysoldeChoice, cassorChoice, wrenChoice, wrenGift, kings, labMade, lab, beatenIds, storyAt, orrinRelic, workshop, fitMade, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp, codes:codesUsed, uf:ufMeta};
+    const data = {myDecks, labStock, pit:pitState, saveVersion:SAVE_VERSION, unlockedTier, playerName, challengerId: currentChallenger.id, selectedDeck, trinkets, askelChoice, askelPaid, hadrekChoice, osricChoice, orrinChoice, ysoldeChoice, cassorChoice, wrenChoice, wrenGift, kings, labMade, lab, beatenIds, storyAt, orrinRelic, workshop, fitMade, askelLeft, materials, brewed, brewStock, brewing, holdfast, food, enhance, bounties, formations, camp, codes:codesUsed, uf:ufMeta};
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -8079,7 +8116,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         else for(const n of brewed) brewStock[n] = BREW_DOSES; // a save from before doses: a full batch of each
         brewing = cleanBrewing(data.brewing); holdfast = cleanHoldfast(data.holdfast); saveHoldfast(); camp = cleanCamp(data.camp); saveCamp(); food = cleanFood(data.food); saveFood(); enhance = cleanEnhance(data.enhance); saveEnhance();
         if(Array.isArray(data.codes)){ codesUsed = data.codes.filter(x=>typeof x==='string' && /^[0-9a-z]{1,24}$/.test(x)); saveCodesUsed(); }
-        if(data.uf && typeof data.uf==='object'){ ufMeta = ufCleanMeta(data.uf); ufSaveMeta(); } if(data.pit && typeof data.pit==='object'){ pitState = pitClean(data.pit); pitSave(); }
+        if(Array.isArray(data.myDecks)){ myDecks = data.myDecks.filter(d=>d && typeof d.name==='string' && Array.isArray(d.cards)).map(d=>({name:d.name.slice(0,16), cards:cleanDeck(d.cards)})).slice(0, MY_DECKS_MAX); saveMyDecks(); } if(data.uf && typeof data.uf==='object'){ ufMeta = ufCleanMeta(data.uf); ufSaveMeta(); } if(data.pit && typeof data.pit==='object'){ pitState = pitClean(data.pit); pitSave(); }
         if(Array.isArray(data.bounties)) bounties = data.bounties.filter(n=>Number.isInteger(n) && n>0 && n<100); saveBounties();
         if(Array.isArray(data.formations)){ formations = data.formations.filter(f=>f && /^f\d+$/.test(String(f.id)) && typeof f.a==='string' && typeof f.b==='string' && FORMATION_SHAPES[f.shape] && CARD_DEFS.some(c=>c.name===f.a) && CARD_DEFS.some(c=>c.name===f.b)).slice(0, FORMATION_MAX); saveFormations(); } // formations travel with the save
         saveAlchemy();
@@ -8141,6 +8178,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // ---- a controller in the menus: the D-pad or left stick moves a gold focus between the buttons on the screen in front, A presses, B goes
   // back, Start pauses a fight. Touch or a mouse hides the focus again ----
   let padEl = null, padHeld = {}, padNext = 0, padAny = false;
+  const padSwap = {ab:false, xy:false}; try{ padSwap.ab = localStorage.getItem('bloodline_padab')==='1'; padSwap.xy = localStorage.getItem('bloodline_padxy')==='1'; }catch(e){}
+  try{ if(localStorage.getItem('bloodline_flatunits')==='1') document.body.classList.add('flatunits'); }catch(e){}
+  const padMap = k => padSwap.ab && (k===0 || k===1) ? 1-k : padSwap.xy && (k===2 || k===3) ? 5-k : k; /* Settings can swap A with B and X with Y */
+  const padBtn = (g, k) => g.buttons[padMap(k)];
   const PAD_SEL = 'button, .deck-card:not(.locked), .card, .crate-tile, .base-cell.bld, .frag:not(.locked), input, select, textarea';
   function padTop(){ const open = [...document.querySelectorAll('.overlay.show')]; if(!open.length) return null; const z = e => parseInt(getComputedStyle(e).zIndex,10) || 0, all = [...document.querySelectorAll('.overlay')];
     return open.sort((a,b)=> (z(a)-z(b)) || (all.indexOf(a)-all.indexOf(b))).pop(); }
@@ -8183,10 +8224,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function padWakeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
   for(const ev of ['keydown','pointerdown']) window.addEventListener(ev, padWakeAudio, true);
   function padPoll(){ if(ufActive && uf && !uf.paused && !uf.over){ /* the arena reads the pad itself while you play; menus take over when its panel is up */
-      const g0 = activePad(); if(g0){ for(const k of [0,1,8,9]) padHeld[k] = !!(g0.buttons[k] && g0.buttons[k].pressed); padHeld.dir = true; }
+      const g0 = activePad(); if(g0){ for(const k of [0,1,8,9]) padHeld[k] = !!(padBtn(g0,k) && padBtn(g0,k).pressed); padHeld.dir = true; }
       requestAnimationFrame(padPoll); return; }
     const g = activePad();
-    if(g){ if(g.buttons.some(x=>x && x.pressed)) padWakeAudio(); const b = k => !!(g.buttons[k] && g.buttons[k].pressed), ax = g.axes[0]||0, ay = g.axes[1]||0;
+    if(g){ if(g.buttons.some(x=>x && x.pressed)) padWakeAudio(); const b = k => !!(padBtn(g,k) && padBtn(g,k).pressed), ax = g.axes[0]||0, ay = g.axes[1]||0;
       const dir = (b(12) || ay < -0.5) ? [0,-1] : (b(13) || ay > 0.5) ? [0,1] : (b(14) || ax < -0.5) ? [-1,0] : (b(15) || ax > 0.5) ? [1,0] : null, now = performance.now();
       if(dir){ if(!padHeld.dir || now >= padNext){ padNext = now + (padHeld.dir ? 130 : 380); padAny = true; padMove(dir[0], dir[1]); } padHeld.dir = true; } else padHeld.dir = false;
       const edge = (k, fn)=>{ if(b(k) && !padHeld[k]){ padAny = true; fn(); } padHeld[k] = b(k); };
@@ -8597,6 +8638,11 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       fs.style.display = document.fullscreenEnabled ? '' : 'none'; fsText();
       fs.onclick = ()=>{ (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(()=>{}).finally(()=>setTimeout(fsText, 200)); }; }
     const fb = document.getElementById('fxMode');
+    const ufx = document.getElementById('unitFxMode'), ufxText = ()=>{ ufx.textContent = 'Troop shading: ' + (document.body.classList.contains('flatunits') ? 'off' : 'on'); };
+    ufxText(); ufx.onclick = ()=>{ const off = document.body.classList.toggle('flatunits'); try{ localStorage.setItem('bloodline_flatunits', off ? '1' : '0'); }catch(e){} ufxText(); };
+    for(const [id, key, lab] of [['padABMode','ab','A/B'], ['padXYMode','xy','X/Y']]){ const b = document.getElementById(id), t = ()=>{ b.textContent = `Controller ${lab}: ${padSwap[key] ? 'swapped' : 'normal'}`; };
+      t(); b.onclick = ()=>{ padSwap[key] = !padSwap[key]; try{ localStorage.setItem('bloodline_pad'+key, padSwap[key] ? '1' : '0'); }catch(e){} t(); }; }
+    const bbt = document.getElementById('bareMode'); if(bbt && !bbt.onclick) bbt.onclick = ()=>{ bareGfx = !bareGfx; try{ localStorage.setItem('bloodline_bare', bareGfx ? '1' : '0'); }catch(e){} applyFx(); };
     if(fb && !fb.onclick) fb.onclick = ()=>{ fxMode = fxMode==='auto' ? 'low' : fxMode==='low' ? 'full' : 'auto'; lowFx = fxMode==='low'; fxSlowMs = 0; fxEma = 16; try{ localStorage.setItem('bloodline_fx', fxMode); }catch(e){} applyFx(); };
     applyFx();
     const dn = document.getElementById('snd-dmgnums');
@@ -8963,9 +9009,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     {since:2, kind:'Update', title:'Menus, Collection and friends',
      hint:"The title screen is tidier, there is a Collection, and friends' armies carry their trinkets.",
      detail:"The title screen holds Continue, Battle, Camp, Collection, Settings and More; Rematches sit under Continue. The Collection splits the Bestiary into Troops, Buildings, Spells, Brewed, Enhanced and Trinkets pages. A friend's army now brings the trinkets its commander carries. Pages animate as they open. Secret codes can be redeemed in Settings."},
-    {since:2, kind:'Feature', title:'The Underfield, and the Brood Pit', revealAt:11,
+    {since:2, kind:'Feature', title:'The Catacombs, and the Brood Pit', revealAt:11,
      hint:"Something has opened up under the road, and some of what lives down there is worth bringing home.",
-     detail:"The Underfield is open from Battle: a three-floor dungeon with a guardian at the bottom of each floor. Larvae can be found down there. Escape with one and it comes home to the Brood Pit, a new camp building. Feed it to grow it: past level 10 it is a card of its own, and every 25 levels it learns something new. Take a grown one down with you, and if it falls it only gets knocked out. Parasites need company, and not every kind gets along."},
+     detail:"The Catacombs is open from Battle: a three-floor dungeon with a guardian at the bottom of each floor. Larvae can be found down there. Escape with one and it comes home to the Brood Pit, a new camp building. Feed it to grow it: past level 10 it is a card of its own, and every 25 levels it learns something new. Take a grown one down with you, and if it falls it only gets knocked out. Parasites need company, and not every kind gets along."},
   ];
   const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
   function changelogEntries(){ return CHANGELOG.filter(e=>e.since > CHANGELOG_AFTER); }
@@ -9145,15 +9191,46 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function hfBanner(text, ms){ const b = hfEl('hfBanner'); if(!b) return; b.textContent = text; b.classList.add('on'); hf.bannerMs = ms || 3200; }
 
   // ---- building the board and the units ----
+  let hfTileUrl = null, hfRoadUrl = null;
+  function hfGroundTile(){ // one 320 px tile of the field's ground, in the story lands' toon style and at their scale; roads get a gravel tile
+    if(hfTileUrl) return hfTileUrl;
+    const mk = (T, draw) => { const cv = document.createElement('canvas'); cv.width = cv.height = T*2; const c = cv.getContext('2d'); c.scale(2, 2); draw(c, T); return cv.toDataURL('image/png'); };
+    let seed = 11; const R = (a, b) => a + (((seed = (seed*16807) % 2147483647)/2147483647))*(b-a);
+    hfTileUrl = mk(320, (c, T)=>{ for(let i=0;i<340;i++){ c.fillStyle = i%2 ? 'rgba(0,0,0,.2)' : 'rgba(160,138,110,.13)'; c.beginPath(); c.arc(R(2,T-2), R(2,T-2), R(.8,1.6), 0, Math.PI*2); c.fill(); } // grit
+      for(let i=0;i<10;i++){ const rx = R(2.2,4); toonStone(c, R(8,T-8), R(8,T-8), rx, rx*R(.6,.85), `rgb(${78+R(-8,8)|0},${68+R(-8,8)|0},${58+R(-8,8)|0})`); } // stones
+      for(let i=0;i<16;i++){ const x = R(8,T-14), y = R(10,T-4), n = 1 + (R(0,2)|0); for(let j=0;j<n;j++) toonTuft(c, x + j*6, y + R(-1.5,1.5), 1, R(0,1) < .5 ? '#7fa24c' : '#6a8a3e'); } }); // grass clumps
+    hfRoadUrl = mk(120, (c, T)=>{ for(let i=0;i<110;i++){ c.fillStyle = i%2 ? '#231a16' : '#3a2e25'; c.beginPath(); c.arc(R(2,T-2), R(2,T-2), R(.9,1.9), 0, Math.PI*2); c.fill(); } });
+    document.documentElement.style.setProperty('--hf-road', `url(${hfRoadUrl})`);
+    return hfTileUrl;
+  }
+  // the moat flows: the story's water, on a canvas in each stretch, running clockwise round the Keep
+  let hfRivers = [], hfRiverFrame = 0;
+  function hfDrawRivers(t){
+    if(!hfRivers.length || bareGfx) return;
+    if(lowFx && (hfRiverFrame++ % 4)) return;
+    const st = hfEl('hfStage'), s = parseFloat(st.style.getPropertyValue('--hs')) || 1, k = s*(lowFx ? 1 : Math.min(2, window.devicePixelRatio || 1));
+    for(const r of hfRivers){ const S = r.S, M = HF_MOAT, px = Math.round(S*k); if(r.cv.width!==px || r.cv.height!==px){ r.cv.width = px; r.cv.height = px; }
+      const c = r.cv.getContext('2d'), q = px/S; c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, px, px);
+      /* one ring: each side drawn in its own frame (along the flow, outer bank first), clipped to a mitred trapezoid so the
+         corners meet on the diagonal with the same far bank, water and near lip on both sides. It runs clockwise round the Keep */
+      for(const m of [[q,0,0,q,0,0], [0,q,-q,0,q*S,0], [-q,0,0,-q,q*S,q*S], [0,-q,q,0,0,q*S]]){
+        c.setTransform(m[0], m[1], m[2], m[3], m[4], m[5]); c.save();
+        c.beginPath(); c.moveTo(0, 0); c.lineTo(S, 0); c.lineTo(S - M, M); c.lineTo(M, M); c.closePath(); c.clip();
+        waterBody(c, 0, S, 0, M - 2.5, t, 1, 4); c.restore(); }
+    }
+  }
   function hfBuildStage(){
-    const st = hfEl('hfStage'); st.innerHTML = '';
+    const st = hfEl('hfStage'); st.innerHTML = ''; st.style.backgroundImage = bareGfx ? '' : `url(${hfGroundTile()})`; st.style.backgroundSize = '320px 320px'; /* toon ground, at the story lands' scale */ hfRivers = [];
     const add = (cls, style, html)=>{ const d = document.createElement('div'); d.className = cls; d.style.cssText = style; if(html) d.innerHTML = html; st.appendChild(d); return d; };
     const K = HF_KX, Y = HF_KY, O = HF_OUT, P = HF_PH, M = HF_MOAT;
     const H = HF_CELL/2; // roads and bridges are one cell wide
-    add('hf-road', `left:0;top:${Y-H}px;width:${K-O}px;height:${2*H}px`); add('hf-road', `left:${K+O}px;top:${Y-H}px;width:${HF_W-K-O}px;height:${2*H}px`); add('hf-road', `left:${K-H}px;top:0;width:${2*H}px;height:${Y-O}px`);
-    add('hf-river', `left:${K-O}px;top:${Y-O}px;width:${2*O}px;height:${M}px`); add('hf-river', `left:${K-O}px;top:${Y+P}px;width:${2*O}px;height:${M}px`); // the moat, all the way round
-    add('hf-river', `left:${K-O}px;top:${Y-P}px;width:${M}px;height:${2*P}px`); add('hf-river', `left:${K+P}px;top:${Y-P}px;width:${M}px;height:${2*P}px`);
-    add('hf-bridge', `left:${K-O}px;top:${Y-H}px;width:${M}px;height:${2*H}px`); add('hf-bridge', `left:${K+P}px;top:${Y-H}px;width:${M}px;height:${2*H}px`); add('hf-bridge', `left:${K-H}px;top:${Y-O}px;width:${2*H}px;height:${M}px`);
+    add('hf-road', `left:0;top:${Y-H}px;width:${K-O}px;height:${2*H}px`); add('hf-road', `left:${K+O}px;top:${Y-H}px;width:${HF_W-K-O}px;height:${2*H}px`); add('hf-road ns', `left:${K-H}px;top:0;width:${2*H}px;height:${Y-O}px`);
+    const river = (x, y, w, h)=>add('hf-river', `left:${x}px;top:${y}px;width:${w}px;height:${h}px`);
+    river(K-O, Y-O, 2*O, M); river(K-O, Y+P, 2*O, M); // the moat, all the way round (the plain look, under Bare Bones)
+    river(K-O, Y-P, M, 2*P); river(K+P, Y-P, M, 2*P);
+    if(!bareGfx){ const d = add('hf-moat', `position:absolute;left:${K-O}px;top:${Y-O}px;width:${2*O}px;height:${2*O}px;pointer-events:none`), cv = document.createElement('canvas'); cv.className = 'hf-river-cv'; d.appendChild(cv); hfRivers.push({cv, S:2*O}); } /* the flowing water: one canvas for the whole ring */
+    add('hf-bridge we', `left:${K-O}px;top:${Y-H}px;width:${M}px;height:${2*H}px`); add('hf-bridge we', `left:${K+P}px;top:${Y-H}px;width:${M}px;height:${2*H}px`); add('hf-bridge ns', `left:${K-H}px;top:${Y-O}px;width:${2*H}px;height:${M}px`);
+    if(!bareGfx){ st.style.setProperty('--hf-plank-we', `url(${plankUrl(2*H, M, true)})`); st.style.setProperty('--hf-plank-ns', `url(${plankUrl(2*H, M)})`); }
     add('hf-ground', `left:${K-P}px;top:${Y-P}px;width:${2*P}px;height:${2*P}px`);
     const k = add('hf-keep', `left:${K}px;top:${Y}px`, '♜<i id="hfKeepIn"></i>');
     add('hf-ghost', '').id = 'hfGhost'; add('hf-banner', '').id = 'hfBanner';
@@ -9167,6 +9244,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       front:o.front||null, cost:def.cost||0, rule:o.rule||null, tag:o.tag||null, emoji:o.emoji||def.emoji||'?', work:o.work||null, survived:0, banked:0, lastX:-1, lastY:-1, lastHp:-1};
     if(side==='p' && kind==='troop' && enhance[def.name]){ const m = enhanceMult(def.name); u.maxHp = u.hp = u.hp*m.hp; u.dmg *= m.dmg; u.spd *= m.spd; } // fed at the Training Camp
     if(side==='p' && kind==='bld' && camp.built && camp.built.workshop && workshop[def.name]) u.fit = workshop[def.name].slice(); // Workshop fittings
+    if(side==='p' && kind==='troop' && def.pit && typeof pitApply==='function'){ // raised in the Brood Pit: its strength and traits follow the best of its kind
+      const q = {maxHp:u.maxHp, hp:u.hp, dmg:u.dmg}; pitApply(q, def); u.maxHp = q.maxHp; u.hp = q.hp; u.dmg = q.dmg;
+      const ex = {}; for(const k of ['numbs','jump','brood','flies','opensHost','webs','storeMax','feed']) if(q[k]!==undefined) ex[k] = q[k];
+      if(Object.keys(ex).length) u.def = Object.assign({}, def, ex); }
     if(side==='p' && kind==='troop'){ const fx = fnFx(def.name); if(fx){ u.fx = fx; u.fxT = 0; if(fx.taunt) u.tauntR = fx.taunt; if(fx.skulk) u.hidden = true; } } // taught at the Training Camp
     if(kind==='keep'){ u.el = null; }
     else {
@@ -9186,7 +9267,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     hfBuildStage();
     hf = {on:true, over:false, won:false, endless:false, paused:false, paidOut:false, phase:'intro', phaseMs:0, clock:0, nid:1, units:[], zones:[], spawnQ:[], P:[], E:[],
       blood:HF_START_BLOOD, mortar:HF_START_MORTAR, wave:0, plan:null, sel:null, selBuild:null, hand:[], queue:[], handDirty:true, bannerMs:0,
-      shots:0, camps:0, captainSaid:false, trails:[], rule:null, mouse:null, kills:0, hitReport:null, pot:{}, cleared:0};
+      shots:0, camps:0, captainSaid:false, trails:[], rule:null, mouse:null, kills:0, hitReport:null, pot:{}, cleared:0,
+      lastTroop:{p:null, a:null}, graves:[], pots:[], charges:[], lobs:[], interestUntil:0};
     const keep = hfMake('p', HF_KEEP_DEF, HF_KX, HF_KY, {kind:'keep', r:24}); hf.keep = keep;
     hfDeal(); hfRenderHand(); hfRenderBuilds();
   }
@@ -9218,6 +9300,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const x = at ? at.x : F.sx + (front==='n' ? jitter : 0), y = at ? at.y : F.sy + (front!=='n' ? jitter : 0);
     const captain = name==='Captain', mk = (ox,oy)=>hfMake('a', def, x+ox, y+oy, {hp:Math.round(def.hp*(captain ? 1 + 0.6*(Math.floor(n/HF_WAVES)-1) : s.hp)), dmg:def.dmg*(captain ? 1 + 0.3*(Math.floor(n/HF_WAVES)-1) : s.dmg), front, tag, rule:captain ? hf.rule : null, r:0, emoji:def.emoji});
     if(def.squad){ for(let i=0;i<def.squad;i++) mk((i%2?6:-6),(i<2?-6:6)); return; }
+    if(CARD_DEFS.includes(def)) hf.lastTroop.a = def; // for Encore
+    if(hf.interestUntil > hf.clock && def.cost){ const g = Math.round(def.cost*0.25*10)/10; hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + g); } // Interest: every raider that sets out while it runs pays a quarter of its price
     const u = mk(0,0); if(captain) u.el.style.scale = '1.3';
     if(def.tunnels){ u.under = true; if(def.boss){ u.el.style.scale = '1.6'; const k = Math.floor(n/HF_BOSS_WAVE) - 1; u.hp = u.maxHp = Math.round(def.hp*(1 + 0.5*k)); u.dmg = def.dmg*(1 + 0.25*k); hfBanner('The ground shakes. The Undermaster is coming, under your walls.', 3500); hfSfxHorn(true); setTimeout(()=>hfSfxHorn(true), 600); } } // underground from the start
   }
@@ -9272,7 +9356,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // used to be: it has a few uses, and the last one takes it away.
   const HF_USES = {troop:1, spell:1}; // a reward card is one use: one troop, one spell
   function hfOffer(n, got, bonus){
-    const pool = CARD_DEFS.filter(c=>!c.isBuilding && !c.brew && !c.formation && !c.noHoldfast && cardOwned(c)); // the newest cards wait for their Holdfast ports
+    const pool = CARD_DEFS.filter(c=>!c.isBuilding && !c.brew && !c.formation && cardOwned(c)); // every card works here as it does in a story fight
     if(!pool.length){ hfBanner(`Wave ${n} held. ${got ? hfListOf(got) : ''} for the pot.`, 4200); hf.offersLeft = 0; return; }
     // one of the two is always a dependable fighter (a troop that can hit troops, not a parasite); the other can be anything, spells included
     const solid = pool.filter(c=>c.cardType!=='spell' && !PARA_NAMES.includes(c.name) && c.targets!=='buildings' && c.targets!=='none' && (c.dmg||0)>=5 && (c.hp||0)>=15);
@@ -9306,6 +9390,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(t.wardMs>0) amt *= (t.wardCut||0.5);
     if(t.inSanct) amt *= 0.5;
     if(t.openMs>0) amt *= 1.5;
+    if(t.underMs>0 && t.kind!=='troop' && t.kind!=='keep' && t.kind!=='pent') amt *= 1 + (t.underMore||0.5); // Undermine
+    if(t.hamMs>0 && t.kind==='troop') amt *= 1 + (t.hamMore||0.5); // Hamstring
     if(src){
       if(t.rule==='shield' && src.side==='p' && src.kind==='troop' && src.def.atkStyle==='interval-ranged') amt *= 0.5;
       if(src.side==='a' && src.kind==='troop' && src.def.atkStyle==='interval-ranged' && t.side==='p' && t.kind==='troop' && hasTrinket('shield')) amt *= SHIELD_CUT;
@@ -9322,7 +9408,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       for(const o of hf.units){ if(o.side!==t.side || o.hp<=0 || !o.def.guards || o.kind!=='troop') continue; const d = hfD(o, t); if(d<=o.def.guards.r && d<gd){ gd = d; g = o; } }
       if(g){ const take = Math.min(amt*g.def.guards.share, g.hp); g.hp -= take; amt -= take; g.hit = 90; }
     }
+    if(src && src.lustMs>0 && src.side!==t.side && amt>0) src.hp = Math.min(src.maxHp, src.hp + Math.min(amt, t.hp)*(src.lustFrac||0.5)); // Bloodlust
     t.hp -= amt; t.hit = 90; if(src) t.lastHitBy = src;
+    if(t.def.hive && amt>0 && (!src || src.side!==t.side)){ t.hiveAcc = (t.hiveAcc||0) + amt; // a Hive Wall: a spider for so much damage
+      while(t.hiveAcc >= t.def.hive.per && (t.hiveN||0) < t.def.hive.max){ t.hiveAcc -= t.def.hive.per; t.hiveN = (t.hiveN||0) + 1; const sp = hfMake(t.side, SPIDER_DEF, t.x + (Math.random()-0.5)*20, t.y + (hfRow(t.y) >= 0 ? -16 : 16), {}); sp.cost = 0; sp.hx = sp.x; sp.hy = sp.y; } }
   }
   function hfNearest(u, list, maxD, ok){
     let best = null, bd = maxD*maxD; const tg = u.def.targets || 'any';
@@ -9331,6 +9420,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(t.hp<=0 || t.leap) continue; // a Flea in mid-leap cannot be struck
       if(t.hidden && t.side!==u.side) continue; // a hidden Skulk
       if(t.under && t.side!==u.side) continue; /* a tunneller underground cannot be reached */
+      if(t.def && t.def.bores && !t.attached && t.side!==u.side) continue; // nor a Borer on its way in
       if(t.attached && t.host===u) continue; // a host cannot reach the parasite riding it, as in a story fight
       if(tg==='troops' ? t.kind!=='troop' : tg==='buildings' ? t.kind==='troop' : false) continue;
       if(ok && !ok(t)) continue;
@@ -9351,18 +9441,28 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(u.def.chargesIdle && !u.engaged){ u.engaged = true; if(u.def.minDraw) u.acc = Math.min(u.acc, u.iv - u.def.minDraw); } // a Camel fires its held shot, but not at once
     const ramming = u.def.ram && t.kind!=='troop' && u.rammed!==t;
     if(ramming) u.acc = Math.max(u.acc, u.iv - 300); // the ram strike lands about 0.3s after arriving
-    u.acc += dt*(u.drive||1);
+    const fusing = u.def.fuse && t.kind!=='troop' && u.fused!==t; if(fusing) u.acc = Math.max(u.acc, u.iv - 300); // a Fusebearer's planting strike
+    u.acc += dt*(u.drive||1)*hfRate(u);
     if(u.acc >= u.iv){ u.acc -= u.iv;
+      if(u.def.lob){ hfLob(u, t); return; } // a Bombard's stone lands on a spot, not a troop
       if(u.def.pierce){ // a Bolt Thrower: the bolt runs on through everything in its line
         const dx = t.x-u.x, dy = t.y-u.y, L = Math.hypot(dx,dy)||1, lanes = u.def.hfBuild==='bolt';
         const ux = lanes ? (Math.abs(dy)<=9 ? Math.sign(dx)||1 : 0) : dx/L, uy = lanes ? (Math.abs(dy)<=9 ? 0 : Math.sign(dy)||1) : dy/L, len = lanes ? 2*HF_W : u.rng + 10; // a lane bolt flies straight down its row or column
         if(voiceOk()){ thud(0.12, 0.12, 700); beep(150, 0.12, 'sawtooth', 0.03); } // the bolt's thunk
         for(const e of (u.side==='p' ? hf.E : hf.P)){ if(e.hp<=0 || e.kind!=='troop' || e.under) continue; const ex = e.x-u.x, ey = e.y-u.y, along = ex*ux + ey*uy, off = Math.abs(ex*uy - ey*ux);
           if(along>=0 && along<=len && off<=9){ hfHurt(e, u.dmg, u); hfShot(u, e); } }
+      } else if(u.def.pierceLine && t.kind==='troop'){ // a Ballista: every rival troop in a line out to its range; a Plague Ballista leaves Leaches in the first few
+        const dx = t.x-u.x, dy = t.y-u.y, L = Math.hypot(dx,dy)||1, ux = dx/L, uy = dy/L, w = u.def.pierceLine*PX_UNIT; let n = 0;
+        if(voiceOk()){ thud(0.12, 0.12, 700); beep(150, 0.12, 'sawtooth', 0.03); }
+        for(const e of (u.side==='p' ? hf.E : hf.P)){ if(e.hp<=0 || e.kind!=='troop' || e.under) continue; const ex = e.x-u.x, ey = e.y-u.y, along = ex*ux + ey*uy, off = Math.abs(ex*uy - ey*ux);
+          if(along>0 && along<=u.rng + 6 && off<=w){ if(u.def.plague && ++n <= u.def.plague) hfLeachOnto(u.side, e); hfHurt(e, u.dmg, u); } }
+        hfShot(u, t); if(u.def.leachShot && t.hp>0 && !u.def.plague) hfLeachOnto(u.side, t);
+        if(u.def.spots){ t.spotBy = u.side; t.spotMs = u.def.spots; }
       } else {
         let amt = u.dmg;
         if(ramming){ amt *= u.def.ram; u.rammed = t; if(u.def.ramRecoil) hfKick(u, t, u.def.ramRecoil); } // the first blow on each new building lands far harder
         if(u.def.finisher && t.kind==='troop' && t.hp < t.maxHp*0.5) amt *= u.def.finisher; // the Bloodhound savages the wounded
+        if(u.def.duel && t.kind==='troop' && t.maxHp >= u.maxHp*u.def.duel.ratio) amt *= u.def.duel.mult; // the Duelist: the bigger they are
         if(u.def.spread){ // the Arquebus is wild: at range, some shots go wide
           const err = (Math.random()*2-1)*u.def.spread, off = Math.hypot(t.x-u.x, t.y-u.y)*Math.abs(Math.sin(err));
           if(u.def.recoil) hfKick(u, t, u.def.recoil);
@@ -9370,6 +9470,17 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         }
         if(u.hidden){ u.hidden = false; } // a Skulk shows itself the moment it strikes
         const before = t.hp; hfHurt(t, amt, u);
+        if(fusing){ u.fused = t; if(!hf.charges.some(c=>c.t===t && c.side===u.side)){ const F = u.def.fuse, el = document.createElement('div'); el.className = 'fuse ' + u.side; el.style.left = t.x+'px'; el.style.top = t.y+'px'; el.innerHTML = '<span class="glyph">2</span>'; hfEl('hfStage').appendChild(el);
+          hf.charges.push({side:u.side, by:u, t, x:t.x, y:t.y, ms:F.ms, dmg:F.dmg, splash:F.splash, r:F.r*PX_UNIT, el}); } } // one charge per building per side
+        if(t.kind==='troop'){
+          if(u.def.cleave) for(const o of (u.side==='p' ? hf.E : hf.P)){ if(o===t || o.kind!=='troop' || o.hp<=0 || o.under || (o.def.flies && !o.attached) || hfD(o, t) > u.def.cleave.r) continue; hfHurt(o, amt*u.def.cleave.frac, u); } // the Halberdier's sweep
+          if(u.def.numbs && u.def.atkStyle==='interval-melee'){ t.numbMs = Math.max(t.numbMs||0, 1400); t.numbMult = u.def.numbs.mult; } // the Abomination's blows numb
+          if(u.def.atkStyle==='interval-ranged' && t.hp>0){
+            if(u.def.harpoon){ hfHurt(t, t.maxHp*u.def.harpoon.pct, u); t.slowMs = Math.max(t.slowMs||0, u.def.harpoon.ms); } // a harpoon: a share of its whole body, and dragged slow
+            if(u.def.spots){ t.spotBy = u.side; t.spotMs = u.def.spots; } // the Spotter marks it
+            if(u.def.leachShot && t.hp>0) hfLeachOnto(u.side, t); // the Foundry's shots carry a Leach
+          }
+        }
         if(u.fx && t.kind==='troop' && t.hp>0){ const f = u.fx;
           if(f.opens) t.openMs = Math.max(t.openMs||0, f.opens); // Open Wounds
           if(f.conscript && t.side!==u.side && t.hp < t.maxHp*0.25 && !(t.turnMs>0)){ t.turnMs = f.conscript; hfFx(t.x, t.y-10, 'conscripted'); } }
@@ -9388,7 +9499,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(u.stunMs>0 || u.rootMs>0) return;
     if(u.kind==='troop' && !u.def.flies && !u.leap){ const w = hfWaypoint(u, tx, ty); if(w){ tx = w.x; ty = w.y; stop = 0; } } // every walker keeps to the bridges
     const dx = tx-u.x, dy = ty-u.y, d = Math.hypot(dx,dy); if(d <= stop || d < 0.01) return;
-    let mult = 1; if(u.slowMs>0) mult *= 0.6; if(u.side==='a' && u.inEnemySanct) mult *= 0.5;
+    let mult = 1; if(u.slowMs>0) mult *= 0.6; if(u.hasteMs>0) mult *= 1 + ((u.def.grieves && u.def.grieves.haste) || 0.3); if(u.side==='a' && u.inEnemySanct) mult *= 0.5;
     if(u.kind==='troop' && !u.def.flies && hfInRiver(u.x, u.y)) mult *= HF_RIVER_SLOW;
     if(isPara(u) && hfOnTrail(u)) mult *= 2; // a Blood Trail
     const step = Math.min(d-stop, u.spd*mult*dt/1000), nx = u.x + dx/d*step, ny = u.y + dy/d*step;
@@ -9444,6 +9555,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   function hfParasite(u, dt){
     const foes = u.side==='p' ? hf.E : hf.P;
+    if(u.def.storeMax && hfTickCarry(u, dt)) return; // a full Tick carries its store to its wounded
     if(u.attached){
       const h = u.host;
       if(!h || h.hp<=0){ hfLetGo(u, h || u); return; }
@@ -9452,7 +9564,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(u.biteHost!==h){ u.biteHost = h; u.biteMs = opened ? 0 : LEACH_BITE_MS; }
       if(u.biteMs>0){ u.biteMs -= dt; return; }
       const before = h.hp; hfHurt(h, u.dmg*(opened ? OPEN_DRAIN : 1)*dt/1000, u); const dd = Math.max(0, before - h.hp);
-      if(u.name==='Leach') u.hp = Math.min(u.maxHp, u.hp + 1.5*dt/1000); else if(u.def.jump || u.def.storeMax) u.hp = Math.min(u.maxHp, u.hp + dd);
+      if(u.def.numbs){ h.numbMs = Math.max(h.numbMs||0, 250); h.numbMult = u.def.numbs.mult; } if(u.def.webs) h.slowMs = Math.max(h.slowMs||0, 300); if(u.def.opensHost) h.openMs = Math.max(h.openMs||0, 1000); // a Lamprey's host swings slower; silk; an opened wound
+      if(u.def.selfCost){ u.hp -= u.def.selfCost*dt/1000; if(u.hp<=0) u.drained = true; } // a Borer pays for what it eats with its own health
+      if(u.def.storeMax){ u.hp += u.def.feed ? u.def.feed*dt/1000 : dd; if(u.hp > u.maxHp){ u.store = Math.min(u.def.storeMax, (u.store||0) + u.hp - u.maxHp); u.hp = u.maxHp; } hfBadge(u, u.store>=1 ? '+'+Math.floor(u.store) : ''); } // a Tick stores what it cannot hold
+      else if(u.name==='Leach') u.hp = Math.min(u.maxHp, u.hp + 1.5*dt/1000); else if(u.def.jump) u.hp = Math.min(u.maxHp, u.hp + dd);
       if(h.hp<=0) u.latchCd = 1200; // it cannot chain-latch onto the next one at once
       if(u.fx && u.fx.infest){ u.infT = (u.infT||0) + dt; if(u.infT >= u.fx.infest.every){ u.infT = 0; if(hf.units.filter(o=>o.infestBy===u && o.hp>0).length < u.fx.infest.max){ const l = hfMake(u.side, hfDefOf('Leach'), h.x+6, h.y, {}); l.cost = 0; l.hx = l.x; l.hy = l.y; l.infestBy = u; } } } // Infest
       return;
@@ -9490,12 +9605,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const st = Math.min(gd, u.spd*HF_SPEED_UNDER*dt/1000); u.x += gx/gd*st; u.y += gy/gd*st; return;
     }
     if(u.kind==='camp'){
-      if(hf.phase==='fight'){ u.spawnMs -= dt; if(u.spawnMs<=0){ u.spawnMs = 8000; hfSpawnRaider('Jackal', u.front, Math.max(1,hf.wave), 'camp', {x:u.x, y:u.y}); } }
+      if(hf.phase==='fight' && !(u.silenceMs>0)){ u.spawnMs -= dt; /* Undermine silences it */ if(u.spawnMs<=0){ u.spawnMs = 8000; hfSpawnRaider('Jackal', u.front, Math.max(1,hf.wave), 'camp', {x:u.x, y:u.y}); } }
       return;
     }
     if(u.kind!=='troop'){ // stationary: Pentagons, the Keep and your turrets
       if(d.trap){ for(const e of foes){ if(e.kind==='troop' && Math.hypot(e.x-u.x, e.y-u.y) <= d.trap.r){ hfHurt(e, d.trap.dps*dt/1000, u); e.slowMs = Math.max(e.slowMs||0, d.trap.slow); } } } // a Spike Pit
-      if(u.dmg>0 && d.targets!=='none'){
+      if(u.side==='p') hfWorks(u, dt, foes);
+      if(u.dmg>0 && d.targets!=='none' && !(u.silenceMs>0)){
         let t = null;
         if(u.side==='p' && d.hfBuild!=='bolt') for(const g of hf.units){ if(g.side!=='p' || g.hp<=0 || !g.fx || !g.fx.bark || !g.barkAt || g.barkAt.hp<=0 || !g.post || hfD(g.post, u) > 12) continue; if(Math.hypot(g.barkAt.x-u.x, g.barkAt.y-u.y) <= u.rng + 2){ t = g.barkAt; break; } } // Bark: fire at what the Guard Dog fights
         if(!t && d.hfBuild==='archer'){ let bk = Infinity; for(const e of foes){ if(e.kind!=='troop' || e.hp<=0 || e.hidden || Math.hypot(e.x-u.x, e.y-u.y) > u.rng + 2) continue; const k = Math.hypot(e.x-HF_KX, e.y-HF_KY); if(k<bk){ bk = k; t = e; } } } // Lead Raider: the one nearest the Keep
@@ -9512,6 +9628,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       return;
     }
     if(isPara(u) && d.atkStyle==='continuous'){ hfParasite(u, dt); return; }
+    if(d.second) hfSecond(u, dt); // a second weapon, on its own clock
     let t = null;
     if(u.side==='a'){
       const tn = d.atkStyle==='continuous' ? null : hf.P.find(o=>(o.tauntR||o.def.taunts) && Math.hypot(o.x-u.x,o.y-u.y) <= (o.tauntR||o.def.taunts)*PX_UNIT); // a Stolen Standard: raiders nearby go for it first
@@ -9520,7 +9637,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const f = u.fx || {}, near = e=>hfReach(u,e) && (d.targets==='buildings' || Math.hypot(e.x-HF_KX, e.y-HF_KY) <= HF_LEASH);
       if(f.vanish && !u.vanished && u.hp < u.maxHp*f.vanish){ u.vanished = true; u.hidden = true; u.fleeMs = 3000; } // Vanish
       if(u.fleeMs>0){ u.fleeMs -= dt; hfIdle(u, dt); hfMove(u, HF_KX, HF_KY, dt, 30); return; }
-      for(const o of hf.units){ if(o===u || o.side!=='p' || o.hp<=0 || !o.fx || !o.fx.muster || hfD(o,u) > o.fx.muster || !o.lastT || o.lastT.hp<=0 || o.lastT.hidden) continue; if(hfReach(u, o.lastT)){ t = o.lastT; break; } } // Muster
+      if(u.howlMs>0 && u.howlT && u.howlT.hp>0 && !u.howlT.dead && !isPara(u)) t = u.howlT; // Howl: the pack's quarry
+      if(!t && d.atkStyle==='interval-ranged'){ let sd = Infinity; for(const e of foes){ if(e.spotBy!=='p' || !(e.spotMs>0) || e.hp<=0 || e.hidden) continue; const dd = Math.hypot(e.x-u.x, e.y-u.y); if(dd <= u.rng + 6 && dd < sd){ sd = dd; t = e; } } } // spotted: shot first
+      if(!t) for(const o of hf.units){ if(o===u || o.side!=='p' || o.hp<=0 || !o.fx || !o.fx.muster || hfD(o,u) > o.fx.muster || !o.lastT || o.lastT.hp<=0 || o.lastT.hidden) continue; if(hfReach(u, o.lastT)){ t = o.lastT; break; } } // Muster
       if(!t && f.guard){ // Guard Dog: only what comes near its post, and back to the post when nothing does
         if(!u.post || u.post.hp<=0 || u.post.dead){ let b = null, bd = Infinity; for(const o of hf.units){ if(o.side!=='p' || (o.kind!=='bld' && o.kind!=='pent') || o.hp<=0) continue; const dd = Math.hypot(o.x-u.x, o.y-u.y); if(dd<bd){ bd = dd; b = o; } } u.post = b; }
         if(u.post){ t = hfNearest(u, foes, 2*HF_W, e=>hfReach(u,e) && hfD(u.post, e) <= f.guard); u.barkAt = t;
@@ -9570,6 +9689,113 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(f.burst) for(const o of hf.units){ if(o.side===k.side || o.hp<=0 || o.kind!=='troop' || o===v || hfD(v,o) > f.burst.r) continue; hfHurt(o, f.burst.dmg, k); }
     if(f.blood && k.side==='p') hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + f.blood);
   }
+
+  // ---- story mechanics in the Holdfast: every card does here what it does in a story fight ----
+  function hfCost(def){ return (def && def.cardType!=='spell' && !def.isBuilding && hf && hf.units.some(u=>u.side==='p' && u.hp>0 && !u.dead && u.def.counts)) ? Math.max(1, def.cost - 1) : (def ? def.cost : 0); } // the Counting House
+  function hfBadge(u, text){ if(!u.el) return; let b = u.el.querySelector('.store-badge'); if(!b){ if(!text) return; b = document.createElement('div'); b.className = 'store-badge'; u.el.appendChild(b); } if(b.textContent!==text) b.textContent = text; }
+  function hfRate(u){ // how fast it strikes: numbed slower, grieving faster, a building with a Borer in it slower
+    let m = 1; if(u.numbMs>0) m /= (u.numbMult||1.35); if(u.hasteMs>0) m *= 1 + ((u.def.grieves && u.def.grieves.haste) || 0.3);
+    if(u.kind!=='troop') for(const o of hf.units) if(o.attached && o.host===u && o.def.bores && o.hp>0){ m *= o.def.bores; break; }
+    return m;
+  }
+  function hfCopy(side, def, x, y, frac){ // a copy at frac of its health, worth nothing: an Echo, an Encore, a Stage, a Mummer, Exhume
+    if(!def || def.isBuilding || def.cardType==='spell') return [];
+    if(side==='p' && hasTrinket('wardrobe')) frac = 1; // Ysolde's Wardrobe: your copies arrive whole
+    const n = def.squad || 1, out = [];
+    for(let k=0;k<n;k++){ const u = hfMake(side, def, x + (n>1 ? (k%2?7:-7) : 0), y + (n>1 ? (k<2?-7:7) : 0), side==='a' ? {tag:'wave'} : {});
+      u.maxHp = Math.max(1, Math.round(u.maxHp*frac)); u.hp = Math.min(u.hp, u.maxHp); u.cost = 0; u.copied = true; u.hx = u.x; u.hy = u.y; if(u.el) u.el.classList.add('copied'); out.push(u); }
+    return out;
+  }
+  function hfLeachOnto(side, t){ const l = hfMake(side, hfDefOf('Leach'), t.x, t.y, {}); l.cost = 0; l.hx = l.x; l.hy = l.y; } // a free Leach, landed on a troop
+  function hfSecond(u, dt){ // the second weapon: the nearest rival of its kind within its reach
+    const S = u.def.second; u.acc2 = (u.acc2||0) + dt*hfRate(u); if(u.acc2 < S.atkInterval) return;
+    let t = null, bd = S.range*PX_UNIT;
+    for(const o of (u.side==='p' ? hf.E : hf.P)){ if(o.hp<=0 || o.dead || o.under || o.hidden) continue; if(S.targets==='troops' ? o.kind!=='troop' : o.kind==='troop') continue;
+      const d = Math.hypot(o.x-u.x, o.y-u.y) - (o.r||0); if(d <= bd){ bd = d; t = o; } }
+    if(!t){ u.acc2 = S.atkInterval; return; } // held ready
+    u.acc2 = 0; hfHurt(t, S.dmg, u); hfShot(u, t); sfxFire(0.9);
+  }
+  function hfLob(u, t){ // a Bombard's stone: it lands where the target stood
+    sfxFire(0.6); const L = u.def.lob, R = L.r*PX_UNIT, st = hfEl('hfStage'), e = document.createElement('div'), m = document.createElement('div');
+    e.className = 'lob ' + u.side; m.className = 'lob-mark ' + u.side; m.style.width = m.style.height = (2*R)+'px'; m.style.marginLeft = m.style.marginTop = (-R)+'px'; m.style.left = t.x+'px'; m.style.top = t.y+'px';
+    st.appendChild(m); st.appendChild(e);
+    hf.lobs.push({side:u.side, by:u, dmg:u.dmg, primary:t, tx:t.x, ty:t.y, sx:u.x, sy:u.y, ms:0, flight:L.flight, r:R, splashFrac:L.splashFrac, el:e, mark:m});
+  }
+  function hfKennel(u, dt){ // the Houndmaster looses a Jackal now and then while raiders are about
+    if(!hf.E.some(e=>e.kind==='troop')) return;
+    u.kT = (u.kT||0) + dt; if(u.kT < u.def.kennel.every) return; u.kT = 0;
+    if(hf.units.filter(o=>o.pupOf===u && o.hp>0 && !o.dead).length >= u.def.kennel.max) return;
+    const j = hfMake(u.side, hfDefOf('Jackal'), u.x + (Math.random()-0.5)*20, u.y + 8, {}); j.cost = 0; j.pupOf = u; j.hx = j.x; j.hy = j.y;
+  }
+  function hfTickCarry(u, dt){ // a Tick holding enough goes to where a burst would mend the most, and bursts
+    if((u.store||0) < TICK_BURST_MIN || (u.attached && u.store < u.def.storeMax)) return false;
+    const R = TICK_BURST_R*PX_UNIT, friends = hf.units.filter(o=>o.side===u.side && o!==u && o.kind==='troop' && o.hp>0 && !isPara(o));
+    let best = null, bs = 0;
+    for(const c of friends){ let sc = 0; for(const o of friends) if(o.hp<o.maxHp && Math.hypot(o.x-c.x, o.y-c.y) <= R) sc += Math.min(u.store, o.maxHp-o.hp); if(sc>bs){ bs = sc; best = c; } }
+    if(!best || bs < 5) return false;
+    if(u.attached){ u.attached = false; u.host = null; u.biteHost = null; u.latchCd = 1200; }
+    if(Math.hypot(best.x-u.x, best.y-u.y) <= 4*PX_UNIT){
+      for(const o of friends) if(o.hp<o.maxHp && Math.hypot(o.x-u.x, o.y-u.y) <= R){ o.healMs = 1000; o.healRate = Math.min(u.store, o.maxHp-o.hp); }
+      hfAscii(u.x, u.y, {chars:"+*", n:10, dist:[R*.4, R*.9], dur:800, cls:'p', mode:'ring', size:.8}); sfxMercy();
+      u.store = 0; u.hp = 0; u.drained = true; return true; } // spent, not killed
+    hfMove(u, best.x, best.y, dt*TICK_CARRY_MULT, 0); return true; // full, it runs
+  }
+  function hfWorks(u, dt, foes){ // your buildings' own work: blades, the Stage, the Strongbox, the Siege Engine's crawl
+    const d = u.def;
+    if(d.thresh){ for(const e of foes){ if(e.kind!=='troop' || e.hp<=0 || e.under || e.leap || (e.def.flies && !e.attached) || hfD(e, u) > d.thresh.r) continue; hfHurt(e, d.thresh.dps*dt/1000, u); }
+      if(!lowFx && Math.random() < dt/250) hfAscii(u.x, u.y, {chars:"-/|\\", n:2, dist:[6,18], dur:300, cls:'p', spin:360, size:.6}); } // the Thresher
+    if(d.stage && hf.phase==='fight'){ u.stageT = (u.stageT||0) + dt; if(u.stageT >= d.stage.every){ u.stageT = 0; const src = hf.lastTroop.p; // the Stage replays your last troop beside it
+      if(src){ hfCopy('p', src, u.x, u.y + (hfRow(u.y) >= 0 ? -18 : 18), d.stage.hp); hfFx(u.x, u.y-16, 'encore'); } } }
+    if(d.bank){ const b = d.bank, over = hf.blood - b.over; u.store = u.store||0; // the Strongbox banks your blood above its line, and pays it back when you run low
+      if(over>0 && u.store < b.max){ const t = Math.min(over, b.rate*dt/1000, b.max - u.store); hf.blood -= t; u.store += t; }
+      else if(hf.blood < b.low && u.store>0){ const g = Math.min(u.store, b.pay*dt/1000); hf.blood += g; u.store -= g; }
+      hfBadge(u, u.store>=1 ? '+'+Math.floor(u.store) : ''); }
+    if(d.crawls && hf.phase==='fight' && !foes.some(e=>e.kind==='troop' && e.hp>0 && !e.under && Math.hypot(e.x-u.x, e.y-u.y) <= u.rng + 6)){ // the Siege Engine crawls toward the raiders, as far as the moat
+      const t = hfNearest(u, foes.filter(e=>e.kind==='troop'), 4*HF_W); if(t){ const dx = t.x-u.x, dy = t.y-u.y, L = Math.hypot(dx, dy)||1, st = d.crawls.pps*PX_UNIT*dt/1000, lim = HF_PH - 13;
+        const nx = Math.max(HF_KX-lim, Math.min(HF_KX+lim, u.x + dx/L*st)), ny = Math.max(HF_KY-lim, Math.min(HF_KY+lim, u.y + dy/L*st));
+        if(Math.max(Math.abs(nx-HF_KX), Math.abs(ny-HF_KY)) >= 1.5*HF_CELL + 4 && !hf.units.some(o=>o!==u && o.side==='p' && o.kind!=='troop' && o.hp>0 && Math.hypot(o.x-nx, o.y-ny) < 24 && Math.hypot(o.x-nx, o.y-ny) < Math.hypot(o.x-u.x, o.y-u.y))){ u.x = nx; u.y = ny; } } }
+  }
+  function hfTickExtras(dt){ // burning pitch, Fusebearer charges, Bombard stones
+    const k = dt/1000;
+    for(const p of hf.pots) if(hf.clock < p.until) for(const o of hf.E){ if(o.kind!=='troop' || o.hp<=0 || o.under || (o.def.flies && !o.attached) || Math.hypot(o.x-p.x, o.y-p.y) > p.r) continue; hfHurt(o, p.dps*k, null); }
+    if(hf.pots.length) hf.pots = hf.pots.filter(p=>{ if(hf.clock < p.until) return true; if(p.el && p.el.parentNode) p.el.parentNode.removeChild(p.el); return false; });
+    for(const c of hf.charges){ c.ms -= dt; if(c.t && c.t.hp>0 && !c.t.dead){ c.x = c.t.x; c.y = c.t.y; }
+      if(c.el){ const n = String(Math.max(1, Math.ceil(c.ms/1000))), g = c.el.querySelector('.glyph'); if(g && g.textContent!==n) g.textContent = n; }
+      if(c.ms>0) continue; c.done = true;
+      if(c.t && c.t.hp>0 && !c.t.dead){ const bd = c.t.kind==='pent' || c.t.kind==='keep' ? Math.min(c.dmg, FUSE_PENT_DMG) : c.dmg; hfHurt(c.t, bd, c.by && c.by.hp>0 ? c.by : null); hfDmgNum(c.t.x, c.t.y-8, bd); }
+      for(const o of (c.side==='p' ? hf.E : hf.P)){ if(o.kind!=='troop' || o.hp<=0 || o.under || Math.hypot(o.x-c.x, o.y-c.y) > c.r) continue; hfHurt(o, c.splash, null); } // the blast: rival troops only
+      thud(0.4, 0.16, 260); hfAscii(c.x, c.y, {chars:"#*=!", n:12, dist:[8,22], dur:600, cls:c.side, size:.9}); if(c.el && c.el.parentNode) c.el.parentNode.removeChild(c.el); }
+    if(hf.charges.length) hf.charges = hf.charges.filter(c=>!c.done);
+    for(const s of hf.lobs){ s.ms += dt; const q = Math.min(1, s.ms/s.flight), lift = 4*22*q*(1-q);
+      s.el.style.left = (s.sx + (s.tx-s.sx)*q)+'px'; s.el.style.top = (s.sy + (s.ty-s.sy)*q - lift)+'px';
+      if(s.ms < s.flight) continue; s.done = true;
+      for(const o of (s.side==='p' ? hf.E : hf.P)){ if(o.hp<=0 || o.dead || o.under || Math.hypot(o.x-s.tx, o.y-s.ty) > s.r + (o.r||0)*0.5) continue; const prim = o===s.primary; if(o.kind==='pent' && !prim) continue;
+        const dmg = s.dmg*(prim ? 1 : s.splashFrac); hfHurt(o, dmg, s.by && s.by.hp>0 ? s.by : null); hfDmgNum(o.x, o.y-6, dmg); }
+      hfAscii(s.tx, s.ty, {chars:"o*#.", n:9, dist:[6,18], dur:500, cls:s.side, size:.8}); thud(0.3, 0.12, 220);
+      for(const e of [s.el, s.mark]) if(e && e.parentNode) e.parentNode.removeChild(e); }
+    if(hf.lobs.length) hf.lobs = hf.lobs.filter(s=>!s.done);
+  }
+  function hfFallen(v){ // a troop falls: a Mummer's borrowed shape, a Mourner's grief, graves, Gleaners, Middens and Charnel Walls, an Abomination's Leaches, a Bondsman's price, a Lien, a bleeding burst, a Borer's eggs
+    const drained = !!v.drained, run = hf;
+    if(v.def.mummer){ const k = v.lastHitBy, kd = k && k.kind==='troop' && CARD_DEFS.find(c=>c.name===k.name && !c.isBuilding && c.cardType!=='spell'); if(kd && k.side!==v.side) hfCopy(v.side, kd, v.x, v.y, v.def.mummer.hp); }
+    if(!drained && !isPara(v) && v.cost>0) for(const m of hf.units){ const g = m.def.grieves; if(!g || m===v || m.side!==v.side || m.hp<=0 || m.dead || hfD(m, v) > g.r || hf.clock - (m.griefAt||-1e9) < g.gap) continue;
+      m.griefAt = hf.clock; m.hp = Math.min(m.maxHp, m.hp + g.heal); m.hasteMs = g.ms; hfFx(m.x, m.y-12, '+'+g.heal); }
+    if(!drained){
+      const d = CARD_DEFS.find(c=>c.name===v.name && !c.isBuilding && c.cardType!=='spell');
+      if(d && v.cost>0 && !v.copied){ hf.graves.push({x:v.x, y:v.y, side:v.side, def:d, cost:v.cost, at:hf.clock}); if(hf.graves.length > 40) hf.graves.shift(); }
+      for(const g of hf.units){ if(g===v || g.hp<=0 || g.dead) continue; const gd = g.def, dd = hfD(g, v);
+        if(gd.mends && dd <= gd.mends.r) g.hp = Math.min(g.maxHp, g.hp + gd.mends.hp);
+        if(gd.gleans && (g.glean||0) < gd.gleans.max && dd <= gd.gleans.r){ g.glean = (g.glean||0) + 1; g.maxHp += gd.gleans.hp; g.hp += gd.gleans.hp; g.dmg += gd.gleans.dmg; hfBadge(g, '+'+g.glean); }
+        if(gd.midden && dd <= gd.midden.r && (g.bodies = (g.bodies||0) + 1) >= gd.midden.per){ g.bodies = 0; const sc = hfMake(g.side, SCRAP_DEF, g.x, g.y + (hfRow(g.y) >= 0 ? -16 : 16), {}); sc.cost = 0; sc.hx = sc.x; sc.hy = sc.y; hfAscii(g.x, g.y, {chars:"%#.", n:6, dist:[6,16], dur:500, cls:'bone', mode:'up', size:.6}); }
+      }
+    }
+    if(v.def.bursts) for(let i=0;i<v.def.bursts;i++){ const l = hfMake(v.side, hfDefOf('Leach'), v.x + (i ? 6 : -6), v.y, {}); l.cost = 0; l.hx = l.x; l.hy = l.y; } // the Abomination splits open
+    if(v.def.bond && !v.copied && v.cost>0 && v.side==='p'){ const back = Math.round(v.cost*v.def.bond*10)/10; hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + back); hfFx(v.x, v.y-14, `+${back} back`); } // a Bondsman's price comes home
+    if(v.lien && v.cost>0){ hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + v.cost); hfFx(v.x, v.y-16, `Lien paid: +${+v.cost.toFixed(1)}`); v.lien = false; }
+    if(v.bleedMs>0 && v.bleedBurst){ const b = v.bleedBurst; for(const o of hf.units){ if(o===v || o.side!==v.side || o.kind!=='troop' || o.hp<=0 || o.dead || hfD(o, v) > b.r) continue; hfHurt(o, b.burst, null); hfDmgNum(o.x, o.y-6, b.burst); }
+      hfAscii(v.x, v.y, {chars:"*,'.", n:10, dist:[6,20], dur:600, cls:'p', size:.8, gravity:6}); } // died bleeding: it bursts over its own side
+    if(v.def.lays && v.attached){ const n = v.def.lays, x = v.x, y = v.y, side = v.side; setTimeout(()=>{ if(hf!==run || !hf || hf.over) return; for(let i=0;i<n;i++){ const a = i/n*Math.PI*2; const sp = hfMake(side, SPIDER_DEF, x + Math.cos(a)*10, y + Math.sin(a)*8, {}); sp.cost = 0; sp.hx = sp.x; sp.hy = sp.y; } }, 1800); } // a Borer's eggs
+  }
   function hfKill(u){
     if(u.def && u.def.boss && u.side==='a' && !holdfast.undermaster){ holdfast.undermaster = true; saveHoldfast(); hfBanner('The Undermaster falls. His Spike Pit is yours to build in the story now.', 5000); } // the boss's first fall
     { const k = u.lastHitBy; if(k && k!==u && k.fx && k.fx.kill && k.hp>0 && k.side!==u.side && u.kind==='troop') hfFnKill(k, u); }
@@ -9587,6 +9813,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(u.fx && u.fx.purse && u.purse>0){ const pay = u.purse*u.fx.purse.mult; hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + pay); hfFx(u.x, u.y-14, `+${pay.toFixed(1)} blood`); u.purse = 0; } // a Smuggler's purse
     { const k = u.lastHitBy; if(k && k.fx && k.fx.skulk && k.hp>0 && k.side!==u.side && u.kind==='troop') k.rehideMs = k.fx.skulk; }
     if(u.fx && u.fx.death && u.kind==='troop') hfFnBurst(u, u.fx.death);
+    if(u.kind==='troop') hfFallen(u); if(u.def.counts) hf.handDirty = true;
     u.dead = true; if(u.el && u.el.parentNode) u.el.parentNode.removeChild(u.el);
     hfFx(u.x, u.y, '✕');
     if(u.kind==='troop') sfxDeath(u.side==='a' ? 1 : 0.8); else if(u.kind==='pent'){ sfxBaseHit(); hfSfxCollapse(); } else hfSfxCollapse(); // troops fall; walls and camps come down
@@ -9625,6 +9852,25 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const ring = document.createElement('div'); ring.className = 'sanct-zone p'; ring.style.cssText = `width:${2*R}px;height:${2*R}px;left:${x}px;top:${y}px;opacity:.7`; hfEl('hfStage').appendChild(ring); setTimeout(()=>{ if(ring.parentNode) ring.parentNode.removeChild(ring); }, 450);
     hfSpellFx(def, x, y);
     const hit = (e, d)=>{ hfHurt(e, d, null); hfDmgNum(e.x, e.y-6, d); }; // damage with a number over the troop
+    const say = t=>hfFx(x, y-12, t);
+    if(def.echo || def.encore){ const src = hf.lastTroop[def.echo ? 'p' : 'a']; // Echo: your last troop again, here. Encore: the raiders' last, for you
+      if(src){ hfCopy('p', src, x, y, (def.echo||def.encore).hp); hfAscii(x, y, {chars:"=~*", n:8, dist:[8,24], dur:500, cls:'p', size:.7}); sfxSpawn(); } else say(def.echo ? 'nothing to echo yet' : 'no raider to copy yet'); return; }
+    if(def.undermine){ for(const b of hf.E) if(b.kind==='camp' && inR(b)){ b.silenceMs = def.undermine.silence; b.underMs = def.undermine.ms; b.underMore = def.undermine.more; hfAscii(b.x, b.y, {chars:"v.:", n:6, dist:[6,20], dur:700, cls:'p', size:.7}); } sfxSpell(); return; } // a siege camp falls silent and takes more
+    if(def.lien){ const t = foes.filter(e=>e.kind==='troop' && !e.lien && !e.hidden).sort((a,b)=>(b.cost-a.cost) || (b.hp-a.hp))[0]; // the dearest raider in reach pays its price when it falls
+      if(t){ t.lien = true; hfFx(t.x, t.y-14, `Lien: ${+t.cost.toFixed(1)}`); } else say('Nothing in reach to hold'); sfxSpell(); return; }
+    if(def.interest){ hf.interestUntil = hf.clock + def.interest.ms; say(`Interest for ${def.interest.ms/1000}s`); sfxSpell(); return; }
+    if(def.pickover || def.exhume){ const sp = def.pickover || def.exhume, mine = hf.graves.filter(g=>g.side==='p' && hf.clock - g.at <= sp.ms && Math.hypot(g.x-x, g.y-y) <= R);
+      if(def.pickover){ const got = Math.round(mine.reduce((a,g)=>a+g.cost, 0)*sp.frac*10)/10; hf.graves = hf.graves.filter(g=>!mine.includes(g));
+        if(got>0){ hf.blood = Math.min(HF_BLOOD_CAP, hf.blood + got); say(`picked over: +${got}`); } else say('Nothing here to pick over'); }
+      else { const up = mine.sort((a,b)=>b.at-a.at).slice(0, sp.n); hf.graves = hf.graves.filter(g=>!up.includes(g)); for(const g of up) hfCopy('p', g.def, g.x, g.y, sp.hp); say(up.length ? `${up.length} stand back up` : 'No one here to raise'); }
+      sfxSpell(); return; }
+    if(def.howl){ const mine = friends.filter(f=>!isPara(f)), t = hf.E.filter(e=>e.kind==='troop' && e.hp>0 && !e.hidden && !e.under && Math.hypot(e.x-x, e.y-y) <= def.howl.reach*PX_UNIT).sort((a,b)=>b.hp-a.hp)[0];
+      if(t){ for(const f of mine){ f.howlT = t; f.howlMs = def.howl.ms; } hfFx(t.x, t.y-14, 'hunted'); } else say('Nothing in reach to hunt'); sfxSpell(); return; }
+    if(def.lust){ for(const f of friends){ f.lustMs = def.lust.ms; f.lustFrac = def.lust.frac; } sfxSpell(); return; }
+    if(def.pot){ const el = document.createElement('div'); el.className = 'pot-zone'; el.style.width = el.style.height = (2*R)+'px'; el.style.left = x+'px'; el.style.top = y+'px'; el.style.setProperty('--ms', def.pot.ms+'ms'); hfEl('hfStage').appendChild(el);
+      hf.pots.push({x, y, r:R, dps:def.pot.dps, until:hf.clock + def.pot.ms, el}); sfxSpell(); return; } // burning pitch
+    if(def.ham){ const t = foes.filter(e=>e.kind==='troop' && !e.hidden).sort((a,b)=>b.maxHp-a.maxHp)[0];
+      if(t){ t.hamMs = def.ham.ms; t.hamMore = def.ham.more; t.slowMs = Math.max(t.slowMs||0, def.ham.ms); hfFx(t.x, t.y-14, 'hamstrung'); } else say('Nothing in reach'); sfxSpell(); return; }
     if(def.zone){ hfZone(x, y, R, def.zone.ms, 'p', def.zone.cut, def.zone.regen, def.zone.slow); sfxOath(); return; }
     if(def.heal){ for(const f of friends){ f.healMs = def.healDuration; f.healRate = def.heal/def.healDuration*1000; } sfxMercy(); return; }
     if(def.wardDuration){ for(const f of friends){ f.wardMs = def.wardDuration; f.wardCut = def.wardCut||0.5; } sfxOath(); return; }
@@ -9642,7 +9888,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         for(const f of hf.P.filter(u=>u.kind==='troop' && inR(u))) hit(f, (f.maxHp*r.pct + r.flat)*r.friendly);
         hfAscii(x, y, {chars:"*•·'", n:16, dist:[R*.5,R], dur:650, cls:'p', size:.8, gravity:6}); sfxFracture(); }, r.delay); return; }
     if(def.sunder){ for(const e of foes){ if(e.kind==='troop'){ hit(e, e.maxHp*def.sunder.pct); e.rootMs = def.sunder.root; e.openMs = def.sunder.ms; e.wardMs = 0; } } sfxFracture(); return; }
-    if(def.bleed){ for(const e of foes) if(e.kind==='troop'){ e.bleedMs = def.bleed.ms; e.bleedDps = def.bleed.dps; } sfxSpell(); return; }
+    if(def.bleed){ for(const e of foes) if(e.kind==='troop'){ e.bleedMs = def.bleed.ms; e.bleedDps = def.bleed.dps; e.bleedBurst = def.bleed.burst ? def.bleed : null; } sfxSpell(); return; }
     if(def.pctDamage){ for(const e of foes) hit(e, e.kind==='troop' ? e.maxHp*def.pctDamage : e.maxHp*(def.buildingPct||0.1)); for(const f of friends) hit(f, f.maxHp*def.pctDamage*(def.friendlyFrac||0)); sfxFracture(); return; }
     // a plain blast (Blood Burst and any spell that has no special effect)
     const dmg = def.dmg || def.cost*4; for(const e of foes) hit(e, dmg); for(const f of friends) hit(f, dmg*(def.friendlyFrac||0)); sfxSpell();
@@ -9650,7 +9896,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
 
   // ---- placing things ----
   const hfInGround = (x,y) => { const ax = Math.abs(x-HF_KX), ay = Math.abs(y-HF_KY); return ax<=HF_PH && ay<=HF_PH && Math.max(ax, ay) >= 1.5*HF_CELL; }; // anywhere on the plot but the Keep
-  function hfAffordable(def){ return (def.isBuilding ? hf.mortar : hf.blood) >= def.cost; }
+  function hfAffordable(def){ return (def.isBuilding ? hf.mortar : hf.blood) >= hfCost(def); }
   // The grid: cells of HF_CELL, centred on the Keep. A building sits in one cell. The Keep's cells, the Pentagons and the ground's edge are off limits
   const hfCol = x => Math.round((x-HF_KX)/HF_CELL), hfRow = y => Math.round((y-HF_KY)/HF_CELL);
   const hfCellX = c => HF_KX + c*HF_CELL, hfCellY = r => HF_KY + r*HF_CELL;
@@ -9678,7 +9924,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function hfPlaceOnGrid(def, x, y){
     const c = hfCol(x), r = hfRow(y); if(!hfCellFree(c, r)) return false;
     if(def.hfBuild && hf.units.filter(u=>u.side==='p' && u.kind==='bld' && u.name===def.name && u.hp>0).length >= HF_MAX_OF_KIND){ /* your building cards have no limit here; only the Holdfast's own are capped */ hfBanner(`That is as many ${def.name}s as the ground will hold.`, 2200); return false; }
-    hf.mortar -= def.cost; hfMake('p', def, hfCellX(c), hfCellY(r), {r:13}); haptic(HAPTIC.place); hfSfxBuild(); return true;
+    let c2 = null; if(def.pair){ for(const [dc, dr] of [[1,0],[-1,0],[0,1],[0,-1]]) if(hfCellFree(c+dc, r+dr)){ c2 = [c+dc, r+dr]; break; } if(!c2){ hfBanner('A Barricade comes as two: it needs a free cell beside this one.', 2400); return false; } } // a Barricade: two walls side by side
+    hf.mortar -= def.cost; hfMake('p', def, hfCellX(c), hfCellY(r), {r:13}); if(c2) hfMake('p', def, hfCellX(c2[0]), hfCellY(c2[1]), {r:13}); if(def.counts) hf.handDirty = true; haptic(HAPTIC.place); hfSfxBuild(); return true;
   }
   // Between waves you may take down any building of yours (not a Pentagon or the Keep); half its Mortar comes back, rounded down
   const hfBldAt = (x, y)=>{ const c = hfCol(x), r = hfRow(y); return hf.units.find(b=>b.hp>0 && !b.dead && b.side==='p' && b.kind==='bld' && hfCol(b.x)===c && hfRow(b.y)===r); };
@@ -9703,12 +9950,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       hf.blood -= def.cost; hfCast(def, x, y); haptic(HAPTIC.place);
     } else if(def.formation){
       if(!hfInGround(x,y)) return false;
-      hf.blood -= def.cost; for(const [d,ox] of [[def.formation.a,-9],[def.formation.b,9]]) hfMake('p', d, x+ox, y, {}); haptic(HAPTIC.place);
+      hf.blood -= hfCost(def); for(const [d,ox] of [[def.formation.a,-9],[def.formation.b,9]]) hfMake('p', d, x+ox, y, {}); haptic(HAPTIC.place);
     } else if(def.isBuilding){
       if(!hfPlaceOnGrid(def, x, y)) return false; // a deck building: any number of them, on the grid
     } else {
       if(!hfInGround(x,y)) return false;
-      hf.blood -= def.cost; const n = def.squad || 1;
+      hf.blood -= hfCost(def); const n = def.squad || 1; hf.lastTroop.p = CARD_DEFS.find(c=>c.name===def.name) || def; // remembered for Echo and the Stage
       for(let k=0;k<n;k++){ const u = hfMake('p', def, x+(n>1 ? (k%2?7:-7) : 0), y+(n>1 ? (k<2?-7:7) : 0), {}); u.hx = u.x; u.hy = u.y; } haptic(HAPTIC.place); sfxSpawn();
     }
     if(def.consumable){ def.charges--; if(def.charges<=0) hf.hand.splice(i, 1); } // a reward card: each use spends a charge, and the last takes it from your hand
@@ -9735,6 +9982,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     for(const u of P.concat(E)){ // timers and zones
       u.inSanct = false; u.inEnemySanct = false;
       for(const z of hf.zones){ if(!z.on) continue; if(Math.hypot(u.x-z.x,u.y-z.y) <= z.r){ if(z.side===u.side){ u.inSanct = true; if(u.kind==='troop') u.hp = Math.min(u.maxHp, u.hp + z.regen*dt/1000); } else u.inEnemySanct = true; } }
+      if(u.numbMs>0) u.numbMs -= dt; if(u.hasteMs>0) u.hasteMs -= dt; if(u.silenceMs>0) u.silenceMs -= dt; if(u.underMs>0) u.underMs -= dt; if(u.hamMs>0) u.hamMs -= dt; if(u.howlMs>0) u.howlMs -= dt; if(u.spotMs>0) u.spotMs -= dt; if(u.lustMs>0) u.lustMs -= dt;
+      if(u.def.kennel && u.kind==='troop') hfKennel(u, dt);
       if(u.confuseMs>0) u.confuseMs -= dt; if(u.turnMs>0) u.turnMs -= dt; if(u.wardMs>0) u.wardMs -= dt; if(u.openMs>0) u.openMs -= dt; if(u.stunMs>0) u.stunMs -= dt; if(u.rootMs>0) u.rootMs -= dt; if(u.slowMs>0) u.slowMs -= dt;
       if(u.fx && u.fx.pulse && u.kind==='troop') hfFnPulse(u, dt); // Training Camp functions
       if(fitLvl(u, 'holes')){ const hl = fitLvl(u, 'holes'); for(const e of (u.side==='p' ? hf.E : hf.P)) if(e.kind==='troop' && e.hp>0 && Math.hypot(e.x-u.x, e.y-u.y) <= (hl===2 ? 6 : 4)*PX_UNIT) hfHurt(e, (hl===2 ? 3 : 2)*dt/1000, u); } // Workshop Murder holes
@@ -9747,7 +9996,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(u.bleedMs>0){ u.bleedMs -= dt; hfHurt(u, u.bleedDps*dt/1000, null); }
     }
     for(const u of P){ if(u.kind==='troop'){ u.drive = 1; for(const o of P) if(o.def.drives && o!==u && Math.hypot(o.x-u.x,o.y-u.y) <= o.def.drives.radius*PX_UNIT){ u.drive = o.def.drives.mult; break; } } }
+    { const towers = P.filter(o=>o.def.watch); for(const u of P) if(u.kind==='troop' && u.def.atkStyle==='interval-ranged'){ let m = 1; for(const t of towers) if(hfD(t, u) <= t.def.watch.r) m = Math.max(m, t.def.watch.mult); u.rng = (u.def.range||0)*PX_UNIT*m; } } // a Watchtower: your ranged troops near it reach further
     for(const u of P.concat(E)) if(u.hp>0) hfAct(u, dt);
+    hfTickExtras(dt);
     const shove = 0.12*dt/16.67, troops = hf.units.filter(u=>u.kind==='troop' && u.hp>0 && !u.attached && !u.leap); // a light crowd shove, scaled by time so 120 Hz phones push no harder, so a push does not stack on one pixel
     for(let a=0;a<troops.length;a++) for(let b=a+1;b<troops.length;b++){
       const A = troops[a], B = troops[b], dx = A.x-B.x, dy = A.y-B.y, d = Math.hypot(dx,dy);
@@ -9876,7 +10127,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const e = document.createElement('div'); e.className = 'hf-card' + (c.isBuilding ? ' bld' : '') + (c.consumable ? ' reward' : '');
       e.innerHTML = `<div class="n"></div><div class="c"></div><div class="s"></div>`;
       e.querySelector('.n').textContent = c.formation ? c.formation.a.name+' +' : c.name;
-      e.querySelector('.c').textContent = (c.isBuilding ? `Mortar ${c.cost}` : `Blood ${c.cost}`) + (c.consumable ? ` · ${c.charges} use${c.charges===1?'':'s'} left` : '');
+      e.querySelector('.c').textContent = (c.isBuilding ? `Mortar ${c.cost}` : `Blood ${hfCost(c)}`) + (c.consumable ? ` · ${c.charges} use${c.charges===1?'':'s'} left` : '');
       e.querySelector('.s').textContent = c.formation ? c.formation.b.name : hfCardLine(c);
       e.onclick = ()=>{ if(!hf || hf.over || !hfAffordable(c)) return; hf.sel = hf.sel===i ? null : i; hf.selBuild = null; hfMarkSel(); };
       h.appendChild(e);
@@ -9968,7 +10219,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function hfLoop(ts){
     if(!hf || !hf.on){ hfRaf = 0; return; }
     const dt = Math.min(80, ts - hfLast); hfLast = ts;
-    if(!hfPortrait()){ try{ hfStep(dt); hfRender(dt); }catch(e){ noteError(e); } }
+    if(!hfPortrait()){ try{ hfStep(dt); hfRender(dt); hfDrawRivers(ts/1000); fxWatch(dt); }catch(e){ noteError(e); } }
     hfRaf = requestAnimationFrame(hfLoop);
   }
   function hfOpen(){
@@ -10603,7 +10854,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const o = document.getElementById('pitOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('pitList'); list.innerHTML = '';
     const add = (t, cls, parent)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; (parent || list).appendChild(d); return d; };
     add(`${pitState.list.length} of ${PIT_CAP}`, 'base-up-head');
-    if(!pitState.list.length) add('Empty. Larvae come up from the Underfield, if you get out alive with them.');
+    if(!pitState.list.length) add('Empty. Larvae come up from the Catacombs, if you get out alive with them.');
     const dishes = FOOD_ITEMS.filter(f=>food[f.id] > 0);
     for(const q of pitState.list){
       const S = PIT_SPECIES[q.sp], grown = pitGrown(q), fns = pitFns(q), row = document.createElement('div'); row.className = 'cg-card alc-row';
@@ -10627,7 +10878,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const list = document.getElementById('tavernList'); list.innerHTML = '';
     const add = (t, cls)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; list.appendChild(d); return d; };
     add(tavernLinked() ? 'Full tonight, and loud.' : 'Quiet tonight.', 'base-up-head');
-    if(ufMeta.freed.length){ add('Back from the Underfield', 'base-up-head'); for(const id of ufMeta.freed){ const q = ufPrisoner(id); add(`${q.name}, ${q.role}. ${q.tavern}`); } }
+    if(ufMeta.freed.length){ add('Back from the Catacombs', 'base-up-head'); for(const id of ufMeta.freed){ const q = ufPrisoner(id); add(`${q.name}, ${q.role}. ${q.tavern}`); } }
     for(const [who, how, words] of tavernRumours()){ const d = add('', 'tavern-rumour'); const w = document.createElement('div'); w.className = 'tavern-who'; w.textContent = `${who} ${how}:`; const q = document.createElement('div'); q.textContent = `"${words.charAt(0).toUpperCase() + words.slice(1)}"`; d.appendChild(w); d.appendChild(q); }
     document.getElementById('tavernOverlay').classList.add('show');
   }
@@ -11269,43 +11520,51 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     requestAnimationFrame(loop);
   }
   /* the rivers are drawn by drawRivers, from the first frame of a fight */
-  document.querySelectorAll('.bridge').forEach(el=>{ // planks across the water: boards with gaps, a little grain, nail heads, and a rail down each side
-    const W = 64, H = 56, k = 3, cv = document.createElement('canvas'); cv.width = W*k; cv.height = H*k; const c = cv.getContext('2d'); c.scale(k, k);
-    const R = (a, b) => a + Math.random()*(b-a), n = 7, bh = H/n;
-    c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(0, 0, W, H); // the gaps between boards
-    for(let i=0;i<n;i++){ const y = i*bh, v = R(-8,8), off = R(-1.5,1.5);
-      c.fillStyle = `rgb(${62+v|0},${48+v|0},${36+v|0})`; c.fillRect(0, y + 0.8, W, bh - 1.6);
-      c.strokeStyle = 'rgba(0,0,0,.22)'; c.lineWidth = 0.5; for(let g=0; g<2; g++){ const gy = y + R(2, bh-2); c.beginPath(); c.moveTo(R(6,20), gy); c.lineTo(R(30,58), gy + R(-0.4,0.4)); c.stroke(); } // grain
-      if(Math.random() < 0.3){ c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(R(14,50), y + bh/2, 1.6, 0.9, 0, 0, Math.PI*2); c.fill(); } // a knot
-      c.fillStyle = 'rgba(0,0,0,.45)'; for(const nx of [7 + off, W - 7 + off]){ c.beginPath(); c.arc(nx, y + bh/2, 0.75, 0, Math.PI*2); c.fill(); } } // nails
-    c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(0, 0, 3, H); c.fillRect(W-3, 0, 3, H); // rails
-    el.textContent = ''; el.style.setProperty('--planks', `url(${cv.toDataURL('image/png')}) center/100% 100% no-repeat`);
-  });
-  { // the island: gravel, cracked, with grass coming up through the cracks. Drawn as plainly as the rest of the board: flat dots, thin cracks, glyph grass
+  // the terrain, toon style: flat colours, a dark outline round everything, one hard highlight. Painted once, so it costs nothing per frame
+  function toonTuft(c, x, y, sc, col){ // a little three-blade tuft, outlined
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    const blades = [[-3, -5], [0, -7], [3, -5]].map(([dx, dy])=>[dx*sc, dy*sc]);
+    for(const [w, st] of [[2.6*sc, 'rgba(14,10,8,.75)'], [1.2*sc, col]]){ c.strokeStyle = st; c.lineWidth = w; c.beginPath(); for(const [dx, dy] of blades){ c.moveTo(x, y); c.lineTo(x + dx, y + dy); } c.stroke(); }
+  }
+  function toonStone(c, x, y, rx, ry, base){
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 1, y + 1.5, rx, ry, 0, 0, Math.PI*2); c.fill(); // a flat shadow
+    c.fillStyle = base; c.strokeStyle = 'rgba(14,10,8,.85)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI*2); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(255,240,215,.22)'; c.beginPath(); c.ellipse(x - rx*.3, y - ry*.35, rx*.38, ry*.25, -.3, 0, Math.PI*2); c.fill(); // one hard highlight
+  }
+  function plankUrl(W, H, across){ return plankCv(W, H, across).toDataURL('image/png'); }
+  function plankCv(W, H, across){ // flat boards laid across the way you walk (down H), dark gaps, nails, a rail down each side. across: you walk left to right
+    const k = 3, cv = document.createElement('canvas'), c = cv.getContext('2d');
+    cv.width = (across ? H : W)*k; cv.height = (across ? W : H)*k; c.scale(k, k); if(across){ c.translate(H, 0); c.rotate(Math.PI/2); }
+    const n = Math.max(3, Math.round(H/8)), bh = H/n, rail = W < 40 ? 2.5 : 3, nx = Math.min(7, W*0.22);
+    c.fillStyle = '#140d09'; c.fillRect(0, 0, W, H); // the gaps
+    for(let i=0;i<n;i++){ const y = i*bh;
+      c.fillStyle = i%2 ? '#4a3726' : '#55402c'; c.fillRect(0, y + 1, W, bh - 2);
+      c.fillStyle = 'rgba(255,230,190,.12)'; c.fillRect(0, y + 1, W, 1.2); // a lit top edge
+      c.fillStyle = '#1c130d'; for(const x of [nx, W - nx]){ c.beginPath(); c.arc(x, y + bh/2, 0.9, 0, Math.PI*2); c.fill(); } } // nails
+    c.fillStyle = '#2a1c12'; c.fillRect(0, 0, rail, H); c.fillRect(W - rail, 0, rail, H); // rails
+    return cv;
+  }
+  document.querySelectorAll('.bridge').forEach(el=>{ el.textContent = ''; el.style.setProperty('--planks', `url(${plankUrl(64, 56)}) center/100% 100% no-repeat`); });
+  { // the island: gravel, cracked, with grass coming up through the cracks
     const W = 360, H = 214, k = 2, cv = document.createElement('canvas'); cv.width = W*k; cv.height = H*k; const c = cv.getContext('2d'); c.scale(k, k);
     const R = (a, b) => a + Math.random()*(b-a);
-    for(let i=0;i<900;i++){ c.fillStyle = Math.random() < 0.5 ? 'rgba(0,0,0,.22)' : 'rgba(160,140,112,.16)'; const r = R(0.7,1.6); c.beginPath(); c.arc(R(0,W), R(0,H), r, 0, Math.PI*2); c.fill(); } // gravel
+    for(let i=0;i<260;i++){ c.fillStyle = Math.random() < 0.5 ? '#231a16' : '#3a2e25'; const r = R(1,2.2); c.beginPath(); c.arc(R(0,W), R(0,H), r, 0, Math.PI*2); c.fill(); } // gravel, two flat tones
     const tufts = [];
-    for(let n=0;n<5;n++){ let x = R(0,W), y = R(0,H), a = R(0, Math.PI*2); c.beginPath(); c.moveTo(x, y);
-      for(let i=0, len = R(10,22)|0; i<len; i++){ a += R(-0.5,0.5); x += Math.cos(a)*R(5,9); y += Math.sin(a)*R(5,9); c.lineTo(x, y); if(Math.random() < 0.4) tufts.push([x, y]); }
-      c.strokeStyle = 'rgba(0,0,0,.42)'; c.lineWidth = 1.2; c.lineJoin = 'round'; c.stroke(); } // cracks
-    c.font = '10px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.textBaseline = 'bottom';
-    for(const [x,y] of tufts){ c.fillStyle = Math.random() < 0.5 ? 'rgba(120,152,76,.7)' : 'rgba(100,130,62,.55)'; c.fillText(Math.random() < 0.6 ? 'v' : "'", x + R(-2,2), y + 2); } // grass in the cracks
+    for(let n=0;n<5;n++){ let x = R(0,W), y = R(0,H), a = R(0, Math.PI*2); const pts = [[x, y]];
+      for(let i=0, len = R(10,22)|0; i<len; i++){ a += R(-0.5,0.5); x += Math.cos(a)*R(5,9); y += Math.sin(a)*R(5,9); pts.push([x, y]); if(Math.random() < 0.4) tufts.push([x, y]); }
+      for(const [w, st, oy] of [[3, '#140e0b', 0], [1, 'rgba(120,98,78,.45)', 1.6]]){ c.strokeStyle = st; c.lineWidth = w; c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); pts.forEach(([px, py], i)=> i ? c.lineTo(px, py + oy) : c.moveTo(px, py + oy)); c.stroke(); } } // cracks with a lit lower lip
+    for(const [x,y] of tufts) toonTuft(c, x + R(-2,2), y + 2, 1, Math.random() < 0.5 ? '#7fa24c' : '#6a8a3e'); // grass in the cracks
     const z = document.querySelector('.zone.island'); z.textContent = ''; z.style.background = `url(${cv.toDataURL('image/png')}) center/100% 100% no-repeat, var(--island)`;
   }
   document.querySelectorAll('.zone.land').forEach(z=>{ // the home lands: packed earth, pebbles, a few stones, grass, and paths trodden from the bridges to the Pentagons
     const top = z.classList.contains('rland'), W = 360, H = 169, k = 2, cv = document.createElement('canvas'); cv.width = W*k; cv.height = H*k; const c = cv.getContext('2d'); c.scale(k, k);
     const R = (a, b) => a + Math.random()*(b-a), fy = v => top ? v : H - v; // v measured from the base end
-    c.lineCap = 'round'; c.strokeStyle = 'rgba(150,120,90,.07)'; c.lineWidth = 12;
+    c.lineCap = 'round'; c.strokeStyle = 'rgba(150,120,90,.1)'; c.lineWidth = 12;
     for(const [bx, px] of [[0.18*W, 0.25*W], [0.82*W, 0.75*W]]){ c.beginPath(); c.moveTo(bx, fy(H + 4)); c.bezierCurveTo(bx, fy(H*0.55), px, fy(H*0.45), px, fy(10)); c.stroke(); } // the paths
-    for(let i=0;i<700;i++){ c.fillStyle = Math.random() < 0.55 ? 'rgba(0,0,0,.18)' : 'rgba(160,138,110,.13)'; c.beginPath(); c.arc(R(0,W), R(0,H), R(0.6,1.4), 0, Math.PI*2); c.fill(); } // grit
-    for(let i=0;i<14;i++){ const x = R(8,W-8), y = R(18,H-6), rx = R(2,4.5), ry = rx*R(.6,.85); // stones
-      c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x+0.8, y+1, rx, ry, 0, 0, Math.PI*2); c.fill();
-      c.fillStyle = `rgb(${70+R(-8,8)|0},${62+R(-8,8)|0},${54+R(-8,8)|0})`; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI*2); c.fill();
-      c.fillStyle = 'rgba(255,240,220,.08)'; c.beginPath(); c.ellipse(x - rx*.25, y - ry*.3, rx*.5, ry*.35, 0, 0, Math.PI*2); c.fill(); }
-    c.font = '10px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center';
-    for(let i=0;i<16;i++){ const x = R(6,W-6), y = R(22,H-4), n = 1 + (Math.random()*3|0); // grass clumps
-      for(let j=0;j<n;j++){ c.fillStyle = Math.random() < .5 ? 'rgba(120,152,76,.6)' : 'rgba(100,130,62,.5)'; c.fillText(Math.random() < .65 ? 'v' : "'", x + j*4 + R(-1,1), y + R(-1.5,1.5)); } }
+    for(let i=0;i<220;i++){ c.fillStyle = Math.random() < 0.55 ? 'rgba(0,0,0,.22)' : 'rgba(160,138,110,.16)'; c.beginPath(); c.arc(R(0,W), R(0,H), R(0.9,1.8), 0, Math.PI*2); c.fill(); } // grit
+    for(let i=0;i<14;i++){ const rx = R(2.5,4.8); toonStone(c, R(8,W-8), R(18,H-6), rx, rx*R(.6,.85), `rgb(${78+R(-8,8)|0},${68+R(-8,8)|0},${58+R(-8,8)|0})`); } // stones
+    for(let i=0;i<16;i++){ const x = R(6,W-6), y = R(22,H-4), n = 1 + (Math.random()*2|0); // grass clumps
+      for(let j=0;j<n;j++) toonTuft(c, x + j*6, y + R(-1.5,1.5), 1, Math.random() < .5 ? '#7fa24c' : '#6a8a3e'); }
     z.style.backgroundImage = `url(${cv.toDataURL('image/png')})`;
   });
   document.querySelector('.zone.rbase').textContent = 'v . v v . v . v '.repeat(18);
@@ -11327,7 +11586,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   spawnDefenses();
   renderHand(); renderHUD(); renderPentagons();
   requestAnimationFrame(loop);
-  // ======================= THE UNDERFIELD: test arena =======================
+  // ======================= THE CATACOMBS: test arena =======================
   // A room for getting movement and attacks right before the mode is built. Self-contained: it borrows only the sound effects, haptics,
   // the error log and the menu focus from the rest of the game, and touches no story state. Reached from Test tools.
   // Controls follow Cult of the Lamb as closely as we can: melee first, attacks go where you are moving with a soft lock onto the nearest
@@ -11367,7 +11626,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   const ufMakeDoors = () => ({t:{x:UF_W/2, y:0, w:40, h:UF_WALL}, b:{x:UF_W/2, y:UF_H-UF_WALL, w:40, h:UF_WALL}, l:{x:0, y:UF_H/2-20, w:UF_WALL, h:40}, r:{x:UF_W-UF_WALL, y:UF_H/2-20, w:UF_WALL, h:40}});
   let UF_DOORS = ufMakeDoors();
   const UF_OPPOSITE = {t:'b', b:'t', l:'r', r:'l'};
-  const UF_HELP = "THE UNDERFIELD\n\nThree floors down. Something waits at the bottom of each one, in front of the stairs.\n\nYour attacks go the way you are moving, and lock onto the nearest enemy in front of you. Clear a room and its doors open. Every enemy pauses with a pale ring before it strikes: roll through it. Hits and kills give blood, which pays for the curse, the relic and anything you buy.\n\nController: left stick move, X attack (press again for a combo), Y heavy, A roll, hold RT to aim the curse and release to cast it, LT relic, hold RB to open your cards, hold the right stick on one and release RB to play it, Start pause.\n\nKeyboard: WASD, J or left click attack, K heavy, Space roll, hold L or the right mouse button for the curse, Q relic, hold E for your cards, point the mouse at one (or hold 1 to 4) and let go of E.\n\nWhen you die, the bones you earned stay behind. Spend them in the bone pit before you go down again.";
+  const UF_HELP = "THE CATACOMBS\n\nThree floors down. Something waits at the bottom of each one, in front of the stairs.\n\nYour attacks go the way you are moving, and lock onto the nearest enemy in front of you. Clear a room and its doors open. Every enemy pauses with a pale ring before it strikes: roll through it. Hits and kills give blood, which pays for the curse, the relic and anything you buy.\n\nController: left stick move, X attack (press again for a combo), Y heavy, A roll, hold RT to aim the curse and release to cast it, LT relic, hold RB to open your cards, hold the right stick on one and release RB to play it, Start pause.\n\nKeyboard: WASD, J or left click attack, K heavy, Space roll, hold L or the right mouse button for the curse, Q relic, hold E for your cards, point the mouse at one (or hold 1 to 4) and let go of E.\n\nWhen you die, the bones you earned stay behind. Spend them in the bone pit before you go down again.";
   // weapons you can start with; whole numbers, like everything down here
   const UF_WEAPONS = {
     sword:  {name:'Sword', text:'Three hits, the last one heavy.', reach:0, combo:UF.combo},
@@ -11442,7 +11701,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   const ufCursed = id => !!(uf && uf.curses.includes(id));
   const ufWindMul = () => ufCursed('haste') ? 0.67 : 1;
   const ufParaPool = () => Object.keys(UF_PARAS).filter(k=>!UF_PARAS[k].lock || ufPitOn(UF_PARAS[k].lock));
-  const ufTarotOk = t => !t.lock || ufPitOn(t.lock);
+  const UF_TAROT_NEED = {heart2:'heart1', heart3:'heart2'}; /* a card's next level only turns up once you hold the one before */
+  const ufTarotOk = t => (!t.lock || ufPitOn(t.lock)) && (!UF_TAROT_NEED[t.id] || !uf || uf.tarot.includes(UF_TAROT_NEED[t.id]));
   function ufRng(str){ // a seeded generator, so a seed (or today's date) always gives the same floors
     str = String(str); let h = 1779033703 ^ str.length;
     for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h<<13 | h>>>19; }
@@ -11485,18 +11745,19 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const course = (x0, y0, x1, y1, bw, bh, base, light, mortar)=>{ c.fillStyle = mortar; c.fillRect(x0, y0, x1-x0, y1-y0);
       for(let y = y0, row = 0; y < y1; y += bh, row++){ for(let x = x0 - (row%2 ? bw/2 : 0); x < x1; x += bw){
         const v = base + Math.floor((rnd()-0.5)*light), l = Math.max(x, x0), r = Math.min(x + bw - 1, x1), b = Math.min(y + bh - 1, y1);
-        c.fillStyle = `rgb(${v},${v-2},${v-4})`; c.fillRect(l, y, r - l, b - y);
-        c.fillStyle = 'rgba(255,255,255,.04)'; c.fillRect(l, y, r - l, 1); /* a worn top edge */
-        if(rnd() < 0.18){ c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(l + rnd()*(r-l-3), y + rnd()*(b-y-2), 2, 1); } } } };
-    course(0, 0, UF_W, UF_H, 26, 18, 44, 12, '#1a1817');                  // the floor: big grey flagstones
+        c.fillStyle = `rgb(${v},${v-2},${v-4})`; c.fillRect(l + .5, y + .5, r - l - 1, b - y - 1); /* a thicker dark joint all round: toon outlines */
+        c.fillStyle = 'rgba(255,255,255,.09)'; c.fillRect(l + .5, y + .5, r - l - 1, 1.2); /* a lit top edge */
+        c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(l + .5, b - 1.7, r - l - 1, 1.2); /* a shaded bottom edge */
+        if(rnd() < 0.1){ c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(l + 2 + rnd()*(r-l-6), y + 2 + rnd()*(b-y-5), 2, 2); } } } };
+    course(0, 0, UF_W, UF_H, 26, 18, 46, 10, '#0f0d0c');                  // the floor: big grey flagstones
     c.fillStyle = 'rgba(30,18,14,.22)'; c.fillRect(UF_WALL, UF_WALL, UF_W-2*UF_WALL, UF_H-2*UF_WALL); // a little old blood in the grout
-    for(const [x0,y0,x1,y1] of [[0,0,UF_W,UF_WALL],[0,UF_H-UF_WALL,UF_W,UF_H],[0,0,UF_WALL,UF_H],[UF_W-UF_WALL,0,UF_W,UF_H]]) course(x0, y0, x1, y1, 14, 7, 30, 10, '#121110'); // the walls: small dark bricks
+    for(const [x0,y0,x1,y1] of [[0,0,UF_W,UF_WALL],[0,UF_H-UF_WALL,UF_W,UF_H],[0,0,UF_WALL,UF_H],[UF_W-UF_WALL,0,UF_W,UF_H]]) course(x0, y0, x1, y1, 14, 7, 30, 8, '#090807'); // the walls: small dark bricks
     const g = c.createRadialGradient(UF_W/2, UF_H/2, Math.min(UF_W,UF_H)*0.2, UF_W/2, UF_H/2, Math.max(UF_W,UF_H)*0.7); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
     c.fillStyle = g; c.fillRect(0, 0, UF_W, UF_H);
     ufBrickC = {w:UF_W, h:UF_H, cv}; return cv;
   }
   const ufSlow = o => (ufWet(o) ? UF_WADE : 1) * (ufWebAt(o) ? UF_WEB_SLOW : 1) * (uf && uf.allies.some(a=>a.host===o && a.P.web) ? 0.5 : 1);
-  function ufPitP(q){ // a pit parasite's Underfield body: its kind's numbers, grown with its level and its functions
+  function ufPitP(q){ // a pit parasite's Catacombs body: its kind's numbers, grown with its level and its functions
     const S = PIT_SPECIES[q.sp], k = 1 + q.lvl/100, P = Object.assign({}, S.uf, {emoji:S.emoji, col:S.col, rarity:'Common', uses:1, text:''});
     P.hp *= k; P.dps *= k;
     for(const f of pitFns(q)){ if(f==='tough') P.hp *= 1.5; else if(f==='numb') P.numb = true; else if(f==='jump') P.spd *= 1.5; else if(f==='brood') P.brood = 2; else if(f==='flies') P.flies = true; else if(f==='opens') P.dps *= 1.5; else if(f==='web') P.web = true; else if(f==='store'){ P.store = (P.store||0) + 3; P.gain = P.gain || 0.8; } }
@@ -11571,7 +11832,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         for(let k=0;k<n;k++){ const r = rng(); L.push(fl >= 2 && r < 0.22 ? 'hound' : k%3===2 ? 'viper' : 'jackal'); }
         const beh = fl===1 ? (R.dist >= 3 ? 1 : 0) : 1 + (rng() < 0.35 ? 1 : 0); for(let k=0;k<beh;k++) L.push('behemoth');
         R.foeList = L;
-        if(!R.elite && rng() < 0.2) R.chestKind = rng() < 0.35 ? 'cursed' : 'plain';
+        if(!R.elite && rng() < 0.2) R.chestKind = rng() < 0.25 ? 'rare' : 'plain'; /* no cursed chests: players never took them as a real choice */
       }
       if(R.type==='start' && fl===1) R.chestKind = 'plain';
       if(R.type==='shop') R.shop = ufShopStock(rng);
@@ -11621,7 +11882,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(uf.pet && !uf.pet.ko){ const pa = {kind:uf.pet.sp, P:uf.pet.P, x:p.x - p.fx*16, y:p.y - p.fy*16, r:6, hp:uf.pet.hp, maxHp:uf.pet.maxHp, host:null, bite:0, drained:0, store:0, homing:false, atkT:0, last:null, pet:true}; if(!pa.P.flies) ufSolid(pa); uf.allies.push(pa); } /* your pit parasite follows you room to room */
     if(!fresh){ uf.banner = {text:'Room '+R.n, t:900}; return; } // somewhere you have been: as you left it
     if(from && ufCursed('wound') && p.hp > 1){ p.hp -= 1; ufFx({kind:'num', x:p.x, y:p.y-16, text:'-1', col:'#c73a5c', t:650}); }
-    if(R.type==='shop') R.npc = {kind:'shop', x:UF_W/2, y:UF_WALL + 70, armed:true};
+    if(R.type==='shop') R.npc = {kind:'shop', x:UF_W/2, y:UF_H/2 - 10, armed:false}; /* in the middle of the room, away from every door: you see him before you reach him */
     if(R.type==='shrine') R.npc = {kind:'shrine', x:UF_W/2, y:UF_H/2, armed:true};
     if(R.type==='start'){ const h = 42, y = Math.round(UF_H*0.28); R.water = {y, h, bx:UF_W/2, bw:34, x0:UF_W > UF_H ? Math.round(UF_W*0.18) : UF_WALL, fw:44};
       R.pillars = uf.pillars = R.pillars.filter(q=>Math.abs(q.y - y) > h/2 + q.r + 6); }
@@ -11677,7 +11938,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(mode==='help'){ add('div', 'uf-help', UF_HELP); first = btn('Back', ()=>ufMenu('setup')); }
     else if(mode==='end'){
       const E = uf.end, t = Math.floor(uf.time/1000), clock = `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`;
-      add('h2', '', E.won ? 'Out of the Underfield' : 'You fell');
+      add('h2', '', E.won ? 'Out of the Catacombs' : 'You fell');
       const box = add('div', 'uf-end'), line = s=>add('div', '', s, box);
       line(E.won ? `All ${UF_FLOORS} floors, in ${clock}.` : `Floor ${uf.floor} of ${UF_FLOORS}, ${clock} in.`);
       if(!E.won) line(uf.gaveUp ? 'You gave up.' : `Killed by ${uf.killer || 'something in the dark'}.`);
@@ -11689,7 +11950,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       add('div', 'uf-bones', `+${E.bones} bones${E.heat ? ` (heat ${E.heat})` : ''} · ${M.bones} in the pit`);
       const r = row(); first = btn('Again', ()=>{ uf = null; ufMenu('setup'); }, r); btn('Leave', ufClose, r);
     } else {
-      add('h2', '', 'THE UNDERFIELD');
+      add('h2', '', 'THE CATACOMBS');
       add('div', 'uf-sub', `${M.bones} bones · deepest floor ${M.best} of ${UF_FLOORS} · out ${M.wins} time${M.wins===1 ? '' : 's'}`);
       const today = M.daily[ufToday()], r1 = row();
       first = btn('Descend', ()=>ufStart('normal'), r1);
@@ -11726,7 +11987,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     ufNew({mode, seed, weapon:M.weapon, start:M.start, who:M.who, pet:M.pet, heat:M.bossKills ? M.heat : []});
     ufHudLast = ''; uf.toggledAt = performance.now(); ufIn.keys = {};
     const g = activePad(); // the button that started the run is not read as a roll
-    if(g) g.buttons.forEach((b,k)=>{ ufIn.pad[k] = !!(b && (b.pressed || b.value > 0.4)); });
+    if(g) g.buttons.forEach((b0,k)=>{ const b = padBtn(g,k); ufIn.pad[k] = !!(b && (b.pressed || b.value > 0.4)); });
   }
   function ufSolid(o){
     const lo = UF_WALL + o.r; o.x = Math.max(lo, Math.min(UF_W-lo, o.x)); o.y = Math.max(lo, Math.min(UF_H-lo, o.y));
@@ -11741,7 +12002,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // ---- input ----
   function ufPad(){
     const g = activePad(); if(!g) return null;
-    const b = k => { const x = g.buttons[k]; return !!(x && (x.pressed || x.value > 0.4)); }, dz = v => Math.abs(v) < 0.2 ? 0 : v, P = ufIn.pad;
+    const b = k => { const x = padBtn(g,k); return !!(x && (x.pressed || x.value > 0.4)); }, dz = v => Math.abs(v) < 0.2 ? 0 : v, P = ufIn.pad;
     const edge = k => { const now = b(k), was = !!P[k]; P[k] = now; return now && !was; };
     const o = {mx:dz(g.axes[0]||0), my:dz(g.axes[1]||0)};
     if(b(12)) o.my = -1; if(b(13)) o.my = 1; if(b(14)) o.mx = -1; if(b(15)) o.mx = 1;
@@ -11921,7 +12182,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       else if(r < 0.7 && !mercy){ drop({t:1e9, heal:1}, 2); drop({t:15000}, 2); uf.banner = {text:'Hearts', t:1400}; }
       else { drop({t:1e9, key:true}, 1); drop({t:15000}, 3); uf.banner = {text:'A key', t:1400}; }
       return; }
-    ufDropCard(ch, k!=='plain', k==='cursed' ? 2 : k==='rare' ? 1 : 0, k==='cursed');
+    ufDropCard(ch, k!=='plain', k==='rare' ? 1 : 0, false);
   }
   function ufPickFocus(){ if(!!activePad()) padSet(ufEl('ufPickRow').querySelector('button:not([disabled])') || ufEl('ufPickSkip')); }
   function ufOffer(kind, opts, extra){ // the room stops while you choose
@@ -11939,7 +12200,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     ufEl('ufPick').classList.add('on'); beep(392, 0.2, 'triangle', 0.03); ufPickFocus();
   }
   function p0Stop(){ const p = uf.p; p.cursing = false; p.queued = false; }
-  function ufClosePick(){ uf.choosing = null; ufEl('ufPick').classList.remove('on'); padSet(null); uf.paused = false; uf.toggledAt = performance.now(); ufHudLast = ''; }
+  function ufClosePick(){ uf.choosing = null; ufEl('ufPick').classList.remove('on', 'shop'); padSet(null); uf.paused = false; uf.toggledAt = performance.now(); ufHudLast = ''; }
   function ufGainTarot(o){
     uf.tarot.push(o); const T = UF_TAROT.find(t=>t.id===o);
     const hh = {heart1:3, heart2:5, heart3:10}[o]; if(hh){ uf.p.maxHp += hh; ufHeal(hh); } if(o==='sight'){ uf.mapAll = true; uf.mapVer++; }
@@ -11960,12 +12221,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const P = UF_PARAS[name]; let i = uf.slots.findIndex(x=>x && x.name===name); if(i < 0) i = uf.slots.indexOf(null); if(i < 0) return false;
     const n = P.uses + (extra||0);
     if(uf.slots[i]) uf.slots[i].uses += n; else uf.slots[i] = {name, uses:n};
-    uf.banner = {text:uf.told ? name : name + ': hold RB, hold the stick on it, let go of RB', t:uf.told ? 1200 : 2800}; uf.told = true;
+    uf.banner = {text:name, sub:'Hold RB', t:1600}; uf.told = true;
     beep(659, 0.15, 'triangle', 0.04); beep(988, 0.25, 'triangle', 0.035, 0.08); return true;
   }
   const ufTarotLeft = () => UF_TAROT.filter(t=>ufTarotOk(t) && !uf.tarot.includes(t.id));
   function ufShop(){ // the merchant: what he has, for blood
-    const S = uf.here.shop; uf.choosing = {kind:'shop'}; uf.paused = true; uf.radial = null; p0Stop();
+    const S = uf.here.shop; uf.choosing = {kind:'shop'}; ufEl('ufPick').classList.add('shop'); uf.paused = true; uf.radial = null; p0Stop();
     ufEl('ufPickTitle').textContent = `The merchant. You have ${Math.floor(uf.blood)} blood.`;
     ufEl('ufPickSkip').textContent = 'Leave';
     const row = ufEl('ufPickRow'); row.innerHTML = '';
@@ -11980,7 +12241,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       else if(it.type==='key') opt('⚷', '#e0b54a', 'A key', it.price, 'Opens one locked door.', false, ()=>{ sell(); uf.keys++; });
       else if(it.type==='map'){ if(uf.mapAll) continue; opt('▤', '#e0b54a', 'A map', it.price, 'Shows every room on this floor.', false, ()=>{ sell(); uf.mapAll = true; uf.mapVer++; }); }
     }
-    if(!S.rerolled) opt('↻', '#d9c9a3', 'Something else', 2, 'He lays out different parasites. Once.', false, ()=>{ S.rerolled = true; S.items = ufShopStock(Math.random).items.filter(i=>i.type==='para').concat(S.items.filter(i=>i.type!=='para')); });
+    if(!S.rerolled) opt('↻', '#d9c9a3', 'Something else', 2, 'He lays out different cards. Once.', false, ()=>{ S.rerolled = true; S.items = ufShopStock(Math.random).items.filter(i=>i.type==='para').concat(S.items.filter(i=>i.type!=='para')); });
     ufEl('ufPick').classList.add('on'); ufPickFocus();
   }
   function ufShrine(){
@@ -12308,7 +12569,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         ufEnterRoom(k); return; } }
   }
   function ufDraw(dt){
-    const cv = ufEl('ufCanvas'), st = cv.parentNode, dpr = Math.min(2, window.devicePixelRatio || 1), w = st.clientWidth, h = st.clientHeight;
+    const cv = ufEl('ufCanvas'), st = cv.parentNode, dpr = lowFx ? 1 : Math.min(2, window.devicePixelRatio || 1), w = st.clientWidth, h = st.clientHeight;
     if(!w || !h) return;
     if(cv._w!==w || cv._h!==h || cv._d!==dpr){ cv._w = w; cv._h = h; cv._d = dpr; cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
     const sr = st.getBoundingClientRect(), hb = Math.max(ufEl('ufStats').getBoundingClientRect().bottom, ufEl('ufMapBox').getBoundingClientRect().bottom) - sr.top + 8;
@@ -12331,7 +12592,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(uf.cleared){ c.strokeStyle = boss ? 'rgba(214,48,79,.9)' : 'rgba(224,181,74,.75)'; c.lineWidth = 1.5; c.strokeRect(x+.75, y+.75, d.w-1.5, d.h-1.5); }
       else { c.strokeStyle = '#5a3d22'; c.lineWidth = 2; c.beginPath(); for(let i=1;i<4;i++){ if(d.w > d.h){ c.moveTo(x + d.w*i/4, y); c.lineTo(x + d.w*i/4, y + d.h); } else { c.moveTo(x, y + d.h*i/4); c.lineTo(x + d.w, y + d.h*i/4); } } c.stroke(); } }
     { const tt = performance.now()/1000; if(uf.here.water) ufDrawWater(c, uf.here.water, tt); ufDrawWebs(c, uf.here, tt); }
-    for(const q of uf.pillars){ c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI*2); c.fillStyle = '#2b201c'; c.fill(); c.strokeStyle = '#3a2c27'; c.stroke(); txt('#', q.x, q.y, q.r, 'rgba(0,0,0,.35)'); }
+    if(!bareGfx && !uf.here.deco) uf.here.deco = ufFloorDeco(uf.here); if(!bareGfx) c.drawImage(uf.here.deco, 0, 0, UF_W, UF_H); /* cracks, rubble, moss and bones */
+    for(const q of uf.pillars){ if(!bareGfx){ const im = ufPillarImg(q.r), h = im.width/4; c.drawImage(im, q.x - h, q.y - h, 2*h, 2*h); continue; } c.beginPath(); c.ellipse(q.x + 2, q.y + 3, q.r, q.r*0.9, 0, 0, Math.PI*2); c.fillStyle = 'rgba(0,0,0,.4)'; c.fill(); /* toon pillars: a flat shadow, an outline, one highlight */
+      c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI*2); c.fillStyle = '#3a2e27'; c.fill(); c.strokeStyle = '#0d0907'; c.lineWidth = 2; c.stroke();
+      c.beginPath(); c.arc(q.x, q.y, q.r*0.72, Math.PI*1.05, Math.PI*1.6); c.strokeStyle = 'rgba(255,235,210,.18)'; c.lineWidth = Math.max(2, q.r*0.18); c.stroke(); c.lineWidth = 1; }
     { for(const q of uf.spikes){ const st = ufSpikeState(q); c.fillStyle = '#1c1412'; c.fillRect(q.x-13, q.y-13, 26, 26); c.strokeStyle = st===2 ? '#d9c9a3' : st===1 ? '#8a6a5a' : '#3a2c27'; c.lineWidth = 1; c.strokeRect(q.x-12.5, q.y-12.5, 25, 25);
       for(let i=0;i<3;i++) for(let j=0;j<3;j++){ const sx = q.x-8+i*8, sy = q.y-8+j*8; if(st===2) txt('▲', sx, sy, 7, '#d9c9a3'); else { c.fillStyle = st===1 ? '#8a6a5a' : '#2b201c'; c.fillRect(sx-1, sy-1, 2, 2); } } } }
     { const R = uf.here, np = R.npc; if(np){ if(np.kind==='shop'){ c.fillStyle = '#4a3420'; c.fillRect(np.x-28, np.y+14, 56, 10); txt('¤ ¤ ¤', np.x, np.y+19, 7, '#e0b54a'); c.beginPath(); c.arc(np.x, np.y, 11, 0, Math.PI*2); c.fillStyle = '#d9c9a3'; c.fill(); txt('¤', np.x, np.y+.5, 12, '#3a2a1a'); }
@@ -12431,15 +12695,16 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const sn = uf.radial.sel >= 0 ? uf.slots[uf.radial.sel] : null;
       txt(sn ? sn.name : uf.radial.sel >= 0 ? 'empty' : 'choose a card', cx, cy, 8, '#d9c9a3');
     }
-    if(uf.banner){ uf.banner.t -= dt; const k = Math.min(1, uf.banner.t/400); c.globalAlpha = Math.max(0, k); txt(uf.banner.text, UF_W/2, UF_H*0.42, 22, '#d9c9a3'); c.globalAlpha = 1; if(uf.banner.t <= 0) uf.banner = null; }
+    if(uf.banner){ uf.banner.t -= dt; const k = Math.min(1, uf.banner.t/400); c.globalAlpha = Math.max(0, k); txt(uf.banner.text, UF_W/2, UF_H*0.42, 22, '#d9c9a3'); if(uf.banner.sub) txt(uf.banner.sub, UF_W/2, UF_H*0.42 + 22, 11, '#8f8370'); c.globalAlpha = 1; if(uf.banner.t <= 0) uf.banner = null; }
   }
   let ufHudLast = '';
   // the stream: a channel cut across the room. From the player's view the far bank's wall shows, light plays on it, and the water runs left to
   // right, fastest down the middle. It comes out of a culvert in the left wall and leaves under a grate on the right
-  // Moving water, shared by the story's rivers and the Underfield's stream: a channel seen from a little above and to the south, so the far
+  // Moving water, shared by the story's rivers and the Catacombs's stream: a channel seen from a little above and to the south, so the far
   // bank's wall shows with light playing on it. The water runs along it (dir 1 to the right, -1 to the left), fastest down the middle
   function waterBody(c, x0, x1, top, bot, t, dir, D){
     const W = x1 - x0, wy0 = top + D, fx = u => dir > 0 ? x0 + u : x1 - u;
+    c.save(); c.beginPath(); c.rect(x0, top, W, bot - top + 5); c.clip(); /* nothing drawn here leaves the river */
     let g = c.createLinearGradient(0, top, 0, wy0); g.addColorStop(0, '#2c1f18'); g.addColorStop(1, '#0d0907'); c.fillStyle = g; c.fillRect(x0, top, W, D); // the far bank's face
     g = c.createLinearGradient(0, wy0, 0, bot); g.addColorStop(0, '#0c2329'); g.addColorStop(0.35, '#153f4a'); g.addColorStop(1, '#1e5965'); c.fillStyle = g; c.fillRect(x0, wy0 - 1, W, bot - wy0 + 1);
     for(let x = x0; x < x1; x += 5){ const a = 0.5 + 0.5*Math.sin(x*0.08 - dir*t*2.2 + 2*Math.sin(x*0.027 + dir*t*1.1)); // light thrown up onto the far wall
@@ -12452,25 +12717,62 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       c.stroke(); }
     for(let k=0;k<Math.round(W/20);k++){ const v = (k*0.618) % 1, y = wy0 + 3 + v*(deep - 2), sp = 24 + 60*(1 - Math.pow(2*v - 1, 2)), x = fx((k*97 + t*sp) % W), a = 0.5 + 0.5*Math.sin(t*6 + k*2.3);
       c.fillStyle = `rgba(235,252,252,${0.12 + 0.4*a})`; c.fillRect(x, y, 2, 1); } // glints riding the current
-    for(let k=0;k<Math.round(W/6);k++){ const v = (k*0.381 + 0.13) % 1, y = wy0 + 3 + v*(deep - 1), sp = 10 + 38*(1 - Math.pow(2*v - 1, 2)), x = fx((k*53 + t*sp) % W);
+    if(!bareGfx && !lowFx) for(let k=0;k<Math.round(W/6);k++){ const v = (k*0.381 + 0.13) % 1, y = wy0 + 3 + v*(deep - 1), sp = 10 + 38*(1 - Math.pow(2*v - 1, 2)), x = fx((k*53 + t*sp) % W);
       c.fillStyle = k%3 ? 'rgba(8,24,28,.45)' : 'rgba(120,150,140,.18)'; c.fillRect(x, y, 1, 1); } // silt in the water
-    for(let k=0;k<Math.round(W/45);k++){ const v = (k*0.537 + 0.29) % 1, y = wy0 + 4 + v*(deep - 4), sp = 18 + 50*(1 - Math.pow(2*v - 1, 2)), x = fx((k*131 + t*sp) % (W + 20) - 10), r = t*(0.4 + (k%4)*0.15)*(k%2 ? 1 : -1) + k, by = Math.sin(t*2.2 + k)*0.6;
+    if(!bareGfx && !lowFx) for(let k=0;k<Math.round(W/45);k++){ const v = (k*0.537 + 0.29) % 1, y = wy0 + 4 + v*(deep - 4), sp = 18 + 50*(1 - Math.pow(2*v - 1, 2)), x = fx((k*131 + t*sp) % (W + 20) - 10), r = t*(0.4 + (k%4)*0.15)*(k%2 ? 1 : -1) + k, by = Math.sin(t*2.2 + k)*0.6;
       c.save(); c.translate(x, y + by); c.rotate(r);
       if(k%3===2){ c.strokeStyle = 'rgba(70,52,36,.85)'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-3.5, 0); c.lineTo(3.5, 0); c.moveTo(1, 0); c.lineTo(2.6, -1.3); c.stroke(); } // a twig
       else { c.fillStyle = k%3 ? 'rgba(96,82,40,.85)' : 'rgba(78,100,48,.8)'; c.beginPath(); c.ellipse(0, 0, 2.6, 1.3, 0, 0, Math.PI*2); c.fill(); c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = 0.4; c.beginPath(); c.moveTo(-2.4, 0); c.lineTo(2.4, 0); c.stroke(); } // a leaf
       c.restore(); c.fillStyle = 'rgba(200,235,240,.12)'; c.fillRect(x - dir*4, y + by + 1.4, 2.5, 0.6); } // floating leaves and twigs, each with a little wake
     for(let x = x0; x < x1; x += 7){ const a = 0.5 + 0.5*Math.sin(x*0.15 + dir*t*4); c.fillStyle = `rgba(220,240,240,${0.1 + 0.25*a})`; c.fillRect(x, bot - 2.5 - a*1.2, 4, 1); } // foam along the near bank
     c.fillStyle = '#3d2c22'; c.fillRect(x0, bot - 0.5, W, 2); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x0, bot + 1.5, W, 3); // the near lip, and its shadow on the floor
+    c.restore();
   }
-  // the Underfield's stream: it falls into the room down a cliff in the north wall, churns in a plunge pool, and runs away east under a grate
+  // the Catacombs's stream: it falls into the room down a cliff in the north wall, churns in a plunge pool, and runs away east under a grate
+
+  const ufPillarCache = {};
+  function ufPillarImg(r){ // a carved stone pedestal seen from above, toon style: an octagonal plinth with shaded faces, a round cap, a crack, some moss
+    if(ufPillarCache[r]) return ufPillarCache[r];
+    const k = 2, S = 2*r + 12, cv = document.createElement('canvas'); cv.width = cv.height = S*k; const c = cv.getContext('2d'); c.scale(k, k);
+    let seed = r*97 + 13; const R = ()=>((seed = (seed*16807) % 2147483647)/2147483647);
+    const o = S/2, oct = (rad, dx, dy)=>{ c.beginPath(); for(let i=0;i<8;i++){ const a = Math.PI/8 + i*Math.PI/4; c[i ? 'lineTo' : 'moveTo'](o + dx + Math.cos(a)*rad, o + dy + Math.sin(a)*rad); } c.closePath(); };
+    const ro = r/Math.cos(Math.PI/8)*0.97, ri = r*0.66;
+    oct(ro, 3, 4); c.fillStyle = 'rgba(0,0,0,.42)'; c.fill(); // its shadow on the floor
+    for(let i=0;i<8;i++){ // the eight bevelled faces, lit from the top left
+      const a0 = Math.PI/8 + i*Math.PI/4, a1 = a0 + Math.PI/4, mid = (a0 + a1)/2, lit = -(Math.cos(mid)*0.7 + Math.sin(mid)*0.7);
+      const v = Math.round(62 + 26*lit); c.fillStyle = `rgb(${v},${v-4},${v-8})`;
+      c.beginPath(); c.moveTo(o + Math.cos(a0)*ro, o + Math.sin(a0)*ro); c.lineTo(o + Math.cos(a1)*ro, o + Math.sin(a1)*ro); c.lineTo(o + Math.cos(a1)*ri*1.08, o + Math.sin(a1)*ri*1.08); c.lineTo(o + Math.cos(a0)*ri*1.08, o + Math.sin(a0)*ri*1.08); c.closePath(); c.fill();
+      c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 0.8; c.beginPath(); const am = mid; for(const f of [0.45, 0.75]){ } c.moveTo(o + Math.cos(a0)*ro, o + Math.sin(a0)*ro); c.lineTo(o + Math.cos(a0)*ri*1.08, o + Math.sin(a0)*ri*1.08); c.stroke(); } // the joints between faces
+    oct(ro, 0, 0); c.strokeStyle = '#0d0907'; c.lineWidth = 2; c.stroke();
+    c.beginPath(); c.arc(o, o, ri, 0, Math.PI*2); c.fillStyle = '#5c5550'; c.fill(); c.strokeStyle = '#0d0907'; c.lineWidth = 1.6; c.stroke(); // the round cap
+    c.beginPath(); c.arc(o, o, ri*0.72, 0, Math.PI*2); c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = 1; c.stroke(); // a carved ring
+    c.beginPath(); c.arc(o, o, ri*0.86, Math.PI*1.05, Math.PI*1.6); c.strokeStyle = 'rgba(255,240,220,.28)'; c.lineWidth = Math.max(1.5, ri*0.12); c.stroke(); // one hard highlight
+    { let x = o + (R()-0.5)*ri, y = o + (R()-0.5)*ri, a = R()*Math.PI*2; c.beginPath(); c.moveTo(x, y); for(let j=0;j<4;j++){ a += (R()-0.5)*1.2; x += Math.cos(a)*ri*0.22; y += Math.sin(a)*ri*0.22; c.lineTo(x, y); } c.strokeStyle = 'rgba(10,6,4,.7)'; c.lineWidth = 1; c.stroke(); }
+    for(let i=0;i<3;i++){ const a = Math.PI*(0.25 + R()*0.6); toonTuft(c, o + Math.cos(a)*ro*0.92, o + Math.sin(a)*ro*0.92 + 2, 0.8, R() < .5 ? '#5f7a3a' : '#4d6a32'); } // moss at its foot
+    return ufPillarCache[r] = cv;
+  }
+  function ufFloorDeco(R){ // a room's floor detail, painted once: cracks, rubble, moss along the walls, the odd bone and puddle
+    const k = 2, cv = document.createElement('canvas'); cv.width = UF_W*k; cv.height = UF_H*k; const c = cv.getContext('2d'); c.scale(k, k);
+    let seed = (R.x*73856093 ^ R.y*19349663 ^ (R.n||1)*83492791) >>> 0 || 7; const rnd = ()=>((seed = (seed*16807) % 2147483647)/2147483647), Rr = (a, b) => a + rnd()*(b-a);
+    const L = UF_WALL + 6, Rt = UF_W - UF_WALL - 6, T = UF_WALL + 6, B = UF_H - UF_WALL - 6;
+    for(let n=0;n<4;n++){ let x = Rr(L, Rt), y = Rr(T, B), a = Rr(0, Math.PI*2); const pts = [[x, y]]; // cracks, outlined, with a lit lower lip
+      for(let i=0, len = 6 + (rnd()*8|0); i<len; i++){ a += Rr(-0.6, 0.6); x += Math.cos(a)*Rr(5, 9); y += Math.sin(a)*Rr(5, 9); pts.push([x, y]); }
+      for(const [w, st, oy] of [[2.4, '#0a0807', 0], [0.9, 'rgba(150,140,130,.25)', 1.3]]){ c.strokeStyle = st; c.lineWidth = w; c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); pts.forEach(([px, py], i)=> i ? c.lineTo(px, py + oy) : c.moveTo(px, py + oy)); c.stroke(); } }
+    for(let i=0;i<14;i++){ const rx = Rr(1.6, 3.4); toonStone(c, Rr(L, Rt), Rr(T, B), rx, rx*Rr(.6, .9), `rgb(${70+(rnd()*14|0)},${66+(rnd()*12|0)},${62+(rnd()*10|0)})`); } // rubble
+    for(let i=0;i<18;i++){ const side = rnd()*4|0, x = side===2 ? L + 2 : side===3 ? Rt - 2 : Rr(L, Rt), y = side===0 ? T + 4 : side===1 ? B : Rr(T, B); toonTuft(c, x, y, 0.85, rnd() < .5 ? '#5f7a3a' : '#4d6a32'); } // moss creeping from the walls
+    for(let i=0;i<2;i++){ const x = Rr(L + 20, Rt - 20), y = Rr(T + 20, B - 20), rx = Rr(10, 18); c.fillStyle = 'rgba(10,22,26,.55)'; c.beginPath(); c.ellipse(x, y, rx, rx*0.55, Rr(-.4,.4), 0, Math.PI*2); c.fill(); c.strokeStyle = 'rgba(140,190,200,.18)'; c.lineWidth = 1; c.stroke(); } // puddles
+    if(rnd() < 0.7) for(let i=0;i<1 + (rnd()*2|0); i++){ const x = Rr(L + 10, Rt - 10), y = Rr(T + 10, B - 10), a = Rr(0, Math.PI), dx = Math.cos(a)*5, dy = Math.sin(a)*5; // a bone
+      c.strokeStyle = '#0d0907'; c.lineWidth = 3.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(x - dx, y - dy); c.lineTo(x + dx, y + dy); c.stroke();
+      c.strokeStyle = '#d8cdb4'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(x - dx, y - dy); c.lineTo(x + dx, y + dy); c.stroke();
+      c.fillStyle = '#d8cdb4'; c.strokeStyle = '#0d0907'; c.lineWidth = 0.8; for(const s2 of [-1, 1]) for(const o2 of [-1, 1]){ c.beginPath(); c.arc(x + s2*dx - o2*dy*0.3, y + s2*dy + o2*dx*0.3, 1.7, 0, Math.PI*2); c.fill(); c.stroke(); } }
+    return cv;
+  }
   function ufDrawWater(c, w, t){
     const top = w.y - w.h/2, bot = w.y + w.h/2, x1 = UF_W - UF_WALL, D = 8, wy0 = top + D;
     waterBody(c, w.x0, x1, top, bot, t, 1, D);
     c.fillStyle = '#050303'; c.fillRect(x1 - 3, wy0, 3, bot - wy0); c.strokeStyle = '#4a3a30'; c.lineWidth = 1.2; c.beginPath(); for(let y = wy0 + 3; y < bot; y += 5){ c.moveTo(x1 - 4, y); c.lineTo(x1, y); } c.stroke(); // the grate
     const bl = w.bx - w.bw/2; c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(bl + w.bw, wy0, 6, bot - wy0); // the footbridge, its shadow downstream
-    c.fillStyle = '#4a3420'; c.fillRect(bl, top - 3, w.bw, w.h + 6); c.strokeStyle = '#2a1c12'; c.lineWidth = 1; c.beginPath();
-    for(let y = top + 3; y < bot + 3; y += 6){ c.moveTo(bl, y); c.lineTo(bl + w.bw, y); } c.stroke();
-    c.strokeStyle = '#7a5a36'; c.strokeRect(bl + .5, top - 2.5, w.bw - 1, w.h + 5);
+    if(!w._pk) w._pk = plankCv(w.bw, w.h + 8); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(bl + 2, top - 1, w.bw, w.h + 8); c.drawImage(w._pk, bl, top - 4, w.bw, w.h + 8); /* the story's planks */
     // the waterfall: a cliff from the wall down to the stream, with the water sheeting down its face
     const l = w.x0, fw = w.fw, ft = UF_WALL, fb = top, H = fb - ft, sl = l + 7, sw = fw - 14;
     c.fillStyle = 'rgba(0,0,0,.45)'; c.fillRect(l + fw, ft, 5, H + 2); // the cliff's shadow on the floor
@@ -12492,8 +12794,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   let riverCvs = null, riverFrame = 0;
   function drawRivers(t){
     if(!riverCvs) riverCvs = [...document.querySelectorAll('.zone.rriver, .zone.priver')].map(z=>{ const cv = document.createElement('canvas'); cv.className = 'river-cv'; z.textContent = ''; z.appendChild(cv); return cv; });
-    if(lowFx && (riverFrame++ % 3)) return;
-    const dpr = Math.min(2, window.devicePixelRatio || 1), s = lastScale || 1;
+    if(lowFx && (riverFrame++ % 4)) return;
+    const dpr = lowFx ? 1 : Math.min(2, window.devicePixelRatio || 1), s = lastScale || 1;
     riverCvs.forEach((cv, bi)=>{
       const W = Math.round(FW*s*dpr), H = Math.round(RIVER_H*s*dpr); if(cv.width!==W || cv.height!==H){ cv.width = W; cv.height = H; }
       const c = cv.getContext('2d'), dir = bi===0 ? -1 : 1, owner = BAND_OWNER[bi];
@@ -12591,29 +12893,40 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
           if(uf.shake > 0) uf.shake -= gdt;
         }
       }
-      if(uf){ ufDraw(uf.paused || uf.over ? 0 : dt); ufHud(); }
+      if(uf){ ufDraw(uf.paused || uf.over ? 0 : dt); ufHud(); fxWatch(dt); }
     }catch(e){ noteError(e); }
     ufRaf = requestAnimationFrame(ufLoop);
   }
-  // the Underfield's own score: slow D minor at about 100, with a dark C-sharp. In a cleared room only the drone, a slow pad and a
+  // the Catacombs's own score: slow D minor at about 100, with a dark C-sharp. In a cleared room only the drone, a slow pad and a
   // sparse pluck; while anything is alive a bass in 3+3+2, a kick and a snap come in under the full line. Nothing under 70 Hz
-  const UF_EIGHTH = 0.3;
+  const UF_EIGHTH = 0.24; /* the length of an eighth; the score steps in sixteenths, half this */
   const UF_LINE = [[62,0,0,65,0,64,0,60],[62,0,0,57,0,0,61,0],[58,0,62,0,65,0,64,62],[61,0,0,64,0,0,57,0]];
   const UF_ROOT = [38, 38, 34, 33]; // D, D, B-flat, A
   const UF_CHORD = [[[146.8,-4],[174.6,3],[220,0]], [[146.8,-4],[174.6,3],[220,0]], [[116.5,-4],[146.8,3],[174.6,0]], [[110,-4],[138.6,3],[164.8,0]]];
   let ufMus = null;
-  function ufMusicStep(step, at, fight){
-    const B = ufMus.bus, bar = Math.floor(step/8), i = step%8, ph = bar%4, d = at - audioCtx.currentTime;
-    if(i===0 && bar%2===0) grPad(at, 2*8*UF_EIGHTH, B, UF_CHORD[ph]);
+  function ufHat(at, B, v){ const ctx = audioCtx, n = ctx.createBufferSource(), hp = ctx.createBiquadFilter(), g = ctx.createGain(); // a closed hi-hat
+    n.buffer = hfNoiseBuf(); hp.type = 'highpass'; hp.frequency.value = 7000; g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(v, at + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.05);
+    n.connect(hp); hp.connect(g); g.connect(B); n.start(at, Math.random()); n.stop(at + 0.07); }
+  function ufArp(f, at, B, v){ const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.type = 'square'; o.frequency.value = f; // a thin, quick arpeggio note
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(v, at + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, at + 0.11); o.connect(g); g.connect(B); o.start(at); o.stop(at + 0.13); }
+  function ufMusicStep(step, at, fight){ /* sixteenths at about 125 bpm: the room fight drives hard, an empty room keeps a quieter pulse */
+    const B = ufMus.bus, bar = Math.floor(step/16), i = step%16, ph = bar%4, d = at - audioCtx.currentTime, e = i%2===0 ? i/2 : -1, ch = UF_CHORD[ph];
+    if(i===0 && bar%2===0) grPad(at, 2*16*UF_EIGHTH/2, B, ch);
+    const arp = ch.map(c=>c[0]*4); // the chord two octaves up
     if(fight){
-      if(i===0 || i===3 || i===6) grBass(midiHz(UF_ROOT[ph]), at, B);
-      if(i===0 || i===4) thud(0.16, 0.09, 260, d, B);
-      if(i===2 || i===6) thud(0.06, 0.04, 1500, d, B);
-      const n = UF_LINE[ph][i]; if(n) grPluck(midiHz(n + (bar%8 >= 4 ? 12 : 0)), at, B);
+      if(i===0 || i===6 || i===12 || i===14) grBass(midiHz(UF_ROOT[ph] + (i===14 ? 7 : 0)), at, B);   // 3+3+2, with a lift into the next bar
+      if(i===0 || i===6 || i===8 || (i===14 && bar%2)) thud(0.16, 0.1, 240, d, B);                     // kick
+      if(i===4 || i===12) thud(0.07, 0.06, 1600, d, B);                                               // snap on the backbeat
+      ufHat(at, B, i%4===2 ? 0.05 : 0.022);                                                            // hats on every sixteenth, accented off the beat
+      ufArp(arp[(i + bar)%3], at, B, 0.008);                                                           // a running arpeggio
+      const n = e>=0 && UF_LINE[ph][e]; if(n) grPluck(midiHz(n + (bar%8 >= 4 ? 12 : 0)), at, B);
     } else {
-      if(i===0) grBass(midiHz(UF_ROOT[ph]), at, B);
-      const n = UF_LINE[ph][i]; if(n && i%2===0 && bar%2===1) grPluck(midiHz(n + 12), at, B);
-      if(Math.random() < 0.04) beep(1760 + Math.random()*900, 0.25, 'sine', 0.012, d, B); // water dripping somewhere
+      if(i===0 || i===10) grBass(midiHz(UF_ROOT[ph]), at, B);
+      if(i===0 || i===8) thud(0.12, 0.04, 220, d, B);                                                  // a soft heartbeat of a kick
+      if(i%4===2) ufHat(at, B, 0.012);
+      if(i%2===0) ufArp(arp[(i/2)%3], at, B, 0.004);
+      const n = e>=0 && UF_LINE[ph][e]; if(n && bar%2===1) grPluck(midiHz(n + 12), at, B);
+      if(Math.random() < 0.02) beep(1760 + Math.random()*900, 0.25, 'sine', 0.012, d, B); // water dripping somewhere
     }
   }
   function ufMusicTick(){
@@ -12622,7 +12935,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(ufMus.lvl!==lvl){ ufMus.lvl = lvl; ufMus.bus.gain.setTargetAtTime(lvl, t, 0.3); }
       if(ufMus.next < t) ufMus.next = t + 0.05;
       const fight = !!uf && !uf.cleared && !uf.over;
-      while(ufMus.next < t + 0.35){ ufMusicStep(ufMus.step, ufMus.next, fight); ufMus.next += UF_EIGHTH; ufMus.step++; }
+      while(ufMus.next < t + 0.35){ ufMusicStep(ufMus.step, ufMus.next, fight); ufMus.next += UF_EIGHTH/2; ufMus.step++; }
     }catch(e){ noteError(e); }
   }
   function ufMusicStart(){
