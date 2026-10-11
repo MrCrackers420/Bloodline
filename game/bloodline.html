@@ -1723,7 +1723,7 @@
   // Ranged reach: in story fights (and Skirmish, Versus, Nearby and Watch, which use them) every troop that shoots reaches this much further than
   // the numbers above, and so does a melee troop's second, ranged weapon. One setting, so it is easy to tune. Buildings, spells and melee reach
   // are unchanged, and so is the Bombard's (a sniper). The Holdfast keeps the numbers above: it reads hfRange, the reach before this
-  const RANGED_REACH = 1.15;
+  const RANGED_REACH = 1.33;
   for(const c of CARD_DEFS){
     if(c.cardType!=='spell' && !c.isBuilding && c.atkStyle==='interval-ranged' && !c.sniper){ c.hfRange = c.range; c.range = Math.round(c.range*RANGED_REACH*10)/10; }
     if(c.second && c.second.range) c.second = Object.assign({}, c.second, {hfRange:c.second.range, range:Math.round(c.second.range*RANGED_REACH*10)/10});
@@ -1784,13 +1784,37 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
     {flag:'raisesDead', mat:'bone', kill:'ash', title:'the Gravedigger', rule:'Your troops that fall on their half rise for them.', say:'I only dig up what the rivers leave. The dead never minded.'},
     {flag:'snares', mat:'ichor', kill:'bone', title:'the Trapper', rule:'They lay snares where you tend to fight.', say:'Grael taught me the knots. He never taught me to lose.'},
     {flag:null, mat:'ash', kill:'ichor', title:'the Scavenger', rule:'They keep no rule but their own hunger: their blood comes a little faster.', say:'I only take what nobody is using anymore. You understand.'},
+    // Chapter II's rules, picked up on the road: each type wanders only once you have beaten the challenger it learned from (need: your tier)
+    {need:11, flag:'shields', mat:'bone', kill:'ash', title:'the Shieldwall', rule:'Their troops carry shields: your ranged troops deal them half.', say:"Osric's men threw their shields in the river when he fell. I fished out what I could carry."},
+    {need:12, flag:'tolls', mat:'ash', kill:'brine', title:'the Tollkeeper', rule:'Every spell you cast pays them a blood.', say:"Garrow's ford is closed. Somebody has to collect."},
+    {need:13, flag:'works', mat:'bone', kill:'brine', title:'the Mason', rule:'Their buildings mend while none of your troops are near, and they keep two of each.', say:"I carried stone for Orrin. Nobody ever asked my name either."},
+    {need:14, set:{echo:{delay:1500, hp:0.6, delayOff:700}}, mat:'ichor', kill:'ash', title:'the Mimic', rule:'Every other troop you play, they play too, mirrored and weaker, for a blood each.', say:"I was in Ysolde's troupe. Third spear from the left. You would not have noticed me."},
+    {need:15, set:{credit:{limit:8}}, mat:'ichor', kill:'bone', title:'the Debtor', rule:'They play on credit, past what they can afford. Troops bought on credit are ringed in gold and pay you their whole price.', say:"Cassor is dead and his books are ash. I am spending what I owe him."},
+    {need:17, flag:'packKing', cards:['Jackal','Behemoth'], mat:'bone', kill:'ichor', title:'the Packmaster', rule:'Their Jackals and Behemoths strike faster together, and yours answer them once.', say:"Ulgar's dogs came looking for a new master. Some of them found me."},
   ];
+  const WANDER_TRINKETS = { // what a wanderer may carry (each works for a rival), told from your side of the field
+    shackle:'your troops that fall on their half rise for them.', stone:'their troops wade the rivers, and drown your parasites in them.',
+    chain:'the first wound they deal one of your troops chains it.', vial:'they lay snares where your troops cross, and their parasites smell farther.',
+    shield:'your ranged troops deal their troops half damage.', mask:'their first troop arrives twice.', hook:'your troops that fall on their half pay them 1 more blood.'};
+  const WANDER_TRINKET_TIER = 10, WANDER_TRINKET_CHANCE = 0.35;
+  // a run of Skirmish wins: each one makes the next wanderer's blood come faster, and every second one adds to what it carries. A loss ends it
+  let wanderStreak = 0; try{ wanderStreak = Math.max(0, parseInt(localStorage.getItem('bloodline_wanderStreak'),10)||0); }catch(e){}
+  function setWanderStreak(n){ wanderStreak = Math.max(0, n|0); try{ localStorage.setItem('bloodline_wanderStreak', String(wanderStreak)); }catch(e){} }
+  const STREAK_RATE = 0.06, STREAK_RATE_MAX = 5, STREAK_MATS_MAX = 3;
   function makeWanderer(){
-    const tr = WANDER_TRAITS[Math.floor(Math.random()*WANDER_TRAITS.length)], name = WANDER_NAMES[Math.floor(Math.random()*WANDER_NAMES.length)];
-    const p = {id:0, skirmish:true, name, title:tr.title, mat:tr.mat, killMat:tr.kill, say:tr.say, cardCap:Math.min(unlockedTier, 10), useIsland:Math.random()<0.7, greedy:Math.random()<0.6, smart:Math.random()<0.6};
-    if(tr.flag) p[tr.flag] = true; else p.hungry = true;
+    const types = WANDER_TRAITS.filter(t=>!t.need || unlockedTier >= t.need);
+    const tr = types[Math.floor(Math.random()*types.length)], name = WANDER_NAMES[Math.floor(Math.random()*WANDER_NAMES.length)];
+    const p = {id:0, skirmish:true, name, title:tr.title, mat:tr.mat, killMat:tr.kill, say:tr.say, cardCap:Math.min(unlockedTier, CHALLENGERS.length+1), useIsland:Math.random()<0.7, greedy:Math.random()<0.6, smart:Math.random()<0.6, mustCards:tr.cards||null};
+    if(tr.set) Object.assign(p, JSON.parse(JSON.stringify(tr.set))); else if(tr.flag) p[tr.flag] = true; else p.hungry = true;
     if(Math.random()<0.4){ p.tactician = true; p.pushStart = 9; }
-    p.intro = `${name} ${tr.title} wanders the rivers for whatever the fallen leave behind. ${tr.rule} Beat them for alchemy materials. Nothing in the story moves.`;
+    const streak = Math.min(wanderStreak, STREAK_RATE_MAX); p.rateMult = 1 + STREAK_RATE*streak; p.bonusMats = Math.min(STREAK_MATS_MAX, Math.floor(wanderStreak/2));
+    let carry = '';
+    if(unlockedTier >= WANDER_TRINKET_TIER && Math.random() < WANDER_TRINKET_CHANCE){
+      const pool = TRINKETS.filter(t=>WANDER_TRINKETS[t.id] && trinketEarned(t) && !(t.id==='stone' && tr.flag==='wades'));
+      if(pool.length){ const t = pool[Math.floor(Math.random()*pool.length)]; p.friendTrinkets = [t.id]; p.carries = t.id; p.bonusMats++; carry = ` They carry ${t.name}: ${WANDER_TRINKETS[t.id]}`; }
+    }
+    const run = wanderStreak ? ` You have beaten ${wanderStreak} wanderer${wanderStreak===1?'':'s'} in a row: this one's blood comes ${Math.round((p.rateMult-1)*100)}% faster${p.bonusMats ? `, and it carries ${p.bonusMats} more material${p.bonusMats===1?'':'s'}` : ''}. Lose and the run ends.` : '';
+    p.intro = `${name} ${tr.title} wanders the rivers for whatever the fallen leave behind. ${tr.rule}${carry} Beat them for alchemy materials. Nothing in the story moves.${run}`;
     p.winStory = n => `${name} ${tr.title} runs, and leaves a little of what they carried behind. ${n} picks through it.`;
     p.lossStory = n => `${name} ${tr.title} takes what ${n} was carrying and wanders on. ${n} salvages what scraps are left.`;
     return p;
@@ -1919,7 +1943,8 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   const SKIRMISH_MATS = 3;
   const matName = k => MATERIALS.find(m=>m.id===k).name;
   const SKIRMISH_MORTAR = 2; // a won Skirmish also sends a little Mortar to your camp
-  function giveMaterial(k){ materials[k] += SKIRMISH_MATS; saveAlchemy(); camp.mortar += SKIRMISH_MORTAR; saveCamp(); food.ember = (food.ember||0) + 2; saveFood(); return SKIRMISH_MATS + ' ' + matName(k) + ` and ${SKIRMISH_MORTAR} Mortar and 2 Ember for your camp`; }
+  const wanderMats = () => SKIRMISH_MATS + ((currentChallenger && currentChallenger.bonusMats) || 0);
+  function giveMaterial(k){ const n = wanderMats(); materials[k] += n; saveAlchemy(); camp.mortar += SKIRMISH_MORTAR; saveCamp(); food.ember = (food.ember||0) + 2; saveFood(); return n + ' ' + matName(k) + ` and ${SKIRMISH_MORTAR} Mortar and 2 Ember for your camp`; }
   const OSRIC_FACE = `      _________
      |  _____  |
      | | o o | |
@@ -3537,7 +3562,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // the player's passive rate starts at 0.75/s (it was 0.6). That floor lives in bloodRate, so the fair-economy rivals (Corvane, Iselde), who
   // share the player's curve, get it too. Dad mode keeps its own 1/s start
   function playerRate(aPent){ if(inSecondPhase()) aPent = 0; /* Hadrek's rebuilt Pentagons count as fallen */ else if((state.phaseN||1)>1) aPent = Math.max(0, aPent - (state.pCarry||0)); const r = bloodRate(state.aBase/(state.aBaseMax||100)*100, aPent, true); return (dadMode ? DAD_RATE*BLOOD_PACE + (r - bloodRate(100, 3, true)) : r) * testRate.p; }
-  function rivalRate(pPent){ return (currentChallenger.hungry ? 1.15 : 1) * bloodRate(state.pBase, pPent, aiFair()) * testRate.a * (inSecondPhase() ? P2_RATE : 1) * ((state.phaseN||1)>=3 ? GRAEL_P3_RATE : 1); }
+  function rivalRate(pPent){ return (currentChallenger.hungry ? 1.15 : 1) * (currentChallenger.rateMult||1) * bloodRate(state.pBase, pPent, aiFair()) * testRate.a * (inSecondPhase() ? P2_RATE : 1) * ((state.phaseN||1)>=3 ? GRAEL_P3_RATE : 1); }
   function aiFair(){ return !!currentChallenger.fairEconomy; }
   // Hadrek's second phase: his blood builds half again as fast and fills higher (you have usually banked a lot by then)
   const P2_RATE = 1.5, P2_CAP = 5;
@@ -3550,8 +3575,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function skirmishDeck(){
     const cap = currentChallenger.cardCap || 10;
     const shuffle = a=>{ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
-    const all = shuffle(CARD_DEFS.filter(c=>(c.unlockTier||1)<=cap && !c.brew && !c.playerOnly));
-    const deck = all.filter(c=>c.cardType!=='spell' && !c.isBuilding && c.cost<=3).slice(0, 2);
+    const all = shuffle(CARD_DEFS.filter(c=>(c.unlockTier||1)<=cap && !c.brew && !c.playerOnly && !c.labOnly && !c.forged && !c.pit));
+    const must = (currentChallenger.mustCards||[]).map(n=>all.find(c=>c.name===n)).filter(Boolean);
+    const deck = must.concat(all.filter(c=>c.cardType!=='spell' && !c.isBuilding && c.cost<=3 && !must.includes(c)).slice(0, 2));
     let spells = 0, buildings = 0;
     for(const c of all){
       if(deck.length>=DECK_SIZE) break;
@@ -6302,7 +6328,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(currentChallenger.maxBuildings && state.units.filter(u=>u.owner==='a' && u.isBuilding && u.name!=='Pentagon').length >= currentChallenger.maxBuildings)
       pool = pool.filter(c=>!c.isBuilding);
     // a building already up to the rival's limit would only replace itself: not worth choosing
-    pool = pool.filter(c=>!(c.uniquePerOwner && state.units.filter(u=>u.owner==='a' && u.name===c.name).length >= (currentChallenger.multiBuildings ? 3 : 1)));
+    pool = pool.filter(c=>!(c.uniquePerOwner && state.units.filter(u=>u.owner==='a' && u.name===c.name).length >= (currentChallenger.multiBuildings ? 3 : currentChallenger.works ? 2 : 1)));
     if(!pool.length) return;
     let affordable = pool.filter(c=>c.cost+keep<=aSpend()); // aSpend: his blood, plus Cassor's credit
     if(!pool.length) return;
@@ -7553,9 +7579,10 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         let sub;
         if(currentChallenger.watch) sub = 'Watching only: nothing gathered, nothing lost.';
         else if(currentChallenger.friend) sub = won ? 'A friendly fight: nothing to gather, but you can tell them.' : 'A friendly fight: nothing lost.';
-        else if(!won) sub = 'You salvage nothing. Win to gather materials for Alchemy.';
+        else if(!won){ sub = 'You salvage nothing. Win to gather materials for Alchemy.' + (wanderStreak ? ` Your run of ${wanderStreak} win${wanderStreak===1?'':'s'} ends here.` : ''); setWanderStreak(0); }
         else if(Math.random() < 0.5){ pendingFate = 'wanderer'; sub = `${currentChallenger.name} is still alive. Decide what happens next.`; }
         else sub = `You gather ${giveMaterial(currentChallenger.mat)}. Brew with it in Alchemy, from the menu.`;
+        if(!currentChallenger.friend && won){ setWanderStreak(wanderStreak + 1); if(wanderStreak > 1) sub += ` ${wanderStreak} wins in a row: the next wanderer will be hungrier, and carry more.`; }
         if(!currentChallenger.friend){ pendingCrate = won ? crateSet('win') : []; if(pendingCrate.length) sub += pendingCrate.length>1 ? ' Two crates wait for you.' : ' A crate waits for you.'; }
         document.getElementById('overlaySub').textContent = sub;
         needsIntroOnRestart = true;
@@ -7600,7 +7627,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         const fromId = currentChallenger.id;
         if(advanceChallenger()){
           needsIntroOnRestart = true;
-          if(!replay && ROAD[currentChallenger.id]) pendingRoad = {from:fromId, to:currentChallenger.id}; // the road to the next fight, the first time you travel it
+          if(ROAD[currentChallenger.id] && !roadsSeen.includes(currentChallenger.id)) pendingRoad = {from:fromId, to:currentChallenger.id}; // the road to the next fight, the first time you travel it (a win that counts as a rematch still shows a road you have never seen)
           if(currentChallenger.herald) pendingHerald = true; // the next challenger has words for you first
           subText += (subText?' ':'') + `Next match: Challenger ${currentChallenger.id}, ${currentChallenger.name}.`;
         }
@@ -7765,13 +7792,16 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(pendingAskelLeave){ pendingAskelLeave = false; showAskelLeaves(afterFate); return; }
     if(pendingFarewell){ const f = pendingFarewell; pendingFarewell = null; showTalk(f.lines.map(text=>({who:f.who, face:f.face, text})), afterFate, 'tap to go on'); return; }
     if(pendingChapter){ const c = pendingChapter; pendingChapter = null; showChapterEnd(c); return; }
-    if(pendingRoad){ const r = pendingRoad; pendingRoad = null; showRoad(r, afterFate); return; }
+    if(pendingRoad){ const r = pendingRoad; pendingRoad = null; markRoadSeen(r.to); showRoad(r, afterFate); return; }
     if(pendingHerald){ pendingHerald = false; showHerald(); return; }
     fullRestart();
   }
   // ---- the road between fights: a map of the rivers with your path drawing itself from the fight you won to the next, and a line of what
   // the days on the road were like. Shown once per leg, the first time you travel it; tap to skip ----
   let pendingRoad = null;
+  let roadsSeen = []; // the legs of the road already watched, by the id of the challenger they lead to
+  try{ const v = JSON.parse(localStorage.getItem('bloodline_roadsSeen')||'[]'); if(Array.isArray(v)) roadsSeen = v.filter(x=>Number.isInteger(x)); }catch(e){}
+  function markRoadSeen(id){ if(roadsSeen.includes(id)) return; roadsSeen.push(id); try{ localStorage.setItem('bloodline_roadsSeen', JSON.stringify(roadsSeen)); }catch(e){} }
   const ROAD = { // to challenger id: [days on the road, the line, saying plainly where you are headed and who waits there]
     1:[0, n=>`Day one, ${n}. You set out for the first ford. Korrath holds it, and he will not let you cross.`],
     2:[2, n=>`Two days along the near bank, ${n}, to the next ford. Seris waits there.`],
@@ -7937,7 +7967,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     fateFromTest = fromTest; fateSubject = subject || 'askel';
     const F = FATES[fateSubject];
     if(fateSubject==='wanderer'){ const w = currentChallenger; F.name = (w.name+' '+w.title).toUpperCase();
-      F.spare = `Spare them<span>Gain ${SKIRMISH_MATS} ${matName(w.mat)}.</span>`; F.kill = `Kill them<span>Gain ${SKIRMISH_MATS} ${matName(w.killMat)}.</span>`; }
+      F.spare = `Spare them<span>Gain ${wanderMats()} ${matName(w.mat)}.</span>`; F.kill = `Kill them<span>Gain ${wanderMats()} ${matName(w.killMat)}.</span>`; }
     document.getElementById('overlay').classList.remove('show');
     document.getElementById('fatePortrait').textContent = F.portrait();
     document.getElementById('fateName').textContent = F.name;
@@ -7962,8 +7992,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     const add = (t, cls)=>{ const b = document.createElement('div'); b.className = 'bubble' + (cls ? ' '+cls : ''); b.textContent = t; b.style.animationDelay = '0s'; box.appendChild(b); };
     if(fateSubject==='wanderer'){
       const w = currentChallenger;
-      if(v==='spared'){ giveMaterial(w.mat); add(`${w.name} limps off toward the river, leaving behind ${SKIRMISH_MATS} ${matName(w.mat)}.`, 'fate-note'); haptic([20,60,20]); sfxSpare(); }
-      else { giveMaterial(w.killMat); add(`${w.name} goes into the river. You take ${SKIRMISH_MATS} ${matName(w.killMat)} from what is left.`, 'fate-note'); haptic([60,40,120]); sfxFinish(); }
+      if(v==='spared'){ giveMaterial(w.mat); add(`${w.name} limps off toward the river, leaving behind ${wanderMats()} ${matName(w.mat)}.`, 'fate-note'); haptic([20,60,20]); sfxSpare(); }
+      else { giveMaterial(w.killMat); add(`${w.name} goes into the river. You take ${wanderMats()} ${matName(w.killMat)} from what is left.`, 'fate-note'); haptic([60,40,120]); sfxFinish(); }
     } else if(fateSubject==='ysolde'){
       setYsoldeChoice(v==='spared' ? 'spared' : 'slain');
       if(v==='spared'){ add(`Then here. Wear it well, DARLING. It will want you to. And do not scratch it.`); add(`Ysolde's Mask is yours: your first troop in each fight arrives twice. Equip it from the Trinkets screen.`, 'fate-note'); haptic([20,60,20]); sfxSpare(); }
@@ -8485,7 +8515,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       return;
     }
     resetArmed = false;
-    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); setYsoldeChoice(''); setCassorChoice(''); setWrenChoice(''); setWrenGift(''); kings = {}; setKing('pack', ''); labMade = []; saveLabMade(); labStock = {}; saveLabStock(); lab = {slots:[null,null,null], breed:null, mature:null, log:[], known:[], notes:[], learned:[], found:[], parts:{}, res:{spell:null, troop:null}}; saveLab(); beatenIds = []; saveBeaten(); setStoryAt(1); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; fitMade = []; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); ufMeta = ufCleanMeta(null); ufSaveMeta(); pitState = pitClean(null); pitSave(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
+    unlockedTier = 1; selectedDeck = []; setTrinkets([]); materials = {ash:0, brine:0, bone:0, ichor:0}; brewed = []; brewStock = {}; brewing = []; saveAlchemy(); holdfast = cleanHoldfast(null); saveHoldfast(); camp = cleanCamp(null); saveCamp(); setOrrinChoice(''); setYsoldeChoice(''); setCassorChoice(''); setWrenChoice(''); setWrenGift(''); kings = {}; setKing('pack', ''); labMade = []; saveLabMade(); labStock = {}; saveLabStock(); lab = {slots:[null,null,null], breed:null, mature:null, log:[], known:[], notes:[], learned:[], found:[], parts:{}, res:{spell:null, troop:null}}; saveLab(); beatenIds = []; saveBeaten(); setStoryAt(1); orrinRelic = false; try{ localStorage.removeItem('bloodline_orrinRelic'); }catch(e){} workshop = {}; fitMade = []; saveWorkshop(); food = cleanFood(null); saveFood(); enhance = {}; saveEnhance(); bounties = []; saveBounties(); ufMeta = ufCleanMeta(null); ufSaveMeta(); pitState = pitClean(null); pitSave(); formations = []; saveFormations(); setPlumbSlot(null); setAskelChoice(''); setAskelPaid(false); askelFateLabel(); setHadrekChoice(''); setOsricChoice(''); setAskelLeft(false); hadrekFateLabel(); setTutorialDone(false); roadsSeen = []; try{ localStorage.removeItem('bloodline_roadsSeen'); }catch(e){} setWanderStreak(0); usedUnlockAll = false; try{ localStorage.removeItem('bloodline_usedUnlockAll'); }catch(e){}
     try{ ['bloodline_unlockedTier','bloodline_challengerId','bloodline_deck'].forEach(k=>localStorage.removeItem(k)); }catch(err){}
     setChallenger(CHALLENGERS[0]);
     if(matchStarted && !state.over){ document.getElementById('pauseOverlay').classList.remove('show'); fullRestart(); } // abandon the match in progress
@@ -9013,6 +9043,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // challenger or feature, append an entry (see the challenger skill); change CHANGELOG_AFTER to list a later chapter's era ----
   const CHANGELOG_AFTER = 1; // list what came after this chapter
   const CHANGELOG = [
+    {since:2, kind:'Feature', title:'Wanderers learn new tricks', revealAt:11,
+     hint:"The people walking the rivers have been picking up habits from the people you beat.",
+     detail:"Skirmish has six new kinds of wanderer, each borrowing a rule from a Chapter II challenger once you have beaten them: the Shieldwall (shields against your ranged troops), the Tollkeeper (your spells cost them a blood each), the Mason (mending buildings, two of each), the Mimic (copies of your troops), the Debtor (cards on credit) and the Packmaster (Jackals and Behemoths that hunt together). Wanderers now carry Chapter II cards too, and from Chapter II about a third carry one of your trinkets, and an extra material for it. Win Skirmishes in a row and each wanderer's blood comes a little faster, and every second win adds a material to what they carry. A loss ends the run."},
     {since:2, kind:'Feature', title:'The Wilds', revealAt:11,
      hint:"Past the last camp there is open country, and nobody feeds you out there.",
      detail:"The Wilds is a survival mode, open from Battle. Pick twigs and flint, craft a hatchet and fell trees, cut reeds, pick berries and herbs, and hunt Jackals. Build a workbench to craft a pickaxe, a fishing rod and a fire pit. Your belly empties over two days. Night is short, and without light near you something in the dark bites. Build a campfire from 2 wood and 2 reeds, feed it wood, and cook on it: roast what you catch, or make kabobs, fishsticks, meatballs and stew. A torch lights your way for a while. Saw planks and build walls, floors and stairs. Every third night a pack comes for you: a defense bench makes spike traps, spiked barricades and sentries. When you die, everything you carry drops where you fell, and you wake at your last campfire. Your world is saved and waits for you."},
