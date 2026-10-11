@@ -359,6 +359,101 @@
   body.lowfx .pit-pet span, body.lowfx .pit-pet i{ animation:none; } @media (prefers-reduced-motion: reduce){ .pit-pet span, .pit-pet i{ animation:none !important; } }
   .pit-say{ font-size:.68rem; font-style:italic; color:#e8dcc0; margin-top:.2rem; } .pit-say:empty{ display:none; } .pit-ok{ color:#7fcf8e; }
   .overlay .pit-feed button.pit-fav{ border-color:#e0b54a; } .pit-name{ font:inherit; font-size:.7rem; width:8rem; background:#140e0b; color:var(--bone); border:1px solid #3a2c27; border-radius:4px; padding:.15rem .4rem; }
+  /* ---- the Brood Pit's rooms: one chamber per parasite, drawn as a place. The parasite lives in it as a creature that wanders, eats at the
+     trough, sleeps in the nest and reacts when you touch it. Arrows (or a swipe) walk between rooms ---- */
+  .pit-room{ position:relative; width:100%; max-width:440px; margin:.5rem auto 0; aspect-ratio:16/10; overflow:hidden; touch-action:pan-y; -webkit-user-select:none; user-select:none;
+    border:1px solid #3a2c27; border-radius:46% 46% 10px 10px / 32% 32% 10px 10px;
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(150,80,50,.20), transparent 62%),
+      radial-gradient(circle at 18% 40%, rgba(0,0,0,.35) 0 3px, transparent 4px) 0 0/37px 29px,
+      radial-gradient(circle at 70% 60%, rgba(90,60,40,.35) 0 2px, transparent 3px) 0 0/23px 31px,
+      repeating-linear-gradient(168deg, rgba(0,0,0,.10) 0 2px, transparent 2px 11px),
+      linear-gradient(#1f1511, #140d0b 75%);
+    box-shadow:inset 0 0 30px rgba(0,0,0,.8); }
+  .pit-room.pit-in-l{ animation:pit-in-l .28s ease-out; } .pit-room.pit-in-r{ animation:pit-in-r .28s ease-out; }
+  @keyframes pit-in-l{ from{ transform:translateX(-18px); opacity:.2; } } @keyframes pit-in-r{ from{ transform:translateX(18px); opacity:.2; } }
+  .pit-room.night::after{ content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 77% 80%, rgba(20,20,60,.15), rgba(4,4,18,.55) 70%); pointer-events:none; z-index:5; }
+  .pit-roots{ position:absolute; top:2px; left:0; right:0; margin:0; font:10px/1.05 ui-monospace,Menlo,Consolas,monospace; color:#4a3426; white-space:pre; text-align:center; overflow:hidden; pointer-events:none; }
+  .pit-floor{ position:absolute; left:0; right:0; bottom:0; height:24%; background:repeating-linear-gradient(90deg, rgba(0,0,0,.12) 0 1px, transparent 1px 13px), linear-gradient(#2c1f18, #19110d); border-top:2px solid #3b2a20; box-shadow:inset 0 7px 10px rgba(0,0,0,.55); }
+  .pit-door{ position:absolute; bottom:22%; width:15%; height:44%; background:radial-gradient(ellipse at 50% 100%, #050302 54%, rgba(5,3,2,.6) 64%, transparent 72%); pointer-events:none; }
+  .pit-door.l{ left:-4%; } .pit-door.r{ right:-4%; }
+  .overlay button.pit-arrow{ position:absolute; top:50%; transform:translateY(-50%); z-index:6; width:2.1rem; height:2.1rem; padding:0; border-radius:50%; font-size:1.25rem; line-height:1;
+    background:rgba(10,7,6,.7); border-color:rgba(217,201,163,.35); color:var(--bone); }
+  .overlay button.pit-arrow.l{ left:4px; } .overlay button.pit-arrow.r{ right:4px; }
+  .pit-nest{ position:absolute; right:7%; bottom:15%; width:31%; height:15%; border-radius:50%; pointer-events:none;
+    background:radial-gradient(ellipse at 50% 35%, #160e0a 34%, #6a5034 37%, #4a3624 55%, rgba(60,44,30,.5) 66%, transparent 72%); }
+  .pit-nest::after{ content:'~^~^~'; position:absolute; left:0; right:0; bottom:8%; text-align:center; font:9px/1 ui-monospace,monospace; color:#8a6a40; letter-spacing:2px; }
+  .pit-trough{ position:absolute; left:6%; bottom:13%; width:17%; height:10%; border:2px solid #5d4834; border-top:none; border-radius:0 0 45% 45%; background:#120b08; overflow:hidden; pointer-events:none; }
+  .pit-trough i{ position:absolute; left:0; right:0; bottom:0; background:repeating-linear-gradient(90deg, #8a6234 0 3px, #6e4c26 3px 6px); transition:height .4s; }
+  .pit-heap{ position:absolute; bottom:14%; width:22px; height:12px; margin-left:-11px; border-radius:50% 50% 30% 30% / 80% 80% 20% 20%; background:radial-gradient(circle at 40% 30%, #7a5a30 0 25%, #4e361c 60%); box-shadow:0 2px 0 rgba(0,0,0,.5); pointer-events:none; }
+  .pit-heap b{ position:absolute; top:-8px; left:5px; width:2px; height:2px; background:#222; border-radius:50%; animation:pit-fly 1.1s linear infinite; }
+  .pit-heap b + b{ left:14px; animation-duration:1.4s; animation-direction:reverse; }
+  @keyframes pit-fly{ 0%{ transform:translate(0,0); } 25%{ transform:translate(4px,-3px); } 50%{ transform:translate(0,-6px); } 75%{ transform:translate(-4px,-3px); } 100%{ transform:translate(0,0); } }
+  .pit-drip{ position:absolute; top:9%; width:3px; height:5px; border-radius:50% 50% 50% 50% / 30% 30% 70% 70%; background:#5d8a96; opacity:.7; animation:pit-drip 4.2s ease-in infinite; pointer-events:none; }
+  @keyframes pit-drip{ 0%,55%{ top:9%; opacity:0; } 60%{ opacity:.8; } 92%{ top:77%; opacity:.8; } 100%{ top:77%; opacity:0; } }
+  .pit-plate{ position:absolute; top:14%; left:50%; transform:translateX(-50%); z-index:6; font-size:.7rem; color:var(--bone); background:rgba(10,7,6,.6); border:1px solid rgba(217,201,163,.18);
+    padding:.1rem .55rem; border-radius:10px; white-space:nowrap; max-width:76%; overflow:hidden; text-overflow:ellipsis; pointer-events:none; }
+  .pit-gametext{ position:absolute; top:27%; left:50%; transform:translateX(-50%); z-index:6; font-size:.68rem; color:#e0b54a; background:rgba(10,7,6,.65); padding:.1rem .5rem; border-radius:8px; white-space:nowrap; pointer-events:none; }
+  .pit-gametext.ok{ color:#7fcf8e; } .pit-gametext.no{ color:#d65a5a; }
+  /* the creature: --sz from its level, --col its species. Faces right; --face -1 turns it round */
+  .pit-mon{ position:absolute; bottom:17%; left:50%; width:var(--sz); height:var(--sz); margin-left:calc(var(--sz) / -2); z-index:3; cursor:pointer; transition:left 1.6s ease-in-out; -webkit-tap-highlight-color:transparent; }
+  .pit-mon.slow{ transition-duration:3.2s; }
+  .pit-mon::before{ content:''; position:absolute; left:8%; right:8%; bottom:-6%; height:14%; border-radius:50%; background:rgba(0,0,0,.45); } /* its shadow on the floor */
+  .pm-face{ position:absolute; inset:0; transform:scaleX(var(--face,1)); transition:transform .25s; }
+  .pm-anim{ position:absolute; inset:0; transform-origin:50% 100%; }
+  .pm-body{ position:absolute; left:0; right:0; bottom:0; height:78%; border:2px solid rgba(0,0,0,.55); border-radius:58% 58% 42% 42% / 70% 70% 30% 30%;
+    background:radial-gradient(circle at 32% 26%, rgba(255,255,255,.4) 0 9%, transparent 10%), repeating-linear-gradient(90deg, rgba(0,0,0,.17) 0 3px, transparent 3px 9px), var(--col);
+    display:flex; align-items:center; justify-content:center; font:700 calc(var(--sz) * .34)/1 ui-monospace,Menlo,Consolas,monospace; color:rgba(0,0,0,.5); }
+  .pm-body::after{ content:''; position:absolute; left:10%; right:14%; bottom:-13%; height:15%; background:repeating-linear-gradient(90deg, #120b08 0 2px, transparent 2px 7px); transform-origin:50% 0; } /* legs */
+  .pit-mon.walking .pm-body::after{ animation:pm-legs .18s linear infinite alternate; }
+  @keyframes pm-legs{ to{ transform:skewX(28deg); } }
+  .pm-eyes{ position:absolute; right:14%; top:30%; display:flex; gap:calc(var(--sz) * .05); z-index:1; }
+  .pm-eyes i{ width:calc(var(--sz) * .14); height:calc(var(--sz) * .14); border-radius:50%; background:radial-gradient(circle at 62% 50%, #100a08 0 38%, #f2e8d0 40%); box-shadow:0 0 0 1px rgba(0,0,0,.5); transition:height .2s; }
+  .pit-mon.blink .pm-eyes i{ height:2px; }
+  .pm-mouth{ display:none; position:absolute; right:-6%; top:46%; width:30%; height:26%; border-radius:0 50% 50% 0; background:#2a0606; border:2px solid rgba(0,0,0,.6); z-index:1;
+    background-image:repeating-linear-gradient(90deg, #e8dcc0 0 2px, transparent 2px 5px); background-size:100% 3px; background-repeat:no-repeat; }
+  .pit-mon.sp-Mawworm .pm-mouth{ display:block; }
+  .pm-wings{ display:none; position:absolute; left:18%; top:-4%; width:52%; height:46%; z-index:-1; }
+  .pm-wings::before, .pm-wings::after{ content:''; position:absolute; bottom:0; width:58%; height:100%; border-radius:50% 50% 10% 50%; background:rgba(220,230,240,.32); border:1px solid rgba(220,230,240,.5); transform-origin:100% 100%; animation:pm-flap .12s linear infinite alternate; }
+  .pm-wings::after{ left:36%; animation-delay:-.06s; }
+  @keyframes pm-flap{ from{ transform:rotate(-12deg); } to{ transform:rotate(16deg); } }
+  .pit-mon.sp-Needlefly .pm-wings{ display:block; }
+  .pit-mon.sp-Needlefly .pm-body{ border-radius:50% 70% 40% 50% / 60% 70% 30% 40%; }
+  .pit-mon.sp-Glowgrub .pm-body{ box-shadow:0 0 calc(var(--sz) * .35) rgba(184,224,112,.55); }
+  .pit-mon.sp-Silkmite .pm-body{ border-radius:50%; height:70%; }
+  .pit-mon.sp-Silkmite .pm-anim::after{ content:''; position:absolute; left:50%; top:-60%; width:1px; height:60%; background:linear-gradient(transparent, rgba(232,226,240,.5)); } /* a silk thread */
+  /* a larva: a pale, segmented grub with no legs or wings */
+  .pit-mon.larva .pm-body{ height:56%; border-radius:50% 60% 45% 50% / 60% 60% 40% 40%; filter:saturate(.55) brightness(1.2);
+    background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.4) 0 8%, transparent 9%), repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 2px, transparent 2px 6px), var(--col); font-size:calc(var(--sz) * .26); }
+  .pit-mon.larva .pm-body::after, .pit-mon.larva .pm-wings, .pit-mon.larva .pm-mouth, .pit-mon.larva .pm-anim::after{ display:none; }
+  .pit-mon.larva .pm-eyes{ top:52%; }
+  .pit-mon.larva .pm-eyes i{ width:calc(var(--sz) * .09); height:calc(var(--sz) * .09); }
+  /* moods */
+  .pm-bob .pm-anim{ animation:pm-bob 1.7s ease-in-out infinite; } @keyframes pm-bob{ 50%{ transform:scale(1.04, .95); } }
+  .pm-happy .pm-anim{ animation:pm-hop .9s ease-in-out infinite; } @keyframes pm-hop{ 0%,100%{ transform:none; } 30%{ transform:translateY(-22%) scale(.94,1.06); } 60%{ transform:scale(1.08,.92); } }
+  .pm-droop .pm-anim{ animation:pm-droop 3s ease-in-out infinite; } @keyframes pm-droop{ 50%{ transform:scale(1.05,.86) rotate(-5deg); } }
+  .pm-sick .pm-anim{ animation:pm-shiver .22s linear infinite; filter:saturate(.45) hue-rotate(55deg) brightness(.85); } @keyframes pm-shiver{ 25%{ transform:translateX(-1.5px); } 75%{ transform:translateX(1.5px); } }
+  .pm-asleep .pm-anim{ animation:pm-breathe 4s ease-in-out infinite; } @keyframes pm-breathe{ 0%,100%{ transform:scale(1.06,.78); } 50%{ transform:scale(1.1,.72); } }
+  .pm-asleep .pm-eyes i{ height:2px; }
+  .pm-turn .pm-anim{ animation:pm-hop .5s ease-out 1; }
+  .pm-fx{ position:absolute; left:50%; bottom:80%; z-index:4; pointer-events:none; font:700 14px/1 ui-monospace,monospace; animation:pm-rise 1.3s ease-out forwards; }
+  .pm-fx.heart{ color:#e0507a; } .pm-fx.nom{ color:#e0b54a; } .pm-fx.heal{ color:#c73a5c; } .pm-fx.z{ color:#9fb0d8; animation:pm-z 2.6s ease-in-out infinite; font-size:12px; }
+  @keyframes pm-rise{ from{ transform:translate(-50%,0) scale(.6); opacity:0; } 20%{ opacity:1; } to{ transform:translate(calc(-50% + var(--dx,0px)), -46px) scale(1.15); opacity:0; } }
+  @keyframes pm-z{ 0%{ transform:translate(0,6px); opacity:0; } 40%{ opacity:.9; } 100%{ transform:translate(12px,-26px); opacity:0; } }
+  .pm-say.l{ left:0; transform:none; } .pm-say.r{ left:auto; right:0; transform:none; } /* kept inside the room near a wall */
+  .pm-say{ position:absolute; bottom:calc(100% + 10px); left:50%; transform:translateX(-50%); z-index:5; width:max-content; max-width:min(200px, 52vw); white-space:normal; text-align:center;
+    font-size:.64rem; font-style:italic; line-height:1.3; color:#e8dcc0; background:rgba(16,11,10,.88); border:1px solid #3a2c27; border-radius:8px; padding:.2rem .45rem; pointer-events:none; animation:pm-say 5s ease-out forwards; }
+  @keyframes pm-say{ 0%{ opacity:0; } 6%,80%{ opacity:1; } 100%{ opacity:0; } }
+  .pit-empty{ position:absolute; inset:30% 18% auto; text-align:center; font-size:.72rem; font-style:italic; color:var(--bone-dim); z-index:6; }
+  .pit-dots{ display:flex; gap:6px; justify-content:center; margin:.45rem 0 .1rem; }
+  .pit-dots i{ width:9px; height:9px; border-radius:50%; background:rgba(217,201,163,.25); cursor:pointer; }
+  .pit-dots i.on{ background:var(--bone); } .pit-dots i.calls{ box-shadow:0 0 0 2px #e05050; }
+  .pit-meters{ display:grid; grid-template-columns:auto 1fr auto; gap:.2rem .45rem; align-items:center; font-size:.64rem; color:var(--bone-dim); margin:.35rem 0 .2rem; }
+  .pit-meters b{ display:block; height:7px; background:#0e0a09; border:1px solid var(--line); border-radius:3px; overflow:hidden; } .pit-meters b i{ display:block; height:100%; }
+  .pit-meters em{ font-style:normal; font-family:ui-monospace,Menlo,Consolas,monospace; color:var(--bone); }
+  .pit-info{ font-size:.66rem; color:var(--bone-dim); text-align:center; line-height:1.4; }
+  body.lowfx .pit-mon, body.lowfx .pit-mon *, body.lowfx .pit-drip, body.lowfx .pit-heap b, body.lowfx .pit-room{ animation:none !important; }
+  @media (prefers-reduced-motion: reduce){ .pit-mon, .pit-mon *, .pit-drip, .pit-heap b, .pit-room{ animation:none !important; } .pit-mon{ transition:none; } }
   .base-cell.pit-calls{ position:relative; box-shadow:inset 0 0 0 1px rgba(224,80,80,.7), 0 0 8px rgba(224,80,80,.35); } .base-cell.pit-calls::after{ content:'!'; position:absolute; top:3px; right:6px; color:#e05050; font-weight:700; } #friendOverlay{ background:#0a0706; justify-content:flex-start; }
   #pauseOverlay{ gap:.65rem; } #pauseOverlay button{ width:min(280px, 80vw); } #pauseInfo{ text-align:center; max-width:40ch; }
   @media (min-width:900px) and (min-height:560px){ /* a big screen: a big pause menu, readable from the sofa */
@@ -2447,7 +2542,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   function saveLabStock(){ try{ localStorage.setItem('bloodline_labStock', JSON.stringify(labStock)); }catch(e){} }
   // ---- the Brood Pit: parasites raised from larvae carried out of the Catacombs. Levels 1 to 100; a larva until level 10, then a card of
   // its own species. A new function every 25 levels. Belly, health and sanity run on the real clock (tickPit). Any dish fills the belly; a
-  // full belly turns dishes into XP. Two parasites 25 levels apart: the stronger eats the weaker, which goes back to a larva. Friendly kinds
+  // full belly turns food away. It grows with time while it is cared for (pitCared). Two parasites 25 levels apart: the stronger eats the weaker, which goes back to a larva. Friendly kinds
   // never eat or get eaten, and are better company. An aggressive kind eats any grown parasite of another kind. Larvae are never eaten.
   // A grown parasite with no grown company loses sanity, and at none it regresses. Every number is a first guess ----
   const PIT_CAP = 6, PIT_GROWN = 10, PIT_MAX = 100, PIT_EAT_GAP = 25, PIT_FN_EVERY = 25, PIT_BELLY = 4, PIT_H = 3600*1000;
@@ -2463,7 +2558,6 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
     flies:{name:'Wings', text:'Flies straight to its prey.'}, opens:{name:'Open wounds', text:'Its host bleeds: your other parasites drain it faster.'},
     web:{name:'Webbing', text:'Its host moves at half speed.'}, store:{name:'Deep belly', text:'Stores more, and mends more when it bursts.'},
   };
-  const PIT_XP = [1, 5, 12, 25]; // XP from a dish on a full belly, by grade: Plain, Good, Fine, Gourmet
   const pitNeed = lvl => lvl < PIT_GROWN ? 3 : 4 + Math.floor(lvl/4);
   const PIT_MESS_MAX = 9; // heaps the pit can hold
   const pitNameClean = n => typeof n==='string' ? n.replace(/[^\p{L}\p{N} '\-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 16) : ''; // letters, digits, spaces, apostrophes and hyphens: safe to show anywhere
@@ -2478,7 +2572,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
         belly:Math.round(num(q.belly,0,PIT_BELLY,2)), hp:num(q.hp,0,100,100), san:num(q.san,0,100,80), lost:num(q.lost,0,1e3,0), eatT:num(q.eatT,0,1e3,0), bellyT:num(q.bellyT,0,1e3,0),
         // its keeping (the Brood Pit's care, shared with the other pages so nothing is dropped): a name, bond, a favourite taste, sickness, when it hatched, when it was last played with and stroked
         name:pitNameClean(q.name), bond:num(q.bond,0,100,20), fav:typeof q.fav==='string' ? q.fav.slice(0,12) : '', favKnown:!!q.favKnown, sick:num(q.sick,0,48,0),
-        born:num(q.born,0,Date.now(),Date.now()), playT:num(q.playT,0,Date.now(),0), petT:num(q.petT,0,Date.now(),0), messT:num(q.messT,0,100,0)}); }
+        born:num(q.born,0,Date.now(),Date.now()), playT:num(q.playT,0,Date.now(),0), petT:num(q.petT,0,Date.now(),0), messT:num(q.messT,0,100,0), meal:Math.round(num(q.meal,0,3,0)), mealFav:!!q.mealFav}); }
     o.mess = Math.round(num(v.mess,0,PIT_MESS_MAX,0));
     if(Array.isArray(v.log)) o.log = v.log.filter(x=>typeof x==='string').slice(0, 12);
     return o;
@@ -2491,7 +2585,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   function pitOwned(name){ return !!pitBest(name); }
   const pitFns = q => PIT_SPECIES[q.sp].fns.slice(0, Math.floor(q.lvl/PIT_FN_EVERY));
   function pitLog(t){ pitState.log.unshift(t); pitState.log = pitState.log.slice(0, 12); }
-  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0, name:'', bond:20, fav:'', favKnown:false, sick:0, born:Date.now(), playT:0, petT:0, messT:0}; }
+  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0, name:'', bond:20, fav:'', favKnown:false, sick:0, born:Date.now(), playT:0, petT:0, messT:0, meal:0, mealFav:false}; }
   function pitCanEat(a, b){
     if(a===b || !pitGrown(a) || !pitGrown(b)) return false; // larvae are never eaten, and never eat
     const A = PIT_SPECIES[a.sp].temper, B = PIT_SPECIES[b.sp].temper;
@@ -2502,8 +2596,8 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   // ---- its keeping, Tamagotchi-style. They sleep at night (your clock), and asleep their bellies empty half as fast. Fed, each one leaves a heap
   // in the pit every PIT_MESS_H hours awake; past PIT_FOUL heaps the muck hurts them, sours their minds and can make them sick. A sick one loses
   // health, gets nothing but a full belly from food, and is well again after a day; each dose of Transfusion takes a quarter off that. Bond (0 to 100) grows with
-  // every kindness and slowly fades: it adds to the XP a dish gives, and a devoted one (PIT_DEVOTED) frets half as much alone. Each has one
-  // favourite taste, found by feeding it: that dish gives double XP. All numbers are first guesses ----
+  // every kindness and slowly fades: it speeds growth, and a devoted one (PIT_DEVOTED) frets half as much alone. Each has one
+  // favourite taste, found by feeding it: eating it makes it grow faster. All numbers are first guesses ----
   const PIT_MESS_H = 8, PIT_FOUL = 4, PIT_SICK_H = 24, PIT_PLAY_MS = 2*3600*1000, PIT_PET_MS = 3600*1000, PIT_DEVOTED = 80, PIT_PLAY_ROUNDS = 5;
   const pitAsleepAt = t => { const hr = new Date(t).getHours(); return hr >= 22 || hr < 7; };
   const pitAsleep = () => pitAsleepAt(Date.now());
@@ -2512,6 +2606,11 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
     const T = pitTastes();
     for(const q of pitState.list) if(!T.includes(q.fav)){ let hsh = 0; for(const ch of q.id) hsh = (hsh*31 + ch.charCodeAt(0)) >>> 0; q.fav = T[hsh % T.length]; q.favKnown = false; }
   }
+  // growth: XP comes with time, an hour at a time, only while it is cared for: fed, well, healthy, in a clean pit and (once grown) of sound mind.
+  // The rate is PIT_XP_H a hour, more for a better last meal and for its favourite, and more the closer the bond. Feeding a full belly does nothing
+  const PIT_XP_H = 1, PIT_MEAL_XP = [1, 1.5, 2, 2.5], PIT_FAV_XP = 1.5;
+  function pitCared(q){ return q.belly > 0 && !q.sick && q.hp >= 40 && (pitState.mess||0) <= PIT_FOUL && (!pitGrown(q) || q.san >= 30); }
+  const pitXpRate = q => PIT_XP_H * (PIT_MEAL_XP[q.meal] || 1) * (q.mealFav ? PIT_FAV_XP : 1) * (1 + q.bond/200);
   function pitAdvance(h, at){ // h hours pass; at is the clock time they pass at (for night)
     const L = pitState.list, asleep = pitAsleepAt(at || Date.now());
     for(const q of L){
@@ -2523,6 +2622,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
       else if(q.belly > 0) q.hp += 5*h;
       q.hp = Math.max(0, Math.min(100, q.hp - filth*0.5*h));
       q.bond = Math.max(0, q.bond - h/6);
+      if(pitCared(q)) pitGainXp(q, h * pitXpRate(q)); // it grows with time, while every need is met
       if(!pitGrown(q)){ q.lost = 0; continue; }
       let company = 0; for(const o of L) if(o!==q && pitGrown(o)) company += PIT_SPECIES[o.sp].temper==='friendly' ? 2 : 1;
       q.san += company ? 3*company*h : -(q.bond >= PIT_DEVOTED ? 1 : 2)*h; if(q.belly===0) q.san -= h; q.san -= filth*0.5*h;
@@ -9083,9 +9183,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // challenger or feature, append an entry (see the challenger skill); change CHANGELOG_AFTER to list a later chapter's era ----
   const CHANGELOG_AFTER = 1; // list what came after this chapter
   const CHANGELOG = [
+    {since:2, kind:'Feature', title:'The Brood Pit\u2019s rooms', revealAt:11,
+     hint:"Something you keep at camp has a place of its own now. Go and look in on it.",
+     detail:"The Brood Pit is a warren of rooms, one for each parasite. Walk between them with the arrows or a swipe. Each one lives in its room: it wanders while content, waits by its trough when hungry, sleeps in its nest at night and shivers when sick. Tap it to stroke it. Parasites now grow with time while their needs are met, not by being overfed."},
     {since:2, kind:'Feature', title:'Keeping the Brood Pit', revealAt:11,
      hint:"Something you keep at camp would like a little more of your attention.",
-     detail:"The Brood Pit now asks to be looked after. Name each parasite, stroke it, and play its guessing game (which way will it turn?) for bond, sanity and a little XP. They sleep at night, by your clock, and asleep their bellies empty half as fast. Fed parasites leave heaps: muck out the pit, or the filth hurts them and can make them sick. A sick one loses health and only fills its belly from food until it recovers after a day. A dose of Transfusion, brewed at the Still, takes a quarter off the sickness. Each one has a favourite taste that you find by feeding it; its favourite dish gives double XP. Bond adds to the XP every dish gives, and a devoted parasite frets half as much alone. The pit's building on the camp map lights up when someone needs you."},
+     detail:"The Brood Pit now asks to be looked after. Name each parasite, stroke it, and play its guessing game (which way will it turn?) for bond and sanity. They sleep at night, by your clock, and asleep their bellies empty half as fast. Fed parasites leave heaps: muck out the pit, or the filth hurts them and can make them sick. A sick one loses health and only fills its belly from food until it recovers after a day. A dose of Transfusion, brewed at the Still, takes a quarter off the sickness. Each one has a favourite taste that you find by feeding it. Parasites grow with time, not with food: every hour they stay fed, well, healthy and in a clean pit they gain XP, faster after a better meal or their favourite, and faster the closer your bond. A full parasite turns food away. A devoted parasite frets half as much alone. The pit's building on the camp map lights up when someone needs you."},
     {since:2, kind:'Feature', title:'Wanderers learn new tricks', revealAt:11,
      hint:"The people walking the rivers have been picking up habits from the people you beat.",
      detail:"Skirmish has six new kinds of wanderer, each borrowing a rule from a Chapter II challenger once you have beaten them: the Shieldwall (shields against your ranged troops), the Tollkeeper (your spells cost them a blood each), the Mason (mending buildings, two of each), the Mimic (copies of your troops), the Debtor (cards on credit) and the Packmaster (Jackals and Behemoths that hunt together). Wanderers now carry Chapter II cards too, and from Chapter II about a third carry one of your trinkets, and an extra material for it. Win Skirmishes in a row and each wanderer's blood comes a little faster, and every second win adds a material to what they carry. A loss ends the run."},
@@ -10931,12 +11034,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   let pitSay = {}; // a parasite's last reaction, by id, shown under it until the screen is shut
   function pitFeed(q, id){
     const f = FOOD_ITEMS.find(x=>x.id===id); if(!f || !(food[id] > 0)) return;
+    if(q.belly >= PIT_BELLY){ pitSay[q.id] = 'It is full, and turns its head away.'; return; } // overfeeding does nothing, and costs nothing
     food[id]--; saveFood();
     const fav = f.taste===q.fav;
     if(fav && !q.favKnown){ q.favKnown = true; pitLog(`${pitCall(q)} loves ${f.taste} food.`); }
-    if(q.belly < PIT_BELLY){ q.belly++; q.hp = Math.min(100, q.hp + 25); pitSay[q.id] = fav ? 'It wolfs it down and wants more.' : 'It eats.'; }
-    else if(q.sick){ pitSay[q.id] = 'It is too sick to get anything from it.'; }
-    else if(q.lvl < PIT_MAX){ const n = Math.round((PIT_XP[f.band] || 1) * (fav ? 2 : 1) * (1 + q.bond/200)); pitGainXp(q, n); pitSay[q.id] = fav ? `Its favourite. +${n} XP.` : `+${n} XP.`; }
+    q.belly++; q.hp = Math.min(100, q.hp + 25); q.meal = f.band; q.mealFav = fav; // its last meal sets how fast it grows while it stays cared for
+    pitSay[q.id] = fav ? 'Its favourite. It wolfs it down.' : 'It eats.';
     pitBondUp(q, fav ? 5 : 2);
     pitSave(); beep(fav ? 523 : 392, 0.08, 'triangle', 0.03); renderDeckPicker();
   }
@@ -10976,8 +11079,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     beep(ok ? 660 : 196, 0.07, 'triangle', 0.03);
     if(g.round < PIT_PLAY_ROUNDS) return;
     q.playT = Date.now();
-    if(g.wins >= 3){ pitBondUp(q, 8); if(pitGrown(q)) q.san = Math.min(100, q.san + 15); const n = 3 + Math.floor(q.lvl/10); if(q.belly > 0) pitGainXp(q, n);
-      pitSay[q.id] = `${g.wins} of ${PIT_PLAY_ROUNDS}. It is pleased with you` + (q.belly > 0 ? `: +${n} XP.` : ', but too hungry to grow from it.'); }
+    if(g.wins >= 3){ pitBondUp(q, 8); if(pitGrown(q)) q.san = Math.min(100, q.san + 15); pitSay[q.id] = `${g.wins} of ${PIT_PLAY_ROUNDS}. It is pleased with you.`; }
     else { pitBondUp(q, 3); pitSay[q.id] = `${g.wins} of ${PIT_PLAY_ROUNDS}. It sulks, but it liked the game.`; }
     g.done = true; pitSave();
   }
@@ -10996,50 +11098,115 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     tickPit(); return pitState.list.some(q=>q.belly===0 || q.sick > 0 || q.hp < 40) || (pitState.mess||0) > PIT_FOUL;
   }
   function pitAge(q){ const d = Math.floor((Date.now() - q.born)/86400000); return d < 1 ? 'hatched today' : d===1 ? '1 day old' : `${d} days old`; }
+  // ---- the pit's rooms: one chamber for each parasite, walked through with arrows or a swipe. Each is drawn as a place (roots, a trough that
+  // fills with its belly, a nest, its share of the pit's heaps, a drip) and the parasite lives in it as a creature: it wanders while content, waits by
+  // the trough when starving, sleeps in the nest at night, shivers when sick, hops when devoted, and turns for the guessing game. Tap it to stroke it ----
+  let pitRoom = 0, pitPos = {}, pitWander = null, pitSlide = '', pitFx = null;
+  const PIT_NEST_X = 77, PIT_TROUGH_X = 27;
+  const pitCalls = q => q.belly===0 || q.sick > 0 || q.hp < 40;
+  const pitSize = q => pitGrown(q) ? Math.round(50 + q.lvl*0.3) : Math.round(28 + q.lvl*1.2); // px: a larva grows toward a grown one
+  function pitTarget(q){
+    const m = pitMood(q)[0];
+    if(m==='asleep') return PIT_NEST_X;
+    if(m==='starving') return PIT_TROUGH_X + Math.random()*6;
+    if(m==='sick' || m==='weak') return 58 + Math.random()*16;
+    return 20 + Math.random()*58;
+  }
+  function pitPlace(el, p, walk){
+    el.style.left = p.x + '%'; el.style.setProperty('--face', p.face);
+    if(walk){ el.classList.add('walking'); clearTimeout(el._w); el._w = setTimeout(()=>el.classList.remove('walking'), el.classList.contains('slow') ? 3200 : 1600); }
+  }
+  function pitWanderTick(){
+    if(!document.getElementById('pitOverlay').classList.contains('show')){ clearInterval(pitWander); pitWander = null; return; }
+    const el = document.querySelector('#pitList .pit-mon'); if(!el) return;
+    if(Math.random() < 0.3){ el.classList.add('blink'); setTimeout(()=>el.classList.remove('blink'), 160); }
+    if(pitGame) return;
+    const q = pitState.list.find(x=>x.id===el.dataset.id); if(!q) return;
+    const m = pitMood(q)[0], p = pitPos[q.id];
+    const restless = m==='asleep' ? 0 : (m==='content' || m==='devoted' || m==='hungry') ? 0.5 : m==='lonely' ? 0.35 : 0.2;
+    if(m==='asleep' && Math.abs(p.x - PIT_NEST_X) > 2){ p.face = PIT_NEST_X > p.x ? 1 : -1; p.x = PIT_NEST_X; pitPlace(el, p, true); return; }
+    if(Math.random() < restless){ const nx = pitTarget(q); if(Math.abs(nx - p.x) > 5){ p.face = nx > p.x ? 1 : -1; p.x = nx; pitPlace(el, p, true); } }
+  }
+  function pitGo(d){ const n = pitState.list.length; if(n < 2) return; pitRoom = (pitRoom + d + n) % n; pitSlide = d < 0 ? 'pit-in-l' : 'pit-in-r'; pitGame = null; renderPit(true); }
   function renderPit(keep){
     tickPit(true);
     const o = document.getElementById('pitOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('pitList'); list.innerHTML = '';
-    if(!keep){ pitSay = {}; pitGame = null; }
+    const L = pitState.list;
+    if(!keep){ pitSay = {}; pitGame = null; pitFx = null; const c = L.findIndex(pitCalls); pitRoom = c >= 0 ? c : Math.min(pitRoom, Math.max(0, L.length-1)); } // open on whoever is calling
+    pitRoom = Math.max(0, Math.min(pitRoom, L.length - 1));
     const add = (t, cls, parent)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; (parent || list).appendChild(d); return d; };
     const btn = (t, fn, parent, off)=>{ const b = document.createElement('button'); b.textContent = t; b.disabled = !!off; b.onclick = ()=>{ fn(); renderPit(true); }; parent.appendChild(b); return b; };
-    const mess = pitState.mess||0, night = pitAsleep();
-    add(`${pitState.list.length} of ${PIT_CAP}` + (night ? ' · night: they are asleep' : ''), 'base-up-head');
-    if(!pitState.list.length) add('Empty. Larvae come up from the Catacombs, if you get out alive with them.');
-    else {
-      const top2 = document.createElement('div'); top2.className = 'pit-top';
-      add(mess ? `The pit: ${'∴'.repeat(mess)}${mess > PIT_FOUL ? ' (foul: it makes them ill)' : ''}` : 'The pit is clean.', 'gene-log', top2);
-      if(mess){ const r = document.createElement('div'); r.className = 'pit-feed'; btn('Muck out', pitMuck, r); top2.appendChild(r); }
-      list.appendChild(top2);
+    const mess = pitState.mess||0, night = pitAsleep(), q = L[pitRoom];
+    add(`${L.length} of ${PIT_CAP}` + (night ? ' · night: they are asleep' : '') + (mess ? ` · ${mess} heap${mess>1 ? 's' : ''}${mess > PIT_FOUL ? ', foul' : ''}` : ''), 'base-up-head');
+
+    // the room
+    const room = document.createElement('div'); room.className = 'pit-room' + (night ? ' night' : '') + (pitSlide ? ' ' + pitSlide : ''); pitSlide = '';
+    room.innerHTML = '<pre class="pit-roots"></pre><div class="pit-floor"></div><div class="pit-door l"></div><div class="pit-door r"></div><div class="pit-nest"></div><div class="pit-trough"><i></i></div><div class="pit-drip"></div>';
+    const seed = q ? [...q.id].reduce((h, ch)=>(h*31 + ch.charCodeAt(0)) >>> 0, 7) : 7, rnd = k => ((seed * (k+3) * 2654435761) >>> 0) % 1000 / 1000; // each room looks a little different, and the same every visit
+    const roots = ['\\  |   /  \\  |  /   |  \\  /  |   /  \\   |  /', '  \\ |  /    ) | (    | ,  \\/   | /    ) |  ( ', "   '|  '     ' |     ' '   '    |'      '   ' "];
+    room.querySelector('.pit-roots').textContent = roots.map(r=>r.slice(Math.floor(rnd(1)*6))).join('\n');
+    room.querySelector('.pit-drip').style.left = (32 + rnd(2)*36) + '%'; room.querySelector('.pit-drip').style.animationDelay = (-rnd(3)*4) + 's';
+    if(q) room.querySelector('.pit-trough i').style.height = (q.belly/PIT_BELLY*100) + '%';
+    const n = Math.max(1, L.length);
+    for(let j = 0; j < mess; j++){ if(j % n !== pitRoom) continue; const h = document.createElement('div'); h.className = 'pit-heap'; h.style.left = (28 + ((j*37 + seed) % 38)) + '%'; if(mess > PIT_FOUL) h.innerHTML = '<b></b><b></b>'; room.appendChild(h); }
+    if(L.length > 1){ for(const [d, c, t] of [[-1, 'l', '‹'], [1, 'r', '›']]){ const a = document.createElement('button'); a.className = 'pit-arrow ' + c; a.textContent = t; a.setAttribute('aria-label', d < 0 ? 'Previous room' : 'Next room'); a.onclick = e=>{ e.stopPropagation(); pitGo(d); }; room.appendChild(a); } }
+    let sx = null, swiped = false; // a swipe across the room walks to the next one
+    room.addEventListener('pointerdown', e=>{ sx = e.clientX; swiped = false; });
+    room.addEventListener('pointerup', e=>{ if(sx===null) return; const dx = e.clientX - sx; sx = null; if(Math.abs(dx) > 45 && L.length > 1){ swiped = true; pitGo(dx < 0 ? 1 : -1); } });
+    list.appendChild(room);
+    if(!q){ add('Empty. Larvae come up from the Catacombs, if you get out alive with them.', 'pit-empty', room); if(!keep) o.classList.add('show'); o.classList.add('show'); o.scrollTop = top; return; }
+
+    const S = PIT_SPECIES[q.sp], grown = pitGrown(q), fns = pitFns(q), [mood, anim] = pitMood(q);
+    add(`${q.name ? q.name + ' · ' : ''}${q.sp}${grown ? '' : ' larva'} · level ${q.lvl}`, 'pit-plate', room);
+    // the creature
+    const p = pitPos[q.id] || (pitPos[q.id] = {x:pitTarget(q), face:Math.random() < 0.5 ? -1 : 1});
+    const mon = document.createElement('div'); mon.dataset.id = q.id;
+    const moodCls = pitGame ? 'pm-bob' : {asleep:'pm-asleep', sick:'pm-sick', happy:'pm-happy', droop:'pm-droop', bob:'pm-bob'}[anim] || 'pm-bob';
+    mon.className = `pit-mon sp-${q.sp} ${moodCls}` + (grown ? '' : ' larva') + (q.sick || q.hp < 40 ? ' slow' : '');
+    mon.style.setProperty('--sz', pitSize(q) + 'px'); mon.style.setProperty('--col', S.col);
+    mon.innerHTML = '<div class="pm-face"><div class="pm-anim"><div class="pm-wings"></div><div class="pm-body"></div><div class="pm-eyes"><i></i><i></i></div><div class="pm-mouth"></div></div></div>';
+    mon.querySelector('.pm-body').textContent = S.emoji;
+    if(pitGame && pitGame.id===q.id){ // the guessing game: it waits in the middle, and turns
+      const g = pitGame, last = g.last;
+      if(Math.abs(p.x - 50) > 2){ p.from = p.x; p.x = 50; }
+      if(last){ p.face = last.dir==='left' ? -1 : 1; mon.classList.add('pm-turn'); }
+      if(!g.done) add(last ? `It turned ${last.dir}. ${last.ok ? 'Right!' : 'Wrong.'}` : 'Which way will it turn?', 'pit-gametext' + (last ? (last.ok ? ' ok' : ' no') : ''), room);
     }
-    const dishes = FOOD_ITEMS.filter(f=>food[f.id] > 0);
-    for(const q of pitState.list){
-      const S = PIT_SPECIES[q.sp], grown = pitGrown(q), fns = pitFns(q), [mood, anim] = pitMood(q), row = document.createElement('div'); row.className = 'cg-card alc-row pit-row';
-      row.innerHTML = `<div class="spell-preview pit-pet"><span></span><i></i></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="cg-stats pit-care"></div><div class="cg-desc"></div><div class="pit-say"></div><div class="pit-game"></div><div class="pit-feed pit-acts"></div><div class="pit-feed pit-dishes"></div></div>`;
-      const ic = row.querySelector('.spell-preview'); ic.querySelector('span').textContent = S.emoji; ic.style.color = S.col; ic.style.borderColor = S.col; ic.classList.add('pit-' + anim);
-      ic.querySelector('i').textContent = anim==='asleep' ? 'z' : anim==='sick' ? '~' : anim==='happy' ? '♥' : '';
-      const nm = row.querySelector('.cg-name');
-      nm.textContent = `${q.name ? q.name + ', a ' : ''}${q.sp}${grown ? '' : ' larva'} · level ${q.lvl}`;
-      row.querySelector('.cg-stats').textContent = `belly ${'●'.repeat(q.belly)}${'○'.repeat(PIT_BELLY-q.belly)} · health ${Math.round(q.hp)}%` + (grown ? ` · sanity ${Math.round(q.san)}%` : '') + (q.lvl < PIT_MAX ? ` · ${Math.floor(q.xp)}/${pitNeed(q.lvl)}` : '');
-      const hearts = Math.round(q.bond/20);
-      row.querySelector('.pit-care').textContent = `${mood} · bond ${'♥'.repeat(hearts)}${'♡'.repeat(5-hearts)} · loves ${q.favKnown ? q.fav + ' food' : '???'} · ${pitAge(q)}` + (q.sick ? ` · sick (${Math.ceil(q.sick)}h)` : '');
-      row.querySelector('.cg-desc').textContent = grown
-        ? (fns.length ? fns.map(f=>PIT_FN[f].name).join(', ') + '. ' : '') + (q.lvl < PIT_MAX ? `Level ${(Math.floor(q.lvl/PIT_FN_EVERY)+1)*PIT_FN_EVERY}: ???` : '')
-        : `Still a larva. It grows into its own card at level ${PIT_GROWN}.`;
-      if(pitSay[q.id]) row.querySelector('.pit-say').textContent = pitSay[q.id];
-      const gm = row.querySelector('.pit-game');
-      if(pitGame && pitGame.id===q.id){
-        const g = pitGame, last = g.last;
-        add(g.done ? 'The game is over.' : `Round ${g.round+1} of ${PIT_PLAY_ROUNDS} · ${g.wins} right. Which way will it turn?`, 'gene-log', gm);
-        if(last) add(`It turned ${last.dir}. ${last.ok ? 'Right!' : 'Wrong.'}`, 'gene-log' + (last.ok ? ' pit-ok' : ''), gm);
-        const r = document.createElement('div'); r.className = 'pit-feed'; gm.appendChild(r);
-        if(g.done) btn('Done', ()=>{ pitGame = null; }, r);
-        else { btn('← Left', ()=>pitPlayGuess(q, 'left'), r); btn('Right →', ()=>pitPlayGuess(q, 'right'), r); btn('Stop', ()=>{ pitGame = null; }, r); }
-        if(last){ ic.classList.remove('pit-bob','pit-happy','pit-droop'); ic.classList.add(last.dir==='left' ? 'pit-turnl' : 'pit-turnr'); }
-      }
-      const acts = row.querySelector('.pit-acts');
-      btn('Stroke', ()=>pitStroke(q), acts);
-      if(!pitGame) btn('Play', ()=>pitPlayStart(q), acts);
-      if(q.sick) btn(`Transfusion: -25% (${pitTransDoses()})`, ()=>pitDose(q), acts, !(pitTransDoses() > 0));
+    mon.style.left = (p.from ?? p.x) + '%'; mon.style.setProperty('--face', p.face);
+    if(p.from != null){ delete p.from; requestAnimationFrame(()=>requestAnimationFrame(()=>pitPlace(mon, p, true))); }
+    if(mood==='asleep') for(let k = 0; k < 2; k++){ const z = document.createElement('div'); z.className = 'pm-fx z'; z.textContent = 'z'; z.style.animationDelay = (k*1.3) + 's'; mon.appendChild(z); }
+    if(pitSay[q.id] && !(pitGame && !pitGame.done)){ const s = document.createElement('div'); s.className = 'pm-say' + (p.x > 62 ? ' r' : p.x < 38 ? ' l' : ''); s.textContent = pitSay[q.id]; mon.appendChild(s); }
+    if(pitFx && pitFx.id===q.id){ const {kind, t} = pitFx; pitFx = null;
+      for(let k = 0; k < (kind==='nom' ? 1 : 4); k++){ const f = document.createElement('div'); f.className = 'pm-fx ' + kind; f.textContent = t; f.style.setProperty('--dx', ((k - 1.5)*12) + 'px'); f.style.animationDelay = (k*0.12) + 's'; mon.appendChild(f); setTimeout(()=>f.remove(), 1800); } }
+    mon.onclick = ()=>{ if(swiped || pitGame) return; const before = q.petT; pitStroke(q); if(q.petT !== before) pitFx = {id:q.id, kind:'heart', t:'♥'}; renderPit(true); };
+    room.appendChild(mon);
+
+    // whose room is whose: a dot each, ringed red for one that needs you
+    if(L.length > 1){ const dots = document.createElement('div'); dots.className = 'pit-dots';
+      L.forEach((x, i)=>{ const d = document.createElement('i'); d.className = (i===pitRoom ? 'on' : '') + (pitCalls(x) ? ' calls' : ''); d.title = pitName(x); d.onclick = ()=>{ if(i!==pitRoom){ pitSlide = i < pitRoom ? 'pit-in-l' : 'pit-in-r'; pitRoom = i; pitGame = null; renderPit(true); } }; dots.appendChild(d); });
+      list.appendChild(dots); }
+    // how it is, at a glance
+    const met = document.createElement('div'); met.className = 'pit-meters';
+    const bar = (label, frac, col, txt)=>{ const l = document.createElement('span'); l.textContent = label; const b = document.createElement('b'); const i = document.createElement('i'); i.style.width = Math.max(0, Math.min(100, frac*100)) + '%'; i.style.background = col; b.appendChild(i); const e = document.createElement('em'); e.textContent = txt; met.append(l, b, e); };
+    bar('Belly', q.belly/PIT_BELLY, '#c9a24a', `${q.belly}/${PIT_BELLY}`);
+    bar('Health', q.hp/100, q.sick ? '#8fae4a' : '#c73a5c', Math.round(q.hp) + '%');
+    if(grown) bar('Sanity', q.san/100, '#7fa6bd', Math.round(q.san) + '%');
+    bar('Bond', q.bond/100, '#e0507a', '♥'.repeat(Math.round(q.bond/20)) || '·');
+    if(q.lvl < PIT_MAX) bar('Growth', q.xp/pitNeed(q.lvl), '#b493c9', `${Math.floor(q.xp)}/${pitNeed(q.lvl)}`);
+    list.appendChild(met);
+    add(`${mood} · loves ${q.favKnown ? q.fav + ' food' : '???'} · ${pitAge(q)}` + (q.sick ? ` · sick for ${Math.ceil(q.sick)}h more` : ''), 'pit-info');
+    add(grown ? (fns.length ? fns.map(f=>PIT_FN[f].name).join(', ') + '. ' : '') + (q.lvl < PIT_MAX ? `Next at level ${(Math.floor(q.lvl/PIT_FN_EVERY)+1)*PIT_FN_EVERY}: ???` : '') : `Still a larva. It grows into its own card at level ${PIT_GROWN}.`, 'pit-info');
+
+    // what you can do
+    const acts = document.createElement('div'); acts.className = 'pit-feed'; acts.style.justifyContent = 'center'; list.appendChild(acts);
+    if(pitGame && pitGame.id===q.id){
+      if(pitGame.done) btn('Done', ()=>{ pitGame = null; }, acts);
+      else { btn('← Left', ()=>pitPlayGuess(q, 'left'), acts); btn('Right →', ()=>pitPlayGuess(q, 'right'), acts); btn('Stop', ()=>{ pitGame = null; }, acts); }
+    } else {
+      btn('Stroke', ()=>{ const before = q.petT; pitStroke(q); if(q.petT !== before) pitFx = {id:q.id, kind:'heart', t:'♥'}; }, acts);
+      btn('Play', ()=>pitPlayStart(q), acts);
+      if(q.sick) btn(`Transfusion: -25% (${pitTransDoses()})`, ()=>{ pitDose(q); pitFx = {id:q.id, kind:'heal', t:'+'}; }, acts, !(pitTransDoses() > 0));
+      if(mess) btn(`Muck out (${mess})`, pitMuck, acts);
       const nb = document.createElement('button'); nb.textContent = q.name ? 'Rename' : 'Name it'; acts.appendChild(nb);
       nb.onclick = ()=>{ // not through btn: the screen must not redraw under the text box
         const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 16; inp.value = q.name; inp.placeholder = q.sp; inp.className = 'pit-name';
@@ -11048,13 +11215,14 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
         ok.onclick = keepName; inp.onkeydown = e=>{ if(e.key==='Enter') keepName(); };
         acts.replaceChildren(inp, ok); inp.focus();
       };
-      const fb = row.querySelector('.pit-dishes');
-      if(!dishes.length) add('No dishes to give it. The Kitchen makes them.', 'gene-log', fb);
-      for(const f of dishes){ const b = document.createElement('button'); b.textContent = `${f.icon} ${f.name} ${food[f.id]}`; if(q.favKnown && f.taste===q.fav) b.classList.add('pit-fav'); b.onclick = ()=>{ pitFeed(q, f.id); renderPit(true); }; fb.appendChild(b); }
-      list.appendChild(row);
     }
+    const dishes = FOOD_ITEMS.filter(f=>food[f.id] > 0), fb = document.createElement('div'); fb.className = 'pit-feed'; fb.style.justifyContent = 'center'; list.appendChild(fb);
+    if(!dishes.length) add('No dishes to give it. The Kitchen makes them.', 'gene-log', fb);
+    for(const f of dishes){ const b = document.createElement('button'); b.textContent = `${f.icon} ${f.name} ${food[f.id]}`; if(q.favKnown && f.taste===q.fav) b.classList.add('pit-fav');
+      b.onclick = ()=>{ const was = q.belly; pitFeed(q, f.id); if(q.belly > was){ if(!pitAsleep()){ p.from = p.x; p.x = PIT_TROUGH_X; p.face = -1; } pitFx = {id:q.id, kind:'nom', t:f.icon}; } renderPit(true); }; fb.appendChild(b); }
     if(pitState.log.length){ add('Lately', 'base-up-head'); for(const t of pitState.log) add(t, 'gene-log'); }
     o.classList.add('show'); o.scrollTop = top;
+    if(!pitWander) pitWander = setInterval(pitWanderTick, 1800);
   }
   document.getElementById('pitBack').onclick = ()=>document.getElementById('pitOverlay').classList.remove('show');
   function renderTavern(){

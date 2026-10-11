@@ -138,7 +138,7 @@
         belly:Math.round(num(q.belly,0,PIT_BELLY,2)), hp:num(q.hp,0,100,100), san:num(q.san,0,100,80), lost:num(q.lost,0,1e3,0), eatT:num(q.eatT,0,1e3,0), bellyT:num(q.bellyT,0,1e3,0),
         // its keeping (the Brood Pit's care, shared with the other pages so nothing is dropped): a name, bond, a favourite taste, sickness, when it hatched, when it was last played with and stroked
         name:pitNameClean(q.name), bond:num(q.bond,0,100,20), fav:typeof q.fav==='string' ? q.fav.slice(0,12) : '', favKnown:!!q.favKnown, sick:num(q.sick,0,48,0),
-        born:num(q.born,0,Date.now(),Date.now()), playT:num(q.playT,0,Date.now(),0), petT:num(q.petT,0,Date.now(),0), messT:num(q.messT,0,100,0)}); }
+        born:num(q.born,0,Date.now(),Date.now()), playT:num(q.playT,0,Date.now(),0), petT:num(q.petT,0,Date.now(),0), messT:num(q.messT,0,100,0), meal:Math.round(num(q.meal,0,3,0)), mealFav:!!q.mealFav}); }
     o.mess = Math.round(num(v.mess,0,PIT_MESS_MAX,0));
     if(Array.isArray(v.log)) o.log = v.log.filter(x=>typeof x==='string').slice(0, 12);
     return o;
@@ -148,7 +148,7 @@
   function pitSave(){ try{ localStorage.setItem('bloodline_pit', JSON.stringify(pitState)); }catch(e){} }
   const pitGrown = q => q.lvl >= PIT_GROWN;
   const pitFns = q => PIT_SPECIES[q.sp].fns.slice(0, Math.floor(q.lvl/PIT_FN_EVERY));
-  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0, name:'', bond:20, fav:'', favKnown:false, sick:0, born:Date.now(), playT:0, petT:0, messT:0}; }
+  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0, name:'', bond:20, fav:'', favKnown:false, sick:0, born:Date.now(), playT:0, petT:0, messT:0, meal:0, mealFav:false}; }
   function pitLarvaPick(rng){ const L = Object.entries(PIT_SPECIES); let r = rng()*L.reduce((t,[,S])=>t+S.w, 0); for(const [k,S] of L){ r -= S.w; if(r <= 0) return k; } return L[0][0]; }
   let audioCtx = null;
   const SOUND_DEFAULTS = {v:2, master:0.5, sfx:0.5, env:0.5, music:0.5, danger:0.5, haptics:true, dmgNums:true};
