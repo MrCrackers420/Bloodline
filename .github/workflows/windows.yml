@@ -1,4 +1,4 @@
-# Builds the Windows app (a zip with Bloodline.exe) from game/bloodline.html. Push a tag like v0.2.0 to attach it to a Release.
+# Builds the Windows app (a zip with Bloodline.exe) from game/bloodline.html and game/catacombs.html. Push a tag like v0.2.0 to attach it to a Release.
 name: Windows build
 on:
   push:
@@ -14,7 +14,10 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
       - name: Put the game in the shell
-        run: mkdir -p windows/www && cp game/bloodline.html windows/www/index.html
+        run: |
+          mkdir -p windows/www && cp game/bloodline.html windows/www/index.html
+          sed "s/let home = 'bloodline.html'/let home = 'index.html'/" game/catacombs.html > windows/www/catacombs.html
+          grep -q "let home = 'index.html'" windows/www/catacombs.html
       - name: Install
         working-directory: windows
         run: npm install --no-audit --no-fund
