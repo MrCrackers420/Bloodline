@@ -3702,7 +3702,11 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // the player's passive rate starts at 0.75/s (it was 0.6). That floor lives in bloodRate, so the fair-economy rivals (Corvane, Iselde), who
   // share the player's curve, get it too. Dad mode keeps its own 1/s start
   function playerRate(aPent){ if(inSecondPhase()) aPent = 0; /* Hadrek's rebuilt Pentagons count as fallen */ else if((state.phaseN||1)>1) aPent = Math.max(0, aPent - (state.pCarry||0)); const r = bloodRate(state.aBase/(state.aBaseMax||100)*100, aPent, true); return (dadMode ? DAD_RATE*BLOOD_PACE + (r - bloodRate(100, 3, true)) : r) * testRate.p; }
-  function rivalRate(pPent){ return (currentChallenger.hungry ? 1.15 : 1) * (currentChallenger.rateMult||1) * bloodRate(state.pBase, pPent, aiFair()) * testRate.a * (inSecondPhase() ? P2_RATE : 1) * ((state.phaseN||1)>=3 ? GRAEL_P3_RATE : 1); }
+  // Chapter II's challengers (every story challenger after Grael, id 9) draw a flat CH2_RIVAL_BONUS more blood a second on top of their curve.
+  // Wanderers, friends, Watch and two-player fights carry id 0, so they never get it
+  const GRAEL_ID = 9, CH2_RIVAL_BONUS = 0.10;
+  const rivalBonus = () => (currentChallenger.id||0) > GRAEL_ID ? CH2_RIVAL_BONUS : 0;
+  function rivalRate(pPent){ return (currentChallenger.hungry ? 1.15 : 1) * (currentChallenger.rateMult||1) * (bloodRate(state.pBase, pPent, aiFair()) + rivalBonus()) * testRate.a * (inSecondPhase() ? P2_RATE : 1) * ((state.phaseN||1)>=3 ? GRAEL_P3_RATE : 1); }
   function aiFair(){ return !!currentChallenger.fairEconomy; }
   // Hadrek's second phase: his blood builds half again as fast and fills higher (you have usually banked a lot by then)
   const P2_RATE = 1.5, P2_CAP = 5;
