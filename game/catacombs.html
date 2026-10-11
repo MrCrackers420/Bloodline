@@ -126,13 +126,20 @@
     Needlefly:{temper:'',           w:3, emoji:'ϫ', col:'#e0a050', fns:['opens','numb','tough','brood'], base:['flies'], uf:{hp:2, spd:95, dps:0.5, flies:true}},
     Mawworm:  {temper:'aggressive', w:2, emoji:'ϱ', col:'#c05050', fns:['numb','tough','brood','jump'],  base:[],        uf:{hp:6, spd:60, dps:1, regen:0.25}},
   };
+  const PIT_MESS_MAX = 9; // heaps the pit can hold
+  const pitNameClean = n => typeof n==='string' ? n.replace(/[^\p{L}\p{N} '\-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 16) : ''; // letters, digits, spaces, apostrophes and hyphens: safe to show anywhere
+  const pitName = q => q.name || q.sp;
   function pitClean(v){
-    const o = {list:[], t:Date.now(), log:[]}; if(!v || typeof v!=='object') return o;
+    const o = {list:[], t:Date.now(), log:[], mess:0}; if(!v || typeof v!=='object') return o;
     if(Number.isFinite(v.t)) o.t = Math.min(Date.now(), v.t);
     const num = (x, lo, hi, d) => { x = Number(x); return Number.isFinite(x) ? Math.max(lo, Math.min(hi, x)) : d; };
     if(Array.isArray(v.list)) for(const q of v.list.slice(0, PIT_CAP)){ if(!q || !PIT_SPECIES[q.sp]) continue;
       o.list.push({id:String(q.id||('p'+Math.random().toString(36).slice(2,8))).slice(0,20), sp:q.sp, lvl:Math.round(num(q.lvl,1,PIT_MAX,1)), xp:num(q.xp,0,1e4,0),
-        belly:Math.round(num(q.belly,0,PIT_BELLY,2)), hp:num(q.hp,0,100,100), san:num(q.san,0,100,80), lost:num(q.lost,0,1e3,0), eatT:num(q.eatT,0,1e3,0), bellyT:num(q.bellyT,0,1e3,0)}); }
+        belly:Math.round(num(q.belly,0,PIT_BELLY,2)), hp:num(q.hp,0,100,100), san:num(q.san,0,100,80), lost:num(q.lost,0,1e3,0), eatT:num(q.eatT,0,1e3,0), bellyT:num(q.bellyT,0,1e3,0),
+        // its keeping (the Brood Pit's care, shared with the other pages so nothing is dropped): a name, bond, a favourite taste, sickness, when it hatched, when it was last played with and stroked
+        name:pitNameClean(q.name), bond:num(q.bond,0,100,20), fav:typeof q.fav==='string' ? q.fav.slice(0,12) : '', favKnown:!!q.favKnown, sick:num(q.sick,0,48,0),
+        born:num(q.born,0,Date.now(),Date.now()), playT:num(q.playT,0,Date.now(),0), petT:num(q.petT,0,Date.now(),0), messT:num(q.messT,0,100,0)}); }
+    o.mess = Math.round(num(v.mess,0,PIT_MESS_MAX,0));
     if(Array.isArray(v.log)) o.log = v.log.filter(x=>typeof x==='string').slice(0, 12);
     return o;
   }
@@ -141,7 +148,7 @@
   function pitSave(){ try{ localStorage.setItem('bloodline_pit', JSON.stringify(pitState)); }catch(e){} }
   const pitGrown = q => q.lvl >= PIT_GROWN;
   const pitFns = q => PIT_SPECIES[q.sp].fns.slice(0, Math.floor(q.lvl/PIT_FN_EVERY));
-  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0}; }
+  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0, name:'', bond:20, fav:'', favKnown:false, sick:0, born:Date.now(), playT:0, petT:0, messT:0}; }
   function pitLarvaPick(rng){ const L = Object.entries(PIT_SPECIES); let r = rng()*L.reduce((t,[,S])=>t+S.w, 0); for(const [k,S] of L){ r -= S.w; if(r <= 0) return k; } return L[0][0]; }
   let audioCtx = null;
   const SOUND_DEFAULTS = {v:2, master:0.5, sfx:0.5, env:0.5, music:0.5, danger:0.5, haptics:true, dmgNums:true};
@@ -503,7 +510,7 @@
   }
   function ufPitHome(won){ // larvae come home only if you got out; your pet always does
     const out = [];
-    if(uf.pet){ const q = pitState.list.find(x=>x.id===uf.pet.id); if(q){ if(uf.pet.ko){ q.hp = 15; out.push(`Your ${q.sp} was knocked out. It is home, weak.`); } else q.hp = Math.max(15, Math.min(100, uf.pet.hp/uf.pet.maxHp*100)); } }
+    if(uf.pet){ const q = pitState.list.find(x=>x.id===uf.pet.id); if(q){ if(uf.pet.ko){ q.hp = 15; out.push(`Your ${pitName(q)} was knocked out. It is home, weak.`); } else q.hp = Math.max(15, Math.min(100, uf.pet.hp/uf.pet.maxHp*100)); } }
     if(uf.larvae.length){
       if(won){ let lost = 0; for(const sp of uf.larvae){ if(pitState.list.length < PIT_CAP) pitState.list.push(pitNewLarva(sp)); else lost++; }
         out.push(`Larvae brought home: ${uf.larvae.join(', ')}.` + (lost ? ` The pit had no room for ${lost}.` : ''));
@@ -707,7 +714,7 @@
         for(const q of UF_PRISONERS) if(M.freed.includes(q.id)) btn(`${q.glyph} ${q.name}, ${q.role}<small>${q.text}</small>`, ()=>{ M.who = q.id; ufSaveMeta(); ufMenu('setup'); }, rw, {on:M.who===q.id}); }
       { const pets = pitState.list.filter(pitGrown); if(pets.length){ if(M.pet && !pets.some(q=>q.id===M.pet && q.hp>=50)) M.pet = '';
         add('div', 'uf-h', 'From the Brood Pit'); const rp = row(); btn('No one', ()=>{ M.pet = ''; ufSaveMeta(); ufMenu('setup'); }, rp, {on:!M.pet});
-        for(const q of pets){ const S = PIT_SPECIES[q.sp]; btn(`<span style="color:${S.col}">${S.emoji}</span> ${q.sp} · ${q.lvl}<small>${q.hp < 50 ? 'still hurt' : 'health ' + Math.round(q.hp) + '%'}</small>`, ()=>{ M.pet = q.id; ufSaveMeta(); ufMenu('setup'); }, rp, {on:M.pet===q.id, off:q.hp < 50}); } } }
+        for(const q of pets){ const S = PIT_SPECIES[q.sp]; btn(`<span style="color:${S.col}">${S.emoji}</span> ${pitName(q)} · ${q.lvl}<small>${q.hp < 50 ? 'still hurt' : 'health ' + Math.round(q.hp) + '%'}</small>`, ()=>{ M.pet = q.id; ufSaveMeta(); ufMenu('setup'); }, rp, {on:M.pet===q.id, off:q.hp < 50}); } } }
       add('div', 'uf-h', 'Weapon'); const r2 = row();
       for(const [id, W] of Object.entries(UF_WEAPONS)) if(!W.lock || M.pit.includes(W.lock)) btn(`${W.name}<small>${W.text}</small>`, ()=>{ M.weapon = id; ufSaveMeta(); ufMenu('setup'); }, r2, {on:M.weapon===id});
       if(M.pit.includes('startpara')){ add('div', 'uf-h', 'Start with'); const r3 = row();

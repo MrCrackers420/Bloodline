@@ -347,7 +347,19 @@
   @keyframes road-blink{ 50%{ opacity:.25; } }
   .road-day{ font-size:.7rem; letter-spacing:.22em; text-transform:uppercase; color:var(--crimson-lt); } .road-to{ font-size:.95rem; color:var(--bone); letter-spacing:.06em; }
   .road-text{ max-width:34ch; text-align:center; font-style:italic; color:var(--bone); line-height:1.5; margin:0; min-height:3em; opacity:0; transition:opacity 1.1s; } .road-text.on{ opacity:1; }
-  #workshopOverlay, #labOverlay, #boilerOverlay, #tavernOverlay, #friendOverlay, #pitOverlay{ z-index:61 !important; } #pitOverlay{ background:#0a0706; justify-content:flex-start; } .pit-feed{ display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.35rem; } .overlay .pit-feed button{ font-size:.66rem; padding:.2rem .5rem; } #friendOverlay{ background:#0a0706; justify-content:flex-start; }
+  #workshopOverlay, #labOverlay, #boilerOverlay, #tavernOverlay, #friendOverlay, #pitOverlay{ z-index:61 !important; } #pitOverlay{ background:#0a0706; justify-content:flex-start; } .pit-feed{ display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.35rem; } .overlay .pit-feed button{ font-size:.66rem; padding:.2rem .5rem; }
+  /* the Brood Pit's keeping: each parasite moves with its mood (a bob, a happy hop, a droop, a sick shiver, asleep), and turns when you play */
+  .pit-pet{ position:relative; } .pit-pet span{ display:inline-block; } .pit-pet i{ position:absolute; right:2px; top:0; font-style:normal; font-size:.6rem; opacity:.8; }
+  .pit-bob span{ animation:pit-bob 1.6s ease-in-out infinite; } @keyframes pit-bob{ 50%{ transform:translateY(-3px); } }
+  .pit-happy span{ animation:pit-hop .9s ease-in-out infinite; } @keyframes pit-hop{ 0%,100%{ transform:translateY(0) scale(1,1); } 30%{ transform:translateY(-6px) scale(.92,1.08); } 60%{ transform:translateY(0) scale(1.1,.9); } }
+  .pit-droop span{ animation:pit-droop 3s ease-in-out infinite; } @keyframes pit-droop{ 50%{ transform:translateY(3px) rotate(-8deg); } }
+  .pit-sick span{ animation:pit-shiver .25s linear infinite; filter:saturate(.4) hue-rotate(60deg); } @keyframes pit-shiver{ 25%{ transform:translateX(-1px); } 75%{ transform:translateX(1px); } }
+  .pit-asleep span{ opacity:.55; animation:pit-breathe 4s ease-in-out infinite; } @keyframes pit-breathe{ 50%{ transform:scale(.9); } } .pit-asleep i{ animation:pit-z 2s ease-in-out infinite; } @keyframes pit-z{ 0%{ transform:translate(0,4px); opacity:0; } 50%{ opacity:.9; } 100%{ transform:translate(3px,-4px); opacity:0; } }
+  .pit-turnl span{ transform:translateX(-6px) scaleX(-1); transition:transform .2s; } .pit-turnr span{ transform:translateX(6px); transition:transform .2s; }
+  body.lowfx .pit-pet span, body.lowfx .pit-pet i{ animation:none; } @media (prefers-reduced-motion: reduce){ .pit-pet span, .pit-pet i{ animation:none !important; } }
+  .pit-say{ font-size:.68rem; font-style:italic; color:#e8dcc0; margin-top:.2rem; } .pit-say:empty{ display:none; } .pit-ok{ color:#7fcf8e; }
+  .overlay .pit-feed button.pit-fav{ border-color:#e0b54a; } .pit-name{ font:inherit; font-size:.7rem; width:8rem; background:#140e0b; color:var(--bone); border:1px solid #3a2c27; border-radius:4px; padding:.15rem .4rem; }
+  .base-cell.pit-calls{ position:relative; box-shadow:inset 0 0 0 1px rgba(224,80,80,.7), 0 0 8px rgba(224,80,80,.35); } .base-cell.pit-calls::after{ content:'!'; position:absolute; top:3px; right:6px; color:#e05050; font-weight:700; } #friendOverlay{ background:#0a0706; justify-content:flex-start; }
   #pauseOverlay{ gap:.65rem; } #pauseOverlay button{ width:min(280px, 80vw); } #pauseInfo{ text-align:center; max-width:40ch; }
   @media (min-width:900px) and (min-height:560px){ /* a big screen: a big pause menu, readable from the sofa */
     #pauseOverlay{ gap:.9rem; } #pauseOverlay h2{ font-size:3rem; letter-spacing:.25em; padding-left:.25em; } #pauseInfo{ font-size:1.1rem; }
@@ -2453,13 +2465,21 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   };
   const PIT_XP = [1, 5, 12, 25]; // XP from a dish on a full belly, by grade: Plain, Good, Fine, Gourmet
   const pitNeed = lvl => lvl < PIT_GROWN ? 3 : 4 + Math.floor(lvl/4);
+  const PIT_MESS_MAX = 9; // heaps the pit can hold
+  const pitNameClean = n => typeof n==='string' ? n.replace(/[^\p{L}\p{N} '\-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 16) : ''; // letters, digits, spaces, apostrophes and hyphens: safe to show anywhere
+  const pitName = q => q.name || q.sp;
+  const pitCall = (q, mid) => q.name || `${mid ? 'the' : 'The'} ${q.sp}`; // in a sentence
   function pitClean(v){
-    const o = {list:[], t:Date.now(), log:[]}; if(!v || typeof v!=='object') return o;
+    const o = {list:[], t:Date.now(), log:[], mess:0}; if(!v || typeof v!=='object') return o;
     if(Number.isFinite(v.t)) o.t = Math.min(Date.now(), v.t);
     const num = (x, lo, hi, d) => { x = Number(x); return Number.isFinite(x) ? Math.max(lo, Math.min(hi, x)) : d; };
     if(Array.isArray(v.list)) for(const q of v.list.slice(0, PIT_CAP)){ if(!q || !PIT_SPECIES[q.sp]) continue;
       o.list.push({id:String(q.id||('p'+Math.random().toString(36).slice(2,8))).slice(0,20), sp:q.sp, lvl:Math.round(num(q.lvl,1,PIT_MAX,1)), xp:num(q.xp,0,1e4,0),
-        belly:Math.round(num(q.belly,0,PIT_BELLY,2)), hp:num(q.hp,0,100,100), san:num(q.san,0,100,80), lost:num(q.lost,0,1e3,0), eatT:num(q.eatT,0,1e3,0), bellyT:num(q.bellyT,0,1e3,0)}); }
+        belly:Math.round(num(q.belly,0,PIT_BELLY,2)), hp:num(q.hp,0,100,100), san:num(q.san,0,100,80), lost:num(q.lost,0,1e3,0), eatT:num(q.eatT,0,1e3,0), bellyT:num(q.bellyT,0,1e3,0),
+        // its keeping (the Brood Pit's care, shared with the other pages so nothing is dropped): a name, bond, a favourite taste, sickness, when it hatched, when it was last played with and stroked
+        name:pitNameClean(q.name), bond:num(q.bond,0,100,20), fav:typeof q.fav==='string' ? q.fav.slice(0,12) : '', favKnown:!!q.favKnown, sick:num(q.sick,0,48,0),
+        born:num(q.born,0,Date.now(),Date.now()), playT:num(q.playT,0,Date.now(),0), petT:num(q.petT,0,Date.now(),0), messT:num(q.messT,0,100,0)}); }
+    o.mess = Math.round(num(v.mess,0,PIT_MESS_MAX,0));
     if(Array.isArray(v.log)) o.log = v.log.filter(x=>typeof x==='string').slice(0, 12);
     return o;
   }
@@ -2471,7 +2491,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   function pitOwned(name){ return !!pitBest(name); }
   const pitFns = q => PIT_SPECIES[q.sp].fns.slice(0, Math.floor(q.lvl/PIT_FN_EVERY));
   function pitLog(t){ pitState.log.unshift(t); pitState.log = pitState.log.slice(0, 12); }
-  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0}; }
+  function pitNewLarva(sp){ return {id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), sp, lvl:1, xp:0, belly:2, hp:100, san:80, lost:0, eatT:0, bellyT:0, name:'', bond:20, fav:'', favKnown:false, sick:0, born:Date.now(), playT:0, petT:0, messT:0}; }
   function pitCanEat(a, b){
     if(a===b || !pitGrown(a) || !pitGrown(b)) return false; // larvae are never eaten, and never eat
     const A = PIT_SPECIES[a.sp].temper, B = PIT_SPECIES[b.sp].temper;
@@ -2479,29 +2499,49 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
     if(A==='friendly' || B==='friendly') return false;
     return a.lvl - b.lvl >= PIT_EAT_GAP;
   }
-  function pitAdvance(h){ // h hours pass
-    const L = pitState.list;
+  // ---- its keeping, Tamagotchi-style. They sleep at night (your clock), and asleep their bellies empty half as fast. Fed, each one leaves a heap
+  // in the pit every PIT_MESS_H hours awake; past PIT_FOUL heaps the muck hurts them, sours their minds and can make them sick. A sick one loses
+  // health, gets nothing but a full belly from food, and is well again after a day, or at once with a dose of Ichor. Bond (0 to 100) grows with
+  // every kindness and slowly fades: it adds to the XP a dish gives, and a devoted one (PIT_DEVOTED) frets half as much alone. Each has one
+  // favourite taste, found by feeding it: that dish gives double XP. All numbers are first guesses ----
+  const PIT_MESS_H = 8, PIT_FOUL = 4, PIT_SICK_H = 24, PIT_PLAY_MS = 2*3600*1000, PIT_PET_MS = 3600*1000, PIT_DEVOTED = 80, PIT_PLAY_ROUNDS = 5;
+  const pitAsleepAt = t => { const hr = new Date(t).getHours(); return hr >= 22 || hr < 7; };
+  const pitAsleep = () => pitAsleepAt(Date.now());
+  function pitTastes(){ return [...new Set(FOOD_ITEMS.map(f=>f.taste))]; }
+  function pitEnsure(){ // a favourite for any that came without one (old saves, or a larva just carried up from the Catacombs); picked from its id, so it never changes
+    const T = pitTastes();
+    for(const q of pitState.list) if(!T.includes(q.fav)){ let hsh = 0; for(const ch of q.id) hsh = (hsh*31 + ch.charCodeAt(0)) >>> 0; q.fav = T[hsh % T.length]; q.favKnown = false; }
+  }
+  function pitAdvance(h, at){ // h hours pass; at is the clock time they pass at (for night)
+    const L = pitState.list, asleep = pitAsleepAt(at || Date.now());
     for(const q of L){
-      q.bellyT += h; while(q.bellyT >= 6){ q.bellyT -= 6; q.belly = Math.max(0, q.belly-1); }
-      if(q.belly > 0) q.hp = Math.min(100, q.hp + 5*h);
+      q.bellyT += asleep ? h/2 : h; while(q.bellyT >= 6){ q.bellyT -= 6; q.belly = Math.max(0, q.belly-1); }
+      if(q.belly > 0 && !asleep){ q.messT += h; while(q.messT >= PIT_MESS_H){ q.messT -= PIT_MESS_H; pitState.mess = Math.min(PIT_MESS_MAX, (pitState.mess||0) + 1); } }
+      const filth = Math.max(0, (pitState.mess||0) - PIT_FOUL);
+      if(!q.sick && Math.random() < h*(filth*0.015 + (q.belly===0 ? 0.02 : 0))){ q.sick = PIT_SICK_H; pitLog(`${pitCall(q)} is sick.` + (filth ? ' The pit is filthy.' : ' It has gone hungry too long.')); }
+      if(q.sick > 0){ q.hp -= 3*h; q.sick = Math.max(0, q.sick - h); if(!q.sick) pitLog(`${pitCall(q)} is well again.`); }
+      else if(q.belly > 0) q.hp += 5*h;
+      q.hp = Math.max(0, Math.min(100, q.hp - filth*0.5*h));
+      q.bond = Math.max(0, q.bond - h/6);
       if(!pitGrown(q)){ q.lost = 0; continue; }
       let company = 0; for(const o of L) if(o!==q && pitGrown(o)) company += PIT_SPECIES[o.sp].temper==='friendly' ? 2 : 1;
-      q.san += company ? 3*company*h : -2*h; if(q.belly===0) q.san -= h;
+      q.san += company ? 3*company*h : -(q.bond >= PIT_DEVOTED ? 1 : 2)*h; if(q.belly===0) q.san -= h; q.san -= filth*0.5*h;
       q.san = Math.max(0, Math.min(100, q.san));
-      if(q.san <= 0){ q.lost += h; while(q.lost >= 12 && q.lvl > 1){ q.lost -= 12; q.lvl--; q.xp = 0; pitLog(`The ${q.sp} has been alone too long. It shrank back to level ${q.lvl}.`); } }
+      if(q.san <= 0){ q.lost += h; while(q.lost >= 12 && q.lvl > 1){ q.lost -= 12; q.lvl--; q.xp = 0; pitLog(`${pitCall(q)} has been alone too long. It shrank back to level ${q.lvl}.`); } }
       else q.lost = 0;
     }
     for(const a of L){ a.eatT += h; if(a.eatT < 6 || !pitGrown(a)) continue;
       const b = L.find(b=>pitCanEat(a, b)); if(!b) continue;
       a.eatT = 0; a.belly = PIT_BELLY; a.san = Math.min(100, a.san + 20);
-      pitLog(`The ${a.sp} ate the ${b.sp}. What was left of it is a larva again.`);
-      b.lvl = 1; b.xp = 0; b.san = 60; b.lost = 0; }
+      pitLog(`${pitCall(a)} ate ${pitCall(b, true)}. What was left of it is a larva again.`);
+      b.lvl = 1; b.xp = 0; b.san = 60; b.lost = 0; b.bond = Math.min(b.bond, 10); }
   }
   function tickPit(force){
     const now = Date.now(); if(!force && now - pitState.t < 30000) return;
-    let h = Math.min(24*30, (now - pitState.t)/PIT_H); pitState.t = now;
+    let h = Math.min(24*30, (now - pitState.t)/PIT_H), at = now - h*PIT_H; pitState.t = now;
     if(!pitState.list.length){ pitSave(); return; }
-    while(h > 0){ const k = Math.min(1, h); pitAdvance(k); h -= k; }
+    pitEnsure();
+    while(h > 0){ const k = Math.min(1, h); pitAdvance(k, at + k*PIT_H/2); at += k*PIT_H; h -= k; }
     pitSave();
   }
   function pitLarvaPick(rng){ const L = Object.entries(PIT_SPECIES); let r = rng()*L.reduce((t,[,S])=>t+S.w, 0); for(const [k,S] of L){ r -= S.w; if(r <= 0) return k; } return L[0][0]; }
@@ -9043,6 +9083,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // challenger or feature, append an entry (see the challenger skill); change CHANGELOG_AFTER to list a later chapter's era ----
   const CHANGELOG_AFTER = 1; // list what came after this chapter
   const CHANGELOG = [
+    {since:2, kind:'Feature', title:'Keeping the Brood Pit', revealAt:11,
+     hint:"Something you keep at camp would like a little more of your attention.",
+     detail:"The Brood Pit now asks to be looked after. Name each parasite, stroke it, and play its guessing game (which way will it turn?) for bond, sanity and a little XP. They sleep at night, by your clock, and asleep their bellies empty half as fast. Fed parasites leave heaps: muck out the pit, or the filth hurts them and can make them sick. A sick one loses health and only fills its belly from food until it recovers after a day, or at once with a dose of Ichor. Each one has a favourite taste that you find by feeding it; its favourite dish gives double XP. Bond adds to the XP every dish gives, and a devoted parasite frets half as much alone. The pit's building on the camp map lights up when someone needs you."},
     {since:2, kind:'Feature', title:'Wanderers learn new tricks', revealAt:11,
      hint:"The people walking the rivers have been picking up habits from the people you beat.",
      detail:"Skirmish has six new kinds of wanderer, each borrowing a rule from a Chapter II challenger once you have beaten them: the Shieldwall (shields against your ranged troops), the Tollkeeper (your spells cost them a blood each), the Mason (mending buildings, two of each), the Mimic (copies of your troops), the Debtor (cards on credit) and the Packmaster (Jackals and Behemoths that hunt together). Wanderers now carry Chapter II cards too, and from Chapter II about a third carry one of your trinkets, and an extra material for it. Win Skirmishes in a row and each wanderer's blood comes a little faster, and every second win adds a material to what they carry. A loss ends the run."},
@@ -10877,36 +10920,133 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     return out;
   }
   function tavernRumour(){ return tavernRumours().map(r=>r[2]).join(' '); }
+  function pitGainXp(q, n){ // levels it up; returns nothing
+    if(q.lvl >= PIT_MAX) return; q.xp += n;
+    while(q.lvl < PIT_MAX && q.xp >= pitNeed(q.lvl)){ q.xp -= pitNeed(q.lvl); q.lvl++;
+      if(q.lvl===PIT_GROWN) pitLog(`${pitCall(q)} has grown out of its larva. Its card joins you.`);
+      if(q.lvl % PIT_FN_EVERY===0){ const fn = PIT_FN[pitFns(q).slice(-1)[0]]; pitLog(`${pitCall(q)} reached level ${q.lvl}: ${fn.name}.`); } }
+    if(q.lvl >= PIT_MAX) q.xp = 0;
+  }
+  const pitBondUp = (q, n) => { q.bond = Math.min(100, q.bond + n); };
+  let pitSay = {}; // a parasite's last reaction, by id, shown under it until the screen is shut
   function pitFeed(q, id){
     const f = FOOD_ITEMS.find(x=>x.id===id); if(!f || !(food[id] > 0)) return;
     food[id]--; saveFood();
-    if(q.belly < PIT_BELLY){ q.belly++; q.hp = Math.min(100, q.hp + 25); }
-    else if(q.lvl < PIT_MAX){ q.xp += PIT_XP[f.band] || 1;
-      while(q.lvl < PIT_MAX && q.xp >= pitNeed(q.lvl)){ q.xp -= pitNeed(q.lvl); q.lvl++;
-        if(q.lvl===PIT_GROWN) pitLog(`The ${q.sp} has grown out of its larva. Its card joins you.`);
-        if(q.lvl % PIT_FN_EVERY===0){ const fn = PIT_FN[pitFns(q).slice(-1)[0]]; pitLog(`The ${q.sp} reached level ${q.lvl}: ${fn.name}.`); } }
-      if(q.lvl >= PIT_MAX) q.xp = 0; }
-    pitSave(); beep(392, 0.08, 'triangle', 0.03); renderDeckPicker();
+    const fav = f.taste===q.fav;
+    if(fav && !q.favKnown){ q.favKnown = true; pitLog(`${pitCall(q)} loves ${f.taste} food.`); }
+    if(q.belly < PIT_BELLY){ q.belly++; q.hp = Math.min(100, q.hp + 25); pitSay[q.id] = fav ? 'It wolfs it down and wants more.' : 'It eats.'; }
+    else if(q.sick){ pitSay[q.id] = 'It is too sick to get anything from it.'; }
+    else if(q.lvl < PIT_MAX){ const n = Math.round((PIT_XP[f.band] || 1) * (fav ? 2 : 1) * (1 + q.bond/200)); pitGainXp(q, n); pitSay[q.id] = fav ? `Its favourite. +${n} XP.` : `+${n} XP.`; }
+    pitBondUp(q, fav ? 5 : 2);
+    pitSave(); beep(fav ? 523 : 392, 0.08, 'triangle', 0.03); renderDeckPicker();
   }
+  function pitStroke(q){
+    if(pitAsleep()){ pitSay[q.id] = 'It is asleep. Let it be.'; return; }
+    if(Date.now() - q.petT < PIT_PET_MS){ pitSay[q.id] = 'It has had enough of your hand for now.'; return; }
+    q.petT = Date.now(); pitBondUp(q, 5); if(pitGrown(q)) q.san = Math.min(100, q.san + 5);
+    pitSay[q.id] = q.bond >= PIT_DEVOTED ? 'It curls round your fingers and will not let go.' : 'It shivers, then leans into your hand.';
+    pitSave(); beep(330, 0.12, 'sine', 0.03);
+  }
+  function pitMuck(){
+    const n = pitState.mess||0; if(!n) return;
+    pitState.mess = 0; for(const q of pitState.list) pitBondUp(q, 2);
+    pitLog(`You mucked out the pit: ${n} heap${n>1 ? 's' : ''}.`); pitSave(); beep(220, 0.1, 'square', 0.02);
+  }
+  function pitDose(q){
+    if(!q.sick || !(materials.ichor > 0)) return;
+    materials.ichor--; saveAlchemy(); q.sick = 0; pitBondUp(q, 3);
+    pitLog(`You dosed ${pitCall(q, true)} with Ichor. It is well again.`); pitSave(); beep(440, 0.1, 'triangle', 0.03);
+  }
+  // Play: Tamagotchi's guessing game. It is about to turn left or right; guess which. Three right out of five and it is pleased
+  let pitGame = null; // {id, round, wins, last:{dir, ok}}
+  function pitPlayStart(q){
+    if(pitAsleep()){ pitSay[q.id] = 'It is asleep. Play in the morning.'; return; }
+    if(q.sick){ pitSay[q.id] = 'It is too sick to play.'; return; }
+    if(Date.now() - q.playT < PIT_PLAY_MS){ pitSay[q.id] = 'It is worn out from the last game.'; return; }
+    pitGame = {id:q.id, round:0, wins:0, last:null};
+  }
+  function pitPlayGuess(q, dir){
+    const g = pitGame; if(!g || g.id!==q.id) return;
+    const went = Math.random() < 0.5 ? 'left' : 'right', ok = went===dir;
+    g.round++; if(ok) g.wins++; g.last = {dir:went, ok};
+    beep(ok ? 660 : 196, 0.07, 'triangle', 0.03);
+    if(g.round < PIT_PLAY_ROUNDS) return;
+    q.playT = Date.now();
+    if(g.wins >= 3){ pitBondUp(q, 8); if(pitGrown(q)) q.san = Math.min(100, q.san + 15); const n = 3 + Math.floor(q.lvl/10); if(q.belly > 0) pitGainXp(q, n);
+      pitSay[q.id] = `${g.wins} of ${PIT_PLAY_ROUNDS}. It is pleased with you` + (q.belly > 0 ? `: +${n} XP.` : ', but too hungry to grow from it.'); }
+    else { pitBondUp(q, 3); pitSay[q.id] = `${g.wins} of ${PIT_PLAY_ROUNDS}. It sulks, but it liked the game.`; }
+    g.done = true; pitSave();
+  }
+  function pitMood(q){
+    if(pitAsleep()) return ['asleep', 'asleep'];
+    if(q.sick) return ['sick', 'sick'];
+    if(q.belly===0) return ['starving', 'droop'];
+    if(q.hp < 40) return ['weak', 'droop'];
+    if((pitState.mess||0) > PIT_FOUL) return ['filthy', 'droop'];
+    if(pitGrown(q) && q.san < 30) return ['lonely', 'droop'];
+    if(q.belly===1) return ['hungry', 'bob'];
+    if(q.bond >= PIT_DEVOTED) return ['devoted', 'happy'];
+    return ['content', 'bob'];
+  }
+  function pitNeedsYou(){ // the Brood Pit calls from the camp map: someone is starving, sick or weak, or the pit is foul
+    tickPit(); return pitState.list.some(q=>q.belly===0 || q.sick > 0 || q.hp < 40) || (pitState.mess||0) > PIT_FOUL;
+  }
+  function pitAge(q){ const d = Math.floor((Date.now() - q.born)/86400000); return d < 1 ? 'hatched today' : d===1 ? '1 day old' : `${d} days old`; }
   function renderPit(keep){
     tickPit(true);
     const o = document.getElementById('pitOverlay'), top = keep ? o.scrollTop : 0, list = document.getElementById('pitList'); list.innerHTML = '';
+    if(!keep){ pitSay = {}; pitGame = null; }
     const add = (t, cls, parent)=>{ const d = document.createElement('div'); d.className = cls || 'help-sec'; d.textContent = t; (parent || list).appendChild(d); return d; };
-    add(`${pitState.list.length} of ${PIT_CAP}`, 'base-up-head');
+    const btn = (t, fn, parent, off)=>{ const b = document.createElement('button'); b.textContent = t; b.disabled = !!off; b.onclick = ()=>{ fn(); renderPit(true); }; parent.appendChild(b); return b; };
+    const mess = pitState.mess||0, night = pitAsleep();
+    add(`${pitState.list.length} of ${PIT_CAP}` + (night ? ' · night: they are asleep' : ''), 'base-up-head');
     if(!pitState.list.length) add('Empty. Larvae come up from the Catacombs, if you get out alive with them.');
+    else {
+      const top2 = document.createElement('div'); top2.className = 'pit-top';
+      add(mess ? `The pit: ${'∴'.repeat(mess)}${mess > PIT_FOUL ? ' (foul: it makes them ill)' : ''}` : 'The pit is clean.', 'gene-log', top2);
+      if(mess){ const r = document.createElement('div'); r.className = 'pit-feed'; btn('Muck out', pitMuck, r); top2.appendChild(r); }
+      list.appendChild(top2);
+    }
     const dishes = FOOD_ITEMS.filter(f=>food[f.id] > 0);
     for(const q of pitState.list){
-      const S = PIT_SPECIES[q.sp], grown = pitGrown(q), fns = pitFns(q), row = document.createElement('div'); row.className = 'cg-card alc-row';
-      row.innerHTML = `<div class="spell-preview"></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="cg-desc"></div><div class="pit-feed"></div></div>`;
-      const ic = row.querySelector('.spell-preview'); ic.textContent = S.emoji; ic.style.color = S.col; ic.style.borderColor = S.col;
-      row.querySelector('.cg-name').textContent = `${q.sp}${grown ? '' : ' larva'} · level ${q.lvl}`;
+      const S = PIT_SPECIES[q.sp], grown = pitGrown(q), fns = pitFns(q), [mood, anim] = pitMood(q), row = document.createElement('div'); row.className = 'cg-card alc-row pit-row';
+      row.innerHTML = `<div class="spell-preview pit-pet"><span></span><i></i></div><div class="cg-body"><div class="cg-name"></div><div class="cg-stats"></div><div class="cg-stats pit-care"></div><div class="cg-desc"></div><div class="pit-say"></div><div class="pit-game"></div><div class="pit-feed pit-acts"></div><div class="pit-feed pit-dishes"></div></div>`;
+      const ic = row.querySelector('.spell-preview'); ic.querySelector('span').textContent = S.emoji; ic.style.color = S.col; ic.style.borderColor = S.col; ic.classList.add('pit-' + anim);
+      ic.querySelector('i').textContent = anim==='asleep' ? 'z' : anim==='sick' ? '~' : anim==='happy' ? '♥' : '';
+      const nm = row.querySelector('.cg-name');
+      nm.textContent = `${q.name ? q.name + ', a ' : ''}${q.sp}${grown ? '' : ' larva'} · level ${q.lvl}`;
       row.querySelector('.cg-stats').textContent = `belly ${'●'.repeat(q.belly)}${'○'.repeat(PIT_BELLY-q.belly)} · health ${Math.round(q.hp)}%` + (grown ? ` · sanity ${Math.round(q.san)}%` : '') + (q.lvl < PIT_MAX ? ` · ${Math.floor(q.xp)}/${pitNeed(q.lvl)}` : '');
+      const hearts = Math.round(q.bond/20);
+      row.querySelector('.pit-care').textContent = `${mood} · bond ${'♥'.repeat(hearts)}${'♡'.repeat(5-hearts)} · loves ${q.favKnown ? q.fav + ' food' : '???'} · ${pitAge(q)}` + (q.sick ? ` · sick (${Math.ceil(q.sick)}h)` : '');
       row.querySelector('.cg-desc').textContent = grown
         ? (fns.length ? fns.map(f=>PIT_FN[f].name).join(', ') + '. ' : '') + (q.lvl < PIT_MAX ? `Level ${(Math.floor(q.lvl/PIT_FN_EVERY)+1)*PIT_FN_EVERY}: ???` : '')
         : `Still a larva. It grows into its own card at level ${PIT_GROWN}.`;
-      const fb = row.querySelector('.pit-feed');
+      if(pitSay[q.id]) row.querySelector('.pit-say').textContent = pitSay[q.id];
+      const gm = row.querySelector('.pit-game');
+      if(pitGame && pitGame.id===q.id){
+        const g = pitGame, last = g.last;
+        add(g.done ? 'The game is over.' : `Round ${g.round+1} of ${PIT_PLAY_ROUNDS} · ${g.wins} right. Which way will it turn?`, 'gene-log', gm);
+        if(last) add(`It turned ${last.dir}. ${last.ok ? 'Right!' : 'Wrong.'}`, 'gene-log' + (last.ok ? ' pit-ok' : ''), gm);
+        const r = document.createElement('div'); r.className = 'pit-feed'; gm.appendChild(r);
+        if(g.done) btn('Done', ()=>{ pitGame = null; }, r);
+        else { btn('← Left', ()=>pitPlayGuess(q, 'left'), r); btn('Right →', ()=>pitPlayGuess(q, 'right'), r); btn('Stop', ()=>{ pitGame = null; }, r); }
+        if(last){ ic.classList.remove('pit-bob','pit-happy','pit-droop'); ic.classList.add(last.dir==='left' ? 'pit-turnl' : 'pit-turnr'); }
+      }
+      const acts = row.querySelector('.pit-acts');
+      btn('Stroke', ()=>pitStroke(q), acts);
+      if(!pitGame) btn('Play', ()=>pitPlayStart(q), acts);
+      if(q.sick) btn(`Dose: 1 Ichor (${materials.ichor||0})`, ()=>pitDose(q), acts, !(materials.ichor > 0));
+      const nb = document.createElement('button'); nb.textContent = q.name ? 'Rename' : 'Name it'; acts.appendChild(nb);
+      nb.onclick = ()=>{ // not through btn: the screen must not redraw under the text box
+        const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 16; inp.value = q.name; inp.placeholder = q.sp; inp.className = 'pit-name';
+        const ok = document.createElement('button'); ok.textContent = 'Keep';
+        const keepName = ()=>{ q.name = pitNameClean(inp.value); pitSave(); renderPit(true); renderDeckPicker(); };
+        ok.onclick = keepName; inp.onkeydown = e=>{ if(e.key==='Enter') keepName(); };
+        acts.replaceChildren(inp, ok); inp.focus();
+      };
+      const fb = row.querySelector('.pit-dishes');
       if(!dishes.length) add('No dishes to give it. The Kitchen makes them.', 'gene-log', fb);
-      for(const f of dishes){ const b = document.createElement('button'); b.textContent = `${f.icon} ${f.name} ${food[f.id]}`; b.onclick = ()=>{ pitFeed(q, f.id); renderPit(true); }; fb.appendChild(b); }
+      for(const f of dishes){ const b = document.createElement('button'); b.textContent = `${f.icon} ${f.name} ${food[f.id]}`; if(q.favKnown && f.taste===q.fav) b.classList.add('pit-fav'); b.onclick = ()=>{ pitFeed(q, f.id); renderPit(true); }; fb.appendChild(b); }
       list.appendChild(row);
     }
     if(pitState.log.length){ add('Lately', 'base-up-head'); for(const t of pitState.log) add(t, 'gene-log'); }
@@ -11326,7 +11466,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const c = document.createElement('div'), fx = baseFixed()[x+','+y], b = baseAt(x, y); c.dataset.x = x; c.dataset.y = y;
       if(!fx && !baseCellOpen(x, y)){ c.className = 'base-cell void'; map.appendChild(c); continue; } // outside the camp: kept only so the grid lines up
       if(fx){ c.className = 'base-cell fixed home'; c.innerHTML = `<pre class="base-art"></pre><span>Your base</span>`; c.querySelector('pre').textContent = BASE_ART.home; c.addEventListener('pointerdown', ev=>baseHoldStart(ev, BASE_PIECE, c)); }
-      else if(b){ c.className = 'base-cell bld' + (baseSel && baseSel.moving===b.id ? ' sel' : ''); c.innerHTML = `<pre class="base-art"></pre><span></span>`; c.querySelector('pre').textContent = BASE_ART[b.id] || b.icon; c.querySelector('span').textContent = (b.id==='lab' || b.id==='pit') ? b.name : `${b.name} · ${baseLvl(b.id)}`; if(b.id!=='lab' && besideLab(b.id)) c.classList.add('lab-linked'); if(heated(b.id) || (b.id==='boiler' && heatLeft()>0)) c.classList.add('boiler-hot'); if(b.id==='tavern' && tavernLinked()) c.classList.add('lab-linked');
+      else if(b){ c.className = 'base-cell bld' + (baseSel && baseSel.moving===b.id ? ' sel' : ''); c.innerHTML = `<pre class="base-art"></pre><span></span>`; c.querySelector('pre').textContent = BASE_ART[b.id] || b.icon; c.querySelector('span').textContent = (b.id==='lab' || b.id==='pit') ? b.name : `${b.name} · ${baseLvl(b.id)}`; if(b.id!=='lab' && besideLab(b.id)) c.classList.add('lab-linked'); if(heated(b.id) || (b.id==='boiler' && heatLeft()>0)) c.classList.add('boiler-hot'); if(b.id==='tavern' && tavernLinked()) c.classList.add('lab-linked'); if(b.id==='pit' && pitNeedsYou()) c.classList.add('pit-calls');
         c.onclick = ()=>{ if(baseDrag.justDropped){ baseDrag.justDropped = false; return; } if(baseSel) return; sfxTutClick(); baseOpenBuilding(b); };
         c.addEventListener('pointerdown', ev=>baseHoldStart(ev, b, c)); }
       else { const canDrop = placing && ctCellOk(x, y); c.className = 'base-cell' + (canDrop ? ' open' : '');
