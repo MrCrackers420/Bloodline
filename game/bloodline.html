@@ -138,7 +138,7 @@
   body.netflip .stage{ transform:translate(calc(360px*var(--s,1)), calc(640px*var(--s,1))) rotate(180deg) scale(var(--s,1)); } /* Nearby, the joining device: its own side at the bottom */
   body.netflip #field .unit-ring, body.netflip #field .dmgnum, body.netflip #field .glyph, body.netflip #field .btimer{ rotate:180deg; }
   body.netview .unit{ transition:left .07s linear, top .07s linear; }
-  body.net .duo-split{ display:block; }
+  body.netflip .unit::before{ left:-3px; right:3px; top:-4px; bottom:auto; } /* the board is turned round: the shadow still falls below and to the right on screen */
   body.netflip .side{ --crimson-lt:#3f8580; --teal-lt:#c73a5c; } /* the joining device plays teal: its own meter, its colour */
   #netOverlay{ z-index:60; background:#0a0706; }
   .net-row{ display:flex; gap:.5rem; flex-wrap:wrap; justify-content:center; margin:.6rem 0; }
@@ -1334,7 +1334,7 @@
       <div class="help-shape"><div class="unit p shape-hex card-preview help-icon"><div class="unit-ring"><div class="unit-core">&#9678;</div></div></div><span>Armed building: holds its ground and fires</span></div>
       <div class="help-shape"><div class="unit p shape-square card-preview help-icon"><div class="unit-ring"><div class="unit-core">&#9638;</div></div></div><span>Wall: soaks damage, does none</span></div>
     </div>
-    <div class="help-sec"><b>Rivers and bridges.</b> Troops cannot wade: they cross only on the bridges. Once you have beaten Veyra you can seal one of your own bridges by tapping it (it costs nothing, but there is a cooldown). Anything standing on it drops into the river. Your bridge pulses when that would drown the rival's troops. No building may stand at either end of a bridge.</div>
+    <div class="help-sec"><b>Rivers and bridges.</b> Troops cannot wade: they cross only on the bridges. Once you have beaten Veyra you can seal one of your own bridges by tapping it (it costs nothing, but there is a cooldown). Anything standing on it drops into the river. Your bridge pulses when that would drown the rival's troops.</div>
     <div class="help-sec"><b>Spells.</b> Spells land anywhere and affect everything whose body touches their circle. Some catch your own troops too. The Bestiary in your Collection explains each one.</div>
     <div class="help-sec"><b>Rivals.</b> Each challenger openly breaks a rule you must keep, and the screen before each fight says which.</div>
     <div class="help-sec"><b>Trinkets.</b> Some challengers leave a trinket behind. Carry it from the Trinket row on the screen before a fight.</div>
@@ -1720,6 +1720,15 @@
   ];
   // Pentagons must reach every troop that can reach them, except ones marked sniper (none today: the Arquebus was, until its
   // recoil kept it out of reach entirely)
+  // Ranged reach: in story fights (and Skirmish, Versus, Nearby and Watch, which use them) every troop that shoots reaches this much further than
+  // the numbers above, and so does a melee troop's second, ranged weapon. One setting, so it is easy to tune. Buildings, spells and melee reach
+  // are unchanged, and so is the Bombard's (a sniper). The Holdfast keeps the numbers above: it reads hfRange, the reach before this
+  const RANGED_REACH = 1.15;
+  for(const c of CARD_DEFS){
+    if(c.cardType!=='spell' && !c.isBuilding && c.atkStyle==='interval-ranged' && !c.sniper){ c.hfRange = c.range; c.range = Math.round(c.range*RANGED_REACH*10)/10; }
+    if(c.second && c.second.range) c.second = Object.assign({}, c.second, {hfRange:c.second.range, range:Math.round(c.second.range*RANGED_REACH*10)/10});
+  }
+  const hfRangeOf = d => (d && (d.hfRange ?? d.range)) || 0; // a troop's reach in the Holdfast, before the story's ranged boost
   const PENTAGON_MIN_RANGE = () => Math.max(...CARD_DEFS.filter(c=>c.cardType!=='spell' && !c.isBuilding && !c.sniper).map(c=>c.range||0)) + 0.9;
   // what hatches from Eggs: not a card, so it never appears in the picker, hand or guide
   // Askel himself, when he comes to pay his debt in Hadrek's fight: not a card
@@ -1857,6 +1866,8 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   }
   // ---- the two-player layout: player 2's blood and hand sit above the board, turned round to face them; player 1's below ----
   const duoOn = () => !!(currentChallenger && currentChallenger.duo);
+  const p1Top = () => duoOn() && !currentChallenger.net ? 50 : 33.33; // the highest a bottom player may deploy
+  const p2Bot = () => currentChallenger && currentChallenger.net ? 66.6 : 50;  // the lowest a top player may deploy
   let duoBuilt = false;
   function duoSync(){
     document.body.classList.toggle('net', !!(currentChallenger && currentChallenger.net));
@@ -1893,11 +1904,11 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   function duoAfford(){ const h = document.getElementById('hand2'); if(!h) return; (state.aHand||[]).forEach((c,i)=>{ const k = h.children[i]; if(!k) return; const off = c.cost > state.aBlood; if(k._off!==off){ k._off = off; k.classList.toggle('disabled', off); } }); }
   function tryPlaceP2(def, x, y){ // player 2 plays their card: the mirror of the bottom player's rules
     if(!duoOn() || state.over || paused || !def || def.cost > state.aBlood) return false;
-    if(def.cardType!=='spell' && (y > 50 || inRiver(y) || onRock(x, y, 1))) return false; // player 2 places on their own half of the island
-    if(def.isBuilding){ const old = def.uniquePerOwner ? state.units.find(u=>u.owner==='a' && u.name===def.name) : null; const sp = freeBuildingSpot('a', Math.max(6, Math.min(94, x)), Math.max(3, Math.min(50, y)), old, def); if(!sp) return false; x = sp.x; y = sp.y; }
+    if(def.cardType!=='spell' && (y > p2Bot() || inRiver(y) || onRock(x, y, 1))) return false; // player 2 places on their own side (one screen: their half of the island)
+    if(def.isBuilding){ const old = def.uniquePerOwner ? state.units.find(u=>u.owner==='a' && u.name===def.name) : null; const sp = freeBuildingSpot('a', Math.max(6, Math.min(94, x)), Math.max(3, Math.min(p2Bot(), y)), old, def); if(!sp) return false; x = sp.x; y = sp.y; }
     state.aBlood -= def.cost; state.stats.a.spent += def.cost;
     if(def.cardType==='spell') castSpell('a', def, x, y);
-    else { if(def.uniquePerOwner){ const mine = state.units.filter(u=>u.owner==='a' && u.name===def.name); if(mine.length) retireBuilding(mine[0]); } deploy('a', def, Math.max(6, Math.min(94, x)), Math.max(3, Math.min(50, y))); if(sideTrinket('a','mask') && !state.aMasked && !def.isBuilding){ state.aMasked = true; copyTroop('a', def, Math.max(6, Math.min(94, x - 6)), Math.max(3, Math.min(50, y)), 1); } }
+    else { if(def.uniquePerOwner){ const mine = state.units.filter(u=>u.owner==='a' && u.name===def.name); if(mine.length) retireBuilding(mine[0]); } deploy('a', def, Math.max(6, Math.min(94, x)), Math.max(3, Math.min(p2Bot(), y))); if(sideTrinket('a','mask') && !state.aMasked && !def.isBuilding){ state.aMasked = true; copyTroop('a', def, Math.max(6, Math.min(94, x - 6)), Math.max(3, Math.min(p2Bot(), y)), 1); } }
     aiCycle(def); state.selected2 = null; haptic(HAPTIC.place); renderHand2(); renderHUD(); return true;
   }
   // which player a tap on the field belongs to: whoever has a card picked; if both do, whoever's half it is on
@@ -2208,7 +2219,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
         `Here. See how you like crossing this.`,
       ],
       rallyDo: () => { const B = CARD_DEFS.find(c=>c.name==='Barricade'); for(const x of BRIDGE_X){ deploy('a', B, x, 15); } fieldText(50, 12, 'Orrin raises Barricades across both lanes'); },
-      fortress: [['Ballista',30,12],['Ballista',70,12],['Cannon',22,19],['Cannon',78,19],['Watchtower',42,8],['Watchtower',58,8],['Barricade',18,23],['Barricade',82,23]], // his works, placed before the fight
+      fortress: [['Ballista',30,12],['Cannon',22,19],['Watchtower',58,8],['Barricade',18,23],['Barricade',82,23]], // his works, placed before the fight: the guns cover the west lane, so the east is the softer way in
       deathWords: n => [
         `You took it apart faster than I could patch it, ${n}. Haven't seen that since the first army came through.`,
         `My name's under the ash on every post. Orrin. Say it once, would you. Somebody should.`,
@@ -4144,6 +4155,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // challengers 5 and up watch their bridges closely: when enough of your weight is out on the planks, they seal it and drown it
   const DROWN_SNIPE_MIN = 100; // unitWeight on one bridge's planks worth a seal (a Ramhorn or Behemoth alone qualifies; a Jackal doesn't)
   function aiBridgeTick(dt){
+    if(currentChallenger.puzzle) return; // a siege puzzle: he plays nothing, and that includes sealing his bridges
     const sniper = currentChallenger.id >= 5;
     if(!currentChallenger.closesBridges && !sniper) return;
     state._aiBridgeT = (state._aiBridgeT==null ? 1500 : state._aiBridgeT) - dt;
@@ -5816,7 +5828,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function placementValid(def, yPct, xPct){
     if(!canPay(def)) return false;
     if(def.cardType==='spell') return true; // spells can land anywhere
-    if(yPct < (duoOn() ? 50 : 33.33)) return false; // can't deploy directly in rival territory (two players: only your own half of the island)
+    if(yPct < p1Top()) return false; // can't deploy directly in rival territory (two players: only your own half of the island)
     if(inRiver(yPct)) return false; // troops must walk onto a bridge, not spawn in open water
     if(xPct!=null && onRock(xPct, yPct, 1)) return false; // not on a boulder
     return true;
@@ -5825,8 +5837,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // (still a legal spot: your side, out of the water). The old copy of a building it replaces doesn't count
   function buildingSpotOk(owner, x, y, exclude){
     if(x<6 || x>94) return false;
-    if(owner==='p'){ if(y<(duoOn() ? 50 : 34) || y>97 || inRiver(y)) return false; }
-    else if(currentChallenger && currentChallenger.duo){ if(y<3 || y>50 || inRiver(y)) return false; } // player 2 builds on their side and their half of the island
+    if(owner==='p'){ if(y<(duoOn() && !currentChallenger.net ? 50 : 34) || y>97 || inRiver(y)) return false; }
+    else if(currentChallenger && currentChallenger.duo){ if(y<3 || y>p2Bot() || inRiver(y)) return false; } // player 2 builds on their side and their half of the island
     else if(y<2 || y>RIVER_BANDS[0].min-bankPad()) return false;
     if(onRock(x, y, ROCK_BODY + 1)) return false; // never on a boulder
     for(const b of state.units){
@@ -6142,8 +6154,8 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     if(!g){ g = document.createElement('div'); g.id = 'p2Ghost'; g.className = 'place-preview p2'; g.innerHTML = '<div class="place-ring"></div><div class="place-ghost"><span></span></div>'; field.appendChild(g); }
     if(!def || !p.inside){ g.style.display = 'none'; return; }
     let x = p.x, y = p.y;
-    const ok = def.cost <= state.aBlood && (def.cardType==='spell' || (y <= 50 && !inRiver(y) && !onRock(x, y, 1)));
-    if(ok && def.isBuilding){ const old = def.uniquePerOwner ? state.units.find(u=>u.owner==='a' && u.name===def.name) : null, sp = freeBuildingSpot('a', Math.max(6, Math.min(94, x)), Math.max(3, Math.min(50, y)), old, def); if(sp){ x = sp.x; y = sp.y; } }
+    const ok = def.cost <= state.aBlood && (def.cardType==='spell' || (y <= p2Bot() && !inRiver(y) && !onRock(x, y, 1)));
+    if(ok && def.isBuilding){ const old = def.uniquePerOwner ? state.units.find(u=>u.owner==='a' && u.name===def.name) : null, sp = freeBuildingSpot('a', Math.max(6, Math.min(94, x)), Math.max(3, Math.min(p2Bot(), y)), old, def); if(sp){ x = sp.x; y = sp.y; } }
     g.style.display = 'block'; g.classList.toggle('invalid', !ok); g.classList.toggle('spell', def.cardType==='spell');
     const ring = g.querySelector('.place-ring'), gh = g.querySelector('.place-ghost'), r = 2*previewRadius(def)*pxPerUnit();
     ring.style.left = gh.style.left = x+'%'; ring.style.top = gh.style.top = y+'%';
@@ -9001,243 +9013,13 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   // challenger or feature, append an entry (see the challenger skill); change CHANGELOG_AFTER to list a later chapter's era ----
   const CHANGELOG_AFTER = 1; // list what came after this chapter
   const CHANGELOG = [
-    {since:2, kind:'Story', title:'The road goes on', revealAt:10,
-     hint:"The last river is not the end. Someone is ahead of you, and they have been expecting you.",
-     detail:"Chapter II begins at the burned ford, and the hunt for Morvek with it."},
-    {since:2, kind:'Story', title:'A bearer waits at the ford', revealAt:11,
-     hint:"A new challenger waits past the last river, and nothing about his army is what it seems.",
-     detail:"Osric carries Morvek's stolen standards behind a wall of shields: ranged troops deal his troops half damage. Bring melee, parasites and spells, and expect a rally when his first gate falls."},
-    {since:2, kind:'Cards', title:'New cards that change a push', revealAt:11,
-     hint:"New cards change how a push is built: one stands guard for its friends, one steals, and one is a flag no enemy can ignore.",
-     detail:"Plunderer, Stolen Standard and Shieldbearer. The Bestiary has their numbers."},
-    {since:2, kind:'Story', title:'The keeper of the ford', revealAt:12,
-     hint:"Past the last river, the ford has a keeper, and he counts everything that crosses it.",
-     detail:"Garrow keeps the toll at the burned ford: every spell you cast, brews included, pays him 1 blood. Otherwise he fights like any rival, with no shields, no phases and no choice at the end."},
-    {since:2, kind:'Alchemy', title:'A recipe for breaking protection', revealAt:11,
-     hint:"Alchemy has a new recipe, and anything that hides behind a ward or a shield will hate it.",
-     detail:"Sunder, brewed from Fracture and Confusion, strips wards, Oath, Sanctuary and shields, pins its targets and leaves them exposed."},
-    {since:2, kind:'Choice', title:'What you take, and what you give', revealAt:11,
-     hint:"Some of the fallen ask for something before they go. What you decide stays with you.",
-     detail:"Spare Osric for a relic that raises a Sanctuary over any Pentagon you lose, or slay him for his Shield trinket and the Shieldbearer card."},
-    {since:2, kind:'Loadout', title:'New ways to build your hand', revealAt:10,
-     hint:"Defeating the champion changes how you carry things into battle.",
-     detail:"Two trinkets at once, or none for a ninth card, and the Crown relic lets you bind two troops into a formation."},
-    {since:2, kind:'Update', title:'A builder\'s trinket grows', revealAt:4,
-     hint:"One trinket now does more for players who build.", detail:"Veyra's Plumb carries two extra buildings instead of one, and every building you carry costs 1 less blood."},
-    {since:2, kind:'Update', title:'Pentagons pass their strength on',
-     hint:"", detail:"When a rival's Pentagon falls, the others take on part of its health, so a lucky first kill no longer decides the fight. The first two challengers are unchanged."},
-    {since:2, kind:'Update', title:'Breaking every Pentagon pays',
-     hint:"", detail:"From the fight after Alchemy opens, breaking all three of a rival's Pentagons in your first fight with a challenger earns 5 materials of their own kind. Rematches pay nothing."},
-    {since:2, kind:'Update', title:'Two views of your cards',
-     hint:"", detail:"The card picker has a button to switch between the compact grid and a stats view that shows every card's cost and numbers, two to a row. It remembers your choice."},
-    {since:2, kind:'Update', title:'The Stolen Standard can be tapped',
-     hint:"", detail:"Tap your Stolen Standard once while it glows gold to raise it: a wide Sanctuary opens around it for 6 seconds. Your troops inside take half damage and mend, and enemy troops inside move at half pace."},
-    {since:2, kind:'Update', title:'Skirmish rivals carry decks',
-     hint:"", detail:"Each wandering rival now plays from a random deck of eight cards, a hand of four at a time, instead of drawing from everything it could use."},
-    {since:2, kind:'Update', title:'Ashfang burns longer and harder',
-     hint:"", detail:"Ashfang's blow does 22 damage (was 18), and the fire it starts burns 5 a second for 6 seconds (was 4 for 3)."},
-    {since:2, kind:'Update', title:'The Borer is reworked',
-     hint:"", detail:"Underground, a Borer now touches nothing and cannot be targeted, even by spells, until it burrows in. It tunnels straight, at its usual pace, to a building within reach (a Borer placed right at the river's edge reaches a Pentagon), pays 1 health a second while it drains, and leaves two Spider eggs if it dies inside."},
-    {since:2, kind:'Update', title:'Troops slide around buildings',
-     hint:"", detail:"A building can no longer pin a troop against the river. Troops slip along its edge and around it, and a troop that has gone nowhere while touching a building slips through for a moment."},
-    {since:2, kind:'Update', title:'Troops strike what is nearest',
-     hint:"", detail:"A troop that has locked on now hits whatever is nearest when its next blow lands, instead of staying on its first target. It does not flip back and forth for a target that is only slightly closer."},
-    {since:2, kind:'Update', title:'Only two rivals get cheap Revenants',
-     hint:"", detail:"A Revenant costs 5 blood for you and for almost every rival. Hadrek and Grael used to pay less; now nobody does."},
-    {since:2, kind:'Update', title:'Random battle calls',
-     hint:"", detail:"The line that opens each battle is now picked at random, and some of them are silly. The call also holds a little longer so you can read it."},
-    {since:2, kind:'Update', title:'Cheaper Cannons',
-     hint:"", detail:"A Cannon now costs 5."},
-    {since:2, kind:'Update', title:'Bridges: free to seal, closed longer',
-     hint:"", detail:"Sealing a bridge now costs nothing. A closed bridge stays shut for 11 seconds, and the cooldown is 24 seconds."},
-    {since:2, kind:'Update', title:'Champion waves sweep the field',
-     hint:"", detail:"In multi-phase champion fights, each wave now clears every troop from the field and destroys one of your Pentagons. Any Pentagons you had already lost are repaid in blood when you break two of theirs, so both sides speed up together."},
-    {since:2, kind:'Update', title:'Multi-phase fights hold together',
-     hint:"", detail:"Troops waiting at a boss's gate can no longer end the fight in the middle of a phase break."},
-    {since:2, kind:'Update', title:'Formations show both troops while you drag',
-     hint:"", detail:"Dragging a formation card shows each troop in its own shape with its own reach, joined by a line, at the exact spots they will land."},
-    {since:2, kind:'Update', title:'Better on phones',
-     hint:"", detail:"A layout for phones on their side, an Effects setting for older phones, a steady dark look in every browser, and your character's name now lives on the main menu."},
-    {since:2, kind:'Update', title:'Brewing takes time',
-     hint:"",
-     detail:"Each brewed spell now takes real time to finish, from 2 minutes up to 15 for the strongest. A brew keeps going while the menu is shut or the game is closed, and you can have several spells brewing at once. Brew a spell in bulk and the batches come out one at a time, each taking the usual wait, with its doses arriving as it finishes."},
-    {since:2, kind:'Update', title:'Brewed spells are used up',
-     hint:"",
-     detail:"One brew makes three doses of a spell. The first time you cast it in a fight spends one, and after that it is free to cast for the rest of that fight. When the last dose goes, the spell leaves your deck after that fight until you brew it again. Spells you had already brewed start with a full three."},
-    {since:2, kind:'Update', title:'More materials',
-     hint:"",
-     detail:"A won skirmish now pays three materials instead of one, and a challenger's first fight pays eight instead of five."},
-    {since:2, kind:'Update', title:'Troops walk through your own buildings',
-     hint:"",
-     detail:"Troops now walk straight through the buildings on their own side, as if they were not there, so nothing can trap them. That goes for the rival's troops and their buildings too. Buildings on the other side still block."},
-    {since:2, kind:'Update', title:'The First Standard is reworked',
-     hint:"",
-     detail:"Osric's relic no longer has a button. When one of your Pentagons falls, the First Standard is raised where it stood and a wide Sanctuary opens there for 6 seconds, up to three times a fight. The fate screen now says what each of Osric's gifts does."},
-    {since:2, kind:'Feature', title:'The Holdfast', revealAt:11,
-     hint:"Late on the road, a second kind of fight opens: you do not attack, you hold.",
-     detail:"A new, optional mode on the main menu once Osric has fallen. Hold the Keep at the tollhouse as raiders come down three roads, for as long as you can. Buildings are on buttons under the board, paid for with Mortar, and your hand fills only with the troop or spell cards you choose after each wave, one use each, and every wave adds ingredients to your pot: conclude between waves to take them all, or lose half if the Keep falls. Nothing in the story needs it. It plays best with your phone on its side."},
-    {since:2, kind:'Feature', title:'Kitchen and Training camp', revealAt:11,
-     hint:"Your troops can be fed, if you can find the food.",
-     detail:"Cook the Holdfast's food ingredients into Bread, Stew and Smoked Fish in the Kitchen, then feed them to your troops at the Training camp. A troop eats food in large amounts (even the cheapest needs about ten full waves of ingredients for its first level), and what it gets depends on its kingdom: raw stats for a kingdom troop, new functions for one with no king. It lasts in the story, Skirmish and the Holdfast."},
-    {since:2, kind:'Update', title:'Holdfast spells and parasites',
-     hint:"",
-     detail:"In the Holdfast, spells now show the same effects as in a story fight: the flying characters, damage numbers, and the glow on warded, opened, bleeding and healing troops. False Oath makes troops fight their own side and Confusion makes them fight anyone. Parasites latch onto a host and ride it, bite in before they drain, and only one rides a host."},
-    {since:2, kind:'Update', title:'The Holdfast: a building grid',
-     hint:"",
-     detail:"The Holdfast board now has a grid, and buildings snap to it so a base stays readable. The buttons under the board are the Holdfast's own defensive buildings: Palisade, Archer Tower, Bolt Thrower and Spike Pit, in any number. Blood comes more slowly, a reward card is a single use, every fifth wave pays a second card, and parasites near a friendly Bleeder no longer waste away."},
-    {since:2, kind:'Update', title:'Build at the ends of your bridges',
-     hint:"",
-     detail:"The no-building zone around bridges is gone. Your own troops walk through your buildings, so nothing you put there can trap them. Closing a bridge now makes a sound, too."},
-    {since:2, kind:'Update', title:'The Leech Bog keeps breeding',
-     hint:"",
-     detail:"The Leech Bog no longer stops at two Leaches. It breeds a free one every 8 seconds until your side has a parasite for every rival troop that could host one, and starts again when new troops arrive."},
-    {since:2, kind:'Update', title:'A faster start for your blood',
-     hint:"",
-     detail:"Your blood now builds from 0.75 a second instead of 0.6, climbing as the rival's base and Pentagons fall. Rivals that share your economy, such as Corvane and Iselde, start at the same pace."},
-    {since:2, kind:'Update', title:'Blood comes a little faster',
-     hint:"",
-     detail:"Your blood now starts at 0.75 a second instead of 0.6, and still climbs as you break the rival's Pentagons and base."},
-    {since:2, kind:'Update', title:'Melee cannot reach the air',
-     hint:"Troops that fight up close now ignore anything flying overhead.", revealAt:10,
-     detail:"Troops that fight up close now ignore a Botfly while it is in the air: they do not strike it or chase it. Ranged troops and buildings still can, and once it lands on a host it can be hit again. The Holdfast follows the same rule."},
-    {since:2, kind:'Update', title:'The Leech Bog breeds for itself',
-     hint:"A breeding building now counts only what it bred.", revealAt:10,
-     detail:"The Leech Bog now counts only its own Leaches when it decides whether to breed another. Leaches and other parasites you play yourself no longer hold it back."},
-    {since:2, kind:'Update', title:'A deeper signet',
-     hint:"A trinket from early in the story now holds more.", revealAt:5,
-     detail:"Corvane's Signet now lets your blood build on its own all the way to 20, instead of 15."},
-    {since:2, kind:'Update', title:'Holdfast: dismantle, and a Standard each wave',
-     hint:"A defence mode can now take its own works down between raids.", revealAt:11,
-     detail:"In the Holdfast, a Dismantle button under the board lets you take down any of your buildings between waves, and half its Mortar comes back. Your Stolen Standard now glows gold when it is ready, and you can raise it once every wave instead of once in its life."},
-    {since:2, kind:'Update', title:'Holdfast: walls that hold',
-     hint:"The defence mode plays more like a true siege.", revealAt:11,
-     detail:"In the Holdfast your buildings are now walls: raiders must go around them or break through, and Spike Pits are walked over. The Keep now stands on a square plot ringed by a moat: every cell of the plot can be built on, the Pentagons sit on the grid, and every troop, yours and theirs, crosses it by the three bridges. Every building you own now sits on the buttons under the board. Your hand starts empty and fills only with the cards you win after each wave. The Holdfast has its own siege music now. Ramhorns ram, Bloodhounds savage the wounded, Camels charge their shot, the Arquebus kicks and misses, Fleas leap, the Shieldbearer guards and the Plunderer steals, as in a story fight. A raider can no longer strike the parasite riding it. Deeper waves pay more ingredients."},
-    {since:2, kind:'Update', title:'A keener hound',
-     hint:"A hunting troop from late in Chapter I is a little tougher and quicker.", revealAt:10,
-     detail:"The Bloodhound has 7% more health (41, up from 38) and attacks 7% faster (every 0.84 s, from 0.9 s). Grael's hounds and the Holdfast's raiders get the same."},
-    {since:2, kind:'Update', title:'New things to teach',
-     hint:"What troops learn in the camp has been reworked.", revealAt:11,
-     detail:"The War Pen's taught functions (it was called the Training Camp) are reworked: each now changes how a troop fights, not just its numbers. Ramhorns batter from building to building or hook one onto themselves, Revenants rise beside your most wounded, Shieldbearers escort your ranged troops, Overseers muster the troops around them, Bleeders open wounds or lay trails for your parasites, Bloodhounds stalk the wounded or guard your buildings, Plunderers smuggle their loot or skulk unseen, Borers hollow out buildings or sap the ones firing at you, and Botflies hop from host to host or infest the troops around them. Hungry and Rousing are unchanged. A troop already taught keeps its slot, now with the new function."},
-    {since:2, kind:'Update', title:'Holdfast: works that think',
-     hint:"The defence mode's own buildings each do something of their own now.", revealAt:11,
-     detail:"In the Holdfast, Palisades joined side by side share every blow, so a long wall holds as one and a lone post is weak. The Archer Tower always shoots the raider nearest the Keep. The Bolt Thrower fires only along its own row and column, but its bolt flies the whole length of the board through everything in the way. The Spike Pit is unchanged."},
-    {since:2, kind:'Feature', title:'Your camp', revealAt:4,
-     hint:"The menu has a new place of your own.",
-     detail:"Camp, on the menu, is a small map of your own base. Alchemy is the Still there, and later the Kitchen and the War Pen (once called the Training Camp) stand beside it. Raise each with Mortar, set it on whichever plot you like, and tap it to work inside. The stores send each building's Mortar as it opens, and every Holdfast wave and Skirmish win sends a little more, kept for what comes next. The Holdfast is a different camp: losing it never touches yours."},
-    {since:2, kind:'Feature', title:'A sideways field, and a tidier menu',
-     detail:"Settings has a new switch for the field (now upright, sideways, or auto, which turns with your phone): the battlefield turns a quarter so your side is on the left and the rival's on the right, filling a wide screen or a phone held on its side. The fight itself is exactly the same. The menu is reorganised: Continue is always the story's next fight, the ways to play sit together in large buttons, then settings and saves, then reading, with test tools smallest. Old fights moved to their own Rematches screen: swipe through every challenger you have beaten, read their words before the fight, and tap Rematch."},
-    {since:2, kind:'Feature', title:'Phone or tablet, your choice',
-     detail:"The game now works out whether it is on a phone or a tablet and lays itself out to match. Settings has a Layout switch to force either one: the phone layout on a tablet, or the tablet layout on a phone. In the Holdfast, a phone that will not turn its view now follows its tilt sensor, so the defence reads upright whichever way you hold it; Flip still turns it by hand."},
-    {since:2, kind:'Cards', title:'Old cards, new rivals', revealAt:14,
-     hint:"Four new troops are coming that outdo some of the first cards you were given.",
-     detail:"Four new troops, stronger than some of your first cards, wait to be bred in the Laboratory. Nobody can tell you what they are until one is grown."},
-    {since:2, kind:'Feature', title:'Raise your camp', revealAt:4,
-     hint:"Your camp's buildings can now grow.",
-     detail:"Every camp building has seven levels. Raising one costs Mortar, and every second level also needs a blueprint, won the first time you beat certain challengers. The Still opens one recipe per level, the Kitchen new bands of food, and the War Pen deeper training. Troops now eat the food of their band: the later a troop joins you, the rarer its food, cooked from ingredients only the deeper Holdfast waves give. Every challenger's first defeat sends 5 Mortar, the Holdfast sends more on every fifth wave, and a Skirmish win sends 2. What you already brewed, cooked and taught stays yours, and your buildings start at the level that covers it."},
-    {since:2, kind:'Story', title:'The builder', revealAt:12,
-     hint:"Somebody raised the bridges past the ford, and is still there.",
-     detail:"Orrin, who raised every bridge on the rivers, waits past the burned ford as challenger 12, in a fight unlike the others: a siege puzzle. His works stand before you arrive, the same every time. Your blood never runs out, but each card in your deck can be played once. Break every building he has, Pentagons included. When his first Pentagon falls he raises Barricades across both lanes."},
-    {since:2, kind:'Cards', title:'Works of the ford', revealAt:13,
-     hint:"New fortifications wait past the ford.",
-     detail:"The Watchtower (your ranged troops near it reach further), the Barricade (two walls at once) and the Ballista (a bolt through a whole line) join your cards, and Undermine can be brewed from Fracture and Oath to silence rival buildings."},
-    {since:2, kind:'Feature', title:'The Workshop', revealAt:13,
-     hint:"Your camp may gain somewhere to fit buildings.",
-     detail:"Spare Orrin and his Workshop can stand in your camp: fit your buildings with Barbs, Murder holes and a Sluice, in story fights and the Holdfast alike. Slay him and you take Double Works, a relic for keeping two of each building; the Workshop can still be raised after holding the Holdfast to wave 15, and Double Works can still be earned by beating Orrin again without losing a Pentagon."},
-    {since:2, kind:'Update', title:'Revenants cost everyone the same', revealAt:9,
-     hint:"Two rivals from late in Chapter I field fewer of one troop.",
-     detail:"Hadrek and Grael no longer get Revenants cheap: they pay 5 blood like everyone else, so their last pushes no longer flood the field."},
-    {since:2, kind:'Feature', title:'The Laboratory', revealAt:16,
-     hint:"Your camp will one day hold something nobody understands.",
-     detail:"The Laboratory, a cold table with three empty vats, can stand in your camp. Next to the Still, it lets the Still brew the newest spells."},
-    {since:2, kind:'Feature', title:'The Boiler', revealAt:4,
-     hint:"Your camp gains a building that burns something.",
-     detail:"The Boiler is a new camp building that burns Ember. While it has heat, the buildings directly beside it on the Camp map work at full speed; anything not beside it, or beside a cold Boiler, works at half. That covers brewing in the Still and, now, cooking in the Kitchen, which takes time. Ember is pure fuel now, from every Holdfast wave, Skirmish wins and first victories; Bloodroot takes its place in the finest foods. Brews already on the fire finish when they would have."},
-    {since:2, kind:'Feature', title:'Lessons take time, and the Tavern', revealAt:11,
-     hint:"Training troops now takes time, and your camp can help.",
-     detail:"Teaching or feeding a troop in the War Pen now takes time: an hour for the earliest troops, up to a day for the strongest. The food is paid when the lesson starts and the troop keeps what it had until the lesson lands. The Tavern, a new camp building, cuts that to a quarter when it stands beside the War Pen, the Kitchen and the Still all at once. Timers in the Still and the Kitchen now show real time at their current pace, so moving the Boiler away or back changes them at once."},
-    {since:2, kind:'Feature', title:'The Bestiary, the shared fire and tempered fittings',
-     detail:"The Card guide in How to play is now the Bestiary: every troop, building and spell you have met, with your record for each (played, kills, and wins with it in your deck). Ones you have not met stay hidden. In your camp, the Workshop now takes one fitting per building, and its tempered fittings can only be made with a hot Boiler beside it. A Still beside the Kitchen shares its fire: some foods can then be cooked from brewing materials. And the Tavern now has a rumour each day."},
-    {since:2, kind:'Feature', title:'A smaller camp', revealAt:4,
-     hint:"Your camp has less room, on purpose.",
-     detail:"Your base now stands in the middle of the camp map with eight plots around it. From Chapter II a row opens above. Your base can be moved too: hold it and drop it on an empty plot. There are more buildings than plots, so choose what your camp is doing: hold a building and drop it on the tray to pack it away, keeping its levels and fittings, and set it down again later for free. Buildings from the old, wider map start packed, ready to place."},
-    {since:2, kind:'Feature', title:'Camp formations', revealAt:4,
-     detail:"Under the camp map you can save up to three formations: tap save beside a number to keep the map as it stands, and tap the number to switch to it. Every building you own goes where that formation put it, anything it left out is packed away, and nothing costs Mortar."},
-    {since:2, kind:'Story', title:'The troupe at the crossroads', revealAt:13,
-     hint:"Somebody past the burned ford has been watching you fight, and practising.",
-     detail:"Ysolde and her troupe of mummers wait at the crossroads as challenger 13. Every other troop you play, anywhere, they play back a moment later, mirrored across the field, for a single blood each: weaker, until her mask comes off. She has her own waltz."},
-    {since:2, kind:'Cards', title:'Borrowed shapes', revealAt:14,
-     hint:"New cards that copy, mimic and repeat.",
-     detail:"The Mummer (stands back up as whatever killed it, on your side), the Stage (replays your last troop) and Echo (your last troop again, where you cast it) join your cards. Encore can be brewed at a Still with a Laboratory beside it. Ysolde's Mask, a trinket, plays your first troop in each fight twice; her Wardrobe makes every copy you make whole. You choose which."},
-    {since:2, kind:'Cards', title:'Two weapons at once', revealAt:14,
-     hint:"Two new troops that fight two ways at the same time.",
-     detail:"The Breacher hacks at buildings while shooting rival troops that come near; the Harrier fights troops hand to hand while slinging stones at any building in reach. Both join your cards when Ysolde falls."},
-    {since:2, kind:'Update', title:'The War Pen teaches, and food has grades', revealAt:11,
-     hint:"Your camp's food and training have been reworked.",
-     detail:"Troops with a king are no longer fed in the War Pen; everything you fed them was given back as the same dishes. The War Pen now teaches lessons only, and each lesson asks for one particular dish. Food comes in four grades, Plain, Good, Fine and Gourmet, each with dishes of different tastes, and stronger troops need finer food. Ash Cake is now Bloodroot Tart."},
-    {since:2, kind:'Feature', title:'The Undermaster', revealAt:11,
-     hint:"Something digs under the Holdfast every fifteenth wave.",
-     detail:"Every fifteenth Holdfast wave brings the Undermaster and his sappers. They travel underground, untouchable, under your walls, the moat and the bridges, and come up under your buildings. A Spike Pit in the way forces a tunnel up onto the spikes. At half health the Undermaster comes up for good and goes for the Keep. Beat him once and the Spike Pit is yours as a card in the story: rival melee troops that cross it are hurt, and only ranged troops can attack it."},
-    {since:2, kind:'Balance', title:'A balance pass',
-     detail:"Measured by thousands of even-blood duels between troops. Weaker: Shieldbearer (health 200 to 150), Arquebus (damage 30 to 27), Revenant (health 55 to 48, damage 13 to 12). Stronger: Shardlings (health 1 to 7 each, so one light hit no longer kills them), Plunderer (health 34 to 39, damage 5 to 6), Jackal (health 40 to 44), Viper (health 15 to 17)."},
-    {since:2, kind:'Feature', title:'Friends',
-     detail:"Nobody fights in person: armies are sent out to fight on their commanders' behalf. Army codes, under Battle, gives you your army's code (only the names of your cards). Send it to a friend and they can meet your army in the field; paste theirs and their army marches against you. Nothing goes online, and nothing is won or lost but the argument."},
-    {since:2, kind:'Feature', title:'Watch, and your own decks',
-     detail:"Watch, on the menu, lets you sit on the hill while two armies fight, both played by the AI, at 1x, 2x or 4x speed. Each side can bring a random army, a preset, a friend's code, or one of your own decks. Your decks are built from any card in the game, even ones you have not won yet, and saved under a name. Nothing in a watched fight touches your story, your Bestiary or your rewards."},
-    {since:2, kind:'Story', title:'The hills', revealAt:16,
-     hint:"Something howls from every ridge in the hills.",
-     detail:"Ulgar, the Pack King, waits in the hills as challenger 16. His Jackals and Behemoths strike faster in packs, and yours may answer him and turn for a few seconds. Slay him for the Pack Collar, a relic; spare him and your own Jackals and Behemoths ask to go with him (you can keep them, and gain the Houndmaster)."},
-    {since:2, kind:'Cards', title:'Plain soldiers, and the pack', revealAt:17,
-     hint:"New cards, some of them plain and cheap again.",
-     detail:"Against a horde of strong troops: the Halberdier (cleaves), the Thresher (blades that cut everything near it) and the Firepot (burning pitch). Against one huge troop: the Harpooner (each hit takes a share of the target's full health), the Duelist (triple damage to anything twice its size) and Hamstring (the biggest troop in reach slowed and taking half again as much). The Spearman, the Slinger and the Stockade are plain, cheap cards; Howl sends every troop in its circle after the toughest rival near it. Bloodlust can be brewed at a Still with a Laboratory beside it."},
-    {since:2, kind:'Feature', title:'Genetics and the Foundry', revealAt:16,
-     hint:"The Laboratory is no longer idle.",
-     detail:"The Laboratory has two sides that wake for the right neighbours: one breeds troops, one forges buildings no rival ever has. Finding out how is up to you."},
-    {since:2, kind:'Story', title:'What you left behind', revealAt:15,
-     hint:"Someone has been following you, and picking up after you.",
-     detail:"Wren, who walks behind the war and gathers what the victors leave, waits as challenger 15. She fights with every gift you turned down: trinkets work for her, cards are in her hand, relics are hers. Spare her and she gives one of them back; slay her for her Hook. Her first defeat brings the Laboratory's blueprint."},
-    {since:2, kind:'Cards', title:'Nothing goes to waste', revealAt:16,
-     hint:"New cards that profit from what falls on the field.",
-     detail:"The Gleaner (grows with every troop that falls near it), the Midden (every third body near it gets up as a Scrap) and Pick Over (half the price of your fresh dead, back) join your cards. Exhume can be brewed at a Still with a Laboratory beside it."},
-    {since:2, kind:'Story', title:'The south road', revealAt:14,
-     hint:"Someone down the south road keeps a careful count of who owes what.",
-     detail:"Cassor, the moneylender who paid for Morvek's crossing, waits down the south road as challenger 14. He plays on credit, down to 8 blood of debt, and his troops bought on credit pay you their whole price. His works stand before you arrive, each with a fitting, and he never buys the same building twice."},
-    {since:2, kind:'Cards', title:'Money changes hands', revealAt:15,
-     hint:"New cards about debts, refunds and banking.",
-     detail:"The Bondsman (half its price back when it falls), the Counting House (your troops cost 1 less while it stands) and Lien (a rival troop's price paid to you again when it dies) join your cards. Interest can be brewed at a Still with a Laboratory beside it. Spare Cassor for the Ledger, a relic: your troops cost 1 less, but your blood stops 2 lower. Slay him for the Strongbox, a building that banks your blood."},
-    {since:2, kind:'Feature', title:'Two new fittings', revealAt:15,
-     hint:"The Workshop can make something new.",
-     detail:"Salvage (half the building's price back when it falls) and the Spring Beam (the first rival troop to strike it hand to hand throws every rival troop nearby back) can be made in the Workshop once Cassor falls, each with a tempered version. Both work in the Holdfast too."},
-    {since:2, kind:'Feature', title:'Crates and research', revealAt:4,
-     hint:"Fights now leave something behind.", detail:"Every won story fight and Skirmish ends with a crate; in the Holdfast a small crate comes every 5 waves from wave 5, and a full one every 10. It offers three choices each of spells, Laboratory troops (after Wren), materials and camp goods, never anything beyond where you are in the story, and you take one from each. From Chapter II a won fight also brings a small crate first: no choice, just one thing from each of two kinds. Losses bring no crate. Each tile shows how many you already have. Cards come in three rarities, Common, Rare and Epic; rarer ones turn up less often. Bundles grow as the story goes on, and a card never comes in more than 3 doses. A recipe you have not learned stays hidden at the Still until you research it: spells at the Still for Mortar, Laboratory troops in the Laboratory for Plain dishes, one part at a time. Laboratory troops are now used up like spells, a brood of three doses at a time. The first brood of a troop takes as long and costs as much as before; later broods are quicker and cheaper, and a known recipe is a single button. Spells you have already brewed, and troops you have already bred, stay learned."},
-    {since:2, kind:'Update', title:'Brewing needs heat', revealAt:4,
-     hint:"", detail:"The Still now brews only while a hot Boiler stands beside it. With no heat, a brew waits where it is and carries on once the Boiler is fed again."},
-    {since:2, kind:'Balance', title:'Kills pay less, fights start richer',
-     detail:"A kill now refunds a third of the dead unit's cost instead of half, so trading troops no longer snowballs at the slower blood rate. Both sides start a fight with 6 blood instead of 5. Pentagons hit for 5 instead of 6, to make up for their longer reach."},
-    {since:2, kind:'Balance', title:'Pentagons guard the bridges',
-     detail:"Pentagons now reach as far as the foot of their own side's bridge, though not onto the planks, so troops that cross into your half meet their fire at once. The Holdfast no longer has Pentagons: raiders go straight for the Keep, and those cells can be built on."},
-    {since:2, kind:'Balance', title:'Slower blood',
-     detail:"Blood now flows a third slower for everyone: you start at 1 blood every 2 seconds, and every rival slows by the same amount, so the balance between you is unchanged. Fights are slower and each card counts for more."},
-    {since:2, kind:'Balance', title:"Ysolde's troupe copies half as often",
-     detail:"Ysolde's troupe now copies only every other troop you play (your first, third, fifth and so on), but wherever you play it, not only those sent past your river. She plays her own cards as before."},
-    {since:2, kind:'Update', title:'Menus, Collection and friends',
-     hint:"The title screen is tidier, there is a Collection, and friends' armies carry their trinkets.",
-     detail:"The title screen holds Continue, Battle, Camp, Collection, Settings and More; Rematches sit under Continue. The Collection splits the Bestiary into Troops, Buildings, Spells, Brewed, Enhanced and Trinkets pages. A friend's army now brings the trinkets its commander carries. Pages animate as they open. Secret codes can be redeemed in Settings."},
-    {since:2, kind:'Feature', title:'Versus',
-     detail:"Battle has a new Versus mode for two controllers on one screen, made for a TV. First each player claims a controller by pressing A, then both build their armies at the same time on a split screen. The field turns sideways: Player 1 holds the left in crimson, Player 2 the right in teal, each with their own blood and hand beside their side. Both draw exactly the same blood, and nothing touches the story. One controller is enough: the other player can use the keyboard (press Enter to join; WASD, Space, Q and E, P to ready), or touch and the mouse."},
-    {since:2, kind:'Feature', title:'Nearby',
-     detail:"Battle has a new Nearby mode: two phones, tablets or computers on the same Wi-Fi, each player on their own screen. One device hosts and the other joins with a code. The devices talk to each other directly and nothing goes over the internet, so it only works when both are on the same network. Each player sees their own side at the bottom, and both draw exactly the same blood. Nothing here touches the story."},
-    {since:2, kind:'Feature', title:'Controllers in a fight',
-     detail:"Story fights and the Holdfast can now be played with a controller. The left stick moves a gold ring over the field, the bumpers change the card, A plays it at the ring and B lets go of it. The triggers seal your left and right bridges. In the Holdfast, the triggers pick your troop and spell cards, the bumpers pick buildings, the D-pad steps the ring one grid cell at a time, X calls the next wave, Y dismantles, and View (pressed twice) concludes the watch between waves. With two players on one screen, the first controller plays the bottom and the second the top."},
-    {since:2, kind:'Feature', title:'The Catacombs, and the Brood Pit', revealAt:11,
-     hint:"Something has opened up under the road, and some of what lives down there is worth bringing home.",
-     detail:"The Catacombs is open from Battle: a three-floor dungeon with a guardian at the bottom of each floor. Larvae can be found down there. Escape with one and it comes home to the Brood Pit, a new camp building. Feed it to grow it: past level 10 it is a card of its own, and every 25 levels it learns something new. Take a grown one down with you, and if it falls it only gets knocked out. Parasites need company, and not every kind gets along."},
     {since:2, kind:'Feature', title:'The Wilds', revealAt:11,
      hint:"Past the last camp there is open country, and nobody feeds you out there.",
      detail:"The Wilds is a survival mode, open from Battle. Pick twigs and flint, craft a hatchet and fell trees, cut reeds, pick berries and herbs, and hunt Jackals. Build a workbench to craft a pickaxe, a fishing rod and a fire pit. Your belly empties over two days. Night is short, and without light near you something in the dark bites. Build a campfire from 2 wood and 2 reeds, feed it wood, and cook on it: roast what you catch, or make kabobs, fishsticks, meatballs and stew. A torch lights your way for a while. Saw planks and build walls, floors and stairs. Every third night a pack comes for you: a defense bench makes spike traps, spiked barricades and sentries. When you die, everything you carry drops where you fell, and you wake at your last campfire. Your world is saved and waits for you."},
   ];
   const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
   function changelogEntries(){ return CHANGELOG.filter(e=>e.since > CHANGELOG_AFTER); }
-  function changelogUnseen(){ let seen = 0; try{ seen = parseInt(localStorage.getItem('bloodline_changelogSeen'),10)||0; }catch(e){} return Math.max(0, changelogEntries().length - seen); }
+  function changelogUnseen(){ let seen = 0; try{ seen = parseInt(localStorage.getItem('bloodline_changelogSeen2'),10)||0; }catch(e){} return Math.max(0, changelogEntries().length - seen); }
   function updateChangelogBadge(){
     const b = document.getElementById('titleChangelog'); if(!b) return;
     const n = changelogUnseen(); b.innerHTML = 'What\'s new' + (n ? ' <span class="cl-badge">●</span>' : '');
@@ -9266,7 +9048,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       box.appendChild(it);
     }
     if(!list.length){ const n = document.createElement('div'); n.className = 'help-sec'; n.textContent = 'Nothing here yet.'; box.appendChild(n); }
-    try{ localStorage.setItem('bloodline_changelogSeen', String(all.length)); }catch(e){} // opening either tab marks everything seen
+    try{ localStorage.setItem('bloodline_changelogSeen2', String(all.length)); }catch(e){} // opening either tab marks everything seen
     updateChangelogBadge();
     const o = document.getElementById('changelogOverlay'); o.classList.add('show'); o.scrollTop = 0;
   }
@@ -9462,7 +9244,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     o = o || {};
     const kind = o.kind || (def.isBuilding ? 'bld' : 'troop'), hp = o.hp || def.hp || 1;
     const u = {id:hf.nid++, side, kind, def, name:def.name, x, y, hx:x, hy:y, hp, maxHp:hp, dmg:(o.dmg!==undefined ? o.dmg : def.dmg)||0,
-      rng:(def.range||0)*PX_UNIT, iv:def.atkInterval||1200, acc:0, spd:(def.spd||0)*HF_SPEED, r:kind==='troop' ? 0 : (o.r||13),
+      rng:hfRangeOf(def)*PX_UNIT, iv:def.atkInterval||1200, acc:0, spd:(def.spd||0)*HF_SPEED, r:kind==='troop' ? 0 : (o.r||13),
       front:o.front||null, cost:def.cost||0, rule:o.rule||null, tag:o.tag||null, emoji:o.emoji||def.emoji||'?', work:o.work||null, survived:0, banked:0, lastX:-1, lastY:-1, lastHp:-1};
     if(side==='p' && kind==='troop' && enhance[def.name]){ const m = enhanceMult(def.name); u.maxHp = u.hp = u.hp*m.hp; u.dmg *= m.dmg; u.spd *= m.spd; } // fed at the Training Camp
     if(side==='p' && kind==='bld' && camp.built && camp.built.workshop && workshop[def.name]) u.fit = workshop[def.name].slice(); // Workshop fittings
@@ -9931,7 +9713,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function hfLeachOnto(side, t){ const l = hfMake(side, hfDefOf('Leach'), t.x, t.y, {}); l.cost = 0; l.hx = l.x; l.hy = l.y; } // a free Leach, landed on a troop
   function hfSecond(u, dt){ // the second weapon: the nearest rival of its kind within its reach
     const S = u.def.second; u.acc2 = (u.acc2||0) + dt*hfRate(u); if(u.acc2 < S.atkInterval) return;
-    let t = null, bd = S.range*PX_UNIT;
+    let t = null, bd = hfRangeOf(S)*PX_UNIT;
     for(const o of (u.side==='p' ? hf.E : hf.P)){ if(o.hp<=0 || o.dead || o.under || o.hidden) continue; if(S.targets==='troops' ? o.kind!=='troop' : o.kind==='troop') continue;
       const d = Math.hypot(o.x-u.x, o.y-u.y) - (o.r||0); if(d <= bd){ bd = d; t = o; } }
     if(!t){ u.acc2 = S.atkInterval; return; } // held ready
@@ -10218,7 +10000,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       if(u.bleedMs>0){ u.bleedMs -= dt; hfHurt(u, u.bleedDps*dt/1000, null); }
     }
     for(const u of P){ if(u.kind==='troop'){ u.drive = 1; for(const o of P) if(o.def.drives && o!==u && Math.hypot(o.x-u.x,o.y-u.y) <= o.def.drives.radius*PX_UNIT){ u.drive = o.def.drives.mult; break; } } }
-    { const towers = P.filter(o=>o.def.watch); for(const u of P) if(u.kind==='troop' && u.def.atkStyle==='interval-ranged'){ let m = 1; for(const t of towers) if(hfD(t, u) <= t.def.watch.r) m = Math.max(m, t.def.watch.mult); u.rng = (u.def.range||0)*PX_UNIT*m; } } // a Watchtower: your ranged troops near it reach further
+    { const towers = P.filter(o=>o.def.watch); for(const u of P) if(u.kind==='troop' && u.def.atkStyle==='interval-ranged'){ let m = 1; for(const t of towers) if(hfD(t, u) <= t.def.watch.r) m = Math.max(m, t.def.watch.mult); u.rng = hfRangeOf(u.def)*PX_UNIT*m; } } // a Watchtower: your ranged troops near it reach further
     for(const u of P.concat(E)) if(u.hp>0) hfAct(u, dt);
     hfTickExtras(dt);
     const shove = 0.12*dt/16.67, troops = hf.units.filter(u=>u.kind==='troop' && u.hp>0 && !u.attached && !u.leap); // a light crowd shove, scaled by time so 120 Hz phones push no harder, so a push does not stack on one pixel
@@ -10644,12 +10426,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     'False Oath':"Brewed from Confusion and Oath. Enemy troops in the circle swear to you for 5 seconds: they turn on their own side's troops and fight for you, then remember who they are.",
     'Sanctuary':"Brewed from Mercy and Oath. A circle that stays for 6 seconds. Your troops inside take half damage and mend 4 health a second; enemy troops inside move at half pace.",
     'Haemorrhage':"Brewed from Bloodletting and Blood Burst. Enemy troops in the circle bleed 3 a second for 6 seconds, and one that dies bleeding bursts for 8 over the troops of its own side around it.",
-    'Shieldbearer':"A great slab of a soldier. Half of all damage dealt to your other troops within 7 of him lands on him instead, so a push can walk behind him. Parasites are the exception: a Leach, Tick, Flea, Botfly or Borer always hits its own host in full. He has 200 health, hits back weakly, and cannot cover a troop that has been exposed by Sunder, or another Shieldbearer. The gift for slaying Osric.",
+    'Shieldbearer':"A great slab of a soldier. Half of all damage dealt to your other troops within 7 of him lands on him instead, so a push can walk behind him. Parasites are the exception: a Leach, Tick, Flea, Botfly or Borer always hits its own host in full. He has 150 health, hits back weakly, and cannot cover a troop that has been exposed by Sunder, or another Shieldbearer. The gift for slaying Osric.",
     'Plunderer':"A fast cutpurse that goes only for troops. Every hit takes a share of its damage out of the rival's blood pool and puts it in yours. Two of them in a fight will starve the other side of cards. Osric's gift.",
     'Stolen Standard':"A flag nobody can ignore. Enemy troops with it in sight, 12 away or less, attack it before anything else. Tap it once, while it glows gold, to raise it: a Sanctuary half again as wide as the spell opens around it for 6 seconds. Your troops inside take half damage and mend 4 health a second; enemy troops inside move at half pace. Parasites ignore it. Osric's gift.",
     'Sunder':"Brewed from Fracture and Confusion. The answer to anything that protects: enemy troops in the circle lose any ward, Oath, Sanctuary or shield, are pinned for a moment and lose 15% of their health, then stay exposed for 6 seconds: no protection holds on them, a Shieldbearer cannot cover them, and they take half again as much damage.",
     'Overseer':"Hadrek, on your side now, with his whip in hand. Your troops near him strike nearly a third faster while he stands. He fights up close too, but he is no tank. The gift for sparing Hadrek.",
-    'Shardlings':'Four tiny ranged troops in a diamond, each picking a different target. One hit kills each, so area damage is their bane.',
+    'Shardlings':'Four tiny ranged troops in a diamond, each picking a different target. Each has only 7 health, so area damage is their bane.',
     'Mercy':'Heals your units in its circle slowly, 20 health over 4 seconds, and they pulse as it works. Casting it again on the same units restarts the heal rather than stacking it. The rival never benefits from it.',
     'Confusion':'Troops caught in it attack anyone nearby, either side, until it wears off. Everyone else still sees them by their true colors. Buildings are immune.',
     'Fracture':'Breaks bodies by a share of their maximum health, so it hits big troops hardest. Buildings take far less. Your own troops caught in it take a little.',
@@ -12542,7 +12324,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     hudSet('pBar','width', (Math.max(0, mine)/MAX_BLOOD*100).toFixed(1)+'%'); hudSet('aBar','width', (Math.max(0, theirs)/MAX_BLOOD*100).toFixed(1)+'%'); hudSet('pRate','text',''); hudSet('aRate','text','');
     const base = Array.isArray(s.base) ? s.base : [100,100]; hudSet('pBaseBar','width', Math.max(0, +base[0]||0)+'%'); hudSet('aBaseBar','width', Math.max(0, +base[1]||0)+'%');
     { let hostP = 0, mineP = 0; for(const r of s.u) if(Array.isArray(r) && r[2]==='Pentagon'){ if(r[1]==='p') hostP++; else mineP++; }
-      for(const [id, alive] of [['pPentRow', mineP], ['aPentRow', hostP]]){ const row = document.getElementById(id); if(row) for(let i=0;i<3;i++) row.children[i].classList.toggle('fallen', i>=alive); } }
+      for(const [id, alive] of [['pPentRow', hostP], ['pPentRowBig', hostP], ['aPentRow', mineP], ['aPentRowBig', mineP]]){ const row = document.getElementById(id); if(row) for(let i=0;i<3;i++) row.children[i].classList.toggle('fallen', i>=alive); } }
     const br = Array.isArray(s.br) ? s.br : [0,0,0,0];
     [['a',0],['a',1],['p',0],['p',1]].forEach(([o,i], k)=>{ const ms = Math.max(0, +br[k]||0)*1000, was = state.bridgeMs[o][i] > 0; state.bridgeMs[o][i] = ms;
       const el = bridgeEl(o,i), tm = btimerEl(o,i); if(el){ el.classList.toggle('closed', ms>0); if(ms>0 && !was){ sfxBridgeClose(); const band = RIVER_BANDS[o==='a' ? 0 : 1]; asciiFx(BRIDGE_X[i], (band.min+band.max)/2, FX.bridge()); } }
@@ -12564,7 +12346,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function netBoard(e){ const p = fieldPct(e.clientX, e.clientY); return {x:100-p.x, y:100-p.y, inside:p.inside}; } // the guest's field is turned round
   function netPlay(i, p){
     const n = netHand.names[i], c = n && netDef(n); if(!c || !p.inside) return false;
-    if(c.cost > state.aBlood || (c.cardType!=='spell' && (p.y > 50 || inRiver(p.y)))){ beep(140, 0.1, 'square', 0.02); return false; }
+    if(c.cost > state.aBlood || (c.cardType!=='spell' && (p.y > p2Bot() || inRiver(p.y)))){ beep(140, 0.1, 'square', 0.02); return false; }
     netSend({t:'play', i, n, x:Math.round(p.x*10)/10, y:Math.round(p.y*10)/10}); haptic(HAPTIC.place);
     netHand.sel = null; netHand.key = ''; netRenderHand(); const g = document.getElementById('p2Ghost'); if(g) g.style.display = 'none'; return true;
   }
