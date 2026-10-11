@@ -2501,7 +2501,7 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   }
   // ---- its keeping, Tamagotchi-style. They sleep at night (your clock), and asleep their bellies empty half as fast. Fed, each one leaves a heap
   // in the pit every PIT_MESS_H hours awake; past PIT_FOUL heaps the muck hurts them, sours their minds and can make them sick. A sick one loses
-  // health, gets nothing but a full belly from food, and is well again after a day, or at once with a dose of Ichor. Bond (0 to 100) grows with
+  // health, gets nothing but a full belly from food, and is well again after a day; each dose of Transfusion takes a quarter off that. Bond (0 to 100) grows with
   // every kindness and slowly fades: it adds to the XP a dish gives, and a devoted one (PIT_DEVOTED) frets half as much alone. Each has one
   // favourite taste, found by feeding it: that dish gives double XP. All numbers are first guesses ----
   const PIT_MESS_H = 8, PIT_FOUL = 4, PIT_SICK_H = 24, PIT_PLAY_MS = 2*3600*1000, PIT_PET_MS = 3600*1000, PIT_DEVOTED = 80, PIT_PLAY_ROUNDS = 5;
@@ -9085,7 +9085,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   const CHANGELOG = [
     {since:2, kind:'Feature', title:'Keeping the Brood Pit', revealAt:11,
      hint:"Something you keep at camp would like a little more of your attention.",
-     detail:"The Brood Pit now asks to be looked after. Name each parasite, stroke it, and play its guessing game (which way will it turn?) for bond, sanity and a little XP. They sleep at night, by your clock, and asleep their bellies empty half as fast. Fed parasites leave heaps: muck out the pit, or the filth hurts them and can make them sick. A sick one loses health and only fills its belly from food until it recovers after a day, or at once with a dose of Ichor. Each one has a favourite taste that you find by feeding it; its favourite dish gives double XP. Bond adds to the XP every dish gives, and a devoted parasite frets half as much alone. The pit's building on the camp map lights up when someone needs you."},
+     detail:"The Brood Pit now asks to be looked after. Name each parasite, stroke it, and play its guessing game (which way will it turn?) for bond, sanity and a little XP. They sleep at night, by your clock, and asleep their bellies empty half as fast. Fed parasites leave heaps: muck out the pit, or the filth hurts them and can make them sick. A sick one loses health and only fills its belly from food until it recovers after a day. A dose of Transfusion, brewed at the Still, takes a quarter off the sickness. Each one has a favourite taste that you find by feeding it; its favourite dish gives double XP. Bond adds to the XP every dish gives, and a devoted parasite frets half as much alone. The pit's building on the camp map lights up when someone needs you."},
     {since:2, kind:'Feature', title:'Wanderers learn new tricks', revealAt:11,
      hint:"The people walking the rivers have been picking up habits from the people you beat.",
      detail:"Skirmish has six new kinds of wanderer, each borrowing a rule from a Chapter II challenger once you have beaten them: the Shieldwall (shields against your ranged troops), the Tollkeeper (your spells cost them a blood each), the Mason (mending buildings, two of each), the Mimic (copies of your troops), the Debtor (cards on credit) and the Packmaster (Jackals and Behemoths that hunt together). Wanderers now carry Chapter II cards too, and from Chapter II about a third carry one of your trinkets, and an extra material for it. Win Skirmishes in a row and each wanderer's blood comes a little faster, and every second win adds a material to what they carry. A loss ends the run."},
@@ -10952,10 +10952,14 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     pitState.mess = 0; for(const q of pitState.list) pitBondUp(q, 2);
     pitLog(`You mucked out the pit: ${n} heap${n>1 ? 's' : ''}.`); pitSave(); beep(220, 0.1, 'square', 0.02);
   }
+  // a dose of Transfusion (a brewed spell's dose) takes a quarter off a sickness's full course: four doses cure it outright
+  const PIT_DOSE_CUT = 0.25, pitTransDoses = () => brewStock.Transfusion || 0;
   function pitDose(q){
-    if(!q.sick || !(materials.ichor > 0)) return;
-    materials.ichor--; saveAlchemy(); q.sick = 0; pitBondUp(q, 3);
-    pitLog(`You dosed ${pitCall(q, true)} with Ichor. It is well again.`); pitSave(); beep(440, 0.1, 'triangle', 0.03);
+    if(!q.sick || !(pitTransDoses() > 0)) return;
+    useDose(CARD_DEFS.find(c=>c.name==='Transfusion'));
+    q.sick = Math.max(0, q.sick - PIT_SICK_H*PIT_DOSE_CUT); pitBondUp(q, 1);
+    pitLog(q.sick ? `You gave ${pitCall(q, true)} a Transfusion. Some colour comes back to it.` : `You gave ${pitCall(q, true)} a Transfusion. It is well again.`);
+    pitSave(); beep(440, 0.1, 'triangle', 0.03);
   }
   // Play: Tamagotchi's guessing game. It is about to turn left or right; guess which. Three right out of five and it is pleased
   let pitGame = null; // {id, round, wins, last:{dir, ok}}
@@ -11035,7 +11039,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
       const acts = row.querySelector('.pit-acts');
       btn('Stroke', ()=>pitStroke(q), acts);
       if(!pitGame) btn('Play', ()=>pitPlayStart(q), acts);
-      if(q.sick) btn(`Dose: 1 Ichor (${materials.ichor||0})`, ()=>pitDose(q), acts, !(materials.ichor > 0));
+      if(q.sick) btn(`Transfusion: -25% (${pitTransDoses()})`, ()=>pitDose(q), acts, !(pitTransDoses() > 0));
       const nb = document.createElement('button'); nb.textContent = q.name ? 'Rename' : 'Name it'; acts.appendChild(nb);
       nb.onclick = ()=>{ // not through btn: the screen must not redraw under the text box
         const inp = document.createElement('input'); inp.type = 'text'; inp.maxLength = 16; inp.value = q.name; inp.placeholder = q.sp; inp.className = 'pit-name';
