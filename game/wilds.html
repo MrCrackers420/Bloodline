@@ -66,6 +66,20 @@
   .overlay .wd-grid button i{ position:absolute; right:.2em; bottom:.05em; font-style:normal; font-size:.65em; }
   .overlay .wd-grid button.sel{ border-color:#e0b54a; }
   #wdBagInfo{ min-height:2.9em; font-size:.85em; color:#c9b994; white-space:pre-line; }
+  .wd-tabs{ display:flex; gap:.4em; }
+  .overlay .wd-tabs button{ min-width:6em; letter-spacing:.12em; font-size:.8em; }
+  .overlay .wd-tabs button.on{ border-color:#e0b54a; color:#e0b54a; }
+  .wd-tabhint{ font-size:.65em; color:var(--bone-dim); }
+  .wd-craft{ display:grid; grid-template-columns:repeat(2, minmax(0, 15em)); gap:.4em; max-width:94vw; max-height:50vh; overflow-y:auto; padding:.2em; }
+  .wd-grp{ grid-column:1 / -1; font-size:.7em; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); margin-top:.3em; text-align:left; }
+  .overlay .wd-craft button{ display:flex; align-items:center; gap:.5em; text-align:left; padding:.35em .6em; min-width:0; }
+  .overlay .wd-craft button img{ width:2.2em; height:2.2em; flex:none; pointer-events:none; }
+  .overlay .wd-craft button span{ display:flex; flex-direction:column; line-height:1.2; font-size:.9em; }
+  .overlay .wd-craft button small{ font-size:.75em; color:var(--bone-dim); }
+  .overlay .wd-craft button small b{ font-weight:normal; color:#ee5a75; }
+  .overlay .wd-craft button small em{ font-style:normal; color:#e0b54a; }
+  .wd-dur{ position:absolute; left:12%; right:12%; bottom:8%; height:3px; background:rgba(0,0,0,.6); pointer-events:none; }
+  .wd-dur u{ display:block; height:100%; background:#8fd06b; }
   .wd-acts{ display:flex; gap:.5em; flex-wrap:wrap; justify-content:center; }
   .overlay .wd-acts button{ min-width:6em; }
   .uf-meta{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:.55em; background:rgba(10,7,6,.95); z-index:4; overflow-y:auto; padding:5vmin 4vmin; font-size:clamp(14px, 2.2vmin, 24px); text-align:center; color:var(--bone); }
@@ -99,11 +113,17 @@
   <div class="uf-stage"><canvas id="wdCanvas"></canvas>
     <div class="uf-panel" id="wdPanel"><div id="wdMsg"></div><button id="wdResume">Resume</button><button id="wdLeave">Save and leave</button></div>
     <div class="uf-panel" id="wdBag">
-      <div style="letter-spacing:.15em; color:var(--bone-dim); font-size:.8em">BAG</div>
-      <div class="wd-grid" id="wdBagGrid"></div>
-      <div id="wdBagInfo"></div>
-      <div class="wd-acts"><button id="wdEat">Eat</button><button id="wdCook">Cook</button><button id="wdDrop">Drop</button></div>
-      <button id="wdBuild">Build a campfire<small>2 wood, 2 reeds</small></button>
+      <div class="wd-tabs"><button id="wdTabBag">BAG</button><button id="wdTabCraft">CRAFT</button><button id="wdTabCook">COOK</button></div>
+      <div class="wd-tabhint" id="wdTabHint"></div>
+      <div id="wdBagPage" style="display:contents">
+        <div class="wd-grid" id="wdBagGrid"></div>
+        <div id="wdBagInfo"></div>
+        <div class="wd-acts"><button id="wdEat">Eat</button><button id="wdCook">Cook</button><button id="wdLight">Light</button><button id="wdDrop">Drop</button></div>
+      </div>
+      <div id="wdCraftPage" style="display:contents">
+        <div class="wd-craft" id="wdCraftList"></div>
+        <div id="wdCraftInfo" style="font-size:.8em; color:#c9b994; min-height:1.4em"></div>
+      </div>
       <button id="wdBagClose">Close</button>
     </div>
     <div class="uf-meta on" id="wdMeta"></div>
@@ -322,31 +342,95 @@
   //  - Don't Starve's campfire (grass and logs, fed with logs, burns out) and its food: raw meat hurts, cooking it on a fire heals.
   //  - Terraria's mediumcore death (and Don't Starve Together's): all you carry drops where you fell. You wake at your last campfire.
   //  - Fighting is the Catacombs's: the same three-hit combo, roll, soft lock and Jackal.
-  // Controller: left stick move, X attack and chop, A roll, B pick up, fish or feed the fire, Y bag, LB and RB pick a slot, RT eat it, Start pause.
-  // Keyboard: WASD move, J or left click attack, Space roll, E or F pick up, Tab or I bag, 1 to 0 pick a slot, Q eat it, Esc pause.
+  //  - Crafting is Don't Starve's (axe from a twig and flint, torch, campfire) with Terraria's Work Bench (10 wood) as the station
+  //    for the next tier: pickaxe, fishing rod, fire pit. Tools wear out (Don't Starve's uses, scaled) and work from the bag:
+  //    a swing at a tree uses the hatchet, at a boulder the pickaxe. The sword alone cannot fell a tree or break a boulder.
+  //  - Cooking at the fire: roasting (Don't Starve's campfire) and Don't Starve's Crock Pot dishes, made here straight on the fire.
+  //  - Building is Terraria's: craft planks, walls, floors and stairs as items, then place them on a grid one at a time; the
+  //    same button in build mode takes a piece back whole. Stairs let you over your wall; Jackals cannot climb them.
+  //  - A defense bench (made at the workbench) makes spike traps (Don't Starve's Tooth Trap), spiked barricades and sentries
+  //    (Terraria's sentries). Every third night a pack comes for you (Don't Starve's hound attacks).
+  // Controller: left stick move, X attack and chop, A roll, B pick up, fish or feed the fire, Y bag (LB and RB switch tabs), LB and RB pick a slot, RT use it, Start pause.
+  //   Build mode (RT on a wall, floor, stairs or defense): A place, X take back, LB and RB change piece, B done.
+  // Keyboard: WASD move, J or left click attack, Space roll, E or F pick up, Tab or I bag, C craft, V cook, 1 to 0 pick a slot, Q use it, Esc pause.
+  //   Build mode: Space or left click place, J or right click take back, E or Esc done.
   const WD_HOME_FALLBACK = 'bloodline.html'; /* where Leave goes when nothing else says. Empty: Leave goes back to this page's menu */
   const WD_KEY = 'bloodline_wilds';
   const WD = {W:2400, H:1600, RIVER:110, EDGE:60, hp:29, hunger:30, spd:118, rollSpd:380, rollMs:190, rollCd:300, iframes:260,
     day:480, dayEnd:240, duskEnd:420, hungerRate:30/960, starveEvery:8, darkHit:10, darkFirst:3, darkEvery:5,
     slots:10, stack:20, fireMax:180, fireWood:45, fireStart:120, regrow:960, jackals:8, aggro:130, leash:320,
-    pickR:30, fireNear:56, fishMs:2500, fishOdds:0.6, shore:34, saveEvery:10, view:380};
+    pickR:30, fireNear:56, fishMs:2500, fishOdds:0.6, shore:34, saveEvery:10, view:380, torch:75, torchR:95, benchNear:70};
   const WD_COMBO = [{dmg:2, knock:80, ms:230, lunge:8}, {dmg:2, knock:80, ms:230, lunge:8}, {dmg:4, knock:230, ms:380, lunge:20}];
   const WD_SW = {window:380, r:38, arc:2.0, move:0.25, lockR:80, lockCone:1.3};
   const WD_JACKAL = {hp:5, spd:72, r:10, dmg:3, reach:14, iv:900, wind:320};
   const ITEMS = {
     wood:  {name:'Wood'},
-    reed:  {name:'Reeds'},
+    reed:  {name:'Reeds', one:'reed'},
     bone:  {name:'Bone'},
-    herb:  {name:'Herbs', food:1},
-    berry: {name:'Berries', food:2},
+    herb:  {name:'Herbs', one:'herb', food:1},
+    berry: {name:'Berries', one:'berry', food:2},
     fish:  {name:'Raw fish', food:3, cook:'cfish'},
     cfish: {name:'Cooked fish', food:3, heal:1},
     meat:  {name:'Raw meat', food:5, hurt:1, cook:'cmeat'},
     cmeat: {name:'Cooked meat', food:5, heal:1},
+    twig:  {name:'Twigs', one:'twig'},
+    flint: {name:'Flint'},
+    stone: {name:'Stone'},
+    torch: {name:'Torch', light:true},
+    hatchet: {name:'Hatchet', tool:'chop', dur:30, stack:1, desc:'Fells trees. Works from the bag.'},   /* Don't Starve's axe: 100 uses at 15 chops a tree, here 30 at 4 */
+    pickaxe: {name:'Pickaxe', tool:'mine', dur:24, stack:1, desc:'Breaks boulders. Works from the bag.'}, /* Don't Starve's: 33 uses at 6 hits a boulder, here 24 at 4 */
+    rod:   {name:'Fishing rod', tool:'fish', dur:9, stack:1, desc:'Fish from the bank.'},                 /* Don't Starve's: 9 uses */
+    plank: {name:'Planks', one:'plank'},
+    wall:  {name:'Wooden walls', one:'wooden wall', build:'wall', desc:'A solid block. Nothing walks through it.'},
+    floor: {name:'Wooden floors', one:'wooden floor', build:'floor', desc:'Boards on the ground. Jackals never come out of the wild onto it.'},
+    stairs:{name:'Stairs', one:'stairs', build:'stairs', desc:'Steps over your wall. You can climb them; Jackals cannot.'},
+    trap:  {name:'Spike traps', one:'spike trap', build:'trap', desc:'Bites a Jackal that steps on it for 3, then sets itself again. 8 bites.'},
+    spikes:{name:'Spiked barricades', one:'spiked barricade', build:'spikes', desc:'A wall of stakes. A Jackal pressing on it is hurt.'},
+    sentry:{name:'Sentries', one:'sentry', build:'sentry', desc:'A crossbow on a post. Shoots Jackals in range.'},
+    /* fire food: Don't Starve's numbers, hunger divided by 5 and health scaled the same way (at least 1) */
+    rberry:{name:'Roasted berries', food:3, heal:1},
+    broth: {name:'Herbal broth', food:2, heal:4},
+    kabob: {name:'Kabobs', food:8, heal:1},
+    fishsticks:{name:'Fishsticks', food:8, heal:8},
+    meatballs:{name:'Meatballs', food:12, heal:1},
+    stew:  {name:'Meaty stew', food:30, heal:2},
   };
+  const BUILD = { /* pieces on the 20-unit grid. solid: true blocks all, 'foes' blocks only Jackals */
+    wall:{solid:true}, floor:{floor:true}, stairs:{solid:'foes'}, trap:{uses:8}, spikes:{solid:true}, sentry:{solid:true, range:140, every:1400, dmg:2},
+  };
+  const GRID = 20;
+  const RECIPES = [ /* at: 'hand' anywhere, 'bench' near a workbench, 'def' near a defense bench, 'fire' at a lit fire. place: built where you stand. n: how many */
+    {id:'hatchet',   at:'hand',  cost:{twig:1, flint:1}},             /* Don't Starve's axe */
+    {id:'torch',     at:'hand',  cost:{twig:2, reed:2}},              /* Don't Starve's torch (2 grass, 2 twigs) */
+    {id:'campfire',  at:'hand',  cost:{wood:2, reed:2}, place:'fire', name:'Campfire', desc:'Light and warmth. Burns out. You wake here.'},
+    {id:'workbench', at:'hand',  cost:{wood:10}, place:'bench', name:'Workbench', desc:'Craft the next tier of things near it.'}, /* Terraria's Work Bench: 10 wood */
+    {id:'pickaxe',   at:'bench', cost:{twig:2, flint:2}},             /* Don't Starve's pickaxe needs its Science Machine */
+    {id:'rod',       at:'bench', cost:{wood:4, reed:2}},              /* Terraria's Wooden Fishing Pole, at its Work Bench */
+    {id:'firepit',   at:'bench', cost:{wood:2, stone:6}, place:'pit', name:'Fire pit', desc:'Never burns away: feed it wood to relight it. You wake here.'}, /* Don't Starve's fire pit: 2 logs, 12 rocks */
+    {id:'plank',     at:'bench', cost:{wood:4}, n:2, desc:'Sawn boards, for building.'}, /* Don't Starve's boards take 4 logs for 1; half that here */
+    {id:'wall',      at:'bench', cost:{plank:2}, n:4},
+    {id:'floor',     at:'bench', cost:{plank:1}, n:4},
+    {id:'stairs',    at:'bench', cost:{plank:2}, n:2},
+    {id:'defbench',  at:'bench', cost:{plank:6, stone:4, bone:2}, place:'def', name:'Defense bench', desc:'Craft traps, barricades and sentries near it.'},
+    {id:'trap',      at:'def',   cost:{plank:2, bone:3}},             /* Don't Starve's Tooth Trap */
+    {id:'spikes',    at:'def',   cost:{plank:2, flint:2}, n:2},
+    {id:'sentry',    at:'def',   cost:{plank:4, bone:3, flint:2, stone:2}}, /* Terraria's sentries */
+  ];
+  const COOK = [ /* at the fire. The first three roast on any campfire in Don't Starve; the rest are its Crock Pot dishes */
+    {id:'cmeat', at:'fire', cost:{meat:1}},
+    {id:'cfish', at:'fire', cost:{fish:1}},
+    {id:'rberry', at:'fire', cost:{berry:1}},
+    {id:'broth', at:'fire', cost:{herb:2}, desc:'Herbs boiled down. Mends more than it fills.'},
+    {id:'kabob', at:'fire', cost:{meat:1, twig:1}},
+    {id:'fishsticks', at:'fire', cost:{fish:1, twig:1}},
+    {id:'meatballs', at:'fire', cost:{meat:1, berry:2}},
+    {id:'stew', at:'fire', cost:{meat:3, herb:1}, desc:'Fills an empty belly all the way.'},
+  ];
   const NODE = { /* what grows in the world. solid: you walk round it */
-    tree:  {solid:true, hp:6},
-    rock:  {solid:true},
+    tree:  {solid:true, hp:4},  /* chops with a hatchet */
+    rock:  {solid:true, hp:4},  /* hits with a pickaxe */
+    sapling: {pick:'twig', verb:'Pick twigs'},
+    flint: {pick:'flint', verb:'Take flint', once:true},
     bone:  {hp:4},
     berry: {pick:'berry', verb:'Pick berries'},
     herb:  {pick:'herb', verb:'Pick herbs'},
@@ -374,6 +458,8 @@
     for(let i=0;i<55;i++) place('berry', 10, 14, any);
     for(let i=0;i<70;i++) place('herb', 6, 9, any);
     for(let i=0;i<90;i++) place('reed', 6, 8, ()=>{ const top = R() < 0.5, d = 6 + R()*44; return {x:xl + R()*(xr - xl), y:top ? WD.RIVER + d : H - WD.RIVER - d}; });
+    for(let i=0;i<70;i++) place('sapling', 6, 9, any);
+    for(let i=0;i<60;i++) place('flint', 4, 6, any, ()=>({v:R()}));
     for(const n of nodes){ const D = NODE[n.k]; n.hp = D.hp || 0; n.gone = false; n.ready = 0; n.shk = 0; }
     // the ground's look: drawn every frame from these, so it stays sharp at any zoom
     const G = wdRng('ground:' + seed), patches = [], tufts = [];
@@ -391,7 +477,7 @@
   const finite = (v, d) => typeof v==='number' && isFinite(v) ? v : d;
   function wdClean(o){
     if(!o || typeof o!=='object' || o.v!==1 || typeof o.seed!=='string') return null;
-    const slot = s => s && typeof s==='object' && ITEMS[s.id] && s.n >= 1 ? {id:s.id, n:Math.min(WD.stack, Math.floor(s.n))} : null;
+    const slot = s => { if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}; if(I.dur) o.d = clamp(Math.floor(finite(s.d, I.dur)), 1, I.dur); return o; };
     const inv = Array.isArray(o.inv) ? o.inv.slice(0, WD.slots).map(slot) : []; while(inv.length < WD.slots) inv.push(null);
     const pt = q => q && typeof q==='object' && isFinite(q.x) && isFinite(q.y) ? {x:+q.x, y:+q.y} : null;
     const drops = (Array.isArray(o.drops) ? o.drops : []).map(d=>{ const at = pt(d); if(!at) return null;
@@ -401,7 +487,11 @@
     return {seed:o.seed.slice(0, 12), t:Math.max(0, finite(o.t, 15)),
       p:{x:finite(p.x, spawnPt.x), y:finite(p.y, spawnPt.y), hp:clamp(finite(p.hp, WD.hp), 1, WD.hp), hunger:clamp(finite(p.hunger, WD.hunger), 0, WD.hunger)},
       inv, gone:Array.isArray(o.gone) ? o.gone.filter(n=>Number.isInteger(n)) : [], regrow:o.regrow && typeof o.regrow==='object' ? o.regrow : {},
-      fires:(Array.isArray(o.fires) ? o.fires : []).map(f=>{ const at = pt(f); return at && finite(f.fuel, 0) > 0 ? Object.assign(at, {fuel:Math.min(WD.fireMax, f.fuel)}) : null; }).filter(Boolean).slice(0, 60),
+      fires:(Array.isArray(o.fires) ? o.fires : []).map(f=>{ const at = pt(f); return at && (f.pit || finite(f.fuel, 0) > 0) ? Object.assign(at, {fuel:clamp(finite(f.fuel, 0), 0, WD.fireMax), pit:!!f.pit}) : null; }).filter(Boolean).slice(0, 60),
+      benches:(Array.isArray(o.benches) ? o.benches : []).map(b=>{ const at = pt(b); return at ? Object.assign(at, {k:b.k==='def' ? 'def' : 'work'}) : null; }).filter(Boolean).slice(0, 30),
+      floors:(Array.isArray(o.floors) ? o.floors : []).filter(k=>typeof k==='string' && /^-?\d+,-?\d+$/.test(k)).slice(0, 4000),
+      builds:(Array.isArray(o.builds) ? o.builds : []).filter(b=>Array.isArray(b) && Number.isInteger(b[0]) && Number.isInteger(b[1]) && BUILD[b[2]] && !BUILD[b[2]].floor).slice(0, 4000),
+      raidDone:Math.floor(finite(o.raidDone, 0)), torch:clamp(finite(p.torch, 0), 0, WD.torch),
       drops, deaths:Math.max(0, Math.floor(finite(o.deaths, 0))), home:pt(o.home)};
   }
   function wdLoadSave(){ try{ return wdClean(JSON.parse(localStorage.getItem(WD_KEY) || 'null')); }catch(e){ return null; } }
@@ -409,10 +499,12 @@
     if(!wd) return;
     const h = wd.home || spawnPt, p = wd.dead > 0 ? {x:h.x, y:h.y + 20, hp:WD.hp, hunger:Math.max(wd.p.hunger, 15)} : wd.p, regrow = {}; /* saved mid-death: you wake as you would have */
     for(const n of wd.nodes) if(n.ready > wd.t) regrow[n.id] = Math.round(n.ready);
-    const o = {v:1, seed:wd.seed, t:+wd.t.toFixed(2), p:{x:Math.round(p.x), y:Math.round(p.y), hp:p.hp, hunger:+p.hunger.toFixed(3)},
+    const o = {v:1, seed:wd.seed, t:+wd.t.toFixed(2), p:{x:Math.round(p.x), y:Math.round(p.y), hp:p.hp, hunger:+p.hunger.toFixed(3), torch:+(wd.dead > 0 ? 0 : wd.p.torch || 0).toFixed(1)},
       inv:wd.inv, gone:wd.nodes.filter(n=>n.gone).map(n=>n.id), regrow,
-      fires:wd.fires.map(f=>({x:Math.round(f.x), y:Math.round(f.y), fuel:+f.fuel.toFixed(1)})),
-      drops:wd.drops.map(d=>d.bag ? {bag:d.bag, x:Math.round(d.x), y:Math.round(d.y)} : {id:d.id, n:d.n, x:Math.round(d.x), y:Math.round(d.y)}),
+      fires:wd.fires.map(f=>Object.assign({x:Math.round(f.x), y:Math.round(f.y), fuel:+f.fuel.toFixed(1)}, f.pit ? {pit:1} : {})),
+      benches:wd.benches.map(b=>({x:Math.round(b.x), y:Math.round(b.y), k:b.k})),
+      floors:[...wd.floors], builds:[...wd.builds.values()].map(b=>[b.gx, b.gy, b.k].concat(b.u!=null ? [b.u] : [])), raidDone:wd.raidDone,
+      drops:wd.drops.map(d=>d.bag ? {bag:d.bag, x:Math.round(d.x), y:Math.round(d.y)} : Object.assign({id:d.id, n:d.n, x:Math.round(d.x), y:Math.round(d.y)}, d.d ? {d:d.d} : {})),
       deaths:wd.deaths, home:wd.home};
     try{ localStorage.setItem(WD_KEY, JSON.stringify(o)); }catch(e){}
     wd.saveT = WD.saveEvery;
@@ -422,37 +514,68 @@
   function wdBegin(S){ /* S: a cleaned save, or {seed} for a new world */
     const G = wdGen(S.seed);
     wd = {seed:S.seed, t:S.t!=null ? S.t : 15, nodes:G.nodes, deco:G.deco, inv:S.inv || Array(WD.slots).fill(null), sel:0,
-      fires:(S.fires || []).map(f=>({x:f.x, y:f.y, fuel:f.fuel, fl:Math.random()*9})), drops:(S.drops || []).map(d=>Object.assign({sx:d.x, sy:d.y, pop:400}, d)),
+      fires:(S.fires || []).map(f=>({x:f.x, y:f.y, fuel:f.fuel, pit:!!f.pit, fl:Math.random()*9})), benches:(S.benches || []).map(b=>({x:b.x, y:b.y, k:b.k || 'work'})), tab:'bag', csel:0,
+      floors:new Set(S.floors || []), builds:new Map(), shots:[], build:null, mouse:null, raidDone:S.raidDone || 0, raidWarn:0, drops:(S.drops || []).map(d=>Object.assign({sx:d.x, sy:d.y, pop:400}, d)),
       foes:[], fx:[], deaths:S.deaths || 0, home:S.home || null, dead:0, paused:false, shake:0, banner:null, saveT:WD.saveEvery,
       darkT:0, starveT:0, envT:2, beatT:0, fullNote:0, cam:null};
     wd.lastDay = Math.floor(wd.t/WD.day);
     const p0 = S.p || {x:spawnPt.x, y:spawnPt.y, hp:WD.hp, hunger:WD.hunger};
-    wd.p = {x:p0.x, y:p0.y, r:9, hp:p0.hp, maxHp:WD.hp, hunger:p0.hunger, fx:0, fy:1, rollT:0, rollCd:0, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0};
+    wd.p = {x:p0.x, y:p0.y, r:9, hp:p0.hp, maxHp:WD.hp, hunger:p0.hunger, fx:0, fy:1, rollT:0, rollCd:0, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:S.torch || 0};
     const gone = new Set(S.gone || []);
     for(const n of wd.nodes){ if(gone.has(n.id)) n.gone = true; const r = S.regrow && S.regrow[n.id]; if(isFinite(r)) n.ready = +r; }
+    for(const b of S.builds || []) putBuild(b[0], b[1], b[2], b[3]);
     wdSolid(wd.p);
     for(let i=0;i<WD.jackals;i++) wdSpawnJackal();
     wdSave();
   }
-  function wdSpawnJackal(){
-    const R = Math.random; for(let i=0;i<30;i++){
-      const x = WD.EDGE + 40 + R()*(WD.W - 2*WD.EDGE - 80), y = WD.RIVER + 40 + R()*(WD.H - 2*WD.RIVER - 80);
-      if(hyp(x - wd.p.x, y - wd.p.y) < 340 || hyp(x - spawnPt.x, y - spawnPt.y) < 200 || wdBlocked(x, y, 12)) continue;
-      if(wd.fires.some(f=>hyp(f.x - x, f.y - y) < 160)) continue;
-      wd.foes.push({x, y, hx:x, hy:y, r:WD_JACKAL.r, hp:WD_JACKAL.hp, maxHp:WD_JACKAL.hp, kx:0, ky:0, hit:0, cd:0, wind:0, ag:false, wt:0, tx:x, ty:y}); return; }
+  function wdSpawnJackal(raid){
+    const R = Math.random; for(let i=0;i<40;i++){
+      let x, y;
+      if(raid){ const a = R()*Math.PI*2, d = 320 + R()*160; x = clamp(wd.p.x + Math.cos(a)*d, WD.EDGE + 30, WD.W - WD.EDGE - 30); y = clamp(wd.p.y + Math.sin(a)*d, WD.RIVER + 30, WD.H - WD.RIVER - 30); if(hyp(x - wd.p.x, y - wd.p.y) < 260) continue; }
+      else { x = WD.EDGE + 40 + R()*(WD.W - 2*WD.EDGE - 80); y = WD.RIVER + 40 + R()*(WD.H - 2*WD.RIVER - 80);
+        if(hyp(x - wd.p.x, y - wd.p.y) < 340 || hyp(x - spawnPt.x, y - spawnPt.y) < 200) continue;
+        if(wd.fires.some(f=>hyp(f.x - x, f.y - y) < 160)) continue;
+        let floor = false; for(let gx = Math.floor(x/GRID) - 6; gx <= Math.floor(x/GRID) + 6 && !floor; gx++) for(let gy = Math.floor(y/GRID) - 6; gy <= Math.floor(y/GRID) + 6; gy++) if(wd.floors.has(gkey(gx, gy))){ floor = true; break; }
+        if(floor) continue; } /* never out of the wild onto your floors */
+      if(wdBlocked(x, y, 12)) continue;
+      wd.foes.push({x, y, hx:x, hy:y, r:WD_JACKAL.r, hp:WD_JACKAL.hp, maxHp:WD_JACKAL.hp, kx:0, ky:0, hit:0, cd:0, wind:0, ag:!!raid, raid:!!raid, wt:0, tx:x, ty:y}); return; }
+  }
+  const raidNight = n => n >= 3 && n % 3===0; /* every third night, from the third */
+  function wdRaidCheck(){ /* Don't Starve's hound attacks: a warning at dusk, then the pack comes for you */
+    const n = Math.floor(wd.t/WD.day) + 1, ph = phase(wd.t);
+    if(!raidNight(n) || wd.raidDone >= n) return;
+    if(ph >= WD.duskEnd - 60 && wd.raidWarn !== n){ wd.raidWarn = n; wdBanner('Howling', 'A pack is coming tonight. Get behind your walls.', 2800);
+      for(let i=0;i<3;i++){ beep(520 - i*60, 0.5, 'sawtooth', 0.025, i*0.35); beep(260 - i*30, 0.5, 'sine', 0.03, i*0.35 + 0.05); } }
+    if(ph >= WD.duskEnd){ wd.raidDone = n; const k = Math.min(10, 3 + Math.floor(n/3)); for(let i=0;i<k;i++) wdSpawnJackal(true); thud(0.6, 0.14, 160); }
   }
   const solidNodes = () => wd.nodes; /* filtered in the loops below */
+  const gkey = (gx, gy) => gx + ',' + gy;
+  function putBuild(gx, gy, k, u){ const b = {gx, gy, k, x:gx*GRID + GRID/2, y:gy*GRID + GRID/2, cd:0, ang:-Math.PI/2}; if(BUILD[k].uses) b.u = u > 0 ? u : BUILD[k].uses; wd.builds.set(gkey(gx, gy), b); return b; }
+  function buildsNear(x, y, r, fn){ /* every built piece whose cell is within r of x, y */
+    const g0 = Math.floor((x - r - GRID)/GRID), g1 = Math.floor((x + r + GRID)/GRID), h0 = Math.floor((y - r - GRID)/GRID), h1 = Math.floor((y + r + GRID)/GRID);
+    for(let gx = g0; gx <= g1; gx++) for(let gy = h0; gy <= h1; gy++){ const b = wd.builds.get(gkey(gx, gy)); if(b) fn(b); } }
+  const boxHit = (b, x, y, r) => hyp(x - clamp(x, b.x - GRID/2, b.x + GRID/2), y - clamp(y, b.y - GRID/2, b.y + GRID/2)) < r;
   function wdBlocked(x, y, r){
-    for(const n of wd.nodes){ if(!NODE[n.k].solid || (n.k==='tree' && n.gone)) continue; if(hyp(n.x - x, n.y - y) < n.r + r) return true; }
+    if(wd.builds && wd.builds.size){ let hit = false; buildsNear(x, y, r, b=>{ if(BUILD[b.k].solid && boxHit(b, x, y, r)) hit = true; }); if(hit) return true; }
+    for(const n of wd.nodes){ if(!NODE[n.k].solid || n.gone) continue; if(hyp(n.x - x, n.y - y) < n.r + r) return true; }
     for(const f of wd.fires) if(hyp(f.x - x, f.y - y) < 10 + r) return true;
+    for(const b of wd.benches) if(hyp(b.x - x, b.y - y) < 13 + r) return true;
     return x < WD.EDGE + r || x > WD.W - WD.EDGE - r || y < WD.RIVER + r || y > WD.H - WD.RIVER - r;
   }
   function wdSolid(o){
-    for(const n of solidNodes()){ if(!NODE[n.k].solid || (n.k==='tree' && n.gone)) continue; const dx = o.x - n.x, dy = o.y - n.y; if(Math.abs(dx) > 40 || Math.abs(dy) > 40) continue;
+    for(const n of solidNodes()){ if(!NODE[n.k].solid || n.gone) continue; const dx = o.x - n.x, dy = o.y - n.y; if(Math.abs(dx) > 40 || Math.abs(dy) > 40) continue;
       const d = hyp(dx, dy), m = n.r + o.r; if(d < m){ if(d > 0.01){ o.x = n.x + dx*m/d; o.y = n.y + dy*m/d; } else o.y = n.y + m; } }
-    for(const f of wd.fires){ const dx = o.x - f.x, dy = o.y - f.y, d = hyp(dx, dy), m = 10 + o.r; if(d < m && d > 0.01){ o.x = f.x + dx*m/d; o.y = f.y + dy*m/d; } }
+    for(const f of wd.fires.concat(wd.benches)){ const dx = o.x - f.x, dy = o.y - f.y, d = hyp(dx, dy), m = (f.fuel===undefined ? 13 : 10) + o.r; if(d < m && d > 0.01){ o.x = f.x + dx*m/d; o.y = f.y + dy*m/d; } }
+    if(wd.builds.size) buildsNear(o.x, o.y, o.r, b=>{ const B = BUILD[b.k]; if(!B.solid || (B.solid==='foes' && o===wd.p)) return; /* a circle out of a square */
+      const nx = clamp(o.x, b.x - GRID/2, b.x + GRID/2), ny = clamp(o.y, b.y - GRID/2, b.y + GRID/2), dx = o.x - nx, dy = o.y - ny, d = hyp(dx, dy);
+      if(d >= o.r) return;
+      if(d > 0.01){ o.x = nx + dx/d*o.r; o.y = ny + dy/d*o.r; }
+      else { const px = GRID/2 + o.r - Math.abs(o.x - b.x), py = GRID/2 + o.r - Math.abs(o.y - b.y); if(px < py) o.x += (o.x >= b.x ? 1 : -1)*px; else o.y += (o.y >= b.y ? 1 : -1)*py; }
+      if(b.k==='spikes') o.spiked = true; });
     o.x = clamp(o.x, WD.EDGE + o.r, WD.W - WD.EDGE - o.r); o.y = clamp(o.y, WD.RIVER + o.r, WD.H - WD.RIVER - o.r);
   }
+  function moveBy(o, dx, dy){ /* in small steps, so a roll never jumps a wall */
+    const n = Math.max(1, Math.ceil(hyp(dx, dy)/5)); for(let i=0;i<n;i++){ o.x += dx/n; o.y += dy/n; wdSolid(o); } }
   function wdFx(o){ o.t0 = o.t; if(wd.fx.length < 160) wd.fx.push(o); }
   function wdBanner(text, sub, ms){ wd.banner = {text, sub:sub || '', t:ms || 2400}; }
 
@@ -466,26 +589,31 @@
     return Math.min(0.97, 0.5 + 0.47*(s - WD.duskEnd)/12);
   }
   const isNight = () => darkAt(wd.t) > 0.85;
-  const lightR = f => 40 + 100*Math.min(1, f.fuel/90);
-  const litAt = (x, y) => wd.fires.some(f=>hyp(f.x - x, f.y - y) < lightR(f)*0.8);
-  function burnFires(sec){ for(const f of wd.fires) f.fuel -= sec; wd.fires = wd.fires.filter(f=>f.fuel > 0); }
+  const lightR = f => f.fuel > 0 ? 40 + 100*Math.min(1, f.fuel/90) : 0;
+  const torchR = () => wd.p.torch > 0 && !(wd.dead > 0) ? WD.torchR*(0.6 + 0.4*Math.min(1, wd.p.torch/15)) : 0;
+  const litAt = (x, y) => wd.fires.some(f=>f.fuel > 0 && hyp(f.x - x, f.y - y) < lightR(f)*0.8) || (torchR() > 0 && hyp(wd.p.x - x, wd.p.y - y) < torchR()*0.8);
+  function burnFires(sec){ for(const f of wd.fires) f.fuel = Math.max(0, f.fuel - sec); wd.fires = wd.fires.filter(f=>f.pit || f.fuel > 0); } /* a campfire burns away; a fire pit stays, cold */
   function wdDawn(){ /* a new day: the Jackals' numbers come back */
     let n = WD.jackals - wd.foes.length; while(n-- > 0) wdSpawnJackal();
     wdBanner('Day ' + (Math.floor(wd.t/WD.day) + 1), '', 2200); beep(523, 0.5, 'triangle', 0.04); beep(784, 0.7, 'triangle', 0.03, 0.18);
   }
 
   // ---- the bag ----
-  function invAdd(id, n){
-    const inv = wd.inv;
-    for(const s of inv) if(s && s.id===id && s.n < WD.stack){ const k = Math.min(n, WD.stack - s.n); s.n += k; n -= k; if(!n) return 0; }
-    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, WD.stack); inv[i] = {id, n:k}; n -= k; }
+  function invAdd(id, n, d){ /* d: a tool's uses left */
+    const inv = wd.inv, I = ITEMS[id], st = I.stack || WD.stack;
+    if(st > 1) for(const s of inv) if(s && s.id===id && s.n < st){ const k = Math.min(n, st - s.n); s.n += k; n -= k; if(!n) return 0; }
+    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, st); inv[i] = {id, n:k}; if(I.dur) inv[i].d = d || I.dur; n -= k; }
     return n;
   }
+  const invFind = id => wd.inv.findIndex(s=>s && s.id===id);
+  function toolFor(kind){ /* the most worn tool of that kind in the bag, so one wears out before the next is started */
+    let best = -1; wd.inv.forEach((s, i)=>{ if(s && ITEMS[s.id].tool===kind && (best < 0 || s.d < wd.inv[best].d)) best = i; }); return best; }
+  function wear(i){ const s = wd.inv[i]; if(!s) return; s.d--; if(s.d <= 0){ wd.inv[i] = null; wdBanner('Your ' + ITEMS[s.id].name.toLowerCase() + ' broke', '', 1600); thud(0.15, 0.12, 1800); beep(240, 0.2, 'square', 0.03); } }
   const invCount = id => wd.inv.reduce((a, s)=>a + (s && s.id===id ? s.n : 0), 0);
   function invTake(id, n){ for(let i=wd.inv.length-1;i>=0 && n;i--){ const s = wd.inv[i]; if(s && s.id===id){ const k = Math.min(n, s.n); s.n -= k; n -= k; if(!s.n) wd.inv[i] = null; } } }
-  function dropItem(id, n, x, y, from, wait){
+  function dropItem(id, n, x, y, from, wait, dd){
     const a = Math.random()*Math.PI*2, d = 8 + Math.random()*14, tx = clamp(x + Math.cos(a)*d, WD.EDGE + 8, WD.W - WD.EDGE - 8), ty = clamp(y + Math.sin(a)*d, WD.RIVER + 8, WD.H - WD.RIVER - 8);
-    wd.drops.push({id, n, x:tx, y:ty, sx:from ? from.x : x, sy:from ? from.y : y, pop:0, wait:!!wait});
+    const o = {id, n, x:tx, y:ty, sx:from ? from.x : x, sy:from ? from.y : y, pop:0, wait:!!wait}; if(dd) o.d = dd; wd.drops.push(o);
   }
   function sfxPick(){ beep(880, 0.05, 'triangle', 0.035); beep(1320, 0.06, 'triangle', 0.025, 0.04); }
   function give(id, n, at){ /* straight into the bag; what does not fit falls at your feet */
@@ -509,53 +637,59 @@
     for(const f of wd.foes.slice()) if(inArc(f.x, f.y, f.r)){ const dx = f.x - p.x, dy = f.y - p.y, d = hyp(dx, dy) || 1; wdHurtF(f, dmg, dx/d*knock, dy/d*knock); }
     let node = null, nd = Infinity; /* one tree or pile a swing, like an axe */
     for(const n of wd.nodes){ if(n.gone || !(n.k==='tree' || n.k==='bone' || n.k==='rock') || Math.abs(n.x - p.x) > 70 || Math.abs(n.y - p.y) > 70) continue; if(inArc(n.x, n.y, n.r)){ const d = hyp(n.x - p.x, n.y - p.y); if(d < nd){ nd = d; node = n; } } }
-    if(node) wdChop(node, dmg);
+    if(node){ if(node.k==='tree' && toolFor('chop') >= 0) wd.swingTool = 'hatchet'; else if(node.k==='rock' && toolFor('mine') >= 0) wd.swingTool = 'pickaxe'; wdChop(node, dmg); }
   }
   function wdChop(n, dmg){
     n.shk = 160;
     for(let i=0;i<4;i++) wdFx({kind:'chip', x:n.x, y:n.y - (n.k==='tree' ? 10 : 2), vx:(Math.random() - 0.5)*120, vy:-30 - Math.random()*60, col:n.k==='tree' ? (i%2 ? '#6b4a2c' : '#7d9a4a') : n.k==='rock' ? '#8a847a' : '#e6dcc4', t:500});
-    if(n.k==='rock'){ thud(0.05, 0.08, 3000); beep(1700, 0.04, 'square', 0.015); wdNote('Too hard to break by hand'); return; }
-    n.hp -= dmg; thud(0.07, 0.12, n.k==='tree' ? 700 : 1600); beep(n.k==='tree' ? 150 : 420, 0.05, 'square', 0.025);
+    if(n.k==='tree' || n.k==='rock'){ /* the sword only bounces off: it takes the right tool, from the bag */
+      const ti = toolFor(n.k==='tree' ? 'chop' : 'mine');
+      if(ti < 0){ thud(0.05, 0.08, 3000); beep(1700, 0.04, 'square', 0.015); wdNote(n.k==='tree' ? 'You need a hatchet' : 'You need a pickaxe'); return; }
+      wear(ti); n.hp -= 1; }
+    else n.hp -= dmg;
+    thud(0.07, 0.12, n.k==='tree' ? 700 : n.k==='rock' ? 2400 : 1600); beep(n.k==='tree' ? 150 : n.k==='rock' ? 900 : 420, 0.05, 'square', 0.025);
     if(n.hp > 0) return;
     n.gone = true;
     if(n.k==='tree'){ const k = 2 + (Math.random() < 0.5 ? 1 : 0); for(let i=0;i<k;i++) dropItem('wood', 1, n.x, n.y + 4, {x:n.x, y:n.y - 14}); thud(0.4, 0.18, 260); wd.shake = 120; haptic(20); }
+    else if(n.k==='rock'){ for(let i=0;i<2 + (Math.random() < 0.5 ? 1 : 0);i++) dropItem('stone', 1, n.x, n.y, n); dropItem('flint', 1 + (Math.random() < 0.4 ? 1 : 0), n.x, n.y, n); thud(0.4, 0.18, 400); wd.shake = 120; haptic(20); } /* Don't Starve's boulder: rocks and flint */
     else { dropItem('bone', 2, n.x, n.y, n); thud(0.2, 0.12, 900); }
   }
   function wdSwing(){
     const p = wd.p, last = WD_COMBO.length, step = p.comboT > 0 && p.combo < last ? p.combo + 1 : 1, C = WD_COMBO[step-1], fin = step===last;
     const dir = wdAim(), reach = WD_SW.r + (fin ? 6 : 0);
     p.fx = dir.x; p.fy = dir.y; p.x += dir.x*C.lunge; p.y += dir.y*C.lunge; wdSolid(p);
-    wdHitArc(dir, reach, WD_SW.arc, C.dmg, C.knock);
+    wd.swingTool = null; wdHitArc(dir, reach, WD_SW.arc, C.dmg, C.knock);
     wdFx({kind:'slash', x:p.x, y:p.y, ax:dir.x, ay:dir.y, r:reach, arc:WD_SW.arc, t:150, big:fin});
-    p.sword = {a:Math.atan2(dir.y, dir.x), arc:WD_SW.arc*1.15, side:step%2===0 ? -1 : 1, t:0, dur:Math.min(C.ms, 170)};
+    p.sword = {a:Math.atan2(dir.y, dir.x), arc:WD_SW.arc*1.15, side:step%2===0 ? -1 : 1, t:0, dur:Math.min(C.ms, 170), tool:wd.swingTool};
     p.combo = step; p.swingT = C.ms; p.comboT = C.ms + WD_SW.window; p.queued = false; p.fishT = 0;
     thud(0.08, fin ? 0.16 : 0.1, fin ? 900 : 1600); beep(fin ? 140 : 180 + step*20, 0.06, 'sawtooth', 0.03);
   }
-  function wdAttack(){ if(!wdLive()) return; const p = wd.p; if(busy()) return; if(p.swingT > 0){ p.queued = true; return; } wdSwing(); }
+  function wdAttack(){ if(!wdLive()) return; if(wd.build){ buildTake(); return; } const p = wd.p; if(busy()) return; if(p.swingT > 0){ p.queued = true; return; } wdSwing(); }
   function wdRoll(){
-    if(!wdLive()) return; const p = wd.p, I = wd.lastI; if(p.rollCd > 0 || p.rollT > 0) return;
+    if(!wdLive()) return; if(wd.build){ buildPlace(); return; } const p = wd.p, I = wd.lastI; if(p.rollCd > 0 || p.rollT > 0) return;
     let dx = I ? I.mx : 0, dy = I ? I.my : 0, l = hyp(dx, dy); if(l < 0.2){ dx = p.fx; dy = p.fy; l = 1; }
     p.dx = dx/l; p.dy = dy/l; p.fx = p.dx; p.fy = p.dy; p.rollT = WD.rollMs; p.rollCd = WD.rollCd; p.inv = Math.max(p.inv, WD.iframes);
     p.swingT = 0; p.queued = false; p.combo = 0; p.comboT = 0; p.fishT = 0; thud(0.1, 0.08, 900);
   }
   const shoreAt = p => p.y < WD.RIVER + p.r + WD.shore ? -1 : p.y > WD.H - WD.RIVER - p.r - WD.shore ? 1 : 0;
-  function nearFire(r){ const p = wd.p; let best = null, bd = r; for(const f of wd.fires){ const d = hyp(f.x - p.x, f.y - p.y); if(d < bd){ bd = d; best = f; } } return best; }
+  function nearFire(r, lit){ const p = wd.p; let best = null, bd = r; for(const f of wd.fires){ if(lit && !(f.fuel > 0)) continue; const d = hyp(f.x - p.x, f.y - p.y); if(d < bd){ bd = d; best = f; } } return best; }
   function nearPick(){ const p = wd.p; let best = null, bd = WD.pickR;
-    for(const n of wd.nodes){ if(!NODE[n.k].pick || n.ready > wd.t || Math.abs(n.x - p.x) > 40 || Math.abs(n.y - p.y) > 40) continue; const d = hyp(n.x - p.x, n.y - p.y) - n.r; if(d < bd){ bd = d; best = n; } }
+    for(const n of wd.nodes){ if(!NODE[n.k].pick || n.gone || n.ready > wd.t || Math.abs(n.x - p.x) > 40 || Math.abs(n.y - p.y) > 40) continue; const d = hyp(n.x - p.x, n.y - p.y) - n.r; if(d < bd){ bd = d; best = n; } }
     return best; }
   function wdWhatAct(){ /* what B does here, for the hint and for the press */
     const p = wd.p;
     if(p.fishT > 0) return {k:'fishing', text:'Fishing. Hold still'};
-    const f = nearFire(WD.fireNear); if(f && invCount('wood') && f.fuel < WD.fireMax - 5) return {k:'feed', f, text:'Feed the fire'};
+    const f = nearFire(WD.fireNear); if(f && invCount('wood') && f.fuel < WD.fireMax - 5) return {k:'feed', f, text:f.fuel > 0 ? 'Feed the fire' : 'Light the fire pit'};
     const n = nearPick(); if(n) return {k:'pick', n, text:NODE[n.k].verb};
-    if(shoreAt(p)) return {k:'fish', text:'Fish'};
+    if(shoreAt(p)) return toolFor('fish') >= 0 ? {k:'fish', text:'Fish'} : {k:'need', text:'You need a fishing rod'};
     return null;
   }
   function wdAct(){
-    if(!wdLive()) return; const a = wdWhatAct(), p = wd.p; if(!a || busy()) return;
+    if(!wdLive()) return; if(wd.build){ buildEnd(); return; } const a = wdWhatAct(), p = wd.p; if(!a || busy()) return;
+    if(a.k==='need'){ wdNote(a.text); return; }
     if(a.k==='feed'){ invTake('wood', 1); a.f.fuel = Math.min(WD.fireMax, a.f.fuel + WD.fireWood); thud(0.25, 0.1, 500); beep(260, 0.15, 'triangle', 0.03);
       for(let i=0;i<5;i++) wdFx({kind:'chip', x:a.f.x, y:a.f.y - 6, vx:(Math.random() - 0.5)*60, vy:-60 - Math.random()*50, col:'#f3a640', t:600}); }
-    else if(a.k==='pick'){ const n = a.n; n.ready = wd.t + WD.regrow; give(NODE[n.k].pick, 1, n); thud(0.05, 0.05, 2600); }
+    else if(a.k==='pick'){ const n = a.n; if(NODE[n.k].once) n.gone = true; else n.ready = wd.t + WD.regrow; give(NODE[n.k].pick, 1, n); thud(0.05, 0.05, 2600); }
     else if(a.k==='fish'){ p.fishT = WD.fishMs; p.fishSide = shoreAt(p); beep(600, 0.08, 'triangle', 0.03); thud(0.06, 0.05, 2000, 0.3); }
   }
   function wdEat(i){
@@ -568,20 +702,80 @@
     return true;
   }
   function wdCook(i){
-    const s = wd.inv[i]; if(!s || !ITEMS[s.id].cook || !nearFire(WD.fireNear)) return false; const to = ITEMS[s.id].cook;
+    const s = wd.inv[i]; if(!s || !ITEMS[s.id].cook || !nearFire(WD.fireNear, true)) return false; const to = ITEMS[s.id].cook;
     s.n--; if(!s.n) wd.inv[i] = null; give(to, 1, wd.p); thud(0.3, 0.06, 4000); beep(200, 0.2, 'sawtooth', 0.02);
     return true;
   }
-  function wdBuildFire(){
-    if(!wdLive() || invCount('wood') < 2 || invCount('reed') < 2) return false;
-    const p = wd.p; let at = null;
-    for(const k of [0, 1, -1, 2, -2, 3, -3, 4]){ const a = Math.atan2(p.fy, p.fx) + k*0.6, x = p.x + Math.cos(a)*24, y = p.y + Math.sin(a)*24; if(!wdBlocked(x, y, 10) && !wd.fires.some(f=>hyp(f.x - x, f.y - y) < 30)){ at = {x, y}; break; } }
-    if(!at){ wdNote('No room here for a fire'); return false; }
-    invTake('wood', 2); invTake('reed', 2);
-    wd.fires.push({x:at.x, y:at.y, fuel:WD.fireStart, fl:Math.random()*9}); wd.home = {x:Math.round(at.x), y:Math.round(at.y)};
-    thud(0.4, 0.12, 400); beep(220, 0.3, 'triangle', 0.04); beep(330, 0.4, 'triangle', 0.03, 0.12);
-    wdBanner('Campfire', 'If you die, you wake here.', 2400); wdSave();
+  const nearBench = (k) => wd.benches.some(b=>(b.k || 'work')===(k || 'work') && hyp(b.x - wd.p.x, b.y - wd.p.y) < WD.benchNear);
+  const recName = r => r.name || ITEMS[r.id].name;
+  const canPay = r => Object.keys(r.cost).every(k=>invCount(k) >= r.cost[k]);
+  const stationOk = r => r.at==='hand' || (r.at==='bench' && nearBench('work')) || (r.at==='def' && nearBench('def')) || (r.at==='fire' && !!nearFire(WD.fireNear, true));
+  const canCraft = r => canPay(r) && stationOk(r);
+  function wdPlace(kind){ /* builds it just in front of you, or nearby if that spot is taken */
+    const p = wd.p, need = kind==='bench' || kind==='def' ? 14 : 10;
+    for(const k of [0, 1, -1, 2, -2, 3, -3, 4]){ const a = Math.atan2(p.fy, p.fx) + k*0.6, x = p.x + Math.cos(a)*(p.r + need + 6), y = p.y + Math.sin(a)*(p.r + need + 6);
+      if(wdBlocked(x, y, need) || wd.fires.some(f=>hyp(f.x - x, f.y - y) < 28) || wd.benches.some(b=>hyp(b.x - x, b.y - y) < 30)) continue;
+      if(wd.builds.size){ let hit = false; buildsNear(x, y, need, b=>{ if(boxHit(b, x, y, need)) hit = true; }); if(hit) continue; }
+      if(kind==='bench' || kind==='def') wd.benches.push({x, y, k:kind==='def' ? 'def' : 'work'});
+      else { wd.fires.push({x, y, fuel:WD.fireStart, pit:kind==='pit', fl:Math.random()*9}); wd.home = {x:Math.round(x), y:Math.round(y)}; }
+      return true; }
+    wdNote('No room here'); return false;
+  }
+  function wdCraft(r){
+    if(!wd || !canCraft(r)) return false;
+    if(r.place && !wdPlace(r.place)) return false;
+    for(const k in r.cost) invTake(k, r.cost[k]);
+    if(!r.place) give(r.id, r.n || 1, wd.p);
+    if(r.at==='fire'){ const f = nearFire(WD.fireNear, true); thud(0.35, 0.07, 4200); beep(180, 0.25, 'sawtooth', 0.02); for(let i=0;i<5;i++) wdFx({kind:'chip', x:f.x + (Math.random() - 0.5)*8, y:f.y - 8, vx:(Math.random() - 0.5)*20, vy:-40 - Math.random()*30, col:'rgba(220,215,205,.7)', t:900}); return true; } /* a sizzle and some steam */
+    thud(0.12, 0.1, 900); beep(392, 0.12, 'triangle', 0.04); beep(587, 0.2, 'triangle', 0.03, 0.1);
+    if(r.place==='bench') wdBanner('Workbench', 'Craft the next tier near it.', 2000);
+    else if(r.place==='def') wdBanner('Defense bench', 'Craft traps, barricades and sentries near it.', 2200);
+    else if(r.place) wdBanner(recName(r), 'If you die, you wake here.', 2200);
+    if(r.place) wdSave();
     return true;
+  }
+  function wdLightTorch(i){
+    const s = wd.inv[i]; if(!s || s.id!=='torch' || !wdLive()) return false;
+    s.n--; if(!s.n) wd.inv[i] = null; wd.p.torch = WD.torch; thud(0.2, 0.08, 600); beep(330, 0.2, 'triangle', 0.03);
+    wdFx({kind:'num', x:wd.p.x, y:wd.p.y - 16, text:'Torch lit', col:'#f3a640', t:900}); return true;
+  }
+  function wdUse(i){ const s = wd.inv[i]; if(!s) return; if(ITEMS[s.id].build) buildStart(s.id); else if(ITEMS[s.id].light) wdLightTorch(i); else wdEat(i); } /* RT or Q: eat it, light it, or build with it */
+  // ---- build mode (Terraria's: hold the piece, place it on the grid, take it back whole) ----
+  function buildStart(id){ if(!wdLive() || !invCount(id)) return; wd.build = {id}; p0Fish(); beep(600, 0.05, 'triangle', 0.03); hudLast = ''; }
+  function p0Fish(){ wd.p.fishT = 0; }
+  function buildEnd(){ if(!wd.build) return; wd.build = null; hudLast = ''; beep(440, 0.05, 'triangle', 0.025); }
+  const buildIds = () => [...new Set(wd.inv.filter(s=>s && ITEMS[s.id].build).map(s=>s.id))];
+  function buildCycle(d){ const L = buildIds(); if(!L.length){ buildEnd(); return; } const i = L.indexOf(wd.build.id); wd.build.id = L[((i < 0 ? 0 : i + d) + L.length) % L.length]; hudLast = ''; beep(660, 0.03, 'triangle', 0.02); }
+  function buildCell(){ /* the mouse's cell if it moved lately and is near, else the cell in front of you */
+    const p = wd.p, m = wd.mouse;
+    if(m && performance.now() - m.t < 2500 && hyp(m.x - p.x, m.y - p.y) < 110) return {gx:Math.floor(m.x/GRID), gy:Math.floor(m.y/GRID)};
+    return {gx:Math.floor((p.x + p.fx*(p.r + 14))/GRID), gy:Math.floor((p.y + p.fy*(p.r + 14))/GRID)};
+  }
+  function buildOk(k, gx, gy){
+    const x = gx*GRID + GRID/2, y = gy*GRID + GRID/2, B = BUILD[k], h = GRID/2;
+    if(x < WD.EDGE + h || x > WD.W - WD.EDGE - h || y < WD.RIVER + h || y > WD.H - WD.RIVER - h) return false;
+    if(B.floor ? wd.floors.has(gkey(gx, gy)) : wd.builds.has(gkey(gx, gy))) return false;
+    const box = {x, y};
+    for(const n of wd.nodes){ if(n.gone || !(NODE[n.k].solid || n.k==='berry') || Math.abs(n.x - x) > 40 || Math.abs(n.y - y) > 40) continue; if(boxHit(box, n.x, n.y, n.r + 2)) return false; }
+    if(!B.floor){ for(const f of wd.fires) if(boxHit(box, f.x, f.y, 10)) return false; for(const b of wd.benches) if(boxHit(box, b.x, b.y, 13)) return false; }
+    if(B.solid){ for(const f of wd.foes) if(boxHit(box, f.x, f.y, f.r)) return false; if(B.solid===true && !(wd.dead > 0) && boxHit(box, wd.p.x, wd.p.y, wd.p.r)) return false; }
+    return true;
+  }
+  function buildPlace(){
+    const B = wd.build; if(!B) return; if(!invCount(B.id)){ buildCycle(1); return; }
+    const k = ITEMS[B.id].build, c = buildCell();
+    if(!buildOk(k, c.gx, c.gy)){ beep(140, 0.08, 'square', 0.02); return; }
+    invTake(B.id, 1);
+    if(BUILD[k].floor) wd.floors.add(gkey(c.gx, c.gy)); else putBuild(c.gx, c.gy, k);
+    thud(0.1, 0.12, 700); beep(300, 0.05, 'square', 0.02); wdFx({kind:'ring', x:c.gx*GRID + GRID/2, y:c.gy*GRID + GRID/2, r:12, t:220, col:'217,201,163'});
+    if(!invCount(B.id)) buildCycle(1);
+  }
+  function buildTake(){ /* the piece under the cursor comes back to the bag whole; a floor only once nothing stands on it */
+    const c = buildCell(), key = gkey(c.gx, c.gy), b = wd.builds.get(key), at = {x:c.gx*GRID + GRID/2, y:c.gy*GRID + GRID/2};
+    if(b){ wd.builds.delete(key); give(b.k, 1, at); }
+    else if(wd.floors.has(key)){ wd.floors.delete(key); give('floor', 1, at); }
+    else { beep(140, 0.08, 'square', 0.02); return; }
+    thud(0.1, 0.1, 1200); if(wd.build && !invCount(wd.build.id)) wd.build.id = buildIds()[0] || wd.build.id;
   }
 
   // ---- hurt, death and waking ----
@@ -600,8 +794,8 @@
   }
   function wdDie(cause){
     const p = wd.p; if(wd.dead > 0) return;
-    p.hp = 0; p.fishT = 0; p.rollT = 0; p.swingT = 0; p.sword = null;
-    const bag = wd.inv.filter(Boolean).map(s=>({id:s.id, n:s.n})); wd.inv = Array(WD.slots).fill(null);
+    p.hp = 0; p.fishT = 0; p.rollT = 0; p.swingT = 0; p.sword = null; p.torch = 0; wd.build = null;
+    const bag = wd.inv.filter(Boolean).map(s=>Object.assign({id:s.id, n:s.n}, s.d ? {d:s.d} : {})); wd.inv = Array(WD.slots).fill(null);
     if(bag.length) wd.drops.push({bag, x:p.x, y:p.y, sx:p.x, sy:p.y - 20, pop:0});
     wd.dead = 3000; wd.deaths++; for(const f of wd.foes){ f.ag = false; f.wind = 0; }
     sfxDefeat(); haptic([60, 40, 120]); wd.shake = 260;
@@ -630,16 +824,17 @@
     for(const n of wd.nodes) if(n.shk > 0) n.shk -= dt;
     if(wd.dead > 0){ wd.dead -= dt; if(wd.dead <= 0) wdRespawn(); wdFoes(dt, s); return; }
     for(const k of ['rollCd', 'inv']) if(p[k] > 0) p[k] -= dt;
+    if(p.torch > 0){ p.torch = Math.max(0, p.torch - s); if(!p.torch) wdNote('Your torch burned out'); }
     if(p.comboT > 0){ p.comboT -= dt; if(p.comboT <= 0) p.combo = 0; }
     if(p.swingT > 0){ p.swingT -= dt; if(p.swingT <= 0 && p.queued) wdSwing(); }
     const ml = hyp(I.mx, I.my);
     if(ml > 0.2 && p.swingT <= 0 && p.rollT <= 0){ p.fx = I.mx/ml; p.fy = I.my/ml; }
-    if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*WD.rollSpd*s; p.y += p.dy*WD.rollSpd*s; }
-    else { const k = p.swingT > 0 ? WD_SW.move : 1; p.x += I.mx*WD.spd*k*s; p.y += I.my*WD.spd*k*s; }
-    wdSolid(p);
+    if(p.rollT > 0){ p.rollT -= dt; moveBy(p, p.dx*WD.rollSpd*s, p.dy*WD.rollSpd*s); }
+    else { const k = p.swingT > 0 ? WD_SW.move : 1; moveBy(p, I.mx*WD.spd*k*s, I.my*WD.spd*k*s); }
+    p.spiked = false;
     if(p.fishT > 0){ /* moving or fighting reels the line in */
       if(ml > 0.2){ p.fishT = 0; }
-      else { p.fishT -= dt; if(p.fishT <= 0){ if(Math.random() < WD.fishOdds){ give('fish', 1, p); beep(980, 0.12, 'triangle', 0.04); thud(0.15, 0.08, 2200); } else wdNote('Nothing bit'); } } }
+      else { p.fishT -= dt; if(p.fishT <= 0){ wear(toolFor('fish')); if(Math.random() < WD.fishOdds){ give('fish', 1, p); beep(980, 0.12, 'triangle', 0.04); thud(0.15, 0.08, 2200); } else wdNote('Nothing bit'); } } }
     // the belly (Don't Starve: empty means you lose health until you eat)
     p.hunger = Math.max(0, p.hunger - WD.hungerRate*s);
     if(p.hunger <= 0){ wd.starveT += s; if(wd.starveT >= WD.starveEvery){ wd.starveT = 0; p.inv = 0; wdHurtP(1, 'Starved'); } } else wd.starveT = 0;
@@ -647,7 +842,7 @@
     if(isNight() && !litAt(p.x, p.y)){ if(wd.darkT===0){ wdBanner('It is too dark', 'Something moves out there. Find light.', 2200); thud(0.6, 0.1, 140); }
       wd.darkT += s; if(wd.darkT >= WD.darkFirst){ wd.darkT = WD.darkFirst - WD.darkEvery; p.inv = 0; wdHurtP(WD.darkHit, 'Taken by the dark'); wdFx({kind:'claw', x:p.x, y:p.y, t:420}); } }
     else wd.darkT = 0;
-    wdFoes(dt, s);
+    wdFoes(dt, s); wdDefenses(dt); wdRaidCheck();
     wdPickups(dt);
     if(wd.shake > 0) wd.shake -= dt;
     wd.saveT -= s; if(wd.saveT <= 0) wdSave();
@@ -656,9 +851,10 @@
     const p = wd.p, decay = Math.exp(-10*s), J = WD_JACKAL;
     for(const f of wd.foes){
       if(f.hit > 0) f.hit -= dt; if(f.cd > 0) f.cd -= dt;
-      f.x += f.kx*s; f.y += f.ky*s; f.kx *= decay; f.ky *= decay;
+      moveBy(f, f.kx*s, f.ky*s); f.kx *= decay; f.ky *= decay;
+      if(f.spk > 0) f.spk -= dt;
       const dx = p.x - f.x, dy = p.y - f.y, d = hyp(dx, dy) || 1;
-      if(wd.dead > 0 || d > WD.leash) f.ag = false; else if(d < WD.aggro) f.ag = true;
+      if(wd.dead > 0 || (d > WD.leash && !f.raid)) f.ag = false; else if(d < WD.aggro || f.raid) f.ag = true;
       const reach = f.r + p.r + J.reach;
       if(f.wind > 0){ f.wind -= dt; if(f.wind <= 0){ f.cd = J.iv; if(d < reach + 6) wdHurtP(J.dmg, 'Killed by a Jackal'); wdFx({kind:'slash', x:f.x, y:f.y, ax:dx/d, ay:dy/d, r:reach, arc:1.4, t:140, foe:true}); } }
       else if(f.ag){ if(d > reach - 2){ f.x += dx/d*J.spd*s; f.y += dy/d*J.spd*s; } else if(f.cd <= 0){ f.wind = J.wind; } }
@@ -666,7 +862,22 @@
         const tx = f.tx - f.x, ty = f.ty - f.y, td = hyp(tx, ty); if(td > 4){ f.x += tx/td*J.spd*0.4*s; f.y += ty/td*J.spd*0.4*s; } }
       for(const o of wd.foes){ if(o===f) continue; const ox = f.x - o.x, oy = f.y - o.y, od = hyp(ox, oy), m = f.r + o.r; if(od < m && od > 0.01){ f.x += ox/od*(m - od)/2; f.y += oy/od*(m - od)/2; } }
       wdSolid(f);
+      if(f.spiked){ f.spiked = false; if(!(f.spk > 0)){ f.spk = 700; wdHurtF(f, 1, -dx/d*90, -dy/d*90); } } /* the barricade's stakes */
+      const tb = wd.builds.get(gkey(Math.floor(f.x/GRID), Math.floor(f.y/GRID)));
+      if(tb && tb.k==='trap' && !(tb.cd > 0) && f.hp > 0){ tb.cd = 2000; tb.u--; wdHurtF(f, 3, 0, 0); thud(0.12, 0.14, 1400); beep(220, 0.08, 'square', 0.03); /* the trap bites */
+        if(tb.u <= 0){ wd.builds.delete(gkey(tb.gx, tb.gy)); wdFx({kind:'ring', x:tb.x, y:tb.y, r:12, t:300, col:'230,220,196'}); } }
     }
+  }
+  function wdDefenses(dt){ /* traps set themselves again; sentries shoot */
+    for(const b of wd.builds.values()){ if(b.cd > 0) b.cd -= dt; if(b.k!=='sentry') continue; const B = BUILD.sentry;
+      let tg = null, td = B.range; for(const f of wd.foes){ const d = hyp(f.x - b.x, f.y - b.y); if(d < td){ td = d; tg = f; } }
+      if(!tg) continue; b.ang = Math.atan2(tg.y - (b.y - 14), tg.x - b.x);
+      if(b.cd > 0) continue; b.cd = B.every;
+      wd.shots.push({x:b.x + Math.cos(b.ang)*10, y:b.y - 14 + Math.sin(b.ang)*10, t:tg, a:b.ang, life:900}); thud(0.05, 0.06, 2600); beep(700, 0.04, 'triangle', 0.015); }
+    for(const sh of wd.shots){ sh.life -= dt; const tg = sh.t; if(wd.foes.includes(tg)){ sh.a = Math.atan2(tg.y - sh.y, tg.x - sh.x); }
+      const st = 360*dt/1000; sh.x += Math.cos(sh.a)*st; sh.y += Math.sin(sh.a)*st;
+      if(wd.foes.includes(tg) && hyp(tg.x - sh.x, tg.y - sh.y) < tg.r + 2){ sh.life = 0; wdHurtF(tg, BUILD.sentry.dmg, Math.cos(sh.a)*60, Math.sin(sh.a)*60); } }
+    wd.shots = wd.shots.filter(sh=>sh.life > 0);
   }
   function wdPickups(dt){ /* walk over what lies on the ground to take it */
     const p = wd.p;
@@ -675,12 +886,12 @@
       const dist = hyp(d.x - p.x, d.y - p.y);
       if(d.wait){ if(dist > 30) d.wait = false; continue; }
       if(dist > p.r + 10) continue;
-      if(d.bag){ const before = d.bag.reduce((a, s)=>a + s.n, 0); d.bag = d.bag.map(s=>({id:s.id, n:invAdd(s.id, s.n)})).filter(s=>s.n > 0);
+      if(d.bag){ const before = d.bag.reduce((a, s)=>a + s.n, 0); d.bag = d.bag.map(s=>Object.assign({}, s, {n:invAdd(s.id, s.n, s.d)})).filter(s=>s.n > 0);
         const after = d.bag.reduce((a, s)=>a + s.n, 0);
         if(after < before){ sfxPick(); beep(660, 0.3, 'triangle', 0.03, 0.08); wdFx({kind:'num', x:p.x, y:p.y - 18, text:d.bag.length ? 'Took what fits' : 'Got your things back', col:'#e0b54a', t:1200}); }
         else if(after) wdNote('Your bag is full');
         if(!d.bag.length) d.dead = true; continue; }
-      const left = invAdd(d.id, d.n);
+      const left = invAdd(d.id, d.n, d.d);
       if(left < d.n){ sfxPick(); wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + (d.n - left) + ' ' + ITEMS[d.id].name, col:'#e6d9a8', t:900}); }
       else wdNote('Your bag is full');
       d.n = left; if(!left) d.dead = true;
@@ -714,6 +925,42 @@
       c.strokeStyle = OL; c.lineWidth = 4.4; c.beginPath(); c.moveTo(13, 13); c.lineTo(20, 20); c.stroke(); c.strokeStyle = '#efe6cf'; c.lineWidth = 2.2; c.stroke();
       blob(()=>{ c.arc(20.5, 20.5, 2, 0, Math.PI*2); }, '#efe6cf', 1.6);
       blob(()=>{ c.ellipse(10, 10, 7.4, 6.2, -0.6, 0, Math.PI*2); }, body); c.fillStyle = id==='meat' ? '#ea8a96' : '#b07a4a'; c.beginPath(); c.ellipse(9, 9, 3.6, 2.6, -0.6, 0, Math.PI*2); c.fill(); hi(7.5, 6.5, 2.4, 1); }
+    else if(id==='twig'){ for(const [x0, y0, x1, y1] of [[5, 19, 19, 5], [7, 21, 20, 11], [4, 13, 15, 20]]){ c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 1.8; c.stroke(); }
+      c.strokeStyle = '#8a6440'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(13, 11); c.lineTo(15, 6); c.stroke(); }
+    else if(id==='flint'){ blob(()=>{ c.moveTo(5, 15); c.lineTo(10, 5); c.lineTo(18, 7); c.lineTo(20, 16); c.lineTo(12, 20); c.closePath(); }, '#4a4f58'); c.fillStyle = '#6a7180'; c.beginPath(); c.moveTo(10, 6.5); c.lineTo(17, 8); c.lineTo(12, 13); c.closePath(); c.fill(); hi(11, 8, 2.4, 0.9); }
+    else if(id==='stone'){ blob(()=>{ c.ellipse(12, 13, 8, 6.5, 0, 0, Math.PI*2); }, '#77706a'); hi(9.5, 10, 3, 1.4); c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(13, 9); c.lineTo(15, 14); c.stroke(); }
+    else if(id==='hatchet' || id==='pickaxe'){ c.strokeStyle = OL; c.lineWidth = 4.2; c.beginPath(); c.moveTo(6, 21); c.lineTo(17, 6); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 2.4; c.stroke();
+      if(id==='hatchet') blob(()=>{ c.moveTo(13, 6); c.lineTo(20, 2.5); c.quadraticCurveTo(23, 8, 21, 13); c.lineTo(16, 10); c.closePath(); }, '#9aa3ad', 2);
+      else blob(()=>{ c.moveTo(6, 6); c.quadraticCurveTo(15, 0, 23, 9); c.quadraticCurveTo(16, 5, 7, 8.5); c.closePath(); }, '#9aa3ad', 2);
+      hi(18, 6, 2, 0.7); }
+    else if(id==='rod'){ c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(4, 21); c.lineTo(19, 3); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 1.8; c.stroke();
+      c.strokeStyle = '#e6dcc4'; c.lineWidth = 0.7; c.beginPath(); c.moveTo(19, 3); c.quadraticCurveTo(22, 12, 19, 17); c.stroke(); blob(()=>{ c.arc(19, 18.5, 2, 0, Math.PI*2); }, '#d6304f', 1.4); }
+    else if(id==='torch'){ c.strokeStyle = OL; c.lineWidth = 4; c.beginPath(); c.moveTo(9, 22); c.lineTo(14, 10); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 2.2; c.stroke();
+      blob(()=>{ c.moveTo(11, 11); c.quadraticCurveTo(10, 4, 16, 1.5); c.quadraticCurveTo(19, 7, 17, 11.5); c.closePath(); }, '#f39a2c', 1.8); c.fillStyle = '#ffe08a'; c.beginPath(); c.ellipse(14.5, 8.5, 1.6, 2.6, 0.3, 0, Math.PI*2); c.fill(); }
+    else if(id==='workbench'){ for(const x of [6, 18]){ c.fillStyle = OL; c.fillRect(x - 2, 11, 4, 11); c.fillStyle = '#5a3b22'; c.fillRect(x - 1, 12, 2, 9); }
+      blob(()=>{ c.rect(2, 7, 20, 6); }, '#9a6c40', 2); c.fillStyle = 'rgba(255,240,200,.25)'; c.fillRect(3.5, 8, 17, 1.2); c.fillStyle = '#9aa3ad'; c.fillRect(13, 4, 6, 3); c.strokeStyle = OL; c.lineWidth = 1; c.strokeRect(13, 4, 6, 3); }
+    else if(id==='campfire' || id==='firepit'){ const big = id==='firepit';
+      for(let i=0;i<6;i++){ const a = i/6*Math.PI*2; blob(()=>{ c.ellipse(12 + Math.cos(a)*7.5, 17 + Math.sin(a)*3.4, big ? 3 : 2.2, big ? 2.4 : 1.8, 0, 0, Math.PI*2); }, big ? '#8a847a' : '#6b655c', 1.2); }
+      blob(()=>{ c.moveTo(8, 17); c.quadraticCurveTo(8, 9, 12, 3); c.quadraticCurveTo(16, 9, 16, 17); c.closePath(); }, '#f39a2c', 1.8); c.fillStyle = '#ffe08a'; c.beginPath(); c.ellipse(12, 13.5, 2, 3.4, 0, 0, Math.PI*2); c.fill(); }
+    else if(id==='plank'){ for(const [yy, col] of [[6, '#a37446'], [11, '#93673d'], [16, '#a37446']]){ blob(()=>{ c.rect(3, yy, 18, 4.4); }, col, 1.8); c.fillStyle = 'rgba(255,240,200,.25)'; c.fillRect(4, yy + 0.6, 16, 0.9); } }
+    else if(id==='wall' || id==='spikes'){ blob(()=>{ c.rect(3, 12, 18, 9); }, '#5e4129'); if(id==='wall'){ blob(()=>{ c.rect(3, 3, 18, 10); }, '#9a6c40'); c.strokeStyle = '#6e4a2b'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(4, 8); c.lineTo(20, 8); c.stroke(); }
+      else for(const x of [6, 12, 18]) blob(()=>{ c.moveTo(x - 2.4, 13); c.lineTo(x, 2); c.lineTo(x + 2.4, 13); c.closePath(); }, '#c9a06a', 1.4); }
+    else if(id==='floor'){ blob(()=>{ c.rect(3, 3, 18, 18); }, '#7a5836'); c.fillStyle = '#86613c'; c.fillRect(4, 4, 16, 8); c.strokeStyle = '#3e2a18'; c.lineWidth = 0.9; c.beginPath(); c.moveTo(3, 12); c.lineTo(21, 12); c.stroke(); }
+    else if(id==='stairs'){ for(let i=0;i<4;i++) blob(()=>{ c.rect(3 + i*2, 4 + i*4.5, 18 - i*4, 5); }, i%2 ? '#8a6038' : '#9a6c40', 1.4); }
+    else if(id==='trap'){ blob(()=>{ c.ellipse(12, 15, 9, 5, 0, 0, Math.PI*2); }, '#5a3b22'); for(let i=0;i<6;i++){ const a = Math.PI + i/5*Math.PI, bx = 12 + Math.cos(a)*7, by = 15 + Math.sin(a)*3.5; blob(()=>{ c.moveTo(bx - 1.6, by); c.lineTo(bx, by - 7); c.lineTo(bx + 1.6, by); c.closePath(); }, '#efe6cf', 1.2); } }
+    else if(id==='sentry'){ c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(5, 22); c.lineTo(12, 10); c.lineTo(19, 22); c.stroke(); c.strokeStyle = '#7a5233'; c.lineWidth = 1.8; c.stroke();
+      c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(6, 9); c.lineTo(20, 7); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 1.8; c.stroke();
+      c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); c.moveTo(16, 1.5); c.quadraticCurveTo(21, 7.5, 16, 13); c.stroke(); c.strokeStyle = '#d9c9a3'; c.lineWidth = 1.2; c.stroke(); }
+    else if(id==='defbench'){ for(const x of [6, 18]){ c.fillStyle = OL; c.fillRect(x - 2, 11, 4, 11); c.fillStyle = '#5a3b22'; c.fillRect(x - 1, 12, 2, 9); }
+      blob(()=>{ c.rect(2, 9, 20, 5); }, '#9a6c40', 2); blob(()=>{ c.rect(3, 9, 5, 6); }, '#7a2a3a', 1); for(const x of [12, 16, 20]) blob(()=>{ c.moveTo(x - 1.6, 9); c.lineTo(x, 2); c.lineTo(x + 1.6, 9); c.closePath(); }, '#efe6cf', 1); }
+    else if(id==='rberry'){ blob(()=>{ c.ellipse(12, 17, 9, 3.4, 0, 0, Math.PI*2); }, '#6b6560', 1.6); for(const [x, y] of [[8.5, 13], [15, 12.5], [12, 15.5], [11.5, 10]]){ blob(()=>{ c.arc(x, y, 3.4, 0, Math.PI*2); }, '#7a2034', 1.6); hi(x - 1, y - 1.2, 1, 0.7); } }
+    else if(id==='broth' || id==='stew'){ blob(()=>{ c.moveTo(3, 11); c.lineTo(21, 11); c.quadraticCurveTo(21, 21, 12, 21); c.quadraticCurveTo(3, 21, 3, 11); c.closePath(); }, '#6b4a2c');
+      blob(()=>{ c.ellipse(12, 11, 9, 2.8, 0, 0, Math.PI*2); }, id==='broth' ? '#7da35a' : '#9a4a2e', 1.4);
+      if(id==='stew') for(const [x, y] of [[9, 11], [14, 10.5]]){ c.fillStyle = '#c9905a'; c.beginPath(); c.arc(x, y, 1.6, 0, Math.PI*2); c.fill(); }
+      c.strokeStyle = 'rgba(230,225,215,.7)'; c.lineWidth = 1; c.beginPath(); for(const x of [9, 13, 16]){ c.moveTo(x, 7); c.quadraticCurveTo(x - 2, 5, x, 2.5); } c.stroke(); }
+    else if(id==='kabob' || id==='fishsticks'){ c.strokeStyle = OL; c.lineWidth = 3; c.beginPath(); c.moveTo(3, 21); c.lineTo(21, 3); c.stroke(); c.strokeStyle = '#c9a06a'; c.lineWidth = 1.4; c.stroke();
+      for(const [x, y] of [[8, 16], [12.5, 11.5], [17, 7]]){ blob(()=>{ if(id==='kabob') c.arc(x, y, 3.3, 0, Math.PI*2); else c.rect(x - 4, y - 2.4, 8, 4.8); }, id==='kabob' ? '#8a5230' : '#d4a85a', 1.5); } }
+    else if(id==='meatballs'){ blob(()=>{ c.ellipse(12, 18, 10, 3.6, 0, 0, Math.PI*2); }, '#d9d0bf', 1.6); for(const [x, y] of [[8, 14], [15.5, 14], [12, 9.5]]){ blob(()=>{ c.arc(x, y, 4, 0, Math.PI*2); }, '#8a4a2c', 1.6); hi(x - 1.2, y - 1.4, 1.4, 0.8); } }
     return iconCache[id] = cv;
   }
   const iconSrc = id => iconUrl[id] || (iconUrl[id] = itemIcon(id).toDataURL());
@@ -737,7 +984,17 @@
   }
   function drawNode(c, n, t){
     const x = n.x, y = n.y, ready = n.ready <= wd.t;
-    if(n.k==='rock'){ toonStone(c, x, y, n.r*1.1, n.r*0.8, n.v < 0.5 ? '#6b655c' : '#5f5a54'); toonStone(c, x + n.r*0.7, y + n.r*0.35, n.r*0.45, n.r*0.32, '#77706a'); return; }
+    if(n.k==='sapling'){ const sw = Math.sin(t*1.3 + x*0.07)*0.8;
+      c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 1, y + 1, 6, 2.2, 0, 0, Math.PI*2); c.fill();
+      if(!ready){ c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - 4); c.stroke(); c.strokeStyle = '#6b4a2c'; c.lineWidth = 1.2; c.stroke(); return; }
+      c.lineCap = 'round'; for(const [w, col] of [[2.8, OL], [1.4, '#7a5233']]){ c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x + sw, y - 14); c.moveTo(x + sw*0.5, y - 7); c.lineTo(x - 5, y - 11); c.moveTo(x + sw*0.7, y - 10); c.lineTo(x + 5, y - 14); c.stroke(); }
+      for(const [lx, ly] of [[-5, -11], [5, -14], [sw, -15]]){ c.fillStyle = OL; c.beginPath(); c.ellipse(x + lx, y + ly, 2.6, 1.7, 0.5, 0, Math.PI*2); c.fill(); c.fillStyle = '#6f9a45'; c.beginPath(); c.ellipse(x + lx, y + ly, 1.9, 1.1, 0.5, 0, Math.PI*2); c.fill(); }
+      return; }
+    if(n.k==='flint'){ if(n.gone) return; c.save(); c.translate(x, y); c.rotate(n.v*6);
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(1, 2, 5, 2, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = '#4a4f58'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.moveTo(-4, 1); c.lineTo(-1, -3.5); c.lineTo(4, -2); c.lineTo(3, 2.5); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = 'rgba(200,215,235,.45)'; c.fillRect(-1, -2.5, 3, 1); c.restore(); return; }
+    if(n.k==='rock'){ if(n.gone){ for(const [dx, dy] of [[-4, 1], [3, -1], [1, 3]]) toonStone(c, x + dx, y + dy, 2.4, 1.8, '#6b655c'); return; } toonStone(c, x, y, n.r*1.1, n.r*0.8, n.v < 0.5 ? '#6b655c' : '#5f5a54'); toonStone(c, x + n.r*0.7, y + n.r*0.35, n.r*0.45, n.r*0.32, '#77706a'); return; }
     if(n.k==='bone'){ if(n.gone) return;
       c.fillStyle = '#4a3d2e'; c.strokeStyle = 'rgba(14,10,8,.6)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y + 1, 12, 6, 0, 0, Math.PI*2); c.fill(); c.stroke();
       for(const [bx, by, a] of [[-4, -1, 0.5], [3, 0, -0.7], [0, 2, 0.1]]){ c.save(); c.translate(x + bx, y + by); c.rotate(a); c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(-5, 0); c.lineTo(5, 0); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.8; c.stroke();
@@ -761,13 +1018,75 @@
   }
   function drawFire(c, f, t){
     const x = f.x, y = f.y, k = Math.min(1, f.fuel/90);
-    for(let i=0;i<7;i++){ const a = i/7*Math.PI*2; toonStone(c, x + Math.cos(a)*10, y + Math.sin(a)*6, 3.2, 2.4, '#6b655c'); }
+    if(f.pit){ c.fillStyle = '#2e2926'; c.beginPath(); c.ellipse(x, y, 10, 6, 0, 0, Math.PI*2); c.fill(); for(let i=0;i<9;i++){ const a = i/9*Math.PI*2; toonStone(c, x + Math.cos(a)*12, y + Math.sin(a)*7, 4, 3, '#8a847a'); } if(!(f.fuel > 0)) return; }
+    else for(let i=0;i<7;i++){ const a = i/7*Math.PI*2; toonStone(c, x + Math.cos(a)*10, y + Math.sin(a)*6, 3.2, 2.4, '#6b655c'); }
     c.save(); c.translate(x, y); for(const a of [0.5, -0.5]){ c.save(); c.rotate(a); c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(-7, -1.8, 14, 3.6); c.strokeRect(-7, -1.8, 14, 3.6); c.restore(); } c.restore();
     const fl = f.fl, h = 8 + 12*k;
     for(const [col, sc, dx] of [['#c9461f', 1, 0], ['#f39a2c', 0.72, 0.5], ['#ffe08a', 0.42, 0]]){
       const w = 6.5*sc*(0.6 + 0.4*k), hh = h*sc*(0.9 + 0.12*Math.sin(fl*13 + sc*5)), tip = Math.sin(fl*9 + sc*3)*2;
       c.fillStyle = col; c.strokeStyle = sc===1 ? OL : 'transparent'; c.lineWidth = 1.4;
       c.beginPath(); c.moveTo(x - w + dx, y - 1); c.quadraticCurveTo(x - w*0.9 + dx, y - hh*0.6, x + tip + dx, y - hh); c.quadraticCurveTo(x + w*0.9 + dx, y - hh*0.6, x + w + dx, y - 1); c.closePath(); if(sc===1) c.stroke(); c.fill(); }
+  }
+  function drawBench(c, b){
+    const x = b.x, y = b.y;
+    c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(x + 2, y + 5, 16, 5, 0, 0, Math.PI*2); c.fill();
+    for(const lx of [-11, 9]){ c.fillStyle = '#4a311c'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(x + lx, y - 6, 3, 10); c.strokeRect(x + lx, y - 6, 3, 10); }
+    c.fillStyle = '#9a6c40'; c.strokeStyle = OL; c.lineWidth = 1.8; c.beginPath(); c.rect(x - 15, y - 13, 30, 8); c.fill(); c.stroke();
+    c.strokeStyle = '#7a5233'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(x - 5, y - 13); c.lineTo(x - 5, y - 5); c.moveTo(x + 5, y - 13); c.lineTo(x + 5, y - 5); c.stroke();
+    c.fillStyle = 'rgba(255,240,200,.22)'; c.fillRect(x - 13.5, y - 12, 27, 1.4);
+    c.fillStyle = '#9aa3ad'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.rect(x + 2, y - 17, 8, 4); c.fill(); c.stroke(); /* a saw */
+    c.strokeStyle = '#8a6440'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 10, y - 15); c.lineTo(x - 3, y - 18); c.stroke(); /* a mallet */
+  }
+  function drawFloor(c, x, y, gx, gy){ /* boards, two to a tile, the grain alternating */
+    c.fillStyle = '#7a5836'; c.fillRect(x, y, GRID, GRID);
+    const across = (gx + gy) % 2===0;
+    c.fillStyle = (gx*7 + gy*3) % 3 ? '#86613c' : '#7e5a37';
+    if(across){ c.fillRect(x + 0.5, y + 0.5, GRID - 1, 9); } else c.fillRect(x + 0.5, y + 0.5, 9, GRID - 1);
+    c.strokeStyle = '#3e2a18'; c.lineWidth = 0.9; c.strokeRect(x + 0.45, y + 0.45, GRID - 0.9, GRID - 0.9);
+    c.beginPath(); if(across){ c.moveTo(x, y + 10); c.lineTo(x + GRID, y + 10); } else { c.moveTo(x + 10, y); c.lineTo(x + 10, y + GRID); } c.stroke();
+    c.fillStyle = '#2a1c12'; for(const [nx, ny] of across ? [[2.5, 5], [17.5, 5], [2.5, 15], [17.5, 15]] : [[5, 2.5], [5, 17.5], [15, 2.5], [15, 17.5]]){ c.fillRect(x + nx - 0.6, y + ny - 0.6, 1.2, 1.2); }
+    c.fillStyle = 'rgba(255,230,190,.08)'; c.fillRect(x + 1, y + 1, GRID - 2, 1);
+  }
+  function drawPiece(c, k, x, y, b, t){ /* footprint is the 20 by 20 cell round x, y; tall pieces rise 10 above it */
+    const l = x - 10, tp = y - 10;
+    if(k==='wall' || k==='spikes'){
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.fillRect(l + 2, tp + 4, 20, 20);
+      c.fillStyle = k==='wall' ? '#5e4129' : '#4f3722'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(l, y, 20, 10); c.strokeRect(l, y, 20, 10); /* the face */
+      c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 0.8; c.beginPath(); for(const xx of [l + 5, l + 10, l + 15]){ c.moveTo(xx, y + 1); c.lineTo(xx, y + 9); } c.stroke();
+      if(k==='wall'){ c.fillStyle = '#9a6c40'; c.fillRect(l, tp - 10, 20, 20); c.strokeStyle = OL; c.lineWidth = 1.4; c.strokeRect(l, tp - 10, 20, 20);
+        c.strokeStyle = '#6e4a2b'; c.lineWidth = 0.8; c.beginPath(); for(const yy of [tp - 5, tp, tp + 5]){ c.moveTo(l + 1, yy); c.lineTo(l + 19, yy); } c.stroke();
+        c.fillStyle = 'rgba(255,240,200,.2)'; c.fillRect(l + 1.5, tp - 9, 17, 1.2); }
+      else { c.fillStyle = '#6e4a2b'; c.fillRect(l, tp - 2, 20, 12); c.strokeStyle = OL; c.lineWidth = 1.2; c.strokeRect(l, tp - 2, 20, 12); /* a low top, and stakes standing out of it */
+        for(const [sx, sy] of [[l + 4, tp + 1], [l + 10, tp + 4], [l + 16, tp + 1], [l + 7, tp + 7], [l + 13, tp + 7]]){
+          c.fillStyle = '#c9a06a'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.moveTo(sx - 2, sy + 2); c.lineTo(sx, sy - 9); c.lineTo(sx + 2, sy + 2); c.closePath(); c.fill(); c.stroke(); } }
+      return; }
+    if(k==='stairs'){
+      c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(l + 1, tp + 3, 20, 20);
+      for(let i=0;i<4;i++){ const yy = tp - 6 + i*6, h = 6; c.fillStyle = i%2 ? '#8a6038' : '#9a6c40'; c.fillRect(l, yy, 20, h); c.strokeStyle = OL; c.lineWidth = 1; c.strokeRect(l, yy, 20, h);
+        c.fillStyle = 'rgba(255,240,200,.18)'; c.fillRect(l + 1, yy + 0.5, 18, 1); }
+      c.fillStyle = '#5e4129'; c.fillRect(l, y + 8, 20, 3); c.strokeStyle = OL; c.strokeRect(l, y + 8, 20, 3);
+      return; }
+    if(k==='trap'){ const armed = !(b.cd > 0);
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x, y + 1, 9, 5, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.ellipse(x, y, 8, 4.5, 0, 0, Math.PI*2); c.fill(); c.stroke();
+      for(let i=0;i<8;i++){ const a = i/8*Math.PI*2, bx = x + Math.cos(a)*6.5, by = y + Math.sin(a)*3.6, h = armed ? 5 : 2;
+        c.fillStyle = '#efe6cf'; c.strokeStyle = OL; c.lineWidth = 0.8; c.beginPath(); c.moveTo(bx - 1.4, by); c.lineTo(bx + (armed ? 0 : Math.cos(a + Math.PI)*2), by - h); c.lineTo(bx + 1.4, by); c.closePath(); c.fill(); c.stroke(); }
+      return; }
+    if(k==='sentry'){
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 3, 10, 4, 0, 0, Math.PI*2); c.fill();
+      c.strokeStyle = OL; c.lineWidth = 3.2; c.beginPath(); c.moveTo(x - 8, y + 4); c.lineTo(x, y - 12); c.lineTo(x + 8, y + 4); c.moveTo(x, y + 6); c.lineTo(x, y - 12); c.stroke();
+      c.strokeStyle = '#7a5233'; c.lineWidth = 1.6; c.stroke();
+      const a = b.ang != null ? b.ang : -Math.PI/2, cx = Math.cos(a), cy = Math.sin(a), hx = x, hy = y - 14;
+      c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(hx - cx*5, hy - cy*5); c.lineTo(hx + cx*9, hy + cy*9); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 1.8; c.stroke(); /* the stock */
+      c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); c.moveTo(hx + cx*5 - cy*7, hy + cy*5 + cx*7); c.quadraticCurveTo(hx + cx*9, hy + cy*9, hx + cx*5 + cy*7, hy + cy*5 - cx*7); c.stroke();
+      c.strokeStyle = '#d9c9a3'; c.lineWidth = 1.2; c.stroke(); /* the bow, bone */
+      return; }
+  }
+  function drawDefBench(c, b){
+    drawBench(c, b);
+    const x = b.x, y = b.y;
+    c.fillStyle = '#7a2a3a'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.rect(x - 15, y - 13, 7, 8); c.fill(); c.stroke(); /* a red cloth */
+    for(const sx of [x - 2, x + 3, x + 8]){ c.fillStyle = '#e6dcc4'; c.strokeStyle = OL; c.lineWidth = 0.9; c.beginPath(); c.moveTo(sx - 1.5, y - 13); c.lineTo(sx, y - 21); c.lineTo(sx + 1.5, y - 13); c.closePath(); c.fill(); c.stroke(); } /* bone spikes */
   }
   function drawAsh(c, x, y){
     c.fillStyle = '#3a3532'; c.beginPath(); c.ellipse(x, y, 8, 4.5, 0, 0, Math.PI*2); c.fill();
@@ -801,7 +1120,8 @@
     // the ground
     c.fillStyle = '#56603a'; c.fillRect(Math.max(0, x0), Math.max(0, y0), Math.min(WD.W, x1) - Math.max(0, x0), Math.min(WD.H, y1) - Math.max(0, y0));
     for(const q of wd.deco.patches) if(vis(q.x, q.y, q.rx)){ c.fillStyle = q.col; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill(); }
-    if(!bareGfx) for(const q of wd.deco.tufts) if(vis(q.x, q.y, 8)) toonTuft(c, q.x, q.y, q.s, q.col);
+    if(!bareGfx) for(const q of wd.deco.tufts) if(vis(q.x, q.y, 8) && !wd.floors.has(gkey(Math.floor(q.x/GRID), Math.floor(q.y/GRID)))) toonTuft(c, q.x, q.y, q.s, q.col);
+    for(const k of wd.floors){ const [gx, gy] = k.split(',').map(Number), x = gx*GRID, y = gy*GRID; if(vis(x + 10, y + 10, 12)) drawFloor(c, x, y, gx, gy); }
     // the rivers, north and south: you cannot cross them
     { const a = Math.max(0, x0 - 5), b = Math.min(WD.W, x1 + 5);
       if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
@@ -810,6 +1130,8 @@
     const L = [];
     for(const n of wd.nodes) if(vis(n.x, n.y, 50)) L.push({y:n.y, n});
     for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push({y:f.y, f});
+    for(const b of wd.benches) if(vis(b.x, b.y, 30)) L.push({y:b.y, bench:b});
+    for(const b of wd.builds.values()) if(vis(b.x, b.y, 30)) L.push({y:b.k==='trap' || b.k==='stairs' ? b.y - 10 : b.y + GRID/2, piece:b});
     for(const d of wd.drops) if(vis(d.x, d.y, 20)) L.push({y:d.y - 6, d});
     for(const f of wd.foes) if(vis(f.x, f.y, 20)) L.push({y:f.y, foe:f});
     if(wd.home && !wd.fires.some(f=>hyp(f.x - wd.home.x, f.y - wd.home.y) < 4) && vis(wd.home.x, wd.home.y, 20)) L.push({y:wd.home.y - 1, ash:wd.home});
@@ -819,6 +1141,8 @@
     for(const e of L){
       if(e.n){ if(e.n.k==='tree') drawTree(c, e.n, t, !e.n.gone && p.y < e.n.y - 4 && Math.abs(p.x - e.n.x) < e.n.cr && p.y > e.n.y - 18 - e.n.cr*1.8); else drawNode(c, e.n, t); }
       else if(e.f) drawFire(c, e.f, t);
+      else if(e.bench) (e.bench.k==='def' ? drawDefBench : drawBench)(c, e.bench);
+      else if(e.piece) drawPiece(c, e.piece.k, e.piece.x, e.piece.y, e.piece, t);
       else if(e.ash) drawAsh(c, e.ash.x, e.ash.y);
       else if(e.d){ const d = e.d, k = Math.min(1, d.pop/400), x = d.sx + (d.x - d.sx)*k, y = d.sy + (d.y - d.sy)*k - Math.sin(Math.PI*k)*14 + (k >= 1 ? Math.sin(t*3 + d.x)*1 : 0);
         if(d.bag){ drawBag(c, x, y); continue; }
@@ -836,18 +1160,34 @@
           c.fillStyle = OL; c.beginPath(); c.arc(bx, by + bob, 2.4, 0, Math.PI*2); c.fill(); c.fillStyle = '#d6304f'; c.beginPath(); c.arc(bx, by + bob, 1.7, 0, Math.PI*2); c.fill(); }
         { const sw = p.sword; if(sw && sw.t < sw.dur + 120){ sw.t += dt; const k = Math.min(1, sw.t/sw.dur), ez = 1 - Math.pow(1 - k, 3), ang = sw.a + sw.side*(-sw.arc/2 + sw.arc*ez);
           const cx = Math.cos(ang), cy = Math.sin(ang), h0 = p.r - 2, g = p.r + 3, tip = p.r + 20;
+          if(sw.tool){ const tp = p.r + 16, px = -cy, py = cx; /* the hatchet or the pickaxe, not the sword */
+            c.lineCap = 'round'; c.strokeStyle = OL; c.lineWidth = 3.6; c.beginPath(); c.moveTo(p.x + cx*h0, p.y + cy*h0); c.lineTo(p.x + cx*tp, p.y + cy*tp); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 2; c.stroke();
+            c.fillStyle = '#9aa3ad'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath();
+            if(sw.tool==='hatchet'){ c.moveTo(p.x + cx*(tp - 5), p.y + cy*(tp - 5)); c.lineTo(p.x + cx*(tp - 6) + px*7, p.y + cy*(tp - 6) + py*7); c.lineTo(p.x + cx*(tp + 1) + px*7, p.y + cy*(tp + 1) + py*7); c.lineTo(p.x + cx*tp, p.y + cy*tp); }
+            else { c.moveTo(p.x + cx*(tp - 4) - px*8, p.y + cy*(tp - 4) - py*8); c.quadraticCurveTo(p.x + cx*(tp + 3), p.y + cy*(tp + 3), p.x + cx*(tp - 4) + px*8, p.y + cy*(tp - 4) + py*8); c.lineTo(p.x + cx*tp, p.y + cy*tp); }
+            c.closePath(); c.fill(); c.stroke(); c.lineCap = 'butt'; }
+          else {
           c.lineCap = 'round'; c.strokeStyle = '#7a2a3a'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(p.x + cx*h0, p.y + cy*h0); c.lineTo(p.x + cx*g, p.y + cy*g); c.stroke();
           c.strokeStyle = '#e0b54a'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x + cx*g - cy*4, p.y + cy*g + cx*4); c.lineTo(p.x + cx*g + cy*4, p.y + cy*g - cx*4); c.stroke();
-          c.strokeStyle = '#e8dcc0'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(p.x + cx*g, p.y + cy*g); c.lineTo(p.x + cx*tip, p.y + cy*tip); c.stroke(); c.lineCap = 'butt'; } }
+          c.strokeStyle = '#e8dcc0'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(p.x + cx*g, p.y + cy*g); c.lineTo(p.x + cx*tip, p.y + cy*tip); c.stroke(); c.lineCap = 'butt'; } } }
         c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(p.x + 1, p.y + p.r*0.7, p.r, p.r*0.4, 0, 0, Math.PI*2); c.fill();
         c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
         ring(c, p.x, p.y, p.r, p.hp/p.maxHp, '#c73a5c'); c.beginPath(); c.arc(p.x, p.y, p.r - 2.5, 0, Math.PI*2); c.fillStyle = '#c73a5c'; c.fill(); c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke();
-        txt('@', p.x, p.y + 0.5, 12, '#100b0a'); c.globalAlpha = 1; }
+        txt('@', p.x, p.y + 0.5, 12, '#100b0a'); c.globalAlpha = 1;
+        if(p.torch > 0){ const tx = p.x + 9, ty = p.y - 8, fl = performance.now()/90; /* the torch, held up */
+          c.strokeStyle = OL; c.lineWidth = 3; c.lineCap = 'round'; c.beginPath(); c.moveTo(p.x + 5, p.y + 1); c.lineTo(tx, ty); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 1.6; c.stroke(); c.lineCap = 'butt';
+          c.fillStyle = '#f39a2c'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.moveTo(tx - 3, ty); c.quadraticCurveTo(tx - 3, ty - 5, tx + Math.sin(fl)*1.2, ty - 9); c.quadraticCurveTo(tx + 3, ty - 5, tx + 3, ty); c.closePath(); c.stroke(); c.fill();
+          c.fillStyle = '#ffe08a'; c.beginPath(); c.ellipse(tx, ty - 2.5, 1.2, 2.2, 0, 0, Math.PI*2); c.fill(); } }
     }
     // the edges east and west: forest too thick to walk into
     for(const q of wd.deco.edge) if(vis(q.x, q.y, 40)){ c.fillStyle = OL; c.beginPath(); c.arc(q.x, q.y, q.cr + 1.6, 0, Math.PI*2); c.fill(); c.fillStyle = '#26361c'; c.beginPath(); c.arc(q.x, q.y, q.cr, 0, Math.PI*2); c.fill(); c.fillStyle = '#2f4422'; c.beginPath(); c.arc(q.x - q.cr*0.2, q.y - q.cr*0.25, q.cr*0.6, 0, Math.PI*2); c.fill(); }
     if(x0 < WD.EDGE - 20){ c.fillStyle = '#141c0f'; c.fillRect(x0 - 10, y0 - 10, WD.EDGE - 30 - x0 + 10, vh + 20); }
     if(x1 > WD.W - WD.EDGE + 20){ c.fillStyle = '#141c0f'; c.fillRect(WD.W - WD.EDGE + 30, y0 - 10, x1 - (WD.W - WD.EDGE + 30) + 10, vh + 20); }
+    for(const sh of wd.shots){ c.strokeStyle = OL; c.lineWidth = 2.4; c.beginPath(); c.moveTo(sh.x - Math.cos(sh.a)*6, sh.y - Math.sin(sh.a)*6); c.lineTo(sh.x, sh.y); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.1; c.stroke(); }
+    if(wd.build && !(wd.dead > 0)){ /* the piece you hold, where it would go */
+      const cc = buildCell(), k = ITEMS[wd.build.id].build, x = cc.gx*GRID + GRID/2, y = cc.gy*GRID + GRID/2, ok = buildOk(k, cc.gx, cc.gy), key = gkey(cc.gx, cc.gy), has = wd.builds.has(key) || wd.floors.has(key);
+      if(!has){ c.globalAlpha = 0.5; if(k==='floor') drawFloor(c, x - 10, y - 10, cc.gx, cc.gy); else drawPiece(c, k, x, y, {u:BUILD[k].uses, ang:-Math.PI/2, cd:0}, t); c.globalAlpha = 1; }
+      c.strokeStyle = has ? '#e0b54a' : ok ? 'rgba(143,208,107,.95)' : 'rgba(238,90,117,.95)'; c.lineWidth = 1.5; c.setLineDash([3, 2]); c.strokeRect(x - 10, y - 10, 20, 20); c.setLineDash([]); }
     for(const e of wd.fx){
       const k = Math.max(0, e.t/e.t0);
       if(e.kind==='slash'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2; c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a - half, a + half); c.closePath();
@@ -864,13 +1204,14 @@
       const d = darkCv.getContext('2d'); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, dw, dh);
       d.fillStyle = `rgba(4,6,16,${dk})`; d.fillRect(0, 0, dw, dh);
       d.globalCompositeOperation = 'destination-out';
-      for(const f of wd.fires){ const fx = (f.x - x0)*sc*ds, fy = (f.y - y0)*sc*ds, R = lightR(f)*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(fx < -R || fy < -R || fx > dw + R || fy > dh + R) continue;
+      for(const f of wd.fires){ if(!(f.fuel > 0)) continue; const fx = (f.x - x0)*sc*ds, fy = (f.y - y0)*sc*ds, R = lightR(f)*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(fx < -R || fy < -R || fx > dw + R || fy > dh + R) continue;
         const g = d.createRadialGradient(fx, fy, 0, fx, fy, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,.9)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(fx - R, fy - R, 2*R, 2*R); }
+      if(torchR() > 0){ const px = (p.x - x0)*sc*ds, py = (p.y - y0)*sc*ds, R = torchR()*sc*ds*(1 + 0.04*Math.sin(t*13)), g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
       if(dk < 0.85){ const px = (p.x - x0)*sc*ds, py = (p.y - y0)*sc*ds, R = 60*sc*ds, g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
       c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(darkCv, 0, 0, cv.width, cv.height);
       c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(-x0*sc), dpr*(-y0*sc));
       c.globalCompositeOperation = 'lighter';
-      for(const f of wd.fires){ if(!vis(f.x, f.y, 150)) continue; const R = lightR(f), g = c.createRadialGradient(f.x, f.y - 4, 0, f.x, f.y - 4, R); g.addColorStop(0, `rgba(255,140,50,${0.16*dk})`); g.addColorStop(1, 'rgba(255,140,50,0)'); c.fillStyle = g; c.fillRect(f.x - R, f.y - R, 2*R, 2*R); }
+      for(const f of wd.fires){ if(!(f.fuel > 0) || !vis(f.x, f.y, 150)) continue; const R = lightR(f), g = c.createRadialGradient(f.x, f.y - 4, 0, f.x, f.y - 4, R); g.addColorStop(0, `rgba(255,140,50,${0.16*dk})`); g.addColorStop(1, 'rgba(255,140,50,0)'); c.fillStyle = g; c.fillRect(f.x - R, f.y - R, 2*R, 2*R); }
       c.globalCompositeOperation = 'source-over';
       if(wd.darkT > 1 && !(wd.dead > 0)){ const a = Math.min(1, (wd.darkT - 1)/1.5), ex = p.x + Math.cos(t*0.7)*34, ey = p.y - 20 + Math.sin(t*0.9)*12; /* eyes in the dark */
         c.fillStyle = `rgba(240,230,190,${0.85*a})`; for(const s of [-3.5, 3.5]){ c.beginPath(); c.ellipse(ex + s, ey, 2, 1.1, s*0.06, 0, Math.PI*2); c.fill(); } }
@@ -889,19 +1230,26 @@
   let hudLast = '', dialT = 0;
   const glyph = k => activePad() ? ({act:'B', atk:'X'})[k] : ({act:'E', atk:'J'})[k];
   function wdHud(){
-    const p = wd.p, a = wd.dead > 0 ? null : wdWhatAct();
+    const p = wd.p, a = wd.dead > 0 || wd.build ? null : wdWhatAct();
     let hint = a ? (a.k==='fishing' ? a.text : `<b>${glyph('act')}</b> ${a.text}`) : '';
-    if(!hint && !(wd.dead > 0)){ const n = wd.nodes.find(n=>(n.k==='tree' || n.k==='bone') && !n.gone && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + WD_SW.r); if(n) hint = `<b>${glyph('atk')}</b> ${n.k==='tree' ? 'Chop' : 'Break the bones'}`; }
-    const key = [Math.ceil(p.hp), Math.ceil(p.hunger), Math.floor(wd.t/WD.day), wd.sel, wd.inv.map(s=>s ? s.id + s.n : '').join(','), hint].join('|');
+    if(wd.build && !(wd.dead > 0)){ const pad = !!activePad(), I = ITEMS[wd.build.id];
+      hint = `${I.name} ×${invCount(wd.build.id)} · <b>${pad ? 'A' : 'Space'}</b> place · <b>${pad ? 'X' : 'J'}</b> take back · <b>${pad ? 'LB RB' : '1 to 0'}</b> piece · <b>${pad ? 'B' : 'E'}</b> done`; }
+    if(a && a.k==='need') hint = a.text;
+    if(!hint && !(wd.dead > 0) && !wd.build){ const n = wd.nodes.find(n=>(n.k==='tree' || n.k==='bone' || n.k==='rock') && !n.gone && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + WD_SW.r);
+      if(n) hint = n.k==='tree' ? (toolFor('chop') >= 0 ? `<b>${glyph('atk')}</b> Chop` : 'You need a hatchet to chop') : n.k==='rock' ? (toolFor('mine') >= 0 ? `<b>${glyph('atk')}</b> Mine` : 'You need a pickaxe to mine') : `<b>${glyph('atk')}</b> Break the bones`; }
+    if(!hint && !(wd.dead > 0) && p.torch > 0) hint = 'Torch ' + Math.ceil(p.torch) + ' s';
+    const key = [Math.ceil(p.hp), Math.ceil(p.hunger), Math.floor(wd.t/WD.day), wd.raidDone, wd.sel, wd.inv.map(s=>s ? s.id + s.n + (s.d || '') : '').join(','), hint].join('|');
     if(key!==hudLast){ hudLast = key;
       $('wdHp').innerHTML = Math.max(0, Math.ceil(p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small>`;
       $('wdBelly').innerHTML = Math.ceil(p.hunger) + `<small style="font-size:.5em;color:var(--bone-dim)">/${WD.hunger}</small>`;
       $('wdBellyBox').classList.toggle('low', p.hunger < 6);
-      $('wdDay').innerHTML = `Day <b>${Math.floor(wd.t/WD.day) + 1}</b>`;
-      $('wdBar').innerHTML = wd.inv.map((s, i)=>`<div class="wd-slot${i===wd.sel ? ' sel' : ''}" data-i="${i}">${s ? `<img alt="${ITEMS[s.id].name}" src="${iconSrc(s.id)}"><i>${s.n}</i>` : ''}</div>`).join('');
+      { const n = Math.floor(wd.t/WD.day) + 1; $('wdDay').innerHTML = `Day <b>${n}</b>` + (raidNight(n) && wd.raidDone < n ? ' · <b style="color:#ee5a75">pack night</b>' : ''); }
+      $('wdBar').innerHTML = wd.inv.map((s, i)=>`<div class="wd-slot${i===wd.sel ? ' sel' : ''}" data-i="${i}">${slotHtml(s)}</div>`).join('');
       $('wdHint').innerHTML = hint; }
     dialT -= 16; if(dialT <= 0){ dialT = 250; wdDial(); }
   }
+  function slotHtml(s){ if(!s) return ''; const I = ITEMS[s.id];
+    return `<img alt="${I.name}" src="${iconSrc(s.id)}">` + (I.dur ? `<span class="wd-dur"><u style="width:${Math.round(100*s.d/I.dur)}%"></u></span>` : s.n > 1 ? `<i>${s.n}</i>` : ''); }
   function wdDial(){ /* Don't Starve's clock: gold day, red dusk, blue night, a hand for now */
     const cv = $('wdDial'), s = cv.clientWidth; if(!s) return; const dpr = Math.min(2, window.devicePixelRatio || 1);
     if(cv.width!==Math.round(s*dpr)){ cv.width = cv.height = Math.round(s*dpr); }
@@ -912,28 +1260,63 @@
     c.beginPath(); c.arc(o, o, r*0.42, 0, Math.PI*2); c.fillStyle = '#1d1613'; c.fill(); c.stroke();
     const a = -Math.PI/2 + phase(wd.t)/WD.day*Math.PI*2; c.strokeStyle = '#efe6cf'; c.lineWidth = 2.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(o + Math.cos(a)*r*0.42, o + Math.sin(a)*r*0.42); c.lineTo(o + Math.cos(a)*(r - 1), o + Math.sin(a)*(r - 1)); c.stroke();
   }
-  $('wdBar').addEventListener('pointerdown', e=>{ const el = e.target.closest('.wd-slot'); if(!el || !wd) return; e.stopPropagation(); const i = +el.dataset.i; if(wd.sel===i) wdEat(i); wd.sel = i; hudLast = ''; });
+  $('wdBar').addEventListener('pointerdown', e=>{ const el = e.target.closest('.wd-slot'); if(!el || !wd) return; e.stopPropagation(); const i = +el.dataset.i; if(wd.sel===i) wdUse(i); wd.sel = i; hudLast = ''; });
 
   // ---- the bag panel ----
-  function bagOpen(){ if(!wdLive()) return; wd.paused = true; wd.bag = true; $('wdBag').classList.add('on'); bagRender(); if(activePad()) padSet($('wdBagGrid').children[wd.sel]); beep(500, 0.05, 'triangle', 0.03); }
+  const TABS = ['bag', 'craft', 'cook'];
+  function bagOpen(tab){ if(!wdLive()) return; if(wd.build) buildEnd(); wd.paused = true; wd.bag = true; wd.tab = tab || 'bag'; $('wdBag').classList.add('on'); bagRender(true); beep(500, 0.05, 'triangle', 0.03); }
   function bagClose(){ $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; wd.paused = false; wdIn.resync = true; } hudLast = ''; }
-  function bagRender(){
+  function bagTab(tab){ if(!wd || !wd.bag || wd.tab===tab) return; wd.tab = tab; bagRender(true); beep(560, 0.04, 'triangle', 0.025); }
+  function bagStep(d){ if(!wd || !wd.bag) return; bagTab(TABS[(TABS.indexOf(wd.tab) + d + TABS.length) % TABS.length]); }
+  function bagRender(focus){
+    const tab = wd.tab, list = tab!=='bag';
+    $('wdTabBag').classList.toggle('on', tab==='bag'); $('wdTabCraft').classList.toggle('on', tab==='craft'); $('wdTabCook').classList.toggle('on', tab==='cook');
+    $('wdBagPage').style.display = list ? 'none' : 'contents'; $('wdCraftPage').style.display = list ? 'contents' : 'none';
+    $('wdTabHint').textContent = activePad() ? 'LB and RB switch' : 'Tab closes · C crafts · V cooks';
+    if(list){ craftRender(focus); return; }
     const g = $('wdBagGrid'), had = padEl && g.contains(padEl) ? [...g.children].indexOf(padEl) : -1;
-    g.innerHTML = wd.inv.map((s, i)=>`<button data-i="${i}" class="${i===wd.sel ? 'sel' : ''}">${s ? `<img alt="${ITEMS[s.id].name}" src="${iconSrc(s.id)}"><i>${s.n}</i>` : ''}</button>`).join('');
+    g.innerHTML = wd.inv.map((s, i)=>`<button data-i="${i}" class="${i===wd.sel ? 'sel' : ''}">${slotHtml(s)}</button>`).join('');
     for(const b of g.children) b.onclick = ()=>{ wd.sel = +b.dataset.i; bagRender(); };
-    if(had >= 0) padSet(g.children[had]);
-    const s = wd.inv[wd.sel], I = s && ITEMS[s.id], fire = !!nearFire(WD.fireNear);
-    const info = !s ? 'Empty' : I.name + ' ×' + s.n + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a fire') : '');
+    if(had >= 0) padSet(g.children[had]); else if(focus && activePad()) padSet(g.children[wd.sel]);
+    const s = wd.inv[wd.sel], I = s && ITEMS[s.id], fire = !!nearFire(WD.fireNear, true);
+    const info = !s ? 'Empty' : I.name + (I.dur ? ` (${s.d} of ${I.dur} uses left)\n${I.desc}` : ' ×' + s.n) + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a lit fire') : '') + (I.light ? `\nLight it to see for ${WD.torch} seconds` : '') + (I.build ? '\n' + I.desc : '');
     $('wdBagInfo').textContent = info;
     $('wdEat').disabled = !(I && I.food); $('wdCook').disabled = !(I && I.cook && fire); $('wdDrop').disabled = !s;
-    $('wdBuild').disabled = !(invCount('wood') >= 2 && invCount('reed') >= 2);
-    if(padEl && padEl.disabled) padSet($('wdBagClose'));
+    const alt = I && (I.light || I.build); $('wdLight').textContent = I && I.build ? 'Place' : 'Light';
+    $('wdLight').style.display = alt ? '' : 'none'; $('wdEat').style.display = alt ? 'none' : '';
+    if(padEl && (padEl.disabled || padEl.offsetParent===null)) padSet($('wdBagClose'));
   }
+  const curList = () => wd.tab==='cook' ? COOK : RECIPES;
+  const GROUPS = {hand:'By hand', bench:'At a workbench', def:'At a defense bench', fire:'At a lit fire'};
+  function craftRender(focus){
+    const L = $('wdCraftList'), list = curList(), btns = () => [...L.querySelectorAll('button')];
+    const had = padEl && L.contains(padEl) ? btns().indexOf(padEl) : -1;
+    let html = '', last = null;
+    list.forEach((r, i)=>{ if(r.at!==last){ last = r.at; const ok = stationOk(r); html += `<div class="wd-grp">${GROUPS[r.at]}${r.at==='hand' ? '' : ok ? ' · <span style="color:#e0b54a">here</span>' : ' · none near'}</div>`; }
+      const cost = Object.keys(r.cost).map(k=>{ const ok = invCount(k) >= r.cost[k], t = r.cost[k] + ' ' + (r.cost[k]===1 && ITEMS[k].one ? ITEMS[k].one : ITEMS[k].name.toLowerCase()); return ok ? t : `<b>${t}</b>`; }).join(', ');
+      const I = ITEMS[r.id], gain = I && I.food ? ` · <em>food ${I.food}${I.heal ? ', heals ' + I.heal : ''}</em>` : '';
+      html += `<button data-i="${i}"${canCraft(r) ? '' : ' disabled'}><img alt="" src="${iconSrc(r.id)}"><span>${recName(r)}${r.n ? ' ×' + r.n : ''}<small>${cost}${gain}</small></span></button>`; });
+    L.innerHTML = html;
+    for(const b of btns()){ const r = list[+b.dataset.i];
+      b.onclick = ()=>{ wd.paused = false; const ok = wdCraft(r); if(ok && r.place){ bagClose(); return; } wd.paused = true; wd.csel = +b.dataset.i; craftRender(); };
+      b.onpointerenter = ()=>craftInfo(r); }
+    const all = btns(), live = all.filter(b=>!b.disabled);
+    if(had >= 0 && all[had] && !all[had].disabled) padSet(all[had]);
+    else if((focus || had >= 0) && activePad()) padSet(live[0] || $('wdBagClose'));
+    const cur = padEl && L.contains(padEl) ? list[+padEl.dataset.i] : list[wd.csel] || list[0];
+    craftInfo(cur);
+    if(!live.length && wd.tab==='cook' && !nearFire(WD.fireNear, true)) $('wdCraftInfo').textContent = 'Stand by a lit fire to cook.';
+    if(padEl && (padEl.disabled || padEl.offsetParent===null)) padSet(live[0] || $('wdBagClose'));
+  }
+  function craftInfo(r){ if(!r) return; const I = ITEMS[r.id] || {}; $('wdCraftInfo').textContent = recName(r) + ': ' + (r.desc || I.desc || (I.light ? `Light it from the bag to see for ${WD.torch} seconds.` : I.food ? `Food ${I.food}` + (I.heal ? `, heals ${I.heal}.` : '.') : '')); }
+  $('wdTabBag').onclick = ()=>bagTab('bag');
+  $('wdTabCraft').onclick = ()=>bagTab('craft');
+  $('wdTabCook').onclick = ()=>bagTab('cook');
   const bagLive = fn => ()=>{ if(!wd) return; wd.paused = false; const r = fn(); wd.paused = true; bagRender(); return r; };
   $('wdEat').onclick = bagLive(()=>wdEat(wd.sel));
   $('wdCook').onclick = bagLive(()=>wdCook(wd.sel));
-  $('wdDrop').onclick = bagLive(()=>{ const s = wd.inv[wd.sel]; if(!s) return; wd.inv[wd.sel] = null; dropItem(s.id, s.n, wd.p.x, wd.p.y, wd.p, true); thud(0.08, 0.06, 900); });
-  $('wdBuild').onclick = ()=>{ if(!wd) return; wd.paused = false; if(wdBuildFire()) bagClose(); else { wd.paused = true; bagRender(); } };
+  $('wdDrop').onclick = bagLive(()=>{ const s = wd.inv[wd.sel]; if(!s) return; wd.inv[wd.sel] = null; dropItem(s.id, s.n, wd.p.x, wd.p.y, wd.p, true, s.d); thud(0.08, 0.06, 900); });
+  $('wdLight').onclick = ()=>{ if(!wd) return; const s = wd.inv[wd.sel]; if(s && ITEMS[s.id].build){ bagClose(); buildStart(s.id); return; } bagLive(()=>wdLightTorch(wd.sel))(); };
   $('wdBagClose').onclick = bagClose;
 
   // ---- pause, menu, leaving ----
@@ -982,21 +1365,26 @@
     'Attack and chop: X, J or left click',
     'Roll: A or Space',
     'Pick up, fish, feed the fire: B, E or F',
-    'Bag (eat, cook, drop, build): Y, Tab or I',
-    'Choose a slot: LB and RB, or 1 to 0. Eat it: RT or Q',
+    'Bag: Y, Tab or I. Craft and Cook: LB and RB in the bag, or C and V',
+    'Choose a slot: LB and RB, or 1 to 0. Use it (eat, light, build): RT or Q',
+    'Building: A or Space places, X or J takes back, LB and RB change piece, B or E done',
     'Pause: Start or Esc',
     '',
     'Your belly empties over two days. Empty, it costs you health.',
-    'Chop trees for wood. Cut reeds by the rivers. Pick berries and herbs. Fish from the bank.',
-    'Night is short and deadly: without a fire near you, something in the dark bites.',
-    'A campfire takes 2 wood and 2 reeds. Feed it wood to keep it burning. Cook raw food on it: raw meat hurts, cooked meat heals.',
+    'Start with your hands: pick twigs from saplings and flint off the ground, and craft a hatchet. Only a hatchet fells a tree.',
+    'Wood builds a workbench. Near it you can craft a pickaxe for boulders, a fishing rod, and a fire pit. Tools wear out.',
+    'Cut reeds by the rivers. Pick berries and herbs. Fish from the bank with a rod.',
+    'Night is short and deadly: without light near you, something in the dark bites. A torch lights your way for a while.',
+    'A campfire takes 2 wood and 2 reeds and burns away. Feed it wood. Cook on it: raw meat hurts, cooked food heals, and dishes like stew fill you up.',
+    'Saw planks at the workbench and build walls, floors and stairs. Stairs get you over your own wall; Jackals cannot climb them.',
+    'Every third night a pack comes for you. A defense bench makes spike traps, spiked barricades and sentries.',
     'When you die, all you carry drops where you fell. You wake at your last campfire. Go back for your things.',
   ].join('\n');
   function wdGo(S){
     wdBegin(S); wd.menu = false; wd.paused = false; wdIn.resync = true;
     $('wdMeta').classList.remove('on'); $('wdOverlay').classList.remove('uf-menu'); padSet(null); hudLast = '';
     $('wdPause').textContent = 'Pause'; wdMusicStart();
-    wdBanner('Day ' + (Math.floor(wd.t/WD.day) + 1), S.p ? 'Welcome back' : 'Find food. Build a fire before night.', 2600);
+    wdBanner('Day ' + (Math.floor(wd.t/WD.day) + 1), S.p ? 'Welcome back' : 'Twigs and flint make a hatchet. Build a fire before night.', 2600);
   }
 
   // ---- input ----
@@ -1021,15 +1409,19 @@
   window.addEventListener('keydown', e=>{
     wdIn.keys[e.code] = true;
     if(!wd || wd.menu) return;
-    if(wd.bag){ if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } return; }
+    if(wd.bag){ if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } else if(e.code==='KeyC') bagTab(wd.tab==='craft' ? 'bag' : 'craft'); else if(e.code==='KeyV') bagTab(wd.tab==='cook' ? 'bag' : 'cook'); else if(e.code==='KeyQ' || e.code==='KeyE') bagTab('bag'); return; }
     if(!wdLive()) return; initAudio();
     if(e.code==='KeyJ') wdAttack(); else if(e.code==='Space'){ e.preventDefault(); wdRoll(); }
-    else if(e.code==='KeyE' || e.code==='KeyF') wdAct(); else if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagOpen(); }
-    else if(e.code==='KeyQ') wdEat(wd.sel); else if(/^Digit\d$/.test(e.code)){ wd.sel = (+e.code.slice(5) + 9) % 10; hudLast = ''; }
+    else if(e.code==='KeyE' || e.code==='KeyF') wdAct(); else if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagOpen(); } else if(e.code==='KeyC') bagOpen('craft'); else if(e.code==='KeyV') bagOpen('cook');
+    else if(e.code==='KeyQ') wdUse(wd.sel); else if(/^Digit\d$/.test(e.code)){ wd.sel = (+e.code.slice(5) + 9) % 10; hudLast = ''; const s = wd.inv[wd.sel]; if(wd.build && s && ITEMS[s.id].build) wd.build.id = s.id; }
   });
   window.addEventListener('keyup', e=>{ wdIn.keys[e.code] = false; });
   window.addEventListener('blur', ()=>{ wdIn.keys = {}; });
-  $('wdCanvas').addEventListener('pointerdown', e=>{ if(e.pointerType!=='mouse' || e.button!==0) return; initAudio(); wdAttack(); });
+  const mouseWorld = e => { const v = wd && wd.view, r = $('wdCanvas').getBoundingClientRect(); return v ? {x:v.x0 + (e.clientX - r.left)/v.sc, y:v.y0 + (e.clientY - r.top)/v.sc, t:performance.now()} : null; };
+  $('wdCanvas').addEventListener('pointermove', e=>{ if(e.pointerType==='mouse' && wd && wd.build) wd.mouse = mouseWorld(e); });
+  $('wdCanvas').addEventListener('pointerdown', e=>{ if(e.pointerType!=='mouse') return; initAudio();
+    if(wd && wd.build){ wd.mouse = mouseWorld(e); if(e.button===0) buildPlace(); else if(e.button===2) buildTake(); return; }
+    if(e.button===0) wdAttack(); });
   $('wdCanvas').addEventListener('contextmenu', e=>e.preventDefault());
   document.addEventListener('visibilitychange', ()=>{ if(document.hidden && wd && !wd.menu){ if(wdLive()) wdTogglePause(); else wdSave(); } });
   window.addEventListener('pagehide', ()=>{ if(wd && !wd.menu) wdSave(); });
@@ -1042,7 +1434,9 @@
       if(g && g.start && !wd.bag && !(wd.dead > 0)) wdTogglePause();
       if(!wd.paused){
         const I = wdRead(g); wd.lastI = I;
-        if(g && wdLive()){ if(g.roll) wdRoll(); if(g.attack) wdAttack(); if(g.act) wdAct(); if(g.lb) wdSel(-1); if(g.rb) wdSel(1); if(g.use) wdEat(wd.sel); if(g.bag) bagOpen(); }
+        if(g && wdLive()){ if(g.roll) wdRoll(); if(g.attack) wdAttack(); if(g.act) wdAct();
+          if(wd.build){ if(g.lb) buildCycle(-1); if(g.rb) buildCycle(1); } else { if(g.lb) wdSel(-1); if(g.rb) wdSel(1); if(g.use) wdUse(wd.sel); }
+          if(g.bag) bagOpen(); }
         if(!wd.paused){ wdStep(dt, I); for(const e of wd.fx) e.t -= dt; wd.fx = wd.fx.filter(e=>e.t > 0); wdSound(dt); }
       }
       wdDraw(wd.paused ? 0 : dt); wdHud();
@@ -1099,6 +1493,7 @@
     row.sort((a,b)=>{ const d = off(a) - off(b); return Math.abs(d) > 12 ? d : (box(a).left - box(b).left) || (box(a).top - box(b).top); });
     padSet(row[0]); beep(660, 0.03, 'triangle', 0.02);
     if(wd && wd.bag && row[0].parentNode===$('wdBagGrid')){ wd.sel = +row[0].dataset.i; bagRender(); }
+    if(wd && wd.bag && row[0].parentNode===$('wdCraftList')){ wd.csel = +row[0].dataset.i; craftInfo(curList()[wd.csel]); }
   }
   function padPress(){
     if(!padEl || !padCands().includes(padEl)){ padMove(0, 1); return; }
@@ -1108,6 +1503,7 @@
   function goBack(){
     if($('wdMeta').classList.contains('on')){ if(menuMode==='help') wdMenu(); else wdLeave(); return true; }
     if(wd && wd.bag){ bagClose(); return true; }
+    if(wd && wd.build && !wd.paused){ buildEnd(); return true; }
     if(wd && !(wd.dead > 0)) wdTogglePause();
     return true;
   }
@@ -1117,7 +1513,7 @@
   for(const ev of ['keydown','pointerdown']) window.addEventListener(ev, padWakeAudio, true);
   function padPoll(){
     if(wdLive()){ /* the world reads the pad itself while you play; menus take over when a panel is up */
-      const g0 = activePad(); if(g0){ for(const k of [0,1,3,8,9]) padHeld[k] = !!(padBtn(g0,k) && padBtn(g0,k).pressed); padHeld.dir = true; }
+      const g0 = activePad(); if(g0){ for(const k of [0,1,3,4,5,8,9]) padHeld[k] = !!(padBtn(g0,k) && padBtn(g0,k).pressed); padHeld.dir = true; }
       requestAnimationFrame(padPoll); return; }
     const g = activePad();
     if(g){ if(g.buttons.some(x=>x && x.pressed)) padWakeAudio(); const b = k => !!(padBtn(g,k) && padBtn(g,k).pressed), ax = g.axes[0]||0, ay = g.axes[1]||0;
@@ -1125,6 +1521,7 @@
       if(dir){ if(!padHeld.dir || now >= padNext){ padNext = now + (padHeld.dir ? 130 : 380); padAny = true; padMove(dir[0], dir[1]); } padHeld.dir = true; } else padHeld.dir = false;
       const edge = (k, fn)=>{ if(b(k) && !padHeld[k]){ padAny = true; fn(); } padHeld[k] = b(k); };
       edge(0, ()=>{ initAudio(); padPress(); }); edge(1, ()=>goBack()); edge(9, ()=>goBack()); edge(8, ()=>goBack()); edge(3, ()=>{ if(wd && wd.bag) bagClose(); });
+      edge(4, ()=>bagStep(-1)); edge(5, ()=>bagStep(1));
     }
     if(padEl && !document.contains(padEl)) padSet(null);
     requestAnimationFrame(padPoll);
@@ -1133,7 +1530,7 @@
   window.addEventListener('gamepadconnected', ()=>{ if(!padAny) padMove(0, 1); });
   requestAnimationFrame(padPoll);
   try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
-  if(/[?&]wdtest\b/.test(location.search)) window.__wilds = {get wd(){ return wd; }, WD, wdSave, wdLoadSave, wdDie, wdBuildFire, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP};
+  if(/[?&]wdtest\b/.test(location.search)) window.__wilds = {get wd(){ return wd; }, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP};
   wdMenu();
   wdLast = performance.now(); wdRaf = requestAnimationFrame(wdLoop);
 })();
