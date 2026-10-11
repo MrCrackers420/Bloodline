@@ -1229,6 +1229,7 @@
       <button id="tutorialTest" style="font-size:.65rem; opacity:.6;">Guided fight (test)</button>
       <button id="holdfastTest" style="font-size:.65rem; opacity:.6;">Holdfast (test)</button>
       <button id="ufTest" style="font-size:.65rem; opacity:.6;">Catacombs (test)</button>
+      <button id="wildsTest" style="font-size:.65rem; opacity:.6;">The Wilds (test)</button>
     </div>
     <div class="tools-tab-content" id="cheats-tab">
       <button id="skipChallenger" style="font-size:.65rem; opacity:.6;">Skip to Next Challenger (test)</button>
@@ -1432,6 +1433,7 @@
     <button id="titleSkirmish" class="sheet-btn">Skirmish<small>A wandering army. Earns Mortar, never moves the story.</small></button>
     <button id="titleHoldfast" class="sheet-btn" style="display:none">Holdfast<small>Hold the Keep against wave after wave.</small></button>
     <button id="titleUnderfield" class="sheet-btn" style="display:none">The Catacombs<small>Three floors down, and something at the bottom of each.</small></button>
+    <button id="titleWilds" class="sheet-btn" style="display:none">The Wilds<small>Live off the land. Keep a fire. Night always comes.</small></button>
     <div class="sheet-head">Armies</div>
     <button id="titleFriend" class="sheet-btn">Army codes<small>Send your army to a friend, or face the army they sent you.</small></button>
     <button id="titleConsole" class="sheet-btn">Versus<small>Two controllers, one screen. Each player takes a side.</small></button>
@@ -8876,7 +8878,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function reachableChallengers(){ return CHALLENGERS.filter(c=>c.id <= Math.min(unlockedTier, CHALLENGERS.length)); }
   function renderTitle(){
     updateChangelogBadge();
-    { const tw = document.getElementById('titleWander'); if(tw) tw.style.display = alchemyOpen() ? '' : 'none'; for(const id of ['titleHoldfast','titleUnderfield']){ const hb = document.getElementById(id); if(hb) hb.style.display = unlockedTier>=HOLDFAST_TIER ? '' : 'none'; } } // Skirmish and Alchemy, after Veyra
+    { const tw = document.getElementById('titleWander'); if(tw) tw.style.display = alchemyOpen() ? '' : 'none'; for(const id of ['titleHoldfast','titleUnderfield','titleWilds']){ const hb = document.getElementById(id); if(hb) hb.style.display = unlockedTier>=HOLDFAST_TIER ? '' : 'none'; } } // Skirmish and Alchemy, after Veyra
     const live = matchStarted && !state.over, nx = storyNext();
     document.getElementById('titleNext').textContent = live ? 'Return to the match' : `Challenger ${nx.id}: ${nx.name}`;
     document.getElementById('titleRematch').style.display = (!live && rematchable().length) ? '' : 'none'; // once a challenger has fallen
@@ -9229,6 +9231,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     {since:2, kind:'Feature', title:'The Catacombs, and the Brood Pit', revealAt:11,
      hint:"Something has opened up under the road, and some of what lives down there is worth bringing home.",
      detail:"The Catacombs is open from Battle: a three-floor dungeon with a guardian at the bottom of each floor. Larvae can be found down there. Escape with one and it comes home to the Brood Pit, a new camp building. Feed it to grow it: past level 10 it is a card of its own, and every 25 levels it learns something new. Take a grown one down with you, and if it falls it only gets knocked out. Parasites need company, and not every kind gets along."},
+    {since:2, kind:'Feature', title:'The Wilds', revealAt:11,
+     hint:"Past the last camp there is open country, and nobody feeds you out there.",
+     detail:"The Wilds is a survival mode, open from Battle. Chop trees, cut reeds, pick berries and herbs, fish from the bank and hunt Jackals. Your belly empties over two days. Night is short, and without a fire near you something in the dark bites. Build a campfire from 2 wood and 2 reeds, feed it wood, and cook on it. When you die, everything you carry drops where you fell, and you wake at your last campfire. Your world is saved and waits for you."},
   ];
   const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
   function changelogEntries(){ return CHANGELOG.filter(e=>e.since > CHANGELOG_AFTER); }
@@ -11929,6 +11934,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   document.getElementById('ufTest').onclick = ufGo;
   document.getElementById('titleUnderfield').onclick = ufGo;
+  function wildsGo(){ /* the Wilds: its own page in this tab, like the Catacombs */
+    try{ tickPit(true); sessionStorage.setItem('bloodline_home', location.href.split('#')[0]); }catch(e){}
+    location.replace('wilds.html');
+  }
+  document.getElementById('wildsTest').onclick = wildsGo;
+  document.getElementById('titleWilds').onclick = wildsGo;
   // the saves changed in another tab of this game: take them, so this page never writes back an older copy
   window.addEventListener('storage', e=>{ try{
     if(e.key==='bloodline_pit') pitState = pitClean(JSON.parse(e.newValue||'null'));
@@ -12579,7 +12590,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function netLost(){ if(!net) return; const was = net.dc && net.dc.readyState!=='connecting'; netLeave(); if(was){ netScreen(`<h2>Nearby</h2><div class="help-sec">The other device left, or the Wi-Fi dropped.</div><button id="netBack">Back</button>`); } }
   document.getElementById('titleNet').onclick = ()=>{ initAudio(); netMenu(); };
   BACK_BUTTONS.netOverlay = 'netBack';
-  try{ if(sessionStorage.getItem('bloodline_from')==='catacombs'){ sessionStorage.removeItem('bloodline_from'); const t = document.getElementById('titleOverlay'); t.classList.remove('gate'); initAudio(); setTitleMusic(true); requestAnimationFrame(fitPortraits); } }catch(e){} // back from the Catacombs: straight to the menu
+  try{ if(sessionStorage.getItem('bloodline_from')){ /* back from the Catacombs or the Wilds */ sessionStorage.removeItem('bloodline_from'); const t = document.getElementById('titleOverlay'); t.classList.remove('gate'); initAudio(); setTitleMusic(true); requestAnimationFrame(fitPortraits); } }catch(e){} // back from the Catacombs: straight to the menu
   { /* page transitions */
     const PAGES = ['pitOverlay','titleOverlay','introOverlay','pauseOverlay','soundOverlay','creditsOverlay','helpOverlay','cardsOverlay','changelogOverlay','battleOverlay','moreOverlay','rematchOverlay',
       'friendOverlay','tavernOverlay','boilerOverlay','labOverlay','workshopOverlay','baseOverlay','kitchenOverlay','campOverlay','alchemyOverlay'];

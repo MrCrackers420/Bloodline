@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="color-scheme" content="only dark"> <!-- the game is drawn dark by itself: browsers must not darken, lighten or invert it on their own -->
+<title>Bloodline: The Wilds</title>
+<style>
+  :root{
+    color-scheme: only dark;
+    --bg:#15100f; --bg2:#1d1613; --field:#241a17;
+    --crimson:#9c2a44; --crimson-lt:#c73a5c;
+    --teal:#2e5e5b; --teal-lt:#3f8580;
+    --bone:#d9c9a3; --bone-dim:#8f8470;
+    --line:#3a2c27; --ok:#7fae6b;
+  }
+  *{box-sizing:border-box;}
+  *{touch-action:pan-x pan-y;}
+  html,body{overflow:hidden; overscroll-behavior:none;}
+  body{-webkit-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent;}
+  input,textarea{-webkit-user-select:text; user-select:text;}
+  html,body{height:100%;}
+  @supports (height:100dvh){
+    body{height:100dvh;}
+  }
+  body{
+    margin:0; background:var(--bg); color:var(--bone);
+    font-family:"Iowan Old Style","Palatino Linotype",Georgia,serif;
+    padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  #wdOverlay{ z-index:62; background:#0a0706; padding:0 !important; gap:0; justify-content:flex-start; align-items:stretch; overflow:hidden; touch-action:none; }
+  .uf-stage{ position:absolute; inset:0; }
+  .uf-hud{ position:absolute; left:0; right:0; top:0; pointer-events:none; z-index:2; display:flex; justify-content:space-between; align-items:flex-start;
+    padding:max(3vmin, env(safe-area-inset-top,0px)) max(4vmin, env(safe-area-inset-right,0px)) 0 max(4vmin, env(safe-area-inset-left,0px)); font-size:clamp(14px, 2.6vmin, 30px); color:var(--bone); }
+  .uf-stats{ display:flex; flex-direction:column; gap:.25em; text-shadow:0 0 6px #000, 0 0 3px #000; background:rgba(10,7,6,.62); padding:.35em .6em .5em; border-radius:6px; }
+  .uf-stats span{ font-size:.7em; letter-spacing:.12em; color:var(--bone-dim); }
+  .uf-hp b{ color:#ee5a75; font-size:1.6em; }
+  .wd-belly b{ color:#e0b54a; font-size:1.25em; }
+  .wd-belly.low b{ color:#ff7a3c; animation:wd-blink 1s steps(2) infinite; }
+  @keyframes wd-blink{ 50%{ opacity:.45; } }
+  .wd-clock{ display:flex; flex-direction:column; align-items:center; gap:.25em; }
+  #wdDial{ width:3.6em; height:3.6em; }
+  .uf-roomlab{ font-size:.8em; text-shadow:0 0 6px #000; background:rgba(10,7,6,.62); padding:.1em .45em; border-radius:4px; }
+  .uf-roomlab b{ color:#e0b54a; }
+  .wd-bar{ position:absolute; left:50%; transform:translateX(-50%); bottom:max(2.5vmin, env(safe-area-inset-bottom,0px)); z-index:2; display:flex; gap:.25em; font-size:clamp(12px, 2.2vmin, 24px); }
+  .wd-slot{ position:relative; width:min(2.6em, 8.4vw); height:min(2.6em, 8.4vw); border:2px solid #3a2c27; border-radius:5px; background:rgba(16,11,10,.85); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+  .wd-slot img{ width:80%; height:80%; image-rendering:auto; pointer-events:none; }
+  .wd-slot i{ position:absolute; right:.15em; bottom:0; font-style:normal; font-size:.62em; color:var(--bone); text-shadow:0 0 3px #000, 0 0 2px #000; }
+  .wd-slot.sel{ border-color:#e0b54a; box-shadow:0 0 6px rgba(224,181,74,.55); }
+  .wd-hint{ position:absolute; left:50%; transform:translateX(-50%); bottom:calc(max(2.5vmin, env(safe-area-inset-bottom,0px)) + min(3.4em, 11vw)); z-index:2; pointer-events:none; font-size:clamp(12px, 2.1vmin, 22px); color:var(--bone); text-shadow:0 0 6px #000, 0 0 3px #000; background:rgba(10,7,6,.55); padding:.15em .6em; border-radius:4px; white-space:nowrap; }
+  .wd-hint:empty{ display:none; }
+  .wd-hint b{ color:#e0b54a; }
+  .overlay button.uf-pause{ position:absolute; right:max(4vmin, env(safe-area-inset-right,0px)); bottom:max(3vmin, env(safe-area-inset-bottom,0px)); z-index:2; font-size:clamp(12px, 2vmin, 20px); opacity:.7; }
+  @media (max-aspect-ratio:1/1){ .overlay button.uf-pause{ bottom:calc(max(2.5vmin, env(safe-area-inset-bottom,0px)) + min(3.4em, 11vw) + 2.4em); } } /* tall screens: above the slot bar */
+  #wdCanvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none; }
+  .uf-panel{ position:absolute; inset:0; display:none; align-items:center; justify-content:center; flex-direction:column; gap:.6em; background:rgba(10,7,6,.9); z-index:3; text-align:center; padding:5vmin; font-size:clamp(14px, 2.3vmin, 26px); line-height:1.45; }
+  .overlay .uf-panel button{ font-size:1em; padding:.45em 1.4em; min-width:8em; }
+  .overlay .uf-panel button small{ display:block; font-size:.7em; color:var(--bone-dim); }
+  .overlay .uf-panel button:disabled{ opacity:.4; }
+  #wdOverlay .pad-focus{ outline-width:3px !important; outline-offset:3px; }
+  .uf-panel.on{ display:flex; }
+  #wdBag{ background:rgba(10,7,6,.82); }
+  .wd-grid{ display:grid; grid-template-columns:repeat(5, auto); gap:.35em; }
+  .overlay .wd-grid button{ min-width:0; width:3.4em; height:3.4em; padding:0; position:relative; display:flex; align-items:center; justify-content:center; }
+  .overlay .wd-grid button img{ width:75%; height:75%; pointer-events:none; }
+  .overlay .wd-grid button i{ position:absolute; right:.2em; bottom:.05em; font-style:normal; font-size:.65em; }
+  .overlay .wd-grid button.sel{ border-color:#e0b54a; }
+  #wdBagInfo{ min-height:2.9em; font-size:.85em; color:#c9b994; white-space:pre-line; }
+  .wd-acts{ display:flex; gap:.5em; flex-wrap:wrap; justify-content:center; }
+  .overlay .wd-acts button{ min-width:6em; }
+  .uf-meta{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:.55em; background:rgba(10,7,6,.95); z-index:4; overflow-y:auto; padding:5vmin 4vmin; font-size:clamp(14px, 2.2vmin, 24px); text-align:center; color:var(--bone); }
+  .uf-meta.on{ display:flex; }
+  #wdOverlay.uf-menu .uf-hud, #wdOverlay.uf-menu .uf-pause, #wdOverlay.uf-menu .wd-bar, #wdOverlay.uf-menu .wd-hint{ display:none; }
+  .uf-meta h2{ margin:0; letter-spacing:.2em; font-size:1.5em; color:var(--crimson-lt); }
+  .uf-meta .uf-sub{ color:var(--bone-dim); font-size:.85em; }
+  .uf-row{ display:flex; flex-wrap:wrap; gap:.45em; justify-content:center; max-width:min(46em, 94vw); }
+  .overlay .uf-meta button{ font-size:.95em; padding:.45em 1.2em; min-width:11em; }
+  .overlay .uf-meta button small{ display:block; font-size:.72em; color:var(--bone-dim); margin-top:.15em; font-weight:normal; }
+  .uf-meta .uf-help{ white-space:pre-line; max-width:34em; text-align:left; line-height:1.45; font-size:.9em; }
+  #wdMsg{ max-width:min(34em,90vw); white-space:pre-line; }
+  .pad-focus{ outline:2px solid #e0b54a !important; outline-offset:2px; box-shadow:0 0 8px rgba(224,181,74,.6) !important; }
+  .overlay{
+    position:fixed; inset:0; background:rgba(10,7,6,.9); z-index:50;
+    display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:1rem; color:var(--bone);
+    overflow-y:auto; padding:1rem 0;
+  }
+  .overlay.show{display:flex;}
+  .overlay h2{font-size:1.7rem; margin:0;}
+  .overlay{ --bg2:#1d1613; --bone:#d9c9a3; --bone-dim:#8f8470; --line:#3a2c27; color:var(--bone); }
+  .overlay button{
+    background:var(--bg2); border:1px solid var(--line); color:var(--bone);
+    border-radius:4px; padding:.5rem 1.1rem; cursor:pointer; font-size:.85rem; font-family:inherit;
+  }
+  .overlay{ padding-top:calc(1rem + env(safe-area-inset-top,0px)); padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px)); padding-left:env(safe-area-inset-left,0px); padding-right:env(safe-area-inset-right,0px); }
+</style>
+</head>
+<body>
+<div class="overlay show uf-menu" id="wdOverlay">
+  <div class="uf-stage"><canvas id="wdCanvas"></canvas>
+    <div class="uf-panel" id="wdPanel"><div id="wdMsg"></div><button id="wdResume">Resume</button><button id="wdLeave">Save and leave</button></div>
+    <div class="uf-panel" id="wdBag">
+      <div style="letter-spacing:.15em; color:var(--bone-dim); font-size:.8em">BAG</div>
+      <div class="wd-grid" id="wdBagGrid"></div>
+      <div id="wdBagInfo"></div>
+      <div class="wd-acts"><button id="wdEat">Eat</button><button id="wdCook">Cook</button><button id="wdDrop">Drop</button></div>
+      <button id="wdBuild">Build a campfire<small>2 wood, 2 reeds</small></button>
+      <button id="wdBagClose">Close</button>
+    </div>
+    <div class="uf-meta on" id="wdMeta"></div>
+  </div>
+  <div class="uf-hud">
+    <div class="uf-stats"><div class="uf-hp"><span>HP</span> <b id="wdHp">29</b></div><div class="wd-belly" id="wdBellyBox"><span>BELLY</span> <b id="wdBelly">30</b></div></div>
+    <div class="wd-clock"><canvas id="wdDial"></canvas><div class="uf-roomlab" id="wdDay"></div></div>
+  </div>
+  <div class="wd-hint" id="wdHint"></div>
+  <div class="wd-bar" id="wdBar"></div>
+  <button id="wdPause" class="uf-pause">Pause</button>
+</div>
+
+<script>
+(function(){
+  let audioCtx = null;
+  const SOUND_DEFAULTS = {v:2, master:0.5, sfx:0.5, env:0.5, music:0.5, danger:0.5, haptics:true, dmgNums:true};
+  const SOUND_BASE = {master:0.8, sfx:1, env:0.55, music:1, danger:1};
+  let sound = Object.assign({}, SOUND_DEFAULTS);
+  try{
+    const sv = JSON.parse(localStorage.getItem('bloodline_sound')||'null');
+    if(sv && sv.v===2) Object.assign(sound, sv);
+    else if(sv && typeof sv.haptics==='boolean') sound.haptics = sv.haptics; // older saves used another scale: keep only the vibration choice
+  }catch(e){}
+  const soundGain = k => SOUND_BASE[k] * sound[k] * 2;
+  let busMaster = null, busSfx = null;
+  function applySound(){
+    if(!audioCtx || !busMaster) return;
+    const t = audioCtx.currentTime;
+    busMaster.gain.setTargetAtTime(soundGain('master'), t, 0.05);
+    busSfx.gain.setTargetAtTime(soundGain('sfx'), t, 0.05);
+    if(amb){ amb.envBus.gain.setTargetAtTime(soundGain('env'), t, 0.05); amb.musicBus.gain.setTargetAtTime(soundGain('music'), t, 0.05); amb.dangerBus.gain.setTargetAtTime(soundGain('danger'), t, 0.05); }
+    if(tm) tm.vol.gain.setTargetAtTime(soundGain('music'), t, 0.05);
+  }
+  function initAudio(){
+    try{
+      if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+      else if(audioCtx.state==='suspended') audioCtx.resume();
+      if(!busMaster){
+        // a limiter at the very end, so doubled sliders in a big fight squash peaks instead of crackling
+        const lim = audioCtx.createDynamicsCompressor();
+        lim.threshold.value = -6; lim.knee.value = 4; lim.ratio.value = 12; lim.attack.value = 0.003; lim.release.value = 0.15;
+        lim.connect(audioCtx.destination);
+        busMaster = audioCtx.createGain(); busMaster.connect(lim);
+        busSfx = audioCtx.createGain(); busSfx.connect(busMaster);
+        applySound();
+      }
+    }catch(e){}
+  }
+  let amb = null;
+  const midiHz = m => 440*Math.pow(2, (m-69)/12);
+  function grPluck(f, at, dest){
+    const ctx = audioCtx, o = ctx.createOscillator(), lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(f, at);
+    lp.type = 'lowpass'; lp.frequency.value = 2600;
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.09, at+0.006); g.gain.exponentialRampToValueAtTime(0.0001, at+0.26);
+    o.connect(lp); lp.connect(g); g.connect(dest || amb.musicBus); o.start(at); o.stop(at+0.3);
+  }
+  function grBass(f, at, dest){
+    const ctx = audioCtx, g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.16, at+0.01); g.gain.exponentialRampToValueAtTime(0.0001, at+0.45);
+    for(const [mul, type] of [[1,'sine'],[2,'triangle']]){ const o = ctx.createOscillator(); o.type = type; o.frequency.setValueAtTime(f*mul, at); o.connect(g); o.start(at); o.stop(at+0.5); }
+    g.connect(dest || amb.musicBus);
+  }
+  function grPad(at, dur, dest, notes){
+    const ctx = audioCtx, lp = ctx.createBiquadFilter(), g = ctx.createGain();
+    lp.type = 'lowpass'; lp.frequency.value = 650; lp.Q.value = 3;
+    g.gain.setValueAtTime(0.0001, at); g.gain.exponentialRampToValueAtTime(0.035, at+1.6); g.gain.setValueAtTime(0.035, at+dur-1.2); g.gain.exponentialRampToValueAtTime(0.0001, at+dur+0.4);
+    for(const [f, det] of (notes || [[110, -6], [164.8, 5], [116.5, 0]])){ const o = ctx.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; o.detune.value = det; o.connect(lp); o.start(at); o.stop(at+dur+0.5); } // A and E, with a B-flat rubbing against the A
+    lp.connect(g); g.connect(dest || amb.musicBus);
+  }
+  let tm = null;
+  function beep(freq, dur, type, vol, delay, dest){
+    if(!audioCtx) return;
+    try{
+      const t0 = audioCtx.currentTime + (delay||0);
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type||'sine';
+      osc.frequency.setValueAtTime(freq, t0);
+      gain.gain.setValueAtTime(vol||0.12, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+      osc.connect(gain); gain.connect(dest || busSfx || audioCtx.destination);
+      osc.start(t0); osc.stop(t0+dur);
+    }catch(e){}
+  }
+  let thudNoise = null;
+  const COMBAT_VOICES = 8;
+  let voiceWin = 0, voiceN = 0;
+  function voiceOk(){ const t = performance.now(); if(t - voiceWin > 100){ voiceWin = t; voiceN = 0; } return ++voiceN <= COMBAT_VOICES; }
+  function thud(dur, vol, filterFreq, delay, dest){
+    if(!audioCtx) return;
+    try{
+      const t0 = audioCtx.currentTime + (delay||0);
+      if(!thudNoise){ // one second of noise made once and reused at random offsets, instead of a fresh buffer every hit
+        const sr = audioCtx.sampleRate; thudNoise = audioCtx.createBuffer(1, sr*2, sr);
+        const data = thudNoise.getChannelData(0); for(let i=0;i<data.length;i++) data[i] = Math.random()*2-1;
+      }
+      const src = audioCtx.createBufferSource();
+      src.buffer = thudNoise; src.loop = true; src.loopStart = 0; src.loopEnd = thudNoise.duration;
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(filterFreq||500, t0);
+      const gain = audioCtx.createGain();
+      gain.gain.setValueAtTime(vol||0.18, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+      src.connect(filter); filter.connect(gain); gain.connect(dest || busSfx || audioCtx.destination);
+      src.start(t0, Math.random()*1.5); src.stop(t0+dur);
+    }catch(e){}
+  }
+  function sfxHit(mult){ if(!voiceOk()) return; mult=mult||1; thud(0.08, 0.16, 900*mult); beep(85*mult, 0.06, 'square', 0.04); }
+  function sfxDeath(mult){ if(!voiceOk()) return; mult=mult||1; thud(0.3, 0.2, 350*mult); beep(65*mult, 0.35, 'sawtooth', 0.08, 0.05); }
+  function sfxSpawn(mult){ if(!voiceOk()) return; mult=mult||1; thud(0.12, 0.14, 280*mult); beep(55*mult, 0.14, 'sine', 0.06, 0.02); }
+  function sfxSpell(){ thud(0.25, 0.13, 1100); beep(130, 0.22, 'sawtooth', 0.06, 0.05); }
+  function sfxOath(){ beep(110, 0.9, 'triangle', 0.06); beep(165, 0.9, 'triangle', 0.045, 0.05); beep(880, 0.6, 'sine', 0.035, 0.12); thud(0.5, 0.06, 200); }
+  function sfxFracture(){
+    thud(0.04, 0.16, 4200); thud(0.04, 0.14, 3200, 0.06);
+    thud(0.28, 0.15, 450, 0.1); beep(90, 0.28, 'sawtooth', 0.06, 0.1);
+  }
+  function sfxVictory(){
+    beep(110,0.35,'sawtooth',0.08);
+    beep(147,0.35,'sawtooth',0.08,0.3);
+    beep(165,0.35,'sawtooth',0.08,0.6);
+    beep(220,0.5,'sawtooth',0.08,0.9);
+    // its last sound, the ringing A and E over a drum at 1.3s, is the victory score's first beat (TM_THEMES.victory.openWith)
+  }
+  function sfxFire(mult){ if(!voiceOk()) return; mult=mult||1; thud(0.06, 0.09, 1800*mult); beep(380*mult, 0.05, 'square', 0.04); }
+  function haptic(pattern){
+    if(!sound.haptics) return;
+    try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){}
+  }
+  function sfxDefeat(){ thud(0.5, 0.18, 180); beep(75,0.5,'sawtooth',0.09); }
+  let bareGfx = false;
+  try{ bareGfx = localStorage.getItem('bloodline_bare')==='1'; }catch(e){}
+  let fxMode = 'auto';
+  try{ fxMode = localStorage.getItem('bloodline_fx') || 'auto'; }catch(e){}
+  let lowFx = fxMode==='low', fxEma = 16, fxSlowMs = 0;
+  let padEl = null, padHeld = {}, padNext = 0, padAny = false;
+  const padSwap = {ab:false, xy:false};
+  try{ padSwap.ab = localStorage.getItem('bloodline_padab')==='1'; padSwap.xy = localStorage.getItem('bloodline_padxy')==='1'; }catch(e){}
+  const padMap = k => padSwap.ab && (k===0 || k===1) ? 1-k : padSwap.xy && (k===2 || k===3) ? 5-k : k;
+  const padBtn = (g, k) => g.buttons[padMap(k)];
+  function padSet(e){ if(padEl) padEl.classList.remove('pad-focus'); padEl = e; if(e){ e.classList.add('pad-focus'); try{ e.scrollIntoView({block:'nearest', inline:'nearest'}); }catch(x){} } }
+  function activePad(){ if(!navigator.getGamepads) return null; let best = null;
+    for(const g of navigator.getGamepads()){ if(!g || g.connected===false) continue; const st = g.mapping==='standard', bs = best && best.mapping==='standard';
+      if(!best || (st && !bs) || (st===bs && (g.timestamp||0) > (best.timestamp||0))) best = g; }
+    return best; }
+  const ON_XBOX = /xbox/i.test(navigator.userAgent||'');
+  function padWakeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
+  function sfxTutClick(){ beep(420, 0.05, 'triangle', 0.05); thud(0.04, 0.05, 1800); }
+  let hfm = null, hfNoise = null;
+  function hfNoiseBuf(){ if(!hfNoise){ const n = audioCtx.sampleRate*2, b = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = b.getChannelData(0); for(let k=0;k<n;k++) d[k] = Math.random()*2-1; hfNoise = b; } return hfNoise; }
+  function toonTuft(c, x, y, sc, col){ // a little three-blade tuft, outlined
+    c.lineCap = 'round'; c.lineJoin = 'round';
+    const blades = [[-3, -5], [0, -7], [3, -5]].map(([dx, dy])=>[dx*sc, dy*sc]);
+    for(const [w, st] of [[2.6*sc, 'rgba(14,10,8,.75)'], [1.2*sc, col]]){ c.strokeStyle = st; c.lineWidth = w; c.beginPath(); for(const [dx, dy] of blades){ c.moveTo(x, y); c.lineTo(x + dx, y + dy); } c.stroke(); }
+  }
+  function toonStone(c, x, y, rx, ry, base){
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 1, y + 1.5, rx, ry, 0, 0, Math.PI*2); c.fill(); // a flat shadow
+    c.fillStyle = base; c.strokeStyle = 'rgba(14,10,8,.85)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI*2); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(255,240,215,.22)'; c.beginPath(); c.ellipse(x - rx*.3, y - ry*.35, rx*.38, ry*.25, -.3, 0, Math.PI*2); c.fill(); // one hard highlight
+  }
+  function plankCv(W, H, across){ // flat boards laid across the way you walk (down H), dark gaps, nails, a rail down each side. across: you walk left to right
+    const k = 3, cv = document.createElement('canvas'), c = cv.getContext('2d');
+    cv.width = (across ? H : W)*k; cv.height = (across ? W : H)*k; c.scale(k, k); if(across){ c.translate(H, 0); c.rotate(Math.PI/2); }
+    const n = Math.max(3, Math.round(H/8)), bh = H/n, rail = W < 40 ? 2.5 : 3, nx = Math.min(7, W*0.22);
+    c.fillStyle = '#140d09'; c.fillRect(0, 0, W, H); // the gaps
+    for(let i=0;i<n;i++){ const y = i*bh;
+      c.fillStyle = i%2 ? '#4a3726' : '#55402c'; c.fillRect(0, y + 1, W, bh - 2);
+      c.fillStyle = 'rgba(255,230,190,.12)'; c.fillRect(0, y + 1, W, 1.2); // a lit top edge
+      c.fillStyle = '#1c130d'; for(const x of [nx, W - nx]){ c.beginPath(); c.arc(x, y + bh/2, 0.9, 0, Math.PI*2); c.fill(); } } // nails
+    c.fillStyle = '#2a1c12'; c.fillRect(0, 0, rail, H); c.fillRect(W - rail, 0, rail, H); // rails
+    return cv;
+  }
+
+  function waterBody(c, x0, x1, top, bot, t, dir, D){
+    const W = x1 - x0, wy0 = top + D, fx = u => dir > 0 ? x0 + u : x1 - u;
+    c.save(); c.beginPath(); c.rect(x0, top, W, bot - top + 5); c.clip(); /* nothing drawn here leaves the river */
+    let g = c.createLinearGradient(0, top, 0, wy0); g.addColorStop(0, '#2c1f18'); g.addColorStop(1, '#0d0907'); c.fillStyle = g; c.fillRect(x0, top, W, D); // the far bank's face
+    g = c.createLinearGradient(0, wy0, 0, bot); g.addColorStop(0, '#0c2329'); g.addColorStop(0.35, '#153f4a'); g.addColorStop(1, '#1e5965'); c.fillStyle = g; c.fillRect(x0, wy0 - 1, W, bot - wy0 + 1);
+    for(let x = x0; x < x1; x += 5){ const a = 0.5 + 0.5*Math.sin(x*0.08 - dir*t*2.2 + 2*Math.sin(x*0.027 + dir*t*1.1)); // light thrown up onto the far wall
+      c.fillStyle = `rgba(130,205,215,${0.05 + 0.2*a*a})`; c.fillRect(x, top + 1 + (1-a)*(D*0.5), 4, 1.4); }
+    c.fillStyle = 'rgba(0,0,0,.28)'; c.fillRect(x0, wy0, W, 3); // the far wall's shadow on the water
+    const deep = bot - wy0 - 4, rows = Math.max(4, Math.min(7, Math.round(deep/5)));
+    for(let i=0;i<rows;i++){ const v = (i + 0.5)/rows, y = wy0 + 2 + v*deep, prof = 1 - Math.pow(2*v - 1, 2), sp = 16 + 60*prof, gap = 34 + i*3, off = (t*sp + i*17) % gap, len = 8 + 10*prof;
+      c.strokeStyle = `rgba(165,222,230,${0.08 + 0.2*prof})`; c.lineWidth = 1; c.beginPath();
+      for(let u = -gap + off; u < W + gap; u += gap){ const x = fx(u), yy = y + Math.sin(x*0.06 - dir*t*3.1 + i)*1.3; c.moveTo(x, yy); c.quadraticCurveTo(x + dir*len/2, yy - 1.6, x + dir*len, yy); }
+      c.stroke(); }
+    for(let k=0;k<Math.round(W/20);k++){ const v = (k*0.618) % 1, y = wy0 + 3 + v*(deep - 2), sp = 24 + 60*(1 - Math.pow(2*v - 1, 2)), x = fx((k*97 + t*sp) % W), a = 0.5 + 0.5*Math.sin(t*6 + k*2.3);
+      c.fillStyle = `rgba(235,252,252,${0.12 + 0.4*a})`; c.fillRect(x, y, 2, 1); } // glints riding the current
+    if(!bareGfx && !lowFx) for(let k=0;k<Math.round(W/6);k++){ const v = (k*0.381 + 0.13) % 1, y = wy0 + 3 + v*(deep - 1), sp = 10 + 38*(1 - Math.pow(2*v - 1, 2)), x = fx((k*53 + t*sp) % W);
+      c.fillStyle = k%3 ? 'rgba(8,24,28,.45)' : 'rgba(120,150,140,.18)'; c.fillRect(x, y, 1, 1); } // silt in the water
+    if(!bareGfx && !lowFx) for(let k=0;k<Math.round(W/45);k++){ const v = (k*0.537 + 0.29) % 1, y = wy0 + 4 + v*(deep - 4), sp = 18 + 50*(1 - Math.pow(2*v - 1, 2)), x = fx((k*131 + t*sp) % (W + 20) - 10), r = t*(0.4 + (k%4)*0.15)*(k%2 ? 1 : -1) + k, by = Math.sin(t*2.2 + k)*0.6;
+      c.save(); c.translate(x, y + by); c.rotate(r);
+      if(k%3===2){ c.strokeStyle = 'rgba(70,52,36,.85)'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(-3.5, 0); c.lineTo(3.5, 0); c.moveTo(1, 0); c.lineTo(2.6, -1.3); c.stroke(); } // a twig
+      else { c.fillStyle = k%3 ? 'rgba(96,82,40,.85)' : 'rgba(78,100,48,.8)'; c.beginPath(); c.ellipse(0, 0, 2.6, 1.3, 0, 0, Math.PI*2); c.fill(); c.strokeStyle = 'rgba(0,0,0,.3)'; c.lineWidth = 0.4; c.beginPath(); c.moveTo(-2.4, 0); c.lineTo(2.4, 0); c.stroke(); } // a leaf
+      c.restore(); c.fillStyle = 'rgba(200,235,240,.12)'; c.fillRect(x - dir*4, y + by + 1.4, 2.5, 0.6); } // floating leaves and twigs, each with a little wake
+    for(let x = x0; x < x1; x += 7){ const a = 0.5 + 0.5*Math.sin(x*0.15 + dir*t*4); c.fillStyle = `rgba(220,240,240,${0.1 + 0.25*a})`; c.fillRect(x, bot - 2.5 - a*1.2, 4, 1); } // foam along the near bank
+    c.fillStyle = '#3d2c22'; c.fillRect(x0, bot - 0.5, W, 2); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x0, bot + 1.5, W, 3); // the near lip, and its shadow on the floor
+    c.restore();
+  }
+  function wdRng(str){ /* the Catacombs's seeded generator: a seed always grows the same world */
+    str = String(str); let h = 1779033703 ^ str.length;
+    for(let i=0;i<str.length;i++){ h = Math.imul(h ^ str.charCodeAt(i), 3432918353); h = h<<13 | h>>>19; }
+    let a = h>>>0;
+    return ()=>{ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a>>>15, 1|a); t = t + Math.imul(t ^ t>>>7, 61|t) ^ t; return ((t ^ t>>>14)>>>0)/4294967296; };
+  }
+  function noteError(e){ try{ console.error(e); }catch(x){} }
+  function applyFx(){ document.body.classList.toggle('lowfx', lowFx); document.body.classList.toggle('bare', bareGfx); }
+  applyFx();
+
+  // ======================= THE WILDS =======================
+  // A survival mode on its own page. The rules are Don't Starve Together's, with Terraria's death, scaled to Bloodline's numbers:
+  //  - Don't Starve's day: 8 minutes, split 8 day, 6 dusk, 2 night (its autumn). Its 150 hunger is 30 here, and it still lasts 2 days.
+  //  - Don't Starve's dark: with no fire near you at night, something bites (Charlie). First bite after 3 seconds, then every 5.
+  //  - Don't Starve's campfire (grass and logs, fed with logs, burns out) and its food: raw meat hurts, cooking it on a fire heals.
+  //  - Terraria's mediumcore death (and Don't Starve Together's): all you carry drops where you fell. You wake at your last campfire.
+  //  - Fighting is the Catacombs's: the same three-hit combo, roll, soft lock and Jackal.
+  // Controller: left stick move, X attack and chop, A roll, B pick up, fish or feed the fire, Y bag, LB and RB pick a slot, RT eat it, Start pause.
+  // Keyboard: WASD move, J or left click attack, Space roll, E or F pick up, Tab or I bag, 1 to 0 pick a slot, Q eat it, Esc pause.
+  const WD_HOME_FALLBACK = 'bloodline.html'; /* where Leave goes when nothing else says. Empty: Leave goes back to this page's menu */
+  const WD_KEY = 'bloodline_wilds';
+  const WD = {W:2400, H:1600, RIVER:110, EDGE:60, hp:29, hunger:30, spd:118, rollSpd:380, rollMs:190, rollCd:300, iframes:260,
+    day:480, dayEnd:240, duskEnd:420, hungerRate:30/960, starveEvery:8, darkHit:10, darkFirst:3, darkEvery:5,
+    slots:10, stack:20, fireMax:180, fireWood:45, fireStart:120, regrow:960, jackals:8, aggro:130, leash:320,
+    pickR:30, fireNear:56, fishMs:2500, fishOdds:0.6, shore:34, saveEvery:10, view:380};
+  const WD_COMBO = [{dmg:2, knock:80, ms:230, lunge:8}, {dmg:2, knock:80, ms:230, lunge:8}, {dmg:4, knock:230, ms:380, lunge:20}];
+  const WD_SW = {window:380, r:38, arc:2.0, move:0.25, lockR:80, lockCone:1.3};
+  const WD_JACKAL = {hp:5, spd:72, r:10, dmg:3, reach:14, iv:900, wind:320};
+  const ITEMS = {
+    wood:  {name:'Wood'},
+    reed:  {name:'Reeds'},
+    bone:  {name:'Bone'},
+    herb:  {name:'Herbs', food:1},
+    berry: {name:'Berries', food:2},
+    fish:  {name:'Raw fish', food:3, cook:'cfish'},
+    cfish: {name:'Cooked fish', food:3, heal:1},
+    meat:  {name:'Raw meat', food:5, hurt:1, cook:'cmeat'},
+    cmeat: {name:'Cooked meat', food:5, heal:1},
+  };
+  const NODE = { /* what grows in the world. solid: you walk round it */
+    tree:  {solid:true, hp:6},
+    rock:  {solid:true},
+    bone:  {hp:4},
+    berry: {pick:'berry', verb:'Pick berries'},
+    herb:  {pick:'herb', verb:'Pick herbs'},
+    reed:  {pick:'reed', verb:'Cut reeds'},
+  };
+  const $ = id => document.getElementById(id);
+  let wd = null, wdRaf = 0, wdLast = 0, wdActive = false;
+  const wdIn = {keys:{}, pad:{}, resync:true};
+  const spawnPt = {x:WD.W/2, y:WD.H/2};
+  const hyp = Math.hypot, clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+
+  // ---- the world: grown from the seed, the same every time; what you change is kept by node id ----
+  function wdGen(seed){
+    const R = wdRng('wilds:' + seed), nodes = [], W = WD.W, H = WD.H;
+    const xl = WD.EDGE + 24, xr = W - WD.EDGE - 24, lo = WD.RIVER + 40, hi = H - WD.RIVER - 40;
+    const ok = (x, y, sp) => x > xl && x < xr && y > WD.RIVER + 8 && y < H - WD.RIVER - 8 && hyp(x - spawnPt.x, y - spawnPt.y) > 110 + sp && !nodes.some(n=>hyp(n.x - x, n.y - y) < n.sp + sp);
+    const any = () => ({x:xl + R()*(xr - xl), y:lo + R()*(hi - lo)});
+    function place(k, r, sp, at, extra){ for(let i=0;i<24;i++){ const q = at(); if(ok(q.x, q.y, sp)){ const n = Object.assign({id:nodes.length, k, x:q.x, y:q.y, r, sp}, extra ? extra() : {}); nodes.push(n); return n; } } return null; }
+    const tree = () => ({v:Math.floor(R()*3), cr:17 + R()*7});
+    for(let c=0;c<16;c++){ const cx = xl + 60 + R()*(xr - xl - 120), cy = lo + 40 + R()*(hi - lo - 80), n = 10 + Math.floor(R()*7);
+      for(let i=0;i<n;i++) place('tree', 9, 13, ()=>({x:cx + (R() + R() + R() - 1.5)*120, y:cy + (R() + R() + R() - 1.5)*100}), tree); }
+    for(let i=0;i<60;i++) place('tree', 9, 13, any, tree);
+    for(let i=0;i<40;i++) place('rock', 0, 0, any, ()=>{ const r = 10 + R()*6; return {r, sp:r + 4, v:R()}; });
+    for(let i=0;i<40;i++) place('bone', 9, 12, any);
+    for(let i=0;i<55;i++) place('berry', 10, 14, any);
+    for(let i=0;i<70;i++) place('herb', 6, 9, any);
+    for(let i=0;i<90;i++) place('reed', 6, 8, ()=>{ const top = R() < 0.5, d = 6 + R()*44; return {x:xl + R()*(xr - xl), y:top ? WD.RIVER + d : H - WD.RIVER - d}; });
+    for(const n of nodes){ const D = NODE[n.k]; n.hp = D.hp || 0; n.gone = false; n.ready = 0; n.shk = 0; }
+    // the ground's look: drawn every frame from these, so it stays sharp at any zoom
+    const G = wdRng('ground:' + seed), patches = [], tufts = [];
+    const PC = ['#5d6a3d', '#4d5733', '#5a4c36', '#62703f'];
+    for(let i=0;i<260;i++) patches.push({x:G()*W, y:WD.RIVER + G()*(H - 2*WD.RIVER), rx:30 + G()*90, ry:16 + G()*40, col:PC[Math.floor(G()*PC.length)]});
+    const TC = ['#7d8f4a', '#6c7d3f', '#8a9a55', '#5f6f37'];
+    for(let i=0;i<1800;i++) tufts.push({x:G()*W, y:WD.RIVER + 6 + G()*(H - 2*WD.RIVER - 12), s:0.8 + G()*0.6, col:TC[Math.floor(G()*TC.length)]});
+    const edge = [];
+    for(let y = WD.RIVER - 20; y < H - WD.RIVER + 20; y += 26){ edge.push({x:WD.EDGE - 14 + G()*16, y:y + G()*10, cr:20 + G()*8}); edge.push({x:W - WD.EDGE + 14 - G()*16, y:y + G()*10, cr:20 + G()*8}); }
+    edge.sort((a, b)=>a.y - b.y);
+    return {nodes, deco:{patches, tufts, edge}};
+  }
+
+  // ---- saves ----
+  const finite = (v, d) => typeof v==='number' && isFinite(v) ? v : d;
+  function wdClean(o){
+    if(!o || typeof o!=='object' || o.v!==1 || typeof o.seed!=='string') return null;
+    const slot = s => s && typeof s==='object' && ITEMS[s.id] && s.n >= 1 ? {id:s.id, n:Math.min(WD.stack, Math.floor(s.n))} : null;
+    const inv = Array.isArray(o.inv) ? o.inv.slice(0, WD.slots).map(slot) : []; while(inv.length < WD.slots) inv.push(null);
+    const pt = q => q && typeof q==='object' && isFinite(q.x) && isFinite(q.y) ? {x:+q.x, y:+q.y} : null;
+    const drops = (Array.isArray(o.drops) ? o.drops : []).map(d=>{ const at = pt(d); if(!at) return null;
+      if(Array.isArray(d.bag)){ const bag = d.bag.map(slot).filter(Boolean); return bag.length ? Object.assign(at, {bag}) : null; }
+      const s = slot(d); return s ? Object.assign(at, s) : null; }).filter(Boolean).slice(0, 400);
+    const p = o.p || {};
+    return {seed:o.seed.slice(0, 12), t:Math.max(0, finite(o.t, 15)),
+      p:{x:finite(p.x, spawnPt.x), y:finite(p.y, spawnPt.y), hp:clamp(finite(p.hp, WD.hp), 1, WD.hp), hunger:clamp(finite(p.hunger, WD.hunger), 0, WD.hunger)},
+      inv, gone:Array.isArray(o.gone) ? o.gone.filter(n=>Number.isInteger(n)) : [], regrow:o.regrow && typeof o.regrow==='object' ? o.regrow : {},
+      fires:(Array.isArray(o.fires) ? o.fires : []).map(f=>{ const at = pt(f); return at && finite(f.fuel, 0) > 0 ? Object.assign(at, {fuel:Math.min(WD.fireMax, f.fuel)}) : null; }).filter(Boolean).slice(0, 60),
+      drops, deaths:Math.max(0, Math.floor(finite(o.deaths, 0))), home:pt(o.home)};
+  }
+  function wdLoadSave(){ try{ return wdClean(JSON.parse(localStorage.getItem(WD_KEY) || 'null')); }catch(e){ return null; } }
+  function wdSave(){
+    if(!wd) return;
+    const h = wd.home || spawnPt, p = wd.dead > 0 ? {x:h.x, y:h.y + 20, hp:WD.hp, hunger:Math.max(wd.p.hunger, 15)} : wd.p, regrow = {}; /* saved mid-death: you wake as you would have */
+    for(const n of wd.nodes) if(n.ready > wd.t) regrow[n.id] = Math.round(n.ready);
+    const o = {v:1, seed:wd.seed, t:+wd.t.toFixed(2), p:{x:Math.round(p.x), y:Math.round(p.y), hp:p.hp, hunger:+p.hunger.toFixed(3)},
+      inv:wd.inv, gone:wd.nodes.filter(n=>n.gone).map(n=>n.id), regrow,
+      fires:wd.fires.map(f=>({x:Math.round(f.x), y:Math.round(f.y), fuel:+f.fuel.toFixed(1)})),
+      drops:wd.drops.map(d=>d.bag ? {bag:d.bag, x:Math.round(d.x), y:Math.round(d.y)} : {id:d.id, n:d.n, x:Math.round(d.x), y:Math.round(d.y)}),
+      deaths:wd.deaths, home:wd.home};
+    try{ localStorage.setItem(WD_KEY, JSON.stringify(o)); }catch(e){}
+    wd.saveT = WD.saveEvery;
+  }
+
+  // ---- a world in play ----
+  function wdBegin(S){ /* S: a cleaned save, or {seed} for a new world */
+    const G = wdGen(S.seed);
+    wd = {seed:S.seed, t:S.t!=null ? S.t : 15, nodes:G.nodes, deco:G.deco, inv:S.inv || Array(WD.slots).fill(null), sel:0,
+      fires:(S.fires || []).map(f=>({x:f.x, y:f.y, fuel:f.fuel, fl:Math.random()*9})), drops:(S.drops || []).map(d=>Object.assign({sx:d.x, sy:d.y, pop:400}, d)),
+      foes:[], fx:[], deaths:S.deaths || 0, home:S.home || null, dead:0, paused:false, shake:0, banner:null, saveT:WD.saveEvery,
+      darkT:0, starveT:0, envT:2, beatT:0, fullNote:0, cam:null};
+    wd.lastDay = Math.floor(wd.t/WD.day);
+    const p0 = S.p || {x:spawnPt.x, y:spawnPt.y, hp:WD.hp, hunger:WD.hunger};
+    wd.p = {x:p0.x, y:p0.y, r:9, hp:p0.hp, maxHp:WD.hp, hunger:p0.hunger, fx:0, fy:1, rollT:0, rollCd:0, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0};
+    const gone = new Set(S.gone || []);
+    for(const n of wd.nodes){ if(gone.has(n.id)) n.gone = true; const r = S.regrow && S.regrow[n.id]; if(isFinite(r)) n.ready = +r; }
+    wdSolid(wd.p);
+    for(let i=0;i<WD.jackals;i++) wdSpawnJackal();
+    wdSave();
+  }
+  function wdSpawnJackal(){
+    const R = Math.random; for(let i=0;i<30;i++){
+      const x = WD.EDGE + 40 + R()*(WD.W - 2*WD.EDGE - 80), y = WD.RIVER + 40 + R()*(WD.H - 2*WD.RIVER - 80);
+      if(hyp(x - wd.p.x, y - wd.p.y) < 340 || hyp(x - spawnPt.x, y - spawnPt.y) < 200 || wdBlocked(x, y, 12)) continue;
+      if(wd.fires.some(f=>hyp(f.x - x, f.y - y) < 160)) continue;
+      wd.foes.push({x, y, hx:x, hy:y, r:WD_JACKAL.r, hp:WD_JACKAL.hp, maxHp:WD_JACKAL.hp, kx:0, ky:0, hit:0, cd:0, wind:0, ag:false, wt:0, tx:x, ty:y}); return; }
+  }
+  const solidNodes = () => wd.nodes; /* filtered in the loops below */
+  function wdBlocked(x, y, r){
+    for(const n of wd.nodes){ if(!NODE[n.k].solid || (n.k==='tree' && n.gone)) continue; if(hyp(n.x - x, n.y - y) < n.r + r) return true; }
+    for(const f of wd.fires) if(hyp(f.x - x, f.y - y) < 10 + r) return true;
+    return x < WD.EDGE + r || x > WD.W - WD.EDGE - r || y < WD.RIVER + r || y > WD.H - WD.RIVER - r;
+  }
+  function wdSolid(o){
+    for(const n of solidNodes()){ if(!NODE[n.k].solid || (n.k==='tree' && n.gone)) continue; const dx = o.x - n.x, dy = o.y - n.y; if(Math.abs(dx) > 40 || Math.abs(dy) > 40) continue;
+      const d = hyp(dx, dy), m = n.r + o.r; if(d < m){ if(d > 0.01){ o.x = n.x + dx*m/d; o.y = n.y + dy*m/d; } else o.y = n.y + m; } }
+    for(const f of wd.fires){ const dx = o.x - f.x, dy = o.y - f.y, d = hyp(dx, dy), m = 10 + o.r; if(d < m && d > 0.01){ o.x = f.x + dx*m/d; o.y = f.y + dy*m/d; } }
+    o.x = clamp(o.x, WD.EDGE + o.r, WD.W - WD.EDGE - o.r); o.y = clamp(o.y, WD.RIVER + o.r, WD.H - WD.RIVER - o.r);
+  }
+  function wdFx(o){ o.t0 = o.t; if(wd.fx.length < 160) wd.fx.push(o); }
+  function wdBanner(text, sub, ms){ wd.banner = {text, sub:sub || '', t:ms || 2400}; }
+
+  // ---- day and night (Don't Starve's clock) ----
+  const phase = t => ((t % WD.day) + WD.day) % WD.day;
+  function darkAt(t){ /* how dark the world is, 0 to 0.97 */
+    const s = phase(t);
+    if(s < 20) return 0.97*(1 - s/20); /* dawn */
+    if(s < WD.dayEnd) return 0;
+    if(s < WD.duskEnd) return 0.5*(s - WD.dayEnd)/(WD.duskEnd - WD.dayEnd);
+    return Math.min(0.97, 0.5 + 0.47*(s - WD.duskEnd)/12);
+  }
+  const isNight = () => darkAt(wd.t) > 0.85;
+  const lightR = f => 40 + 100*Math.min(1, f.fuel/90);
+  const litAt = (x, y) => wd.fires.some(f=>hyp(f.x - x, f.y - y) < lightR(f)*0.8);
+  function burnFires(sec){ for(const f of wd.fires) f.fuel -= sec; wd.fires = wd.fires.filter(f=>f.fuel > 0); }
+  function wdDawn(){ /* a new day: the Jackals' numbers come back */
+    let n = WD.jackals - wd.foes.length; while(n-- > 0) wdSpawnJackal();
+    wdBanner('Day ' + (Math.floor(wd.t/WD.day) + 1), '', 2200); beep(523, 0.5, 'triangle', 0.04); beep(784, 0.7, 'triangle', 0.03, 0.18);
+  }
+
+  // ---- the bag ----
+  function invAdd(id, n){
+    const inv = wd.inv;
+    for(const s of inv) if(s && s.id===id && s.n < WD.stack){ const k = Math.min(n, WD.stack - s.n); s.n += k; n -= k; if(!n) return 0; }
+    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, WD.stack); inv[i] = {id, n:k}; n -= k; }
+    return n;
+  }
+  const invCount = id => wd.inv.reduce((a, s)=>a + (s && s.id===id ? s.n : 0), 0);
+  function invTake(id, n){ for(let i=wd.inv.length-1;i>=0 && n;i--){ const s = wd.inv[i]; if(s && s.id===id){ const k = Math.min(n, s.n); s.n -= k; n -= k; if(!s.n) wd.inv[i] = null; } } }
+  function dropItem(id, n, x, y, from, wait){
+    const a = Math.random()*Math.PI*2, d = 8 + Math.random()*14, tx = clamp(x + Math.cos(a)*d, WD.EDGE + 8, WD.W - WD.EDGE - 8), ty = clamp(y + Math.sin(a)*d, WD.RIVER + 8, WD.H - WD.RIVER - 8);
+    wd.drops.push({id, n, x:tx, y:ty, sx:from ? from.x : x, sy:from ? from.y : y, pop:0, wait:!!wait});
+  }
+  function sfxPick(){ beep(880, 0.05, 'triangle', 0.035); beep(1320, 0.06, 'triangle', 0.025, 0.04); }
+  function give(id, n, at){ /* straight into the bag; what does not fit falls at your feet */
+    const left = invAdd(id, n); if(left){ dropItem(id, left, at.x, at.y, at); wdNote('Your bag is full'); }
+    if(left < n){ sfxPick(); wdFx({kind:'num', x:wd.p.x, y:wd.p.y - 16, text:'+' + (n - left) + ' ' + ITEMS[id].name, col:'#e6d9a8', t:900}); }
+  }
+  function wdNote(text){ const now = performance.now(); if(now - wd.fullNote < 1800) return; wd.fullNote = now; wdFx({kind:'num', x:wd.p.x, y:wd.p.y - 26, text, col:'#e9a0b0', t:1100}); }
+
+  // ---- what you do ----
+  const busy = () => wd.p.rollT > 0;
+  function wdAim(){ /* the soft lock: the nearest Jackal roughly in front, else the nearest tree or bone pile in reach, else ahead */
+    const p = wd.p; let best = null, bd = Infinity;
+    const look = (x, y, r, range, cone)=>{ const dx = x - p.x, dy = y - p.y, d = hyp(dx, dy) || 0.01; if(d > range + r) return;
+      const ang = Math.acos(clamp((dx*p.fx + dy*p.fy)/d, -1, 1)); if(ang > cone && d > p.r + r + 8) return; if(d < bd){ bd = d; best = {x:dx/d, y:dy/d}; } };
+    for(const f of wd.foes) look(f.x, f.y, f.r, WD_SW.lockR, WD_SW.lockCone);
+    if(!best) for(const n of wd.nodes) if((n.k==='tree' || n.k==='bone' || n.k==='rock') && !n.gone && Math.abs(n.x - p.x) < 70 && Math.abs(n.y - p.y) < 70) look(n.x, n.y, n.r, WD_SW.r + 6, WD_SW.lockCone);
+    return best || {x:p.fx, y:p.fy};
+  }
+  function wdHitArc(dir, reach, arc, dmg, knock){
+    const p = wd.p, inArc = (x, y, r)=>{ const dx = x - p.x, dy = y - p.y, d = hyp(dx, dy) || 0.01; if(d > reach + r) return false; return d <= r + p.r + 4 || Math.acos(clamp((dx*dir.x + dy*dir.y)/d, -1, 1)) <= arc/2; };
+    for(const f of wd.foes.slice()) if(inArc(f.x, f.y, f.r)){ const dx = f.x - p.x, dy = f.y - p.y, d = hyp(dx, dy) || 1; wdHurtF(f, dmg, dx/d*knock, dy/d*knock); }
+    let node = null, nd = Infinity; /* one tree or pile a swing, like an axe */
+    for(const n of wd.nodes){ if(n.gone || !(n.k==='tree' || n.k==='bone' || n.k==='rock') || Math.abs(n.x - p.x) > 70 || Math.abs(n.y - p.y) > 70) continue; if(inArc(n.x, n.y, n.r)){ const d = hyp(n.x - p.x, n.y - p.y); if(d < nd){ nd = d; node = n; } } }
+    if(node) wdChop(node, dmg);
+  }
+  function wdChop(n, dmg){
+    n.shk = 160;
+    for(let i=0;i<4;i++) wdFx({kind:'chip', x:n.x, y:n.y - (n.k==='tree' ? 10 : 2), vx:(Math.random() - 0.5)*120, vy:-30 - Math.random()*60, col:n.k==='tree' ? (i%2 ? '#6b4a2c' : '#7d9a4a') : n.k==='rock' ? '#8a847a' : '#e6dcc4', t:500});
+    if(n.k==='rock'){ thud(0.05, 0.08, 3000); beep(1700, 0.04, 'square', 0.015); wdNote('Too hard to break by hand'); return; }
+    n.hp -= dmg; thud(0.07, 0.12, n.k==='tree' ? 700 : 1600); beep(n.k==='tree' ? 150 : 420, 0.05, 'square', 0.025);
+    if(n.hp > 0) return;
+    n.gone = true;
+    if(n.k==='tree'){ const k = 2 + (Math.random() < 0.5 ? 1 : 0); for(let i=0;i<k;i++) dropItem('wood', 1, n.x, n.y + 4, {x:n.x, y:n.y - 14}); thud(0.4, 0.18, 260); wd.shake = 120; haptic(20); }
+    else { dropItem('bone', 2, n.x, n.y, n); thud(0.2, 0.12, 900); }
+  }
+  function wdSwing(){
+    const p = wd.p, last = WD_COMBO.length, step = p.comboT > 0 && p.combo < last ? p.combo + 1 : 1, C = WD_COMBO[step-1], fin = step===last;
+    const dir = wdAim(), reach = WD_SW.r + (fin ? 6 : 0);
+    p.fx = dir.x; p.fy = dir.y; p.x += dir.x*C.lunge; p.y += dir.y*C.lunge; wdSolid(p);
+    wdHitArc(dir, reach, WD_SW.arc, C.dmg, C.knock);
+    wdFx({kind:'slash', x:p.x, y:p.y, ax:dir.x, ay:dir.y, r:reach, arc:WD_SW.arc, t:150, big:fin});
+    p.sword = {a:Math.atan2(dir.y, dir.x), arc:WD_SW.arc*1.15, side:step%2===0 ? -1 : 1, t:0, dur:Math.min(C.ms, 170)};
+    p.combo = step; p.swingT = C.ms; p.comboT = C.ms + WD_SW.window; p.queued = false; p.fishT = 0;
+    thud(0.08, fin ? 0.16 : 0.1, fin ? 900 : 1600); beep(fin ? 140 : 180 + step*20, 0.06, 'sawtooth', 0.03);
+  }
+  function wdAttack(){ if(!wdLive()) return; const p = wd.p; if(busy()) return; if(p.swingT > 0){ p.queued = true; return; } wdSwing(); }
+  function wdRoll(){
+    if(!wdLive()) return; const p = wd.p, I = wd.lastI; if(p.rollCd > 0 || p.rollT > 0) return;
+    let dx = I ? I.mx : 0, dy = I ? I.my : 0, l = hyp(dx, dy); if(l < 0.2){ dx = p.fx; dy = p.fy; l = 1; }
+    p.dx = dx/l; p.dy = dy/l; p.fx = p.dx; p.fy = p.dy; p.rollT = WD.rollMs; p.rollCd = WD.rollCd; p.inv = Math.max(p.inv, WD.iframes);
+    p.swingT = 0; p.queued = false; p.combo = 0; p.comboT = 0; p.fishT = 0; thud(0.1, 0.08, 900);
+  }
+  const shoreAt = p => p.y < WD.RIVER + p.r + WD.shore ? -1 : p.y > WD.H - WD.RIVER - p.r - WD.shore ? 1 : 0;
+  function nearFire(r){ const p = wd.p; let best = null, bd = r; for(const f of wd.fires){ const d = hyp(f.x - p.x, f.y - p.y); if(d < bd){ bd = d; best = f; } } return best; }
+  function nearPick(){ const p = wd.p; let best = null, bd = WD.pickR;
+    for(const n of wd.nodes){ if(!NODE[n.k].pick || n.ready > wd.t || Math.abs(n.x - p.x) > 40 || Math.abs(n.y - p.y) > 40) continue; const d = hyp(n.x - p.x, n.y - p.y) - n.r; if(d < bd){ bd = d; best = n; } }
+    return best; }
+  function wdWhatAct(){ /* what B does here, for the hint and for the press */
+    const p = wd.p;
+    if(p.fishT > 0) return {k:'fishing', text:'Fishing. Hold still'};
+    const f = nearFire(WD.fireNear); if(f && invCount('wood') && f.fuel < WD.fireMax - 5) return {k:'feed', f, text:'Feed the fire'};
+    const n = nearPick(); if(n) return {k:'pick', n, text:NODE[n.k].verb};
+    if(shoreAt(p)) return {k:'fish', text:'Fish'};
+    return null;
+  }
+  function wdAct(){
+    if(!wdLive()) return; const a = wdWhatAct(), p = wd.p; if(!a || busy()) return;
+    if(a.k==='feed'){ invTake('wood', 1); a.f.fuel = Math.min(WD.fireMax, a.f.fuel + WD.fireWood); thud(0.25, 0.1, 500); beep(260, 0.15, 'triangle', 0.03);
+      for(let i=0;i<5;i++) wdFx({kind:'chip', x:a.f.x, y:a.f.y - 6, vx:(Math.random() - 0.5)*60, vy:-60 - Math.random()*50, col:'#f3a640', t:600}); }
+    else if(a.k==='pick'){ const n = a.n; n.ready = wd.t + WD.regrow; give(NODE[n.k].pick, 1, n); thud(0.05, 0.05, 2600); }
+    else if(a.k==='fish'){ p.fishT = WD.fishMs; p.fishSide = shoreAt(p); beep(600, 0.08, 'triangle', 0.03); thud(0.06, 0.05, 2000, 0.3); }
+  }
+  function wdEat(i){
+    const s = wd.inv[i], p = wd.p; if(!s || !wdLive()) return false; const I = ITEMS[s.id]; if(!I.food) return false;
+    p.hunger = Math.min(WD.hunger, p.hunger + I.food); if(I.heal) p.hp = Math.min(p.maxHp, p.hp + I.heal);
+    s.n--; if(!s.n) wd.inv[i] = null;
+    thud(0.08, 0.08, 1200); thud(0.08, 0.08, 1000, 0.12); beep(300, 0.05, 'square', 0.015, 0.06);
+    wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + I.food + ' belly' + (I.heal ? ', +' + I.heal + ' HP' : ''), col:'#e0b54a', t:900});
+    if(I.hurt){ p.hp -= I.hurt; wdFx({kind:'num', x:p.x, y:p.y - 4, text:'-' + I.hurt, col:'#ee5a75', t:700}); if(p.hp <= 0) wdDie('Raw meat finished you'); }
+    return true;
+  }
+  function wdCook(i){
+    const s = wd.inv[i]; if(!s || !ITEMS[s.id].cook || !nearFire(WD.fireNear)) return false; const to = ITEMS[s.id].cook;
+    s.n--; if(!s.n) wd.inv[i] = null; give(to, 1, wd.p); thud(0.3, 0.06, 4000); beep(200, 0.2, 'sawtooth', 0.02);
+    return true;
+  }
+  function wdBuildFire(){
+    if(!wdLive() || invCount('wood') < 2 || invCount('reed') < 2) return false;
+    const p = wd.p; let at = null;
+    for(const k of [0, 1, -1, 2, -2, 3, -3, 4]){ const a = Math.atan2(p.fy, p.fx) + k*0.6, x = p.x + Math.cos(a)*24, y = p.y + Math.sin(a)*24; if(!wdBlocked(x, y, 10) && !wd.fires.some(f=>hyp(f.x - x, f.y - y) < 30)){ at = {x, y}; break; } }
+    if(!at){ wdNote('No room here for a fire'); return false; }
+    invTake('wood', 2); invTake('reed', 2);
+    wd.fires.push({x:at.x, y:at.y, fuel:WD.fireStart, fl:Math.random()*9}); wd.home = {x:Math.round(at.x), y:Math.round(at.y)};
+    thud(0.4, 0.12, 400); beep(220, 0.3, 'triangle', 0.04); beep(330, 0.4, 'triangle', 0.03, 0.12);
+    wdBanner('Campfire', 'If you die, you wake here.', 2400); wdSave();
+    return true;
+  }
+
+  // ---- hurt, death and waking ----
+  function wdHurtF(f, dmg, kx, ky){
+    f.hp -= dmg; f.hit = 90; f.kx += kx; f.ky += ky; f.ag = true; sfxHit(1.2);
+    wdFx({kind:'num', x:f.x, y:f.y - 12, text:String(dmg), col:'#d9c9a3', t:500});
+    if(f.hp <= 0){ wd.foes = wd.foes.filter(o=>o!==f); sfxDeath(1.1); haptic(15);
+      dropItem('meat', 1, f.x, f.y, f); if(Math.random() < 0.3) dropItem('bone', 1, f.x, f.y, f);
+      wdFx({kind:'ring', x:f.x, y:f.y, r:18, t:300, col:'63,133,128'}); }
+  }
+  function wdHurtP(dmg, cause){
+    const p = wd.p; if(wd.dead > 0 || p.inv > 0) return;
+    p.hp -= dmg; p.inv = 500; p.fishT = 0; wd.shake = 160; sfxHit(0.8); haptic([30, 30, 30]);
+    wdFx({kind:'num', x:p.x, y:p.y - 14, text:'-' + dmg, col:'#ee5a75', t:700});
+    if(p.hp <= 0) wdDie(cause);
+  }
+  function wdDie(cause){
+    const p = wd.p; if(wd.dead > 0) return;
+    p.hp = 0; p.fishT = 0; p.rollT = 0; p.swingT = 0; p.sword = null;
+    const bag = wd.inv.filter(Boolean).map(s=>({id:s.id, n:s.n})); wd.inv = Array(WD.slots).fill(null);
+    if(bag.length) wd.drops.push({bag, x:p.x, y:p.y, sx:p.x, sy:p.y - 20, pop:0});
+    wd.dead = 3000; wd.deaths++; for(const f of wd.foes){ f.ag = false; f.wind = 0; }
+    sfxDefeat(); haptic([60, 40, 120]); wd.shake = 260;
+    wdBanner('You died', cause + '.' + (bag.length ? ' Your things lie where you fell.' : ''), 3000);
+    wdSave();
+  }
+  function wdRespawn(quiet){
+    const p = wd.p, h = wd.home || spawnPt; wd.dead = 0;
+    p.x = h.x; p.y = h.y + 20; p.r = 9; wdSolid(p);
+    p.hp = p.maxHp; p.hunger = Math.max(p.hunger, 15); p.inv = 3000; p.rollT = 0; p.swingT = 0; p.combo = 0; p.comboT = 0; p.fishT = 0;
+    wd.darkT = 0; wd.starveT = 0;
+    let slept = false;
+    if(darkAt(wd.t) > 0.5 && !litAt(p.x, p.y)){ /* waking in the dark would only kill you again: you sleep to the morning instead */
+      const next = (Math.floor(wd.t/WD.day) + 1)*WD.day + 2; burnFires(next - wd.t); wd.t = next; slept = true; }
+    if(!quiet) wdBanner('You wake', (wd.home ? 'by your campfire' : 'where you first woke') + (slept ? ', at first light' : ''), 2400);
+  }
+
+  // ---- one step of the world ----
+  function wdLive(){ return !!wd && !wd.paused && !wd.menu && !(wd.dead > 0); }
+  function wdStep(dt, I){
+    const p = wd.p, s = dt/1000;
+    wd.t += s;
+    { const day = Math.floor(wd.t/WD.day); if(day > wd.lastDay){ wd.lastDay = day; wdDawn(); } }
+    burnFires(s);
+    for(const f of wd.fires) f.fl += s;
+    for(const n of wd.nodes) if(n.shk > 0) n.shk -= dt;
+    if(wd.dead > 0){ wd.dead -= dt; if(wd.dead <= 0) wdRespawn(); wdFoes(dt, s); return; }
+    for(const k of ['rollCd', 'inv']) if(p[k] > 0) p[k] -= dt;
+    if(p.comboT > 0){ p.comboT -= dt; if(p.comboT <= 0) p.combo = 0; }
+    if(p.swingT > 0){ p.swingT -= dt; if(p.swingT <= 0 && p.queued) wdSwing(); }
+    const ml = hyp(I.mx, I.my);
+    if(ml > 0.2 && p.swingT <= 0 && p.rollT <= 0){ p.fx = I.mx/ml; p.fy = I.my/ml; }
+    if(p.rollT > 0){ p.rollT -= dt; p.x += p.dx*WD.rollSpd*s; p.y += p.dy*WD.rollSpd*s; }
+    else { const k = p.swingT > 0 ? WD_SW.move : 1; p.x += I.mx*WD.spd*k*s; p.y += I.my*WD.spd*k*s; }
+    wdSolid(p);
+    if(p.fishT > 0){ /* moving or fighting reels the line in */
+      if(ml > 0.2){ p.fishT = 0; }
+      else { p.fishT -= dt; if(p.fishT <= 0){ if(Math.random() < WD.fishOdds){ give('fish', 1, p); beep(980, 0.12, 'triangle', 0.04); thud(0.15, 0.08, 2200); } else wdNote('Nothing bit'); } } }
+    // the belly (Don't Starve: empty means you lose health until you eat)
+    p.hunger = Math.max(0, p.hunger - WD.hungerRate*s);
+    if(p.hunger <= 0){ wd.starveT += s; if(wd.starveT >= WD.starveEvery){ wd.starveT = 0; p.inv = 0; wdHurtP(1, 'Starved'); } } else wd.starveT = 0;
+    // the dark (Don't Starve's Charlie)
+    if(isNight() && !litAt(p.x, p.y)){ if(wd.darkT===0){ wdBanner('It is too dark', 'Something moves out there. Find light.', 2200); thud(0.6, 0.1, 140); }
+      wd.darkT += s; if(wd.darkT >= WD.darkFirst){ wd.darkT = WD.darkFirst - WD.darkEvery; p.inv = 0; wdHurtP(WD.darkHit, 'Taken by the dark'); wdFx({kind:'claw', x:p.x, y:p.y, t:420}); } }
+    else wd.darkT = 0;
+    wdFoes(dt, s);
+    wdPickups(dt);
+    if(wd.shake > 0) wd.shake -= dt;
+    wd.saveT -= s; if(wd.saveT <= 0) wdSave();
+  }
+  function wdFoes(dt, s){
+    const p = wd.p, decay = Math.exp(-10*s), J = WD_JACKAL;
+    for(const f of wd.foes){
+      if(f.hit > 0) f.hit -= dt; if(f.cd > 0) f.cd -= dt;
+      f.x += f.kx*s; f.y += f.ky*s; f.kx *= decay; f.ky *= decay;
+      const dx = p.x - f.x, dy = p.y - f.y, d = hyp(dx, dy) || 1;
+      if(wd.dead > 0 || d > WD.leash) f.ag = false; else if(d < WD.aggro) f.ag = true;
+      const reach = f.r + p.r + J.reach;
+      if(f.wind > 0){ f.wind -= dt; if(f.wind <= 0){ f.cd = J.iv; if(d < reach + 6) wdHurtP(J.dmg, 'Killed by a Jackal'); wdFx({kind:'slash', x:f.x, y:f.y, ax:dx/d, ay:dy/d, r:reach, arc:1.4, t:140, foe:true}); } }
+      else if(f.ag){ if(d > reach - 2){ f.x += dx/d*J.spd*s; f.y += dy/d*J.spd*s; } else if(f.cd <= 0){ f.wind = J.wind; } }
+      else { f.wt -= dt; if(f.wt <= 0){ f.wt = 2000 + Math.random()*4000; const a = Math.random()*Math.PI*2, r = Math.random()*90; f.tx = f.hx + Math.cos(a)*r; f.ty = f.hy + Math.sin(a)*r; }
+        const tx = f.tx - f.x, ty = f.ty - f.y, td = hyp(tx, ty); if(td > 4){ f.x += tx/td*J.spd*0.4*s; f.y += ty/td*J.spd*0.4*s; } }
+      for(const o of wd.foes){ if(o===f) continue; const ox = f.x - o.x, oy = f.y - o.y, od = hyp(ox, oy), m = f.r + o.r; if(od < m && od > 0.01){ f.x += ox/od*(m - od)/2; f.y += oy/od*(m - od)/2; } }
+      wdSolid(f);
+    }
+  }
+  function wdPickups(dt){ /* walk over what lies on the ground to take it */
+    const p = wd.p;
+    for(const d of wd.drops){
+      if(d.pop < 400){ d.pop += dt; continue; }
+      const dist = hyp(d.x - p.x, d.y - p.y);
+      if(d.wait){ if(dist > 30) d.wait = false; continue; }
+      if(dist > p.r + 10) continue;
+      if(d.bag){ const before = d.bag.reduce((a, s)=>a + s.n, 0); d.bag = d.bag.map(s=>({id:s.id, n:invAdd(s.id, s.n)})).filter(s=>s.n > 0);
+        const after = d.bag.reduce((a, s)=>a + s.n, 0);
+        if(after < before){ sfxPick(); beep(660, 0.3, 'triangle', 0.03, 0.08); wdFx({kind:'num', x:p.x, y:p.y - 18, text:d.bag.length ? 'Took what fits' : 'Got your things back', col:'#e0b54a', t:1200}); }
+        else if(after) wdNote('Your bag is full');
+        if(!d.bag.length) d.dead = true; continue; }
+      const left = invAdd(d.id, d.n);
+      if(left < d.n){ sfxPick(); wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + (d.n - left) + ' ' + ITEMS[d.id].name, col:'#e6d9a8', t:900}); }
+      else wdNote('Your bag is full');
+      d.n = left; if(!left) d.dead = true;
+    }
+    if(wd.drops.some(d=>d.dead)) wd.drops = wd.drops.filter(d=>!d.dead);
+  }
+
+  // ---- pictures ----
+  const iconCache = {}, iconUrl = {};
+  function itemIcon(id){ /* each item drawn once, toon style: flat colours, a dark outline, one highlight */
+    if(iconCache[id]) return iconCache[id];
+    const k = 2, S = 24, cv = document.createElement('canvas'); cv.width = cv.height = S*k; const c = cv.getContext('2d'); c.scale(k, k);
+    const OL = '#120c09'; c.lineJoin = 'round'; c.lineCap = 'round';
+    const blob = (path, fill, lw)=>{ c.beginPath(); path(); c.strokeStyle = OL; c.lineWidth = lw || 2.4; c.stroke(); c.fillStyle = fill; c.fill(); };
+    const hi = (x, y, rx, ry)=>{ c.fillStyle = 'rgba(255,245,220,.35)'; c.beginPath(); c.ellipse(x, y, rx, ry, -0.4, 0, Math.PI*2); c.fill(); };
+    if(id==='wood'){ c.save(); c.translate(12, 12); c.rotate(-0.5); blob(()=>{ c.rect(-9, -4.5, 16, 9); }, '#7a5233'); c.fillStyle = '#5e3e25'; c.fillRect(-7, -1, 11, 1.2);
+      blob(()=>{ c.ellipse(7, 0, 3.2, 4.5, 0, 0, Math.PI*2); }, '#c9a06a', 1.6); c.strokeStyle = '#8a6440'; c.lineWidth = 0.8; c.beginPath(); c.ellipse(7, 0, 1.5, 2.2, 0, 0, Math.PI*2); c.stroke(); c.restore(); }
+    else if(id==='reed'){ for(const [x, h, b] of [[8, 16, -1.5], [12, 19, 0], [16, 15, 1.5]]){ c.strokeStyle = OL; c.lineWidth = 3; c.beginPath(); c.moveTo(x, 21); c.quadraticCurveTo(x, 21 - h/2, x + b, 21 - h); c.stroke(); c.strokeStyle = '#b5b45a'; c.lineWidth = 1.4; c.stroke(); }
+      for(const [x, y] of [[6.5, 6], [12, 3], [17.5, 7]]) blob(()=>{ c.ellipse(x, y, 1.8, 3.2, 0, 0, Math.PI*2); }, '#6b4529', 1.4); }
+    else if(id==='bone'){ c.save(); c.translate(12, 12); c.rotate(-0.6);
+      blob(()=>{ c.rect(-7, -1.8, 14, 3.6); for(const x of [-7, 7]) for(const y of [-2.2, 2.2]){ c.moveTo(x + 2.6, y); c.arc(x, y, 2.6, 0, Math.PI*2); } }, '#e9dfc6', 2); hi(-2, -0.6, 4, 0.7); c.restore(); }
+    else if(id==='herb'){ for(const [x, a] of [[12, 0], [9, -0.5], [15, 0.5]]){ c.save(); c.translate(x, 20); c.rotate(a); blob(()=>{ c.ellipse(0, -7, 2.6, 7, 0, 0, Math.PI*2); }, '#6f9a45', 1.8); c.restore(); }
+      blob(()=>{ c.arc(12, 9, 2.4, 0, Math.PI*2); }, '#f2ead0', 1.4); c.fillStyle = '#e0b54a'; c.beginPath(); c.arc(12, 9, 0.9, 0, Math.PI*2); c.fill(); }
+    else if(id==='berry'){ blob(()=>{ c.ellipse(12, 8, 6, 2.5, -0.3, 0, Math.PI*2); }, '#4d7a34', 1.6);
+      for(const [x, y] of [[8.5, 15], [15, 14.5], [12, 18.5], [11.5, 11.5]]){ blob(()=>{ c.arc(x, y, 3.6, 0, Math.PI*2); }, '#b42a45', 1.8); hi(x - 1.1, y - 1.2, 1.1, 0.8); } }
+    else if(id==='fish' || id==='cfish'){ const body = id==='fish' ? '#8fb3c4' : '#b07a45';
+      blob(()=>{ c.ellipse(11, 12, 8, 4.6, 0, 0, Math.PI*2); c.moveTo(18, 12); c.lineTo(23, 7.5); c.lineTo(23, 16.5); c.closePath(); }, body);
+      c.fillStyle = OL; c.beginPath(); c.arc(6.5, 11, 1, 0, Math.PI*2); c.fill(); hi(10, 9.6, 4, 1.1);
+      if(id==='cfish'){ c.strokeStyle = '#6a3f1e'; c.lineWidth = 1; c.beginPath(); for(const x of [9, 12, 15]){ c.moveTo(x, 9); c.lineTo(x - 2, 15); } c.stroke(); } }
+    else if(id==='meat' || id==='cmeat'){ const body = id==='meat' ? '#c9505f' : '#8a5230';
+      c.strokeStyle = OL; c.lineWidth = 4.4; c.beginPath(); c.moveTo(13, 13); c.lineTo(20, 20); c.stroke(); c.strokeStyle = '#efe6cf'; c.lineWidth = 2.2; c.stroke();
+      blob(()=>{ c.arc(20.5, 20.5, 2, 0, Math.PI*2); }, '#efe6cf', 1.6);
+      blob(()=>{ c.ellipse(10, 10, 7.4, 6.2, -0.6, 0, Math.PI*2); }, body); c.fillStyle = id==='meat' ? '#ea8a96' : '#b07a4a'; c.beginPath(); c.ellipse(9, 9, 3.6, 2.6, -0.6, 0, Math.PI*2); c.fill(); hi(7.5, 6.5, 2.4, 1); }
+    return iconCache[id] = cv;
+  }
+  const iconSrc = id => iconUrl[id] || (iconUrl[id] = itemIcon(id).toDataURL());
+  const OL = '#120c09';
+  function drawTree(c, n, t, fade){
+    const sx = n.shk > 0 ? Math.sin(n.shk/12)*2.2 : 0, x = n.x, y = n.y;
+    if(n.gone){ /* a stump */
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 2, 9, 4, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.6; c.beginPath(); c.ellipse(x, y, 7.5, 4.2, 0, 0, Math.PI*2); c.fill(); c.stroke();
+      c.fillStyle = '#b48b5a'; c.beginPath(); c.ellipse(x, y - 1, 5.5, 2.8, 0, 0, Math.PI*2); c.fill(); c.strokeStyle = '#7d5a35'; c.lineWidth = 0.7; c.beginPath(); c.ellipse(x, y - 1, 2.6, 1.3, 0, 0, Math.PI*2); c.stroke(); return; }
+    const cr = n.cr, cy = y - 14 - cr*0.6, PAL = [['#3f5a2a', '#4f6e32'], ['#36502c', '#46663a'], ['#5a5a2a', '#6e6c34']][n.v];
+    c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(x + 4, y + 3, cr*0.95, cr*0.42, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.8; c.beginPath(); c.moveTo(x - 4, y + 1); c.lineTo(x - 3, cy + 4); c.lineTo(x + 3, cy + 4); c.lineTo(x + 4, y + 1); c.closePath(); c.fill(); c.stroke();
+    c.save(); c.globalAlpha = fade ? 0.5 : 1; c.translate(x + sx, 0);
+    const lobes = [[0, cy, cr], [-cr*0.55, cy + cr*0.3, cr*0.68], [cr*0.55, cy + cr*0.3, cr*0.68], [0, cy - cr*0.45, cr*0.6]];
+    c.strokeStyle = OL; c.lineWidth = 3.2; c.beginPath(); for(const [lx, ly, lr] of lobes){ c.moveTo(lx + lr, ly); c.arc(lx, ly, lr, 0, Math.PI*2); } c.stroke();
+    c.fillStyle = PAL[0]; c.beginPath(); for(const [lx, ly, lr] of lobes){ c.moveTo(lx + lr, ly); c.arc(lx, ly, lr, 0, Math.PI*2); } c.fill();
+    c.fillStyle = PAL[1]; c.beginPath(); c.arc(-cr*0.15, cy - cr*0.2, cr*0.62, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(255,245,200,.16)'; c.beginPath(); c.ellipse(-cr*0.35, cy - cr*0.5, cr*0.36, cr*0.2, -0.4, 0, Math.PI*2); c.fill();
+    c.restore();
+  }
+  function drawNode(c, n, t){
+    const x = n.x, y = n.y, ready = n.ready <= wd.t;
+    if(n.k==='rock'){ toonStone(c, x, y, n.r*1.1, n.r*0.8, n.v < 0.5 ? '#6b655c' : '#5f5a54'); toonStone(c, x + n.r*0.7, y + n.r*0.35, n.r*0.45, n.r*0.32, '#77706a'); return; }
+    if(n.k==='bone'){ if(n.gone) return;
+      c.fillStyle = '#4a3d2e'; c.strokeStyle = 'rgba(14,10,8,.6)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y + 1, 12, 6, 0, 0, Math.PI*2); c.fill(); c.stroke();
+      for(const [bx, by, a] of [[-4, -1, 0.5], [3, 0, -0.7], [0, 2, 0.1]]){ c.save(); c.translate(x + bx, y + by); c.rotate(a); c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(-5, 0); c.lineTo(5, 0); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.8; c.stroke();
+        c.fillStyle = '#e6dcc4'; for(const ex of [-5, 5]){ c.beginPath(); c.arc(ex, 0, 1.6, 0, Math.PI*2); c.fill(); } c.restore(); }
+      c.fillStyle = '#e6dcc4'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.arc(x + 6, y - 3, 3.2, 0, Math.PI*2); c.fill(); c.stroke(); c.fillStyle = OL; c.fillRect(x + 4.6, y - 3.6, 1.1, 1.1); c.fillRect(x + 6.6, y - 3.6, 1.1, 1.1); return; }
+    if(n.k==='berry'){
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 2, y + 3, 12, 5, 0, 0, Math.PI*2); c.fill();
+      const lobes = [[0, -5, 8], [-6, -1, 6], [6, -1, 6]];
+      c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); for(const [lx, ly, lr] of lobes){ c.moveTo(x + lx + lr, y + ly); c.arc(x + lx, y + ly, lr, 0, Math.PI*2); } c.stroke();
+      c.fillStyle = ready ? '#3e6a33' : '#4d5e33'; c.beginPath(); for(const [lx, ly, lr] of lobes){ c.moveTo(x + lx + lr, y + ly); c.arc(x + lx, y + ly, lr, 0, Math.PI*2); } c.fill();
+      c.fillStyle = 'rgba(255,245,200,.14)'; c.beginPath(); c.ellipse(x - 2, y - 8, 4, 2, -0.3, 0, Math.PI*2); c.fill();
+      if(ready) for(const [bx, by] of [[-5, -2], [3, -7], [5, 0], [-1, -4], [-7, -6]]){ c.fillStyle = OL; c.beginPath(); c.arc(x + bx, y + by, 2.1, 0, Math.PI*2); c.fill(); c.fillStyle = '#c2304d'; c.beginPath(); c.arc(x + bx, y + by, 1.5, 0, Math.PI*2); c.fill(); }
+      return; }
+    if(n.k==='herb'){ if(!ready){ toonTuft(c, x, y, 0.6, '#5f7a3a'); return; }
+      toonTuft(c, x - 3, y + 1, 1, '#6f9a45'); toonTuft(c, x + 3, y, 1.1, '#7fae52');
+      c.fillStyle = OL; c.beginPath(); c.arc(x, y - 8, 2.4, 0, Math.PI*2); c.fill(); c.fillStyle = '#f2ead0'; c.beginPath(); c.arc(x, y - 8, 1.7, 0, Math.PI*2); c.fill(); c.fillStyle = '#e0b54a'; c.fillRect(x - 0.5, y - 8.5, 1, 1); return; }
+    if(n.k==='reed'){ const h = ready ? 1 : 0.35, sw = Math.sin(t*1.6 + x*0.05)*1.2;
+      for(const [dx, hh] of [[-4, 15], [-1, 19], [2, 17], [5, 13]]){ const top = y - hh*h; c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x + dx, y); c.quadraticCurveTo(x + dx, y - hh*h/2, x + dx + sw, top); c.stroke(); c.strokeStyle = '#a6a854'; c.lineWidth = 1.2; c.stroke();
+        if(ready && hh > 14){ c.fillStyle = OL; c.beginPath(); c.ellipse(x + dx + sw, top - 1, 1.9, 3.4, 0, 0, Math.PI*2); c.fill(); c.fillStyle = '#6b4529'; c.beginPath(); c.ellipse(x + dx + sw, top - 1, 1.2, 2.7, 0, 0, Math.PI*2); c.fill(); } }
+      return; }
+  }
+  function drawFire(c, f, t){
+    const x = f.x, y = f.y, k = Math.min(1, f.fuel/90);
+    for(let i=0;i<7;i++){ const a = i/7*Math.PI*2; toonStone(c, x + Math.cos(a)*10, y + Math.sin(a)*6, 3.2, 2.4, '#6b655c'); }
+    c.save(); c.translate(x, y); for(const a of [0.5, -0.5]){ c.save(); c.rotate(a); c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(-7, -1.8, 14, 3.6); c.strokeRect(-7, -1.8, 14, 3.6); c.restore(); } c.restore();
+    const fl = f.fl, h = 8 + 12*k;
+    for(const [col, sc, dx] of [['#c9461f', 1, 0], ['#f39a2c', 0.72, 0.5], ['#ffe08a', 0.42, 0]]){
+      const w = 6.5*sc*(0.6 + 0.4*k), hh = h*sc*(0.9 + 0.12*Math.sin(fl*13 + sc*5)), tip = Math.sin(fl*9 + sc*3)*2;
+      c.fillStyle = col; c.strokeStyle = sc===1 ? OL : 'transparent'; c.lineWidth = 1.4;
+      c.beginPath(); c.moveTo(x - w + dx, y - 1); c.quadraticCurveTo(x - w*0.9 + dx, y - hh*0.6, x + tip + dx, y - hh); c.quadraticCurveTo(x + w*0.9 + dx, y - hh*0.6, x + w + dx, y - 1); c.closePath(); if(sc===1) c.stroke(); c.fill(); }
+  }
+  function drawAsh(c, x, y){
+    c.fillStyle = '#3a3532'; c.beginPath(); c.ellipse(x, y, 8, 4.5, 0, 0, Math.PI*2); c.fill();
+    for(let i=0;i<7;i++){ const a = i/7*Math.PI*2; toonStone(c, x + Math.cos(a)*10, y + Math.sin(a)*6, 3.2, 2.4, '#5a5550'); }
+  }
+  function drawBag(c, x, y){
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 1, y + 6, 10, 3.5, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = '#7a5a36'; c.strokeStyle = OL; c.lineWidth = 1.8; c.beginPath(); c.moveTo(x - 9, y + 5); c.quadraticCurveTo(x - 11, y - 6, x - 3, y - 8); c.lineTo(x + 3, y - 8); c.quadraticCurveTo(x + 11, y - 6, x + 9, y + 5); c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = '#3a2a18'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x - 4, y - 8); c.lineTo(x + 4, y - 8); c.stroke();
+    c.fillStyle = OL; c.beginPath(); c.moveTo(x - 3, y - 9); c.lineTo(x, y - 13); c.lineTo(x + 3, y - 9); c.fill();
+    c.fillStyle = '#e6dcc4'; c.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('✝', x, y - 1);
+    c.fillStyle = 'rgba(255,245,220,.25)'; c.beginPath(); c.ellipse(x - 4, y - 4, 2.4, 1.2, -0.5, 0, Math.PI*2); c.fill();
+  }
+  function ring(c, x, y, r, frac, col){ /* the Catacombs's health ring */
+    frac = clamp(frac, 0, 1); c.beginPath(); c.arc(x, y, r, 0, Math.PI*2); c.fillStyle = 'rgba(0,0,0,.6)'; c.fill();
+    if(frac > 0){ c.beginPath(); c.moveTo(x, y); c.arc(x, y, r, -Math.PI/2, -Math.PI/2 + frac*Math.PI*2); c.closePath(); c.fillStyle = col; c.fill(); }
+  }
+  let darkCv = null;
+  function wdDraw(dt){
+    const cv = $('wdCanvas'), st = cv.parentNode, dpr = lowFx ? 1 : Math.min(2, window.devicePixelRatio || 1), w = st.clientWidth, h = st.clientHeight;
+    if(!w || !h) return;
+    if(cv._w!==w || cv._h!==h || cv._d!==dpr){ cv._w = w; cv._h = h; cv._d = dpr; cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
+    const c = cv.getContext('2d'), p = wd.p, t = performance.now()/1000;
+    const sc = Math.min(w, h)/WD.view, vw = w/sc, vh = h/sc;
+    const camX = vw >= WD.W ? WD.W/2 : clamp(p.x, vw/2, WD.W - vw/2), camY = vh >= WD.H ? WD.H/2 : clamp(p.y, vh/2, WD.H - vh/2);
+    const x0 = camX - vw/2, y0 = camY - vh/2, x1 = x0 + vw, y1 = y0 + vh, vis = (x, y, m) => x > x0 - m && x < x1 + m && y > y0 - m && y < y1 + m;
+    wd.view = {sc, x0, y0};
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#0a0706'; c.fillRect(0, 0, cv.width, cv.height);
+    const sh = wd.shake > 0 ? 3 : 0;
+    c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(-x0*sc + (Math.random() - .5)*sh), dpr*(-y0*sc + (Math.random() - .5)*sh));
+    // the ground
+    c.fillStyle = '#56603a'; c.fillRect(Math.max(0, x0), Math.max(0, y0), Math.min(WD.W, x1) - Math.max(0, x0), Math.min(WD.H, y1) - Math.max(0, y0));
+    for(const q of wd.deco.patches) if(vis(q.x, q.y, q.rx)){ c.fillStyle = q.col; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill(); }
+    if(!bareGfx) for(const q of wd.deco.tufts) if(vis(q.x, q.y, 8)) toonTuft(c, q.x, q.y, q.s, q.col);
+    // the rivers, north and south: you cannot cross them
+    { const a = Math.max(0, x0 - 5), b = Math.min(WD.W, x1 + 5);
+      if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
+      if(y1 > WD.H - WD.RIVER - 10){ c.save(); c.translate(0, WD.H); c.scale(1, -1); waterBody(c, a, b, 0, WD.RIVER, t, -1, 16); c.restore(); } }
+    // all that stands, back to front
+    const L = [];
+    for(const n of wd.nodes) if(vis(n.x, n.y, 50)) L.push({y:n.y, n});
+    for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push({y:f.y, f});
+    for(const d of wd.drops) if(vis(d.x, d.y, 20)) L.push({y:d.y - 6, d});
+    for(const f of wd.foes) if(vis(f.x, f.y, 20)) L.push({y:f.y, foe:f});
+    if(wd.home && !wd.fires.some(f=>hyp(f.x - wd.home.x, f.y - wd.home.y) < 4) && vis(wd.home.x, wd.home.y, 20)) L.push({y:wd.home.y - 1, ash:wd.home});
+    L.push({y:p.y, me:true});
+    L.sort((a, b)=>a.y - b.y);
+    const txt = (s, x, y, size, col)=>{ c.font = `bold ${size}px ui-monospace,Menlo,Consolas,monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = col; c.fillText(s, x, y); };
+    for(const e of L){
+      if(e.n){ if(e.n.k==='tree') drawTree(c, e.n, t, !e.n.gone && p.y < e.n.y - 4 && Math.abs(p.x - e.n.x) < e.n.cr && p.y > e.n.y - 18 - e.n.cr*1.8); else drawNode(c, e.n, t); }
+      else if(e.f) drawFire(c, e.f, t);
+      else if(e.ash) drawAsh(c, e.ash.x, e.ash.y);
+      else if(e.d){ const d = e.d, k = Math.min(1, d.pop/400), x = d.sx + (d.x - d.sx)*k, y = d.sy + (d.y - d.sy)*k - Math.sin(Math.PI*k)*14 + (k >= 1 ? Math.sin(t*3 + d.x)*1 : 0);
+        if(d.bag){ drawBag(c, x, y); continue; }
+        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(d.x, d.y + 6, 6, 2, 0, 0, Math.PI*2); c.fill(); c.drawImage(itemIcon(d.id), x - 8, y - 8, 16, 16);
+        if(d.n > 1) txt(String(d.n), x + 8, y + 5, 6, '#e6dcc4'); }
+      else if(e.foe){ const f = e.foe;
+        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(f.x + 1, f.y + f.r*0.7, f.r, f.r*0.4, 0, 0, Math.PI*2); c.fill();
+        if(f.wind > 0){ c.beginPath(); c.arc(f.x, f.y, f.r + 4, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.85)'; c.lineWidth = 1.5; c.stroke(); }
+        ring(c, f.x, f.y, f.r, f.hp/f.maxHp, '#3f8580');
+        c.beginPath(); c.arc(f.x, f.y, f.r - 2.5, 0, Math.PI*2); c.fillStyle = f.hit > 0 ? '#bfe3df' : '#3f8580'; c.fill(); c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke();
+        txt('ϟ', f.x, f.y + 0.5, f.r*1.15, '#100b0a'); }
+      else if(e.me && !(wd.dead > 0)){
+        if(p.fishT > 0){ const side = p.fishSide, bx = p.x + 6, by = side < 0 ? WD.RIVER - 26 : WD.H - WD.RIVER + 26, bob = Math.sin(t*4)*1.2 + (p.fishT < 500 ? Math.sin(t*40)*1.5 : 0);
+          c.strokeStyle = 'rgba(230,220,195,.75)'; c.lineWidth = 0.7; c.beginPath(); c.moveTo(p.x + 4, p.y - 6); c.quadraticCurveTo((p.x + bx)/2 + 4, (p.y + by)/2, bx, by + bob); c.stroke();
+          c.fillStyle = OL; c.beginPath(); c.arc(bx, by + bob, 2.4, 0, Math.PI*2); c.fill(); c.fillStyle = '#d6304f'; c.beginPath(); c.arc(bx, by + bob, 1.7, 0, Math.PI*2); c.fill(); }
+        { const sw = p.sword; if(sw && sw.t < sw.dur + 120){ sw.t += dt; const k = Math.min(1, sw.t/sw.dur), ez = 1 - Math.pow(1 - k, 3), ang = sw.a + sw.side*(-sw.arc/2 + sw.arc*ez);
+          const cx = Math.cos(ang), cy = Math.sin(ang), h0 = p.r - 2, g = p.r + 3, tip = p.r + 20;
+          c.lineCap = 'round'; c.strokeStyle = '#7a2a3a'; c.lineWidth = 2.5; c.beginPath(); c.moveTo(p.x + cx*h0, p.y + cy*h0); c.lineTo(p.x + cx*g, p.y + cy*g); c.stroke();
+          c.strokeStyle = '#e0b54a'; c.lineWidth = 2; c.beginPath(); c.moveTo(p.x + cx*g - cy*4, p.y + cy*g + cx*4); c.lineTo(p.x + cx*g + cy*4, p.y + cy*g - cx*4); c.stroke();
+          c.strokeStyle = '#e8dcc0'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(p.x + cx*g, p.y + cy*g); c.lineTo(p.x + cx*tip, p.y + cy*tip); c.stroke(); c.lineCap = 'butt'; } }
+        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(p.x + 1, p.y + p.r*0.7, p.r, p.r*0.4, 0, 0, Math.PI*2); c.fill();
+        c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
+        ring(c, p.x, p.y, p.r, p.hp/p.maxHp, '#c73a5c'); c.beginPath(); c.arc(p.x, p.y, p.r - 2.5, 0, Math.PI*2); c.fillStyle = '#c73a5c'; c.fill(); c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 1; c.stroke();
+        txt('@', p.x, p.y + 0.5, 12, '#100b0a'); c.globalAlpha = 1; }
+    }
+    // the edges east and west: forest too thick to walk into
+    for(const q of wd.deco.edge) if(vis(q.x, q.y, 40)){ c.fillStyle = OL; c.beginPath(); c.arc(q.x, q.y, q.cr + 1.6, 0, Math.PI*2); c.fill(); c.fillStyle = '#26361c'; c.beginPath(); c.arc(q.x, q.y, q.cr, 0, Math.PI*2); c.fill(); c.fillStyle = '#2f4422'; c.beginPath(); c.arc(q.x - q.cr*0.2, q.y - q.cr*0.25, q.cr*0.6, 0, Math.PI*2); c.fill(); }
+    if(x0 < WD.EDGE - 20){ c.fillStyle = '#141c0f'; c.fillRect(x0 - 10, y0 - 10, WD.EDGE - 30 - x0 + 10, vh + 20); }
+    if(x1 > WD.W - WD.EDGE + 20){ c.fillStyle = '#141c0f'; c.fillRect(WD.W - WD.EDGE + 30, y0 - 10, x1 - (WD.W - WD.EDGE + 30) + 10, vh + 20); }
+    for(const e of wd.fx){
+      const k = Math.max(0, e.t/e.t0);
+      if(e.kind==='slash'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2; c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a - half, a + half); c.closePath();
+        c.fillStyle = e.foe ? `rgba(63,133,128,${0.4*k})` : `rgba(217,201,163,${(e.big ? 0.3 : 0.16)*k})`; c.fill(); }
+      else if(e.kind==='ring'){ c.beginPath(); c.arc(e.x, e.y, e.r*(0.35 + 0.65*(1 - k)), 0, Math.PI*2); c.strokeStyle = `rgba(${e.col},${k})`; c.lineWidth = 2; c.stroke(); }
+      else if(e.kind==='chip'){ const age = (e.t0 - e.t)/1000; c.fillStyle = e.col; c.globalAlpha = k; c.fillRect(e.x + e.vx*age - 1.5, e.y + e.vy*age + 160*age*age - 1.5, 3, 3); c.globalAlpha = 1; }
+      else if(e.kind==='num'){ c.globalAlpha = k; c.lineWidth = 2.5; c.strokeStyle = 'rgba(10,7,6,.8)'; c.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.strokeText(e.text, e.x, e.y - 14*(1 - k)); txt(e.text, e.x, e.y - 14*(1 - k), 8, e.col); c.globalAlpha = 1; }
+    }
+    // the dark: everything goes, except round the fires
+    const dk = darkAt(wd.t);
+    if(dk > 0.01){
+      const ds = 0.5, dw = Math.max(1, Math.round(w*ds)), dh = Math.max(1, Math.round(h*ds));
+      if(!darkCv) darkCv = document.createElement('canvas'); if(darkCv.width!==dw || darkCv.height!==dh){ darkCv.width = dw; darkCv.height = dh; }
+      const d = darkCv.getContext('2d'); d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, dw, dh);
+      d.fillStyle = `rgba(4,6,16,${dk})`; d.fillRect(0, 0, dw, dh);
+      d.globalCompositeOperation = 'destination-out';
+      for(const f of wd.fires){ const fx = (f.x - x0)*sc*ds, fy = (f.y - y0)*sc*ds, R = lightR(f)*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(fx < -R || fy < -R || fx > dw + R || fy > dh + R) continue;
+        const g = d.createRadialGradient(fx, fy, 0, fx, fy, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,.9)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(fx - R, fy - R, 2*R, 2*R); }
+      if(dk < 0.85){ const px = (p.x - x0)*sc*ds, py = (p.y - y0)*sc*ds, R = 60*sc*ds, g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
+      c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(darkCv, 0, 0, cv.width, cv.height);
+      c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(-x0*sc), dpr*(-y0*sc));
+      c.globalCompositeOperation = 'lighter';
+      for(const f of wd.fires){ if(!vis(f.x, f.y, 150)) continue; const R = lightR(f), g = c.createRadialGradient(f.x, f.y - 4, 0, f.x, f.y - 4, R); g.addColorStop(0, `rgba(255,140,50,${0.16*dk})`); g.addColorStop(1, 'rgba(255,140,50,0)'); c.fillStyle = g; c.fillRect(f.x - R, f.y - R, 2*R, 2*R); }
+      c.globalCompositeOperation = 'source-over';
+      if(wd.darkT > 1 && !(wd.dead > 0)){ const a = Math.min(1, (wd.darkT - 1)/1.5), ex = p.x + Math.cos(t*0.7)*34, ey = p.y - 20 + Math.sin(t*0.9)*12; /* eyes in the dark */
+        c.fillStyle = `rgba(240,230,190,${0.85*a})`; for(const s of [-3.5, 3.5]){ c.beginPath(); c.ellipse(ex + s, ey, 2, 1.1, s*0.06, 0, Math.PI*2); c.fill(); } }
+    }
+    for(const e of wd.fx) if(e.kind==='claw'){ const k = Math.max(0, e.t/e.t0); c.strokeStyle = `rgba(20,10,30,${k})`; c.lineWidth = 2.5; c.beginPath(); for(const o of [-6, 0, 6]){ c.moveTo(e.x - 10 + o, e.y - 12); c.lineTo(e.x + 8 + o, e.y + 10); } c.stroke(); }
+    // words over everything, in screen space
+    c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if(wd.banner){ const b = wd.banner; b.t -= dt; const k = clamp(b.t/400, 0, 1), fs = Math.max(20, Math.min(w, h)*0.06);
+      c.globalAlpha = k; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 4; c.strokeStyle = 'rgba(10,7,6,.85)';
+      c.font = `bold ${fs}px "Iowan Old Style","Palatino Linotype",Georgia,serif`; c.strokeText(b.text, w/2, h*0.36); c.fillStyle = '#d9c9a3'; c.fillText(b.text, w/2, h*0.36);
+      if(b.sub){ c.font = `${fs*0.45}px "Iowan Old Style","Palatino Linotype",Georgia,serif`; c.strokeText(b.sub, w/2, h*0.36 + fs*0.85); c.fillStyle = '#b8aa88'; c.fillText(b.sub, w/2, h*0.36 + fs*0.85); }
+      c.globalAlpha = 1; if(b.t <= 0) wd.banner = null; }
+  }
+
+  // ---- the HUD ----
+  let hudLast = '', dialT = 0;
+  const glyph = k => activePad() ? ({act:'B', atk:'X'})[k] : ({act:'E', atk:'J'})[k];
+  function wdHud(){
+    const p = wd.p, a = wd.dead > 0 ? null : wdWhatAct();
+    let hint = a ? (a.k==='fishing' ? a.text : `<b>${glyph('act')}</b> ${a.text}`) : '';
+    if(!hint && !(wd.dead > 0)){ const n = wd.nodes.find(n=>(n.k==='tree' || n.k==='bone') && !n.gone && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + WD_SW.r); if(n) hint = `<b>${glyph('atk')}</b> ${n.k==='tree' ? 'Chop' : 'Break the bones'}`; }
+    const key = [Math.ceil(p.hp), Math.ceil(p.hunger), Math.floor(wd.t/WD.day), wd.sel, wd.inv.map(s=>s ? s.id + s.n : '').join(','), hint].join('|');
+    if(key!==hudLast){ hudLast = key;
+      $('wdHp').innerHTML = Math.max(0, Math.ceil(p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small>`;
+      $('wdBelly').innerHTML = Math.ceil(p.hunger) + `<small style="font-size:.5em;color:var(--bone-dim)">/${WD.hunger}</small>`;
+      $('wdBellyBox').classList.toggle('low', p.hunger < 6);
+      $('wdDay').innerHTML = `Day <b>${Math.floor(wd.t/WD.day) + 1}</b>`;
+      $('wdBar').innerHTML = wd.inv.map((s, i)=>`<div class="wd-slot${i===wd.sel ? ' sel' : ''}" data-i="${i}">${s ? `<img alt="${ITEMS[s.id].name}" src="${iconSrc(s.id)}"><i>${s.n}</i>` : ''}</div>`).join('');
+      $('wdHint').innerHTML = hint; }
+    dialT -= 16; if(dialT <= 0){ dialT = 250; wdDial(); }
+  }
+  function wdDial(){ /* Don't Starve's clock: gold day, red dusk, blue night, a hand for now */
+    const cv = $('wdDial'), s = cv.clientWidth; if(!s) return; const dpr = Math.min(2, window.devicePixelRatio || 1);
+    if(cv.width!==Math.round(s*dpr)){ cv.width = cv.height = Math.round(s*dpr); }
+    const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0); c.clearRect(0, 0, s, s);
+    const o = s/2, r = s/2 - 2, seg = (a0, a1, col)=>{ c.beginPath(); c.moveTo(o, o); c.arc(o, o, r, -Math.PI/2 + a0*Math.PI*2, -Math.PI/2 + a1*Math.PI*2); c.closePath(); c.fillStyle = col; c.fill(); };
+    seg(0, WD.dayEnd/WD.day, '#c9a14a'); seg(WD.dayEnd/WD.day, WD.duskEnd/WD.day, '#9c4a3a'); seg(WD.duskEnd/WD.day, 1, '#28324e');
+    c.beginPath(); c.arc(o, o, r, 0, Math.PI*2); c.strokeStyle = '#120c09'; c.lineWidth = 2; c.stroke();
+    c.beginPath(); c.arc(o, o, r*0.42, 0, Math.PI*2); c.fillStyle = '#1d1613'; c.fill(); c.stroke();
+    const a = -Math.PI/2 + phase(wd.t)/WD.day*Math.PI*2; c.strokeStyle = '#efe6cf'; c.lineWidth = 2.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(o + Math.cos(a)*r*0.42, o + Math.sin(a)*r*0.42); c.lineTo(o + Math.cos(a)*(r - 1), o + Math.sin(a)*(r - 1)); c.stroke();
+  }
+  $('wdBar').addEventListener('pointerdown', e=>{ const el = e.target.closest('.wd-slot'); if(!el || !wd) return; e.stopPropagation(); const i = +el.dataset.i; if(wd.sel===i) wdEat(i); wd.sel = i; hudLast = ''; });
+
+  // ---- the bag panel ----
+  function bagOpen(){ if(!wdLive()) return; wd.paused = true; wd.bag = true; $('wdBag').classList.add('on'); bagRender(); if(activePad()) padSet($('wdBagGrid').children[wd.sel]); beep(500, 0.05, 'triangle', 0.03); }
+  function bagClose(){ $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; wd.paused = false; wdIn.resync = true; } hudLast = ''; }
+  function bagRender(){
+    const g = $('wdBagGrid'), had = padEl && g.contains(padEl) ? [...g.children].indexOf(padEl) : -1;
+    g.innerHTML = wd.inv.map((s, i)=>`<button data-i="${i}" class="${i===wd.sel ? 'sel' : ''}">${s ? `<img alt="${ITEMS[s.id].name}" src="${iconSrc(s.id)}"><i>${s.n}</i>` : ''}</button>`).join('');
+    for(const b of g.children) b.onclick = ()=>{ wd.sel = +b.dataset.i; bagRender(); };
+    if(had >= 0) padSet(g.children[had]);
+    const s = wd.inv[wd.sel], I = s && ITEMS[s.id], fire = !!nearFire(WD.fireNear);
+    const info = !s ? 'Empty' : I.name + ' ×' + s.n + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a fire') : '');
+    $('wdBagInfo').textContent = info;
+    $('wdEat').disabled = !(I && I.food); $('wdCook').disabled = !(I && I.cook && fire); $('wdDrop').disabled = !s;
+    $('wdBuild').disabled = !(invCount('wood') >= 2 && invCount('reed') >= 2);
+    if(padEl && padEl.disabled) padSet($('wdBagClose'));
+  }
+  const bagLive = fn => ()=>{ if(!wd) return; wd.paused = false; const r = fn(); wd.paused = true; bagRender(); return r; };
+  $('wdEat').onclick = bagLive(()=>wdEat(wd.sel));
+  $('wdCook').onclick = bagLive(()=>wdCook(wd.sel));
+  $('wdDrop').onclick = bagLive(()=>{ const s = wd.inv[wd.sel]; if(!s) return; wd.inv[wd.sel] = null; dropItem(s.id, s.n, wd.p.x, wd.p.y, wd.p, true); thud(0.08, 0.06, 900); });
+  $('wdBuild').onclick = ()=>{ if(!wd) return; wd.paused = false; if(wdBuildFire()) bagClose(); else { wd.paused = true; bagRender(); } };
+  $('wdBagClose').onclick = bagClose;
+
+  // ---- pause, menu, leaving ----
+  function wdPanel(msg){ const pn = $('wdPanel'); if(msg==null){ pn.classList.remove('on'); return; } $('wdMsg').textContent = msg; pn.classList.add('on'); if(activePad()) padSet($('wdResume')); }
+  function wdTogglePause(){
+    if(!wd || wd.menu || wd.bag) return;
+    wd.paused = !wd.paused; wdIn.resync = true;
+    if(wd.paused){ wdSave(); wdPanel(`Paused\n\nDay ${Math.floor(wd.t/WD.day) + 1} · seed ${wd.seed} · ${wd.deaths} death${wd.deaths===1 ? '' : 's'}\nYour world is saved.`); }
+    else { wdPanel(null); padSet(null); }
+    $('wdPause').textContent = wd.paused ? 'Resume' : 'Pause';
+  }
+  $('wdPause').onclick = ()=>{ initAudio(); wdTogglePause(); };
+  $('wdResume').onclick = ()=>{ if(wd && wd.paused) wdTogglePause(); };
+  $('wdLeave').onclick = ()=>{ wdSave(); wdLeave(); };
+  function wdLeave(){
+    if(wd) wdSave();
+    let home = WD_HOME_FALLBACK; try{ const r = document.referrer; if(r && new URL(r).origin===location.origin && !/wilds\.html/.test(r)) home = r.split('#')[0]; }catch(e){}
+    try{ home = sessionStorage.getItem('bloodline_home') || home; if(home) sessionStorage.setItem('bloodline_from', 'wilds'); }catch(e){}
+    if(home) location.replace(home); else wdMenu();
+  }
+  let newArm = false, menuMode = 'main';
+  function wdMenu(mode){
+    menuMode = mode || 'main'; newArm = false;
+    if(wd){ wd.menu = true; wd.paused = true; } $('wdPanel').classList.remove('on'); $('wdBag').classList.remove('on');
+    $('wdOverlay').classList.add('uf-menu'); const m = $('wdMeta'); m.classList.add('on');
+    const S = wdLoadSave();
+    if(menuMode==='help'){
+      m.innerHTML = `<h2>HOW TO LIVE</h2><div class="uf-help">${WD_HELP}</div><button id="wdHelpBack">Back</button>`;
+      $('wdHelpBack').onclick = ()=>wdMenu();
+    } else {
+      m.innerHTML = `<h2>THE WILDS</h2><div class="uf-sub">Live off the land. Keep a fire. Night always comes.</div>`
+        + (S ? `<div class="uf-sub">Your world: day ${Math.floor(S.t/WD.day) + 1}, ${S.deaths} death${S.deaths===1 ? '' : 's'}, seed ${S.seed}</div>` : '')
+        + `<div style="height:.4em"></div>`
+        + (S ? `<button id="wdCont" class="title-main">Continue</button>` : '')
+        + `<button id="wdNew"${S ? '' : ' class="title-main"'}>New world${S ? '<small>Starts over: your world is lost</small>' : ''}</button>`
+        + `<button id="wdHelp">How to live</button><button id="wdMenuLeave">Leave</button>`;
+      if(S) $('wdCont').onclick = ()=>{ initAudio(); wdGo(S); };
+      $('wdNew').onclick = ()=>{ initAudio(); if(S && !newArm){ newArm = true; $('wdNew').innerHTML = 'Press again to start over<small>Your world will be lost</small>'; return; } wdGo({seed:Math.random().toString(36).slice(2, 8).toUpperCase()}); };
+      $('wdHelp').onclick = ()=>wdMenu('help');
+      $('wdMenuLeave').onclick = ()=>wdLeave();
+    }
+    padSet(null); if(activePad()) padMove(0, 1);
+  }
+  const WD_HELP = [
+    'Move: left stick or WASD',
+    'Attack and chop: X, J or left click',
+    'Roll: A or Space',
+    'Pick up, fish, feed the fire: B, E or F',
+    'Bag (eat, cook, drop, build): Y, Tab or I',
+    'Choose a slot: LB and RB, or 1 to 0. Eat it: RT or Q',
+    'Pause: Start or Esc',
+    '',
+    'Your belly empties over two days. Empty, it costs you health.',
+    'Chop trees for wood. Cut reeds by the rivers. Pick berries and herbs. Fish from the bank.',
+    'Night is short and deadly: without a fire near you, something in the dark bites.',
+    'A campfire takes 2 wood and 2 reeds. Feed it wood to keep it burning. Cook raw food on it: raw meat hurts, cooked meat heals.',
+    'When you die, all you carry drops where you fell. You wake at your last campfire. Go back for your things.',
+  ].join('\n');
+  function wdGo(S){
+    wdBegin(S); wd.menu = false; wd.paused = false; wdIn.resync = true;
+    $('wdMeta').classList.remove('on'); $('wdOverlay').classList.remove('uf-menu'); padSet(null); hudLast = '';
+    $('wdPause').textContent = 'Pause'; wdMusicStart();
+    wdBanner('Day ' + (Math.floor(wd.t/WD.day) + 1), S.p ? 'Welcome back' : 'Find food. Build a fire before night.', 2600);
+  }
+
+  // ---- input ----
+  function wdPad(){
+    const g = activePad(); if(!g) return null;
+    const b = k => { const x = padBtn(g, k); return !!(x && (x.pressed || x.value > 0.4)); }, dz = v => Math.abs(v) < 0.2 ? 0 : v, P = wdIn.pad;
+    if(wdIn.resync){ wdIn.resync = false; for(let k=0;k<16;k++) P[k] = b(k); }
+    const edge = k => { const now = b(k), was = !!P[k]; P[k] = now; return now && !was; };
+    const o = {mx:dz(g.axes[0]||0), my:dz(g.axes[1]||0)};
+    if(b(12)) o.my = -1; if(b(13)) o.my = 1; if(b(14)) o.mx = -1; if(b(15)) o.mx = 1;
+    o.roll = edge(0); o.act = edge(1); o.attack = edge(2); o.bag = edge(3); o.lb = edge(4); o.rb = edge(5); o.use = edge(7); o.start = edge(9) || edge(8);
+    if(o.roll || o.act || o.attack || o.bag || o.start){ padWakeAudio(); initAudio(); }
+    return o;
+  }
+  function wdRead(g){
+    const K = wdIn.keys; let mx = (K.KeyD || K.ArrowRight ? 1 : 0) - (K.KeyA || K.ArrowLeft ? 1 : 0), my = (K.KeyS || K.ArrowDown ? 1 : 0) - (K.KeyW || K.ArrowUp ? 1 : 0);
+    if(g && (g.mx || g.my)){ mx = g.mx; my = g.my; }
+    const l = hyp(mx, my); if(l > 1){ mx /= l; my /= l; }
+    return {mx, my};
+  }
+  function wdSel(d){ wd.sel = (wd.sel + d + WD.slots) % WD.slots; hudLast = ''; beep(660, 0.03, 'triangle', 0.02); }
+  window.addEventListener('keydown', e=>{
+    wdIn.keys[e.code] = true;
+    if(!wd || wd.menu) return;
+    if(wd.bag){ if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } return; }
+    if(!wdLive()) return; initAudio();
+    if(e.code==='KeyJ') wdAttack(); else if(e.code==='Space'){ e.preventDefault(); wdRoll(); }
+    else if(e.code==='KeyE' || e.code==='KeyF') wdAct(); else if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagOpen(); }
+    else if(e.code==='KeyQ') wdEat(wd.sel); else if(/^Digit\d$/.test(e.code)){ wd.sel = (+e.code.slice(5) + 9) % 10; hudLast = ''; }
+  });
+  window.addEventListener('keyup', e=>{ wdIn.keys[e.code] = false; });
+  window.addEventListener('blur', ()=>{ wdIn.keys = {}; });
+  $('wdCanvas').addEventListener('pointerdown', e=>{ if(e.pointerType!=='mouse' || e.button!==0) return; initAudio(); wdAttack(); });
+  $('wdCanvas').addEventListener('contextmenu', e=>e.preventDefault());
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden && wd && !wd.menu){ if(wdLive()) wdTogglePause(); else wdSave(); } });
+  window.addEventListener('pagehide', ()=>{ if(wd && !wd.menu) wdSave(); });
+
+  // ---- the loop ----
+  function wdLoop(ts){
+    const dt = Math.min(50, ts - wdLast); wdLast = ts;
+    if(wd && !wd.menu) try{
+      const g = wdPad();
+      if(g && g.start && !wd.bag && !(wd.dead > 0)) wdTogglePause();
+      if(!wd.paused){
+        const I = wdRead(g); wd.lastI = I;
+        if(g && wdLive()){ if(g.roll) wdRoll(); if(g.attack) wdAttack(); if(g.act) wdAct(); if(g.lb) wdSel(-1); if(g.rb) wdSel(1); if(g.use) wdEat(wd.sel); if(g.bag) bagOpen(); }
+        if(!wd.paused){ wdStep(dt, I); for(const e of wd.fx) e.t -= dt; wd.fx = wd.fx.filter(e=>e.t > 0); wdSound(dt); }
+      }
+      wdDraw(wd.paused ? 0 : dt); wdHud();
+    }catch(e){ noteError(e); }
+    wdRaf = requestAnimationFrame(wdLoop);
+  }
+
+  // ---- sound: a calm day, a cold night, a heartbeat in the dark ----
+  let musicTimer = 0, nextBar = 0, barN = 0;
+  function wdMusicStart(){
+    initAudio(); if(!audioCtx || !busMaster) return;
+    if(!amb){ const mk = ()=>{ const g = audioCtx.createGain(); g.connect(busMaster); return g; }; amb = {envBus:mk(), musicBus:mk(), dangerBus:mk()}; applySound(); }
+    if(!musicTimer){ nextBar = audioCtx.currentTime + 0.3; musicTimer = setInterval(wdMusicTick, 250); }
+  }
+  const DAY_PENT = [60, 62, 64, 67, 69, 72, 74, 76], NIGHT_SCALE = [50, 53, 55, 57, 58, 62];
+  function wdMusicTick(){
+    if(!audioCtx || !amb || !wd || wd.menu) return;
+    const BAR = 4.8; if(audioCtx.currentTime < nextBar - 0.6) return;
+    const at = nextBar; nextBar += BAR; barN++;
+    const dk = darkAt(wd.t), night = dk > 0.6;
+    if(night){ grPad(at, BAR + 0.4, amb.musicBus, [[73.4, -5], [110, 4], [77.8, 0]]);
+      if(barN%2===0) for(let i=0;i<3;i++) grPluck(midiHz(NIGHT_SCALE[Math.floor(Math.random()*NIGHT_SCALE.length)]), at + 1.2 + i*1.1, amb.musicBus); }
+    else { if(barN%2===0) grPad(at, BAR*2, amb.musicBus, dk > 0.2 ? [[110, -4], [130.8, 5], [164.8, 0]] : [[130.8, -4], [196, 5], [164.8, 0]]);
+      grBass(midiHz(barN%4 < 2 ? 48 : 45), at, amb.musicBus);
+      const n = 3 + Math.floor(Math.random()*3); for(let i=0;i<n;i++) grPluck(midiHz(DAY_PENT[Math.floor(Math.random()*DAY_PENT.length)] - (dk > 0.2 ? 2 : 0)), at + 0.6*Math.floor(Math.random()*8), amb.musicBus); }
+  }
+  function wdSound(dt){
+    if(!audioCtx || !amb) return; const s = dt/1000;
+    wd.envT -= s; if(wd.envT <= 0){ const dk = darkAt(wd.t); wd.envT = 2 + Math.random()*5;
+      if(dk < 0.3){ const f = 2200 + Math.random()*1400; for(let i=0;i<2 + Math.floor(Math.random()*3);i++) beep(f*(1 + (i%2)*0.12), 0.06, 'sine', 0.018, i*0.09, amb.envBus); } /* birds */
+      else if(dk > 0.6) for(let i=0;i<3;i++) beep(4300, 0.03, 'sine', 0.012, i*0.07, amb.envBus); } /* crickets */
+    const f = nearFire(160); if(f && Math.random() < s*5) thud(0.03, 0.03*(1 - hyp(f.x - wd.p.x, f.y - wd.p.y)/160), 3000 + Math.random()*2000, 0, amb.envBus); /* the fire crackles */
+    if(wd.darkT > 0){ wd.beatT -= s; if(wd.beatT <= 0){ wd.beatT = 0.75; thud(0.12, 0.22, 110, 0, amb.dangerBus); thud(0.1, 0.16, 100, 0.2, amb.dangerBus); } } else wd.beatT = 0;
+  }
+
+  // ---- controller and Back on this page (the Catacombs's menu code) ----
+  const PAD_SEL = 'button, input, select, textarea';
+  function padTop(){ const open = [...document.querySelectorAll('.overlay.show')]; if(!open.length) return null; const z = e => parseInt(getComputedStyle(e).zIndex,10) || 0, all = [...document.querySelectorAll('.overlay')];
+    return open.sort((a,b)=> (z(a)-z(b)) || (all.indexOf(a)-all.indexOf(b))).pop(); }
+  function padCands(){ const top = padTop(), root = top || document;
+    return [...root.querySelectorAll(PAD_SEL)].filter(e=>{ if(e.disabled || (!top && e.closest('.overlay'))) return false; const r = e.getBoundingClientRect(); if(r.width<2 || r.height<2) return false;
+      const cs = getComputedStyle(e); if(e.id==='wdPause' && wd && (wd.bag || wd.paused)) return false; return cs.visibility!=='hidden' && cs.pointerEvents!=='none' && e.offsetParent!==null; }); }
+  function padMove(dx, dy){
+    const c = padCands(); if(!c.length){ padSet(null); return; }
+    if(!padEl || !c.includes(padEl)){ padSet(c.find(e=>e.classList.contains('title-main')) || c[0]); return; }
+    const r = padEl.getBoundingClientRect(), vert = dy!==0, dir = vert ? dy : dx, rc = vert ? r.top + r.height/2 : r.left + r.width/2;
+    const box = e => e.getBoundingClientRect();
+    const gap = q => Math.max(0, vert ? (dy>0 ? q.top - r.bottom : r.top - q.bottom) : (dx>0 ? q.left - r.right : r.left - q.right));
+    let pool = c.filter(e=>{ if(e===padEl) return false; const q = box(e), m = vert ? q.top + q.height/2 : q.left + q.width/2; return (m - rc)*dir > 2; });
+    if(!vert) pool = pool.filter(e=>{ const q = box(e); return q.bottom > r.top + 2 && q.top < r.bottom - 2; });
+    if(!pool.length) return;
+    const g0 = Math.min(...pool.map(e=>gap(box(e)))), row = pool.filter(e=>gap(box(e)) <= g0 + 10);
+    const off = e => { const q = box(e); return Math.abs(vert ? (q.left + q.width/2) - (r.left + r.width/2) : (q.top + q.height/2) - (r.top + r.height/2)); };
+    row.sort((a,b)=>{ const d = off(a) - off(b); return Math.abs(d) > 12 ? d : (box(a).left - box(b).left) || (box(a).top - box(b).top); });
+    padSet(row[0]); beep(660, 0.03, 'triangle', 0.02);
+    if(wd && wd.bag && row[0].parentNode===$('wdBagGrid')){ wd.sel = +row[0].dataset.i; bagRender(); }
+  }
+  function padPress(){
+    if(!padEl || !padCands().includes(padEl)){ padMove(0, 1); return; }
+    if(padEl.tagName==='INPUT' || padEl.tagName==='TEXTAREA'){ padEl.focus(); return; }
+    padEl.click();
+  }
+  function goBack(){
+    if($('wdMeta').classList.contains('on')){ if(menuMode==='help') wdMenu(); else wdLeave(); return true; }
+    if(wd && wd.bag){ bagClose(); return true; }
+    if(wd && !(wd.dead > 0)) wdTogglePause();
+    return true;
+  }
+  const padAnyPressed = () => { const g = activePad(); return !!g && g.buttons.some(b=>b && b.pressed); };
+  const wdPadPlaying = () => wdLive() && padAnyPressed(); /* a controller button that Edge also turned into Back */
+  window.addEventListener('keydown', e=>{ if(e.key==='Escape'){ e.preventDefault(); if(!wdPadPlaying()) goBack(); } });
+  for(const ev of ['keydown','pointerdown']) window.addEventListener(ev, padWakeAudio, true);
+  function padPoll(){
+    if(wdLive()){ /* the world reads the pad itself while you play; menus take over when a panel is up */
+      const g0 = activePad(); if(g0){ for(const k of [0,1,3,8,9]) padHeld[k] = !!(padBtn(g0,k) && padBtn(g0,k).pressed); padHeld.dir = true; }
+      requestAnimationFrame(padPoll); return; }
+    const g = activePad();
+    if(g){ if(g.buttons.some(x=>x && x.pressed)) padWakeAudio(); const b = k => !!(padBtn(g,k) && padBtn(g,k).pressed), ax = g.axes[0]||0, ay = g.axes[1]||0;
+      const dir = (b(12) || ay < -0.5) ? [0,-1] : (b(13) || ay > 0.5) ? [0,1] : (b(14) || ax < -0.5) ? [-1,0] : (b(15) || ax > 0.5) ? [1,0] : null, now = performance.now();
+      if(dir){ if(!padHeld.dir || now >= padNext){ padNext = now + (padHeld.dir ? 130 : 380); padAny = true; padMove(dir[0], dir[1]); } padHeld.dir = true; } else padHeld.dir = false;
+      const edge = (k, fn)=>{ if(b(k) && !padHeld[k]){ padAny = true; fn(); } padHeld[k] = b(k); };
+      edge(0, ()=>{ initAudio(); padPress(); }); edge(1, ()=>goBack()); edge(9, ()=>goBack()); edge(8, ()=>goBack()); edge(3, ()=>{ if(wd && wd.bag) bagClose(); });
+    }
+    if(padEl && !document.contains(padEl)) padSet(null);
+    requestAnimationFrame(padPoll);
+  }
+  window.addEventListener('pointerdown', ()=>{ if(padEl) padSet(null); }, true);
+  window.addEventListener('gamepadconnected', ()=>{ if(!padAny) padMove(0, 1); });
+  requestAnimationFrame(padPoll);
+  try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
+  if(/[?&]wdtest\b/.test(location.search)) window.__wilds = {get wd(){ return wd; }, WD, wdSave, wdLoadSave, wdDie, wdBuildFire, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP};
+  wdMenu();
+  wdLast = performance.now(); wdRaf = requestAnimationFrame(wdLoop);
+})();
+</script>
+</body>
+</html>

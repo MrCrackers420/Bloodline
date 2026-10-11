@@ -3,7 +3,7 @@
 
   python3 build_web.py path/to/bloodline.html OUT_DIR [--build 2026-10-05.1]
 
-Writes OUT_DIR/: index.html (the game plus install tags and an update banner), catacombs.html (if it sits next to the game), manifest.webmanifest, sw.js, version.json,
+Writes OUT_DIR/: index.html (the game plus install tags and an update banner), catacombs.html and wilds.html (if they sit next to the game), manifest.webmanifest, sw.js, version.json,
 icons/, HOSTING.md. Upload the contents of OUT_DIR to any static host (GitHub Pages, Netlify, Cloudflare Pages). All paths are
 relative, so it works at a sub-path such as https://name.github.io/bloodline/.
 
@@ -12,6 +12,10 @@ the page compares its BUILD id with version.json every time it comes to the fore
 reload. Saves are in localStorage and never touched. Re-run this script for every release: it stamps a new build id.
 """
 import json, math, os, re, shutil, sys, time
+
+# pages that sit beside the game, and the line in each that names where Leave goes (rewritten for the web build).
+# If you change one of these lines in the page, change it here too: the build asserts it is there
+SIDE_PAGES = [('catacombs.html', "let home = '%s'"), ('wilds.html', "const WD_HOME_FALLBACK = '%s'")]
 from PIL import Image, ImageDraw
 
 def icon(size, maskable=False):
@@ -75,21 +79,22 @@ def main():
     html = re.sub(r'<title>.*?</title>', '<title>Bloodline</title>', html, count=1)
     open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(html)
 
-    # the Catacombs: a second page next to the game (same address, so it shares the saves). Its Leave button falls back to
-    # 'bloodline.html', which here is index.html, so point it at './'. It registers the same worker but has no update banner:
-    # players always come back to the game page, which shows the banner
-    cat_src = os.path.join(os.path.dirname(os.path.abspath(src)), 'catacombs.html')
-    if os.path.exists(cat_src):
-        cat = open(cat_src, encoding='utf-8').read()
-        assert cat.count('</head>') == 1 and cat.count('</body>') == 1, 'unexpected catacombs page structure'
-        assert "let home = 'bloodline.html'" in cat, 'catacombs Leave fallback not found'
-        cat = cat.replace("let home = 'bloodline.html'", "let home = './'", 1)
-        sw_reg = '''<script>
+    # the side pages: the Catacombs and the Wilds, next to the game (same address, so they share the saves). Each one's Leave
+    # falls back to 'bloodline.html', which here is index.html, so point it at './'. They register the same worker but have no
+    # update banner: players always come back to the game page, which shows the banner
+    sw_reg = '''<script>
 (function(){ if(window.top!==window || !/^https?:$/.test(location.protocol)) return; try{ if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js'); }catch(e){} })();
 </script>
 </body>'''
-        cat = cat.replace('</head>', head).replace('</body>', sw_reg)
-        open(os.path.join(out, 'catacombs.html'), 'w', encoding='utf-8').write(cat)
+    for name, fallback in SIDE_PAGES:
+        side_src = os.path.join(os.path.dirname(os.path.abspath(src)), name)
+        if not os.path.exists(side_src): continue
+        side = open(side_src, encoding='utf-8').read()
+        assert side.count('</head>') == 1 and side.count('</body>') == 1, 'unexpected %s page structure' % name
+        assert fallback % 'bloodline.html' in side, '%s Leave fallback not found' % name
+        side = side.replace(fallback % 'bloodline.html', fallback % './', 1)
+        side = side.replace('</head>', head).replace('</body>', sw_reg)
+        open(os.path.join(out, name), 'w', encoding='utf-8').write(side)
 
     json.dump({"name": "Bloodline", "short_name": "Bloodline", "description": "A war fought in blood, across two rivers.",
                "start_url": "./", "scope": "./", "display": "standalone", "orientation": "any",  # any: the installed app turns with the phone (the game has sideways layouts)
@@ -102,7 +107,7 @@ def main():
 
     sw = r'''// Bloodline service worker (build __BUILD__): offline play, and fresh pages whenever the network is reachable.
 const CACHE = 'bloodline-__BUILD__';
-const SHELL = ['./', './index.html', './catacombs.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+const SHELL = ['./', './index.html', './catacombs.html', './wilds.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 function networkFirst(req) {                       // the page and the version file: newest when online, the saved copy offline or on a slow link
@@ -119,7 +124,7 @@ function networkFirst(req) {                       // the page and the version f
 self.addEventListener('fetch', e => {
   const req = e.request; if (req.method !== 'GET') return;
   const url = new URL(req.url); if (url.origin !== location.origin) return;
-  if (req.mode === 'navigate' || /\/(index\.html|catacombs\.html|version\.json)?$/.test(url.pathname) && !/\/icons\//.test(url.pathname)) { e.respondWith(networkFirst(req)); return; }
+  if (req.mode === 'navigate' || /\/(index\.html|catacombs\.html|wilds\.html|version\.json)?$/.test(url.pathname) && !/\/icons\//.test(url.pathname)) { e.respondWith(networkFirst(req)); return; }
   e.respondWith(caches.match(req, { ignoreSearch: true }).then(r => r || fetch(req)));      // icons and the manifest: saved copy first
 });
 '''.replace('__BUILD__', build)
@@ -135,7 +140,7 @@ HOSTING = '''# Bloodline web app (build __BUILD__)
 ## Put it online with GitHub Pages (free, about 5 minutes, no git needed)
 1. Sign in at github.com (a free account is fine). Click **New repository**. Name it `bloodline` (this name becomes part of the
    address, and saves belong to the address, so pick it once and never rename it). Choose **Public**. Create it.
-2. On the new repository page click **uploading an existing file**. Drag in everything from this folder: `index.html`, `catacombs.html`,
+2. On the new repository page click **uploading an existing file**. Drag in everything from this folder: `index.html`, `catacombs.html`, `wilds.html`,
    `manifest.webmanifest`, `sw.js`, `version.json` and the `icons` folder. Click **Commit changes**.
 3. Open **Settings**, then **Pages**. Under Build and deployment choose **Deploy from a branch**, branch **main**, folder **/ (root)**,
    and Save. After a minute or two the address appears: `https://YOUR-NAME.github.io/bloodline/`.
