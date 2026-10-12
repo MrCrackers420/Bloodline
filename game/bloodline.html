@@ -152,7 +152,7 @@
   .net-name{ font:inherit; width:11rem; max-width:60vw; background:#140e0b; color:var(--bone,#d9c9a3); border:1px solid #3a2c27; border-radius:6px; padding:.3rem .5rem; }
   .net-invite{ border:1px solid #6b4a2a; border-radius:8px; padding:.6rem; margin:.5rem 0; background:#1a120e; }
   .net-pin{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:2.6rem; letter-spacing:.35em; text-align:center; margin:.6rem 0; color:#e9d9b0; }
-  .duo-split{ display:none; position:absolute; left:0; right:0; top:50%; border-top:2px dotted #e040c8; opacity:.8; pointer-events:none; z-index:1; } body.duo .duo-split{ display:block; } /* two players: where each one's island ends */
+  .duo-split{ display:none; position:absolute; left:0; right:0; top:50%; border-top:2px dotted #e040c8; opacity:.8; pointer-events:none; z-index:1; } body.duo.duo-touch .duo-split{ display:block; } /* two players on one screen using touch: where each one's island ends. Not shown with controllers (Versus) or on Nearby */
   .zone-label{
     position:absolute; left:50%; transform:translateX(-50%); font-size:.6rem;
     letter-spacing:.08em; color:var(--bone-dim); pointer-events:none;
@@ -2000,7 +2000,13 @@ const SPIDER_DEF = {name:"Spider", cost:0, hp:8, dmg:4, spd:12, range:5, atkStyl
   const p1Top = () => duoOn() && !currentChallenger.net ? 50 : 33.33; // the highest a bottom player may deploy
   const p2Bot = () => currentChallenger && currentChallenger.net ? 66.6 : 50;  // the lowest a top player may deploy
   let duoBuilt = false;
+  // the dotted line across the middle of the field is only for two people sharing one touch screen: the last thing pressed on the page was a finger (or
+  // pen), and it is not Versus (two controllers) or Nearby (one screen each)
+  let duoTouch = false; try{ duoTouch = matchMedia('(pointer: coarse)').matches; }catch(e){}
+  function duoSplitSync(){ const on = duoOn() && !currentChallenger.net && !currentChallenger.console && duoTouch; if(document.body.classList.contains('duo-touch')!==on) document.body.classList.toggle('duo-touch', on); }
+  window.addEventListener('pointerdown', e=>{ const t = e.pointerType!=='mouse'; if(t!==duoTouch){ duoTouch = t; duoSplitSync(); } }, true);
   function duoSync(){
+    duoSplitSync();
     document.body.classList.toggle('net', !!(currentChallenger && currentChallenger.net));
     const on = duoOn() && !currentChallenger.net, side = document.querySelector('.side'), main = document.querySelector('.main'), mp = document.querySelector('.meter.p'), ma = document.querySelector('.meter.a');
     const con = on && !!currentChallenger.console; if(document.body.classList.contains('console')!==con){ document.body.classList.toggle('console', con); lastScale = 0; }

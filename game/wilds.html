@@ -121,7 +121,6 @@
   .uf-help li b{ color:#f0e2bd; font-weight:600; }
   #wdMsg{ max-width:min(34em,90vw); white-space:pre-line; }
   .pad-focus{ outline:2px solid #e0b54a !important; outline-offset:2px; box-shadow:0 0 8px rgba(224,181,74,.6) !important; }
-  #wdBag .wd-craft button.pad-focus:disabled{ opacity:.75 !important; }
   .overlay{
     position:fixed; inset:0; background:rgba(10,7,6,.9); z-index:50;
     display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:1rem; color:var(--bone);
@@ -139,6 +138,11 @@
   #wdPanel [hidden]{display:none !important;}
   #wdPauseMain,#wdPauseSettings{display:flex;flex-direction:column;gap:.45rem;width:min(24rem,100%);}
   #wdPauseHelp{width:min(42rem,100%);max-width:none;margin-top:.4rem;}
+  #wdCrew{position:absolute;left:.5rem;top:6.3rem;display:flex;flex-direction:column;gap:.3rem;pointer-events:none;z-index:2}
+  .wd-crewp{display:flex;align-items:center;gap:.55em;background:rgba(10,7,6,.62);border-left:4px solid #888;padding:.2em .6em;border-radius:5px;font-size:.78em;text-shadow:0 0 4px #000;color:var(--bone,#e8dcc0)}
+  .wd-crewp img{width:1.7em;height:1.7em}
+  .wd-crewp.dead{opacity:.55}
+  #wdPauseCoop{display:flex;flex-direction:column;gap:.4rem;margin-top:.4rem}
   #wdPauseBack{position:sticky;bottom:0;box-shadow:0 0 0 .5rem rgba(10,7,6,.92);}
   #wdPanel button{min-height:2.6rem;}
 </style>
@@ -148,11 +152,11 @@
   <div class="uf-stage"><canvas id="wdCanvas"></canvas>
     <div class="uf-panel" id="wdPanel" role="dialog" aria-modal="true" aria-label="Pause menu">
       <h2 id="wdPauseTitle">PAUSED</h2><div id="wdMsg" role="status" aria-live="polite"></div>
-      <div id="wdPauseMain"><button id="wdResume">Resume</button><button id="wdSaveNow">Save world</button><button id="wdSettings">Settings</button><button id="wdControls">Controls &amp; survival guide</button><button id="wdTitleMenu">Save &amp; return to Wilds menu</button><button id="wdLeave">Save &amp; leave Wilds</button></div>
+      <div id="wdPauseMain"><button id="wdResume">Resume</button><button id="wdSaveNow">Save world</button><button id="wdSettings">Settings</button><button id="wdControls">Controls &amp; survival guide</button><button id="wdCoop">Local co-op</button><button id="wdTitleMenu">Save &amp; return to Wilds menu</button><button id="wdLeave">Save &amp; leave Wilds</button></div>
       <div id="wdPauseSettings" hidden><div class="uf-sub">Volume (0–100%) · select to increase; wraps to 0</div>
         <button id="wdVolumeMaster"></button><button id="wdVolumeSfx"></button><button id="wdVolumeEnv"></button><button id="wdVolumeMusic"></button><button id="wdVolumeDanger"></button>
-        <button id="wdFullscreen"></button><button id="wdHaptics"></button><button id="wdEffects"></button><button id="wdScenery"></button><button id="wdSwapAB"></button><button id="wdSwapXY"></button>
-      </div><div id="wdPauseHelp" class="uf-help" hidden></div><button id="wdPauseBack" hidden>Back to pause menu</button>
+        <button id="wdHaptics"></button><button id="wdEffects"></button><button id="wdScenery"></button><button id="wdSwapAB"></button><button id="wdSwapXY"></button>
+      </div><div id="wdPauseCoop" hidden></div><div id="wdPauseHelp" class="uf-help" hidden></div><button id="wdPauseBack" hidden>Back to pause menu</button>
     </div>
     <div class="uf-panel" id="wdBag">
       <div class="wd-tabs"><button id="wdTabBag">BAG</button><button id="wdTabCraft">CRAFT</button><button id="wdTabCook">COOK</button><button id="wdTabCheat">CHEATS</button></div>
@@ -193,6 +197,7 @@
   <div class="uf-hud">
     <div class="uf-stats"><div class="uf-hp"><span>HP</span> <b id="wdHp">29</b></div><div class="wd-belly" id="wdBellyBox"><span>BELLY</span> <b id="wdBelly">30</b></div></div>
     <div class="wd-clock"><canvas id="wdDial"></canvas><div class="uf-roomlab" id="wdDay"></div><div class="uf-roomlab" id="wdRegion"></div></div>
+    <div id="wdCrew"></div>
   </div>
   <div class="wd-hint" id="wdHint"></div>
   <div id="wdHotbar">
@@ -333,7 +338,16 @@
   const padMap = k => padSwap.ab && (k===0 || k===1) ? 1-k : padSwap.xy && (k===2 || k===3) ? 5-k : k;
   const padBtn = (g, k) => g.buttons[padMap(k)];
   function padSet(e){ if(padEl) padEl.classList.remove('pad-focus'); padEl = e; if(e){ e.classList.add('pad-focus'); try{ e.scrollIntoView({block:'nearest', inline:'nearest'}); }catch(x){} } }
-  function activePad(){ if(!navigator.getGamepads) return null; let best = null;
+  let menuPadIdx = null; /* while a menu is up for one player, only that player's controller drives it */
+  function rawPad(i){ if(!navigator.getGamepads || i==null || i<0) return null; const g = navigator.getGamepads()[i]; return g && g.connected!==false ? g : null; }
+  function seat0Pad(){ /* Player 1's controller: whichever was used last while playing alone, then fixed once others join */
+    if(wd && wd.crew && !wd.menu){ const i0 = wd.crew[0].pad;
+      if(i0===-1) return null;
+      if(i0!=null){ const g = rawPad(i0); return g || (coopCount()>1 ? null : bestPad()); }
+      if(coopCount()>1) return null; }
+    return bestPad(); }
+  function activePad(){ if(wd && wd.crew && !wd.menu && menuPadIdx!=null){ const g = rawPad(menuPadIdx); if(g) return g; } return seat0Pad(); }
+  function bestPad(){ if(!navigator.getGamepads) return null; let best = null;
     for(const g of navigator.getGamepads()){ if(!g || g.connected===false) continue; const st = g.mapping==='standard', bs = best && best.mapping==='standard';
       if(!best || (st && !bs) || (st===bs && (g.timestamp||0) > (best.timestamp||0))) best = g; }
     return best; }
@@ -441,6 +455,7 @@
     boar:{territory:110,notice:70,leash:130,hp:12,spd:85,r:13,dmg:5,reach:16,iv:1200,wind:500,name:'Boar',color:'#795047',mark:'B',meat:3}
   };
   const animalDef=f=>ANIMALS[f.kind || 'jackal'];
+  const hitKind=n=>n.k==='tree' || n.k==='bone' || n.k==='rock' || n.k==='crystal';
   const METALS={iron:{name:'Iron',col:'#b07f61'},copper:{name:'Copper',col:'#ce8b55'},silver:{name:'Silver',col:'#d2e0e7'},zinc:{name:'Zinc',col:'#92a6b8'}};
   const oreFor=(seed,n)=>{if(n.k!=='rock' || n.biome!=='desert')return null;const R=wdRng('desert-ore:'+seed+':'+n.id);if(R()>=.10)return null;const v=R();return v<.4?'iron':v<.7?'copper':v<.9?'zinc':'silver';};
   const ITEMS = {
@@ -523,6 +538,8 @@
     anglerhook:{name:"Angler's Lucky Hook",accessory:true,fishLuck:.25,stack:1,desc:'+25% chance a fishing line catches something. One accessory slot.'},
     veggiestew:{name:'Garden stew',food:14,heal:4,desc:'Carrots, herbs and a mushroom, slow-cooked.'},
     fishchowder:{name:'Fish chowder',food:14,heal:5,desc:'Fish, wheat and herbs in a thick broth.'},
+    glowcap:{name:'Glowcap',one:'glowcap',food:4,heal:1,cook:'cglowcap',desc:'A cave mushroom that glows faintly. Safe to eat raw; roasting makes it richer.'},
+    cglowcap:{name:'Roasted glowcap',food:7,heal:3,desc:'Sweet and warm. Still glows a little.'},
   });
   const LAMP_R = 70, HELM_COL = {hidecap:'#a5774e', woodhelm:'#9a6c40', ironhelm:'#b8c7ce', shardhelm:'#7fd6e8'};
   Object.assign(ITEMS,{
@@ -623,6 +640,7 @@
     {id:'stew', at:'fire', cost:{meat:3, herb:1}, desc:'Fills an empty belly all the way.'},
     {id:'veggiestew', at:'fire', cost:{carrot:2, herb:1, mushroom:1}},
     {id:'fishchowder', at:'fire', cost:{fish:2, wheat:1, herb:1}},
+    {id:'cglowcap', at:'fire', cost:{glowcap:1}},
   ];
   const NODE = { /* what grows in the world. solid: you walk round it */
     shrine:{pick:'stone',verb:'Explore woodland shrine',once:true},
@@ -638,16 +656,18 @@
     reed:  {pick:'reed', verb:'Cut reeds'},
   };
   Object.assign(BUILD,{table:{solid:true,up:true}, chair:{up:true}, bed:{up:true}, shelf:{solid:true,up:true}, lamp:{up:true}});
-  Object.assign(NODE,{cave:{solid:true, pick:'shard', verb:'Search the Shardling hoard', once:true}});
+  Object.assign(NODE,{cave:{solid:true}, caveexit:{}, hoard:{pick:'shard', verb:'Search the Shardling hoard', once:true}, crystal:{solid:true, hp:4}, stalag:{solid:true}, bigshroom:{solid:true}, glowshroom:{pick:'glowcap', verb:'Pick glowcaps'}});
   Object.assign(ANIMALS,{shardling:{territory:170,notice:120,leash:210,hp:7,spd:70,r:9,dmg:2,reach:0,iv:1700,wind:0,name:'Shardling',color:'#7fd6e8',mark:'◇',meat:0,ranged:true,range:130,squad:4}});
   const $ = id => document.getElementById(id);
   let wd = null, wdRaf = 0, wdLast = 0, wdActive = false;
   const wdIn = {keys:{}, pad:{}, resync:true};
   const DESERT={left:2440,right:3040,top:460,bottom:1140,gateTop:720,gateBottom:880,gateLeft:2300,gateRight:2500};
   const FRONTIER={left:3100,right:6300,top:160,bottom:1440,gateLeft:2980,gateRight:3160,gateTop:720,gateBottom:880};
-  let WORLD_RECTS=null; /* built once: collision calls this thousands of times a frame, and it used to allocate five arrays every call */
-  function worldRects(){return WORLD_RECTS || (WORLD_RECTS=[[WD.EDGE,WD.RIVER,WD.W-WD.EDGE,WD.H-WD.RIVER],[DESERT.gateLeft,DESERT.gateTop,DESERT.gateRight,DESERT.gateBottom],[DESERT.left,DESERT.top,DESERT.right,DESERT.bottom],[FRONTIER.gateLeft,FRONTIER.gateTop,FRONTIER.gateRight,FRONTIER.gateBottom],[FRONTIER.left,FRONTIER.top,FRONTIER.right,FRONTIER.bottom]]);}
-  function inWorld(x,y,r=0){const R=worldRects();for(let i=0;i<R.length;i++){const q=R[i];if(x>=q[0]+r && x<=q[2]-r && y>=q[1]+r && y<=q[3]-r)return true;}return false;}
+  /* The Shardling caves: a cavern far to the east of the map. You only get there through the cave mound, never on foot. */
+  const UNDER={left:6900,right:8500,top:160,bottom:1440};
+  const inUnder=o=>!!o && o.x>=UNDER.left-30;
+  function worldRects(){return [[WD.EDGE,WD.RIVER,WD.W-WD.EDGE,WD.H-WD.RIVER],[DESERT.gateLeft,DESERT.gateTop,DESERT.gateRight,DESERT.gateBottom],[DESERT.left,DESERT.top,DESERT.right,DESERT.bottom],[FRONTIER.gateLeft,FRONTIER.gateTop,FRONTIER.gateRight,FRONTIER.gateBottom],[FRONTIER.left,FRONTIER.top,FRONTIER.right,FRONTIER.bottom],[UNDER.left,UNDER.top,UNDER.right,UNDER.bottom]];}
+  function inWorld(x,y,r=0){return worldRects().some(([l,t,rr,b])=>x>=l+r && x<=rr-r && y>=t+r && y<=b-r);}
   function clampWorld(x,y,r=0){if(inWorld(x,y,r))return {x,y};let best=null,d=Infinity;for(const [l,t,rr,b]of worldRects()){const q={x:clamp(x,l+r,rr-r),y:clamp(y,t+r,b-r)},v=hyp(q.x-x,q.y-y);if(v<d){d=v;best=q;}}return best;}
   const desertMouth=n=>n.x>DESERT.gateLeft-60 && n.x<WD.W-WD.EDGE+20 && n.y>DESERT.gateTop+28 && n.y<DESERT.gateBottom-28 && (n.k==='tree' || n.k==='rock');
   const frontierMouth=n=>n.biome==='desert' && n.x>FRONTIER.gateLeft-25 && n.y>FRONTIER.gateTop+18 && n.y<FRONTIER.gateBottom-18 && NODE[n.k].solid;
@@ -695,6 +715,30 @@
     // The Shardling cave: appended last, with its own seed stream, so every older node id stays put.
     const CV=wdRng('shardling-cave:'+seed);
     for(let a=0;a<600;a++){ const x=xl+CV()*(xr-xl), y=lo+CV()*(hi-lo); if(hyp(x-spawnPt.x,y-spawnPt.y)<520 || !ok(x,y,36)) continue; nodes.push({id:nodes.length,k:'cave',x,y,r:18,sp:36,v:CV()}); break; }
+    // The caves under the mound: appended after every older node, with their own seed stream, so older node ids stay put.
+    const U=wdRng('shardling-under:'+seed), uW=UNDER.right-UNDER.left, uH=UNDER.bottom-UNDER.top, uMid=UNDER.top+uH/2, un=[];
+    const uAdd=(k,x,y,r,sp,ex)=>{ const n=Object.assign({id:nodes.length,k,x,y,r,sp,biome:'under'},ex||{}); nodes.push(n); un.push(n); return n; };
+    const uFree=(x,y,sp)=>!un.some(n=>Math.abs(n.x-x)<n.sp+sp && Math.abs(n.y-y)<n.sp+sp && hyp(n.x-x,n.y-y)<n.sp+sp);
+    uAdd('caveexit',UNDER.left+70,uMid,14,30,{v:U()});
+    const hoardY=uMid+(U()-.5)*240; uAdd('hoard',UNDER.right-150,hoardY,16,60,{v:U()});
+    const ribs=[330,580,830,1080,1330]; /* rock ribs split the cavern into chambers; each has a gap to walk through */
+    ribs.forEach((dx,ri)=>{ const rx=UNDER.left+dx, gaps=[]; const ng=1+Math.floor(U()*2); for(let g=0;g<ng;g++) gaps.push(UNDER.top+170+U()*(uH-340)); if(ri===0) gaps.push(uMid);
+      for(let y=UNDER.top+14;y<UNDER.bottom-8;y+=22){ if(gaps.some(g=>Math.abs(y-g)<78)) continue; const r=9+U()*5; uAdd('stalag',rx+(U()-.5)*14,y,r,r+3,{v:U()}); } });
+    const uPlace=(k,count,rf,ex)=>{ for(let i=0;i<count;i++) for(let a=0;a<60;a++){ const x=UNDER.left+30+U()*(uW-60), y=UNDER.top+30+U()*(uH-60), r=rf();
+      if(x<UNDER.left+190 && Math.abs(y-uMid)<120) continue; if(ribs.some(dx=>Math.abs(x-(UNDER.left+dx))<48)) continue; if(hyp(x-(UNDER.right-150),y-hoardY)<80) continue; if(!uFree(x,y,r+6)) continue;
+      uAdd(k,x,y,r,r+6,ex()); break; } };
+    uPlace('stalag',40,()=>8+U()*8,()=>({v:U()}));
+    uPlace('crystal',46,()=>11+U()*5,()=>({v:U()}));
+    uPlace('bigshroom',16,()=>12,()=>({v:U()}));
+    for(let cl=0;cl<24;cl++){ const cx=UNDER.left+60+U()*(uW-120), cy=UNDER.top+60+U()*(uH-120), m=3+Math.floor(U()*3);
+      for(let i=0;i<m;i++) for(let a=0;a<20;a++){ const x=cx+(U()-.5)*70, y=cy+(U()-.5)*50; if(x<UNDER.left+150 || x>UNDER.right-40 || y<UNDER.top+30 || y>UNDER.bottom-30 || !uFree(x,y,10)) continue; uAdd('glowshroom',x,y,6,9,{v:U()}); break; } }
+    const UD={patches:[],pools:[],cracks:[],edge:[]}, UC=['#2f2a38','#232029','#2c2833','#252f2d','#34303e'];
+    for(let i=0;i<260;i++) UD.patches.push({x:UNDER.left+U()*uW,y:UNDER.top+U()*uH,rx:26+U()*80,ry:14+U()*40,col:UC[Math.floor(U()*UC.length)]});
+    for(let i=0;i<9;i++) UD.pools.push({x:UNDER.left+230+U()*(uW-320),y:UNDER.top+90+U()*(uH-180),rx:36+U()*50,ry:20+U()*26,v:U()});
+    for(let i=0;i<140;i++){ let px=0,py=0; const pts=[]; for(let k=0;k<4;k++){ px+=(U()-.4)*8; py+=(U()-.5)*6; pts.push([px,py]); } UD.cracks.push({x:UNDER.left+U()*uW,y:UNDER.top+U()*uH,pts}); }
+    for(let x=UNDER.left-6;x<=UNDER.right+6;x+=24) for(const sgn of [-1,1]){ UD.edge.push({x:x+U()*8,y:(sgn<0?UNDER.top:UNDER.bottom)+sgn*(2+U()*10),r:10+U()*9}); }
+    for(let y=UNDER.top;y<=UNDER.bottom;y+=24) for(const sgn of [-1,1]){ UD.edge.push({x:(sgn<0?UNDER.left:UNDER.right)+sgn*(2+U()*10),y:y+U()*8,r:10+U()*9}); }
+    const uspawns=[]; [480,940,1220].forEach((dx,i)=>uspawns.push({i,x:UNDER.left+dx+(U()-.5)*60,y:UNDER.top+220+U()*(uH-440),n:2})); uspawns.push({i:3,x:UNDER.right-250,y:hoardY,n:3});
     for(const n of nodes){ const D = NODE[n.k]; n.hp = D.hp || 0; n.gone = false; n.ready = 0; n.shk = 0; }
     // the ground's look: drawn every frame from these, so it stays sharp at any zoom
     const G = wdRng('ground:' + seed), patches = [], tufts = [];
@@ -711,7 +755,8 @@
     for(let y=FRONTIER.top;y<=FRONTIER.bottom;y+=32){edge.push({x:FRONTIER.right+16,y,cr:20+X()*8});if(y<FRONTIER.gateTop-15 || y>FRONTIER.gateBottom+15)edge.push({x:FRONTIER.left-16,y,cr:20+X()*8});}
     const B=wdRng('ancient-treeline:'+seed),borderTrees=[];
     worldRects().forEach(([l,top,rr,bottom],ri)=>{
-      const push=(x,y,nx,ny)=>{for(const offset of [18,48,82,118,156]){const bx=x+nx*offset,by=y+ny*offset;if(inWorld(bx,by,0))continue;if(by<WD.RIVER-2 || by>WD.H-WD.RIVER+2)continue;if(worldRects().some(([a,t,z,b])=>bx>a-9 && bx<z+9 && by>t-9 && by<b+9))continue;
+      if(ri===5) return; /* no treeline round the caves */
+      const push=(x,y,nx,ny)=>{for(const offset of [18,48,82]){const bx=x+nx*offset,by=y+ny*offset;if(inWorld(bx,by,0))continue;if(worldRects().some(([a,t,z,b])=>bx>a-9 && bx<z+9 && by>t-9 && by<b+9))continue;
         borderTrees.push({x:bx,y:by,r:14,cr:22+B()*7,v:Math.floor(B()*3),shk:0,gone:false,unbreakable:true});}};
       for(let y=top;y<=bottom;y+=27){push(l,y,-1,0);push(rr,y,1,0);}
       if(ri!==0)for(let x=l;x<=rr;x+=27){push(x,top,0,-1);push(x,bottom,0,1);}
@@ -723,7 +768,7 @@
     const sgPt=()=>SG()<.45 ? {x:FRONTIER.left+SG()*(FRONTIER.right-FRONTIER.left), y:FRONTIER.top+SG()*(FRONTIER.bottom-FRONTIER.top)} : {x:SG()*W, y:WD.RIVER+8+SG()*(H-2*WD.RIVER-16)};
     for(let i=0;i<420;i++){ const q=sgPt(); stones.push({x:q.x,y:q.y,rx:1.5+SG()*2.4,ry:1+SG()*1.4,col:SG()<.5?'#6b655c':'#77706a'}); }
     for(let i=0;i<130;i++){ const q=sgPt(); let px=0,py=0; const pts=[]; for(let k=0;k<4;k++){ px+=(SG()-.4)*7; py+=(SG()-.5)*5; pts.push([px,py]); } cracks.push({x:q.x,y:q.y,pts}); }
-    return {nodes, deco:{patches, tufts, edge,gravel,borderTrees,stones,cracks}};
+    return {nodes, deco:{patches, tufts, edge,gravel,borderTrees,stones,cracks,under:UD}, uspawns};
   }
 
   // ---- saves ----
@@ -737,6 +782,9 @@
       if(Array.isArray(d.bag)){ const bag = d.bag.map(slot).filter(Boolean); return bag.length ? Object.assign(at, {bag}) : null; }
       const s = slot(d); return s ? Object.assign(at, s) : null; }).filter(Boolean).slice(0, 400);
     const p = o.p || {}, armor=slot(o.armor), helmet=slot(o.helmet);
+    const crew = (Array.isArray(o.crew) ? o.crew : []).slice(0, 3).map(c=>{ if(!c || typeof c!=='object') return null; const q = c.p || {}, a = slot(c.armor), h = slot(c.helmet), ci = Array.isArray(c.inv) ? c.inv.slice(0, WD.slots).map(slot) : []; while(ci.length < WD.slots) ci.push(null);
+      return {inv:ci, hand:slot(c.hand), armor:a && ITEMS[a.id].armor ? a : null, helmet:h && ITEMS[h.id].helmet ? h : null, accessory:ITEMS[c.accessory] && ITEMS[c.accessory].accessory ? c.accessory : null,
+        p:{hp:clamp(finite(q.hp, WD.hp), 1, WD.hp), hunger:clamp(finite(q.hunger, WD.hunger), 0, WD.hunger), torch:clamp(finite(q.torch, 0), 0, WD.torch)}}; });
     return {upperWalls:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='wall' && finite(b[5],0)>0).length, retired:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='platform').length, seed:o.seed.slice(0, 12), t:Math.max(0, finite(o.t, 15)),
       p:{x:finite(p.x, spawnPt.x), y:finite(p.y, spawnPt.y), z:clamp(finite(p.z, 0), 0, MAXL*LH), hp:clamp(finite(p.hp, WD.hp), 1, WD.hp), hunger:clamp(finite(p.hunger, WD.hunger), 0, WD.hunger)},
       armor:armor && ITEMS[armor.id].armor ? armor : null, helmet:helmet && ITEMS[helmet.id].helmet ? helmet : null, accessory:ITEMS[o.accessory] && ITEMS[o.accessory].accessory ? o.accessory : null, creative:!!o.creative, hand:slot(o.hand), inv, gone:Array.isArray(o.gone) ? o.gone.filter(n=>Number.isInteger(n)) : [], regrow:o.regrow && typeof o.regrow==='object' ? o.regrow : {},
@@ -744,11 +792,16 @@
       benches:(Array.isArray(o.benches) ? o.benches : []).map(b=>{ const at = pt(b); return at ? Object.assign(at, {k:b.k==='def' ? 'def' : 'work'}) : null; }).filter(Boolean).slice(0, 30),
       floors:(Array.isArray(o.floors) ? o.floors : []).filter(k=>typeof k==='string' && /^-?\d+,-?\d+(,[1-3])?$/.test(k)).slice(0, 4000),
       builds:(Array.isArray(o.builds) ? o.builds : []).filter(b=>Array.isArray(b) && Number.isInteger(b[0]) && Number.isInteger(b[1]) && BUILD[b[2]] && !BUILD[b[2]].floor && finite(b[5],0)===0 && (Math.floor(finite(b[8],0))===0 || BUILD[b[2]].up)).slice(0, 4000).map(b=>[b[0],b[1],b[2],b[3],isStorage(b[2]) ? Array.from({length:storageSlots(b[2])},(_,i)=>slot(Array.isArray(b[4]) ? b[4][i] : null)) : null, 0, Math.max(0,finite(b[6],0)), b[2]==='farmplot' ? {crop:CROPS[b[7]?.crop] ? b[7].crop : null,watered:!!b[7]?.watered} : b[2]==='trailsign' ? {label:clamp(Math.floor(finite(b[7]?.label,0)),0,3)} : null, clamp(Math.floor(finite(b[8],0)),0,MAXL), clamp(Math.floor(finite(b[9],0)),0,3)]),
-      raidDone:Math.floor(finite(o.raidDone, 0)), torch:clamp(finite(p.torch, 0), 0, WD.torch),
+      raidDone:Math.floor(finite(o.raidDone, 0)), torch:clamp(finite(p.torch, 0), 0, WD.torch), crew,
       drops, deaths:Math.max(0, Math.floor(finite(o.deaths, 0))), home:pt(o.home), bed:pt(o.bed)};
   }
   function wdLoadSave(){ try{ return wdClean(JSON.parse(localStorage.getItem(WD_KEY) || 'null')); }catch(e){ return null; } }
-  function wdSave(){
+  function wdSave(){ /* always written from Player 1's seat, so a guest's open bag never lands in Player 1's slot */
+    if(!wd) return;
+    if(wd.crew && wd.cur){ const c = wd.cur; ctxSet(0); try{ return wdSaveNow(); } finally{ ctxSet(c); } }
+    return wdSaveNow();
+  }
+  function wdSaveNow(){
     if(!wd) return;
     const h = wd.home || spawnPt, p = wd.dead > 0 ? Object.assign(safeSpot(h.x, h.y + 20), {z:0, hp:WD.hp, hunger:Math.max(wd.p.hunger, 15)}) : wd.p, regrow = {}; /* saved mid-death: you wake as you would have */
     for(const n of wd.nodes) if(n.ready > wd.t) regrow[n.id] = Math.round(n.ready);
@@ -759,6 +812,9 @@
       floors:[...wd.floors], builds:[...wd.builds.values()].map(b=>[b.gx, b.gy, b.k, b.u==null ? null : b.u, isStorage(b.k) ? b.slots : null,0,b.ready || 0,b.k==='farmplot' ? {crop:b.crop,watered:b.watered} : b.k==='trailsign' ? {label:b.label} : null,b.l||0,b.dir||0]), raidDone:wd.raidDone,
       drops:wd.drops.map(d=>d.bag ? Object.assign({bag:d.bag, x:Math.round(d.x), y:Math.round(d.y)}, d.z ? {z:Math.round(d.z)} : {}) : Object.assign({id:d.id, n:d.n, x:Math.round(d.x), y:Math.round(d.y)}, d.d ? {d:d.d} : {}, d.z ? {z:Math.round(d.z)} : {})),
       deaths:wd.deaths, home:wd.home, bed:wd.bed || null};
+    if(wd.crew){ const cr = [1,2,3].map(i=>{ const s = wd.crew[i], k = s.kit; if(!k) return null; const dead = k.dead > 0;
+      return {inv:k.inv, hand:k.hand || null, armor:k.armor || null, helmet:k.helmet || null, accessory:k.accessory || null, p:{hp:dead ? WD.hp : k.p.hp, hunger:dead ? Math.max(k.p.hunger, 15) : +k.p.hunger.toFixed(3), torch:dead ? 0 : +(k.p.torch || 0).toFixed(1)}}; });
+      if(cr.some(Boolean)) o.crew = cr; }
     try{ localStorage.setItem(WD_KEY, JSON.stringify(o)); }catch(e){ return false; }
     wd.saveT = WD.saveEvery; return true;
   }
@@ -772,11 +828,14 @@
       foes:[], fx:[], deaths:S.deaths || 0, home:S.home || null, dead:0, paused:false, shake:0, banner:null, saveT:WD.saveEvery,
       darkT:0, starveT:0, envT:2, beatT:0, fullNote:0, cam:null};
     wd.lastDay = Math.floor(wd.t/WD.day);
-    buildNodeGrid();
+    menuPadIdx = null; wd.cur = 0; wd.bagSeat = 0;
+    wd.crew = [0,1,2,3].map(i=>({on:i===0, pad:i===0 ? null : -1, kit:null}));
+    (S.crew || []).forEach((c, k)=>{ if(c && k < 3) wd.crew[k + 1].kit = mkKit(c); });
+    wd.unodes = G.nodes.filter(n=>inUnder(n)); wd.uspawns = G.uspawns || [];
     const p0 = S.p || {x:spawnPt.x, y:spawnPt.y, hp:WD.hp, hunger:WD.hunger};
     wd.p = {action:null, x:p0.x, y:p0.y, z:0, vz:0, z0:0, air:false, h:PH, rollT:0, rollCd:0, dx:0, dy:1, r:9, hp:p0.hp, maxHp:WD.hp, hunger:p0.hunger, fx:0, fy:1, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:S.torch || 0};
     const gone = new Set(S.gone || []);
-    for(const n of wd.nodes){n.ore=oreFor(wd.seed,n); if(desertMouth(n) || frontierMouth(n))n.gone=true; if(gone.has(n.id)) n.gone = true; const r = S.regrow && S.regrow[n.id]; if(isFinite(r)) n.ready = +r; }
+    for(const n of wd.nodes){n.ore=oreFor(wd.seed,n); if(desertMouth(n) || frontierMouth(n))n.gone=true; if(gone.has(n.id)) n.gone = true; if(n.k==='cave') n.gone = false; const r = S.regrow && S.regrow[n.id]; if(isFinite(r)) n.ready = +r; }
     for(const k of wd.floors){const q=k.split(',').map(Number);if(q.length>2)wd.upFl.set(k,{gx:q[0],gy:q[1],l:q[2]});}
     for(const b of S.builds || []){const piece=putBuild(b[0],b[1],b[2],b[3],b[8] || 0,b[9] || 0);if(isStorage(piece.k) && Array.isArray(b[4]))piece.slots=Array.from({length:storageSlots(piece.k)},(_,i)=>b[4][i] || null);if(piece.k==='irrigationpump')piece.ready=b[6] || 0;if(piece.k==='garden')piece.ready=b[6] || wd.t+WD.day;if(piece.k==='farmplot'){piece.crop=CROPS[b[7]?.crop] ? b[7].crop : null;piece.watered=!!b[7]?.watered;piece.ready=piece.crop ? (b[6] ?? wd.t+WD.day*CROPS[piece.crop].days) : 0;}if(piece.k==='trailsign')piece.label=b[7]?.label || 0;}
     bagReturnHand();
@@ -794,11 +853,11 @@
     wdSave();
   }
   function wdSpawnJackal(raid){
-    const R = Math.random; for(let i=0;i<40;i++){
+    const SP = livePlayers().find(q=>!inUnder(q)) || wd.p, R = Math.random; for(let i=0;i<40;i++){
       let x, y;
-      if(raid){ const a = R()*Math.PI*2, d = 320 + R()*160; const q=clampWorld(wd.p.x+Math.cos(a)*d,wd.p.y+Math.sin(a)*d,30);x=q.x;y=q.y; if(hyp(x - wd.p.x, y - wd.p.y) < 260) continue; }
+      if(raid){ const a = R()*Math.PI*2, d = 320 + R()*160; const q=clampWorld(SP.x+Math.cos(a)*d,SP.y+Math.sin(a)*d,30);x=q.x;y=q.y; if(hyp(x - SP.x, y - SP.y) < 260) continue; }
       else { x = WD.EDGE + 40 + R()*(WD.W - 2*WD.EDGE - 80); y = WD.RIVER + 40 + R()*(WD.H - 2*WD.RIVER - 80);
-        if(hyp(x - wd.p.x, y - wd.p.y) < 340 || hyp(x - spawnPt.x, y - spawnPt.y) < 200) continue;
+        if(hyp(x - SP.x, y - SP.y) < 340 || hyp(x - spawnPt.x, y - spawnPt.y) < 200) continue;
         if(wd.fires.some(f=>hyp(f.x - x, f.y - y) < 160)) continue;
         let floor = false; for(let gx = Math.floor(x/GRID) - 6; gx <= Math.floor(x/GRID) + 6 && !floor; gx++) for(let gy = Math.floor(y/GRID) - 6; gy <= Math.floor(y/GRID) + 6; gy++) if(wd.floors.has(gkey(gx, gy))){ floor = true; break; }
         if(floor) continue; } /* never out of the wild onto your floors */
@@ -815,15 +874,34 @@
   }
   function caveRepopulate(){
     const cv=wd.nodes.find(n=>n.k==='cave'); if(!cv) return;
-    if(hyp(cv.x-wd.p.x,cv.y-wd.p.y)<260) return;
-    const J=ANIMALS.shardling; let missing=J.squad-wd.foes.filter(f=>f.kind==='shardling').length, tries=0;
+    if(livePlayers().some(q=>hyp(cv.x-q.x,cv.y-q.y)<260)) return;
+    const J=ANIMALS.shardling; let missing=J.squad-wd.foes.filter(f=>f.kind==='shardling' && f.zone==='cave').length, tries=0;
     while(missing>0 && tries++<80){
       const a=Math.random()*Math.PI*2, d=34+Math.random()*36, x=cv.x+Math.cos(a)*d, y=cv.y+8+Math.sin(a)*d;
       if(wdBlocked(x,y,J.r) || !inWorld(x,y,J.r)) continue;
       wd.foes.push({kind:'shardling',zone:'cave',x,y,hx:cv.x,hy:cv.y+30,tx:x,ty:y,r:J.r,hp:J.hp,maxHp:J.hp,kx:0,ky:0,hit:0,cd:700+Math.random()*900,wind:0,wt:0,ag:false,raid:false}); missing--;
     }
   }
-  function wildlifeRepopulate(){caveRepopulate();for(const [kind,target] of [['rabbit',8],['deer',5],['boar',4]]){let n=target-wd.foes.filter(f=>f.kind===kind && f.zone!=='frontier').length;while(n-->0)spawnAnimal(kind);}frontierRepopulate();}
+  function nearCave(){ const p=wd.p; if(inUnder(p) || p.z>=12) return null; const n=wd.nodes.find(q=>q.k==='cave'); return n && hyp(n.x-p.x,n.y-p.y)-n.r<26 ? n : null; }
+  function nearExit(){ const p=wd.p; if(!inUnder(p)) return null; const n=wd.nodes.find(q=>q.k==='caveexit'); return n && hyp(n.x-p.x,n.y-p.y)<32 ? n : null; }
+  function underRepopulate(){ /* the caves' own Shardlings: groups of two or three at fixed nests, back at every dawn */
+    if(!wd.uspawns) return; const J=ANIMALS.shardling, P=livePlayers();
+    for(const sp of wd.uspawns){ let need=sp.n-wd.foes.filter(f=>f.zone==='under' && f.nest===sp.i).length, tries=0;
+      if(need<=0 || P.some(q=>hyp(q.x-sp.x,q.y-sp.y)<260)) continue;
+      while(need>0 && tries++<60){ const a=Math.random()*Math.PI*2, d=10+Math.random()*50, x=sp.x+Math.cos(a)*d, y=sp.y+Math.sin(a)*d; if(wdBlocked(x,y,J.r) || !inWorld(x,y,J.r)) continue;
+        wd.foes.push({kind:'shardling',zone:'under',nest:sp.i,x,y,hx:sp.x,hy:sp.y,tx:x,ty:y,r:J.r,hp:J.hp,maxHp:J.hp,kx:0,ky:0,hit:0,cd:700+Math.random()*900,wind:0,wt:0,ag:false,raid:false}); need--; } } }
+  function wdTravel(down){ /* the whole party goes through the mound together */
+    const cv=wd.nodes.find(n=>n.k==='cave'), P=livePlayers(); if(!cv || !P.length) return;
+    const dest=down ? {x:UNDER.left+110,y:UNDER.top+(UNDER.bottom-UNDER.top)/2} : {x:cv.x,y:cv.y+46};
+    P.forEach((q,i)=>{ const a=i/P.length*Math.PI*2, s=safeSpot(dest.x+(P.length>1 ? Math.cos(a)*22 : 0), dest.y+(P.length>1 ? Math.sin(a)*22 : 0));
+      q.x=s.x; q.y=s.y; q.z=0; q.vz=0; q.air=false; q.rollT=0; q.fishT=0; q.action=null; q.swingT=0; q.queued=false; });
+    for(const f of wd.foes){ f.ag=false; f.wind=0; }
+    wd.fx=[]; wd.fshots=[]; wd.fade={t:0,dur:900}; wd.darkT=0;
+    if(down){ underRepopulate(); wdBanner('The Shardling caves','Crystals hum in the dark. Glowcaps light the way.',3000); beep(180,0.6,'triangle',0.04); beep(130,0.9,'sine',0.04,0.1); }
+    else { wdBanner('Daylight','You climb back out of the mound.',2200); beep(440,0.3,'triangle',0.03); beep(660,0.4,'triangle',0.03,0.12); }
+    hudLast='';
+  }
+  function wildlifeRepopulate(){caveRepopulate();underRepopulate();for(const [kind,target] of [['rabbit',8],['deer',5],['boar',4]]){let n=target-wd.foes.filter(f=>f.kind===kind && f.zone!=='frontier').length;while(n-->0)spawnAnimal(kind);}frontierRepopulate();}
   function frontierRepopulate(){
     for(const [kind,target] of [['jackal',6],['rabbit',14],['deer',8],['boar',6]]){
       let missing=target-wd.foes.filter(f=>f.zone==='frontier' && f.kind===kind).length;
@@ -838,19 +916,12 @@
   function wdRaidCheck(){ /* Don't Starve's hound attacks: a warning at dusk, then the pack comes for you */
     const n = Math.floor(wd.t/WD.day) + 1, ph = phase(wd.t);
     if(!raidNight(n) || wd.raidDone >= n) return;
+    if(!livePlayers().some(q=>!inUnder(q))) return; /* a pack does not follow you down the mound */
     if(ph >= WD.duskEnd - 60 && wd.raidWarn !== n){ wd.raidWarn = n; wdBanner('Howling', 'A pack is coming tonight. Get behind your walls.', 2800);
       for(let i=0;i<3;i++){ beep(520 - i*60, 0.5, 'sawtooth', 0.025, i*0.35); beep(260 - i*30, 0.5, 'sine', 0.03, i*0.35 + 0.05); } }
     if(ph >= WD.duskEnd){ wd.raidDone = n; const k = Math.min(10, 3 + Math.floor(n/3)); for(let i=0;i<k;i++) wdSpawnJackal(true); thud(0.6, 0.14, 160); }
   }
   const solidNodes = () => wd.nodes; /* filtered in the loops below */
-  /* Solid trees, rocks and the cave never move, so they are bucketed once into 64-unit cells. Collision then looks at a handful of
-     neighbours instead of every node in all three biomes (more than a thousand). A node that is felled is skipped through n.gone. */
-  const NGRID = 64, nearBuf = []; let nodeGrid = new Map();
-  function buildNodeGrid(){ nodeGrid = new Map(); for(const n of wd.nodes){ if(!NODE[n.k].solid) continue; const k = Math.floor(n.x/NGRID)*512 + Math.floor(n.y/NGRID); let a = nodeGrid.get(k); if(!a){ a = []; nodeGrid.set(k, a); } a.push(n); } }
-  function solidNear(x, y, r){ /* standing solid nodes that could touch a circle of radius r at x, y. The returned array is reused: read it before calling again */
-    nearBuf.length = 0; const m = r + 20, g0 = Math.floor((x - m)/NGRID), g1 = Math.floor((x + m)/NGRID), h0 = Math.floor((y - m)/NGRID), h1 = Math.floor((y + m)/NGRID);
-    for(let gx = g0; gx <= g1; gx++) for(let gy = h0; gy <= h1; gy++){ const a = nodeGrid.get(gx*512 + gy); if(a) for(let i=0;i<a.length;i++) if(!a[i].gone) nearBuf.push(a[i]); }
-    return nearBuf; }
   const gkey = (gx, gy, l) => l ? gx + ',' + gy + ',' + l : gx + ',' + gy;
   function cellPieces(gx,gy){const out=[],top=wd.upN>0 ? MAXL : 0;for(let l=0;l<=top;l++){const b=wd.builds.get(gkey(gx,gy,l));if(b)out.push(b);}return out;}
   function putBuild(gx,gy,k,u,l,dir){
@@ -876,7 +947,7 @@
   function wdBlocked(x, y, r, z, h){
     z = z || 0; h = h || 12;
     if(wd.builds && wd.builds.size){ let hit = false; buildsNear(x, y, r, b=>{ if(BUILD[b.k].solid && bandHit(b, z, h) && boxHit(b, x, y, r)) hit = true; }); if(hit) return true; }
-    { const L = solidNear(x, y, r); for(let i=0;i<L.length;i++){ const n = L[i], dx = n.x - x, dy = n.y - y, m = n.r + r; if(dx*dx + dy*dy < m*m) return true; } }
+    for(const n of wd.nodes){ if(!NODE[n.k].solid || n.gone) continue; const ex = n.r + r, ddx = n.x - x; if(ddx > ex || -ddx > ex) continue; if(hyp(ddx, n.y - y) < ex) return true; }
     for(const f of wd.fires) if(hyp(f.x - x, f.y - y) < 10 + r) return true;
     for(const b of wd.benches) if(hyp(b.x - x, b.y - y) < 13 + r) return true;
     return !inWorld(x,y,r);
@@ -945,8 +1016,8 @@
   function wdSolid(o){
     const oz = o.z || 0, oh = o.h || 12;
     if(oz < 20){ /* trees, fires and benches are on the ground: you pass over them upstairs */
-      const L = solidNear(o.x, o.y, o.r), cnt = L.length; /* the loop only moves o, so the shared list is safe to read directly */
-      for(let i=0;i<cnt;i++){ const n = L[i], dx = o.x - n.x, dy = o.y - n.y, m = n.r + o.r, d2 = dx*dx + dy*dy; if(d2 < m*m){ const d = Math.sqrt(d2); if(d > 0.01){ o.x = n.x + dx*m/d; o.y = n.y + dy*m/d; } else o.y = n.y + m; } }
+      for(const n of solidNodes()){ if(!NODE[n.k].solid || n.gone) continue; const dx = o.x - n.x, dy = o.y - n.y; if(Math.abs(dx) > 40 || Math.abs(dy) > 40) continue;
+        const d = hyp(dx, dy), m = n.r + o.r; if(d < m){ if(d > 0.01){ o.x = n.x + dx*m/d; o.y = n.y + dy*m/d; } else o.y = n.y + m; } }
       for(const f of wd.fires.concat(wd.benches)){ const dx = o.x - f.x, dy = o.y - f.y, d = hyp(dx, dy), m = (f.fuel===undefined ? 13 : 10) + o.r; if(d < m && d > 0.01){ o.x = f.x + dx*m/d; o.y = f.y + dy*m/d; } }
     }
     if(wd.builds.size) buildsNear(o.x, o.y, o.r, b=>{ const B=BUILD[b.k]; if(!B.solid || (B.solid==='foes' && o===wd.p) || !bandHit(b, oz, oh)) return;
@@ -993,11 +1064,13 @@
   const isNight = () => darkAt(wd.t) > 0.85;
   const lightR = f => f.fuel > 0 ? 40 + 100*Math.min(1, f.fuel/90) : 0;
   const torchR = () => wd.p.torch > 0 && !(wd.dead > 0) ? WD.torchR*(0.6 + 0.4*Math.min(1, wd.p.torch/15)) : 0;
-  const litAt = (x, y) => wd.fires.some(f=>f.fuel > 0 && hyp(f.x - x, f.y - y) < lightR(f)*0.8) || (torchR() > 0 && hyp(wd.p.x - x, wd.p.y - y) < torchR()*0.8) || lampLit(x, y);
+  const torchLit = (x, y) => { for(const i of activeIdx()){ const q = bodyOf(i); if(!(q.torch > 0) || ctxGet(i, 'dead') > 0) continue; if(hyp(q.x - x, q.y - y) < WD.torchR*(0.6 + 0.4*Math.min(1, q.torch/15))*0.8) return true; } return false; };
+  const litAt = (x, y) => wd.fires.some(f=>f.fuel > 0 && hyp(f.x - x, f.y - y) < lightR(f)*0.8) || torchLit(x, y) || lampLit(x, y);
   const lampLit = (x, y) => { for(const b of wd.builds.values()) if(b.k==='lamp' && hyp(b.x - x, b.y - y) < LAMP_R*0.8 && Math.abs((b.l || 0)*LH - wd.p.z) < LH + 1) return true; return false; };
   function burnFires(sec){ for(const f of wd.fires) f.fuel = Math.max(0, f.fuel - sec); } /* Keep ashes so both types can be relit and saved. */
   function wdDawn(){ /* a new day: the Jackals' numbers come back */
     let n = WD.jackals - wd.foes.filter(f=>(!f.kind || f.kind==='jackal') && f.zone!=='frontier').length; while(n-- > 0) wdSpawnJackal();
+    for(const n of wd.nodes) if(n.k==='crystal' && n.gone && n.ready <= wd.t){ n.gone = false; n.hp = NODE.crystal.hp; }
     wildlifeRepopulate();
     wdBanner('Day ' + (Math.floor(wd.t/WD.day) + 1), '', 2200); beep(523, 0.5, 'triangle', 0.04); beep(784, 0.7, 'triangle', 0.03, 0.18);
   }
@@ -1033,7 +1106,7 @@
     const look = (x, y, r, range, cone)=>{ const dx = x - p.x, dy = y - p.y, d = hyp(dx, dy) || 0.01; if(d > range + r) return;
       const ang = Math.acos(clamp((dx*p.fx + dy*p.fy)/d, -1, 1)); if(ang > cone && d > p.r + r + 8) return; if(d < bd){ bd = d; best = {x:dx/d, y:dy/d}; } };
     if(p.z < 12) for(const f of wd.foes) look(f.x, f.y, f.r, WD_SW.lockR, WD_SW.lockCone);
-    if(!best && p.z < 12) for(const n of wd.nodes) if((n.k==='tree' || n.k==='bone' || n.k==='rock') && !n.gone && Math.abs(n.x - p.x) < 70 && Math.abs(n.y - p.y) < 70) look(n.x, n.y, n.r, WD_SW.r + 6, WD_SW.lockCone);
+    if(!best && p.z < 12) for(const n of wd.nodes) if(hitKind(n) && !n.gone && Math.abs(n.x - p.x) < 70 && Math.abs(n.y - p.y) < 70) look(n.x, n.y, n.r, WD_SW.r + 6, WD_SW.lockCone);
     return best || {x:p.fx, y:p.fy};
   }
   function wdHitArc(dir, reach, arc, dmg, knock){
@@ -1041,14 +1114,14 @@
     if(p.z >= 12) return; /* a floor away: nothing on the ground is in reach */
     for(const f of wd.foes.slice()) if(inArc(f.x, f.y, f.r)){ const dx = f.x - p.x, dy = f.y - p.y, d = hyp(dx, dy) || 1; wdHurtF(f, dmg, dx/d*knock, dy/d*knock); }
     let node = null, nd = Infinity; /* one tree or pile a swing, like an axe */
-    for(const n of wd.nodes){ if(n.gone || !(n.k==='tree' || n.k==='bone' || n.k==='rock') || Math.abs(n.x - p.x) > 70 || Math.abs(n.y - p.y) > 70) continue; if(inArc(n.x, n.y, n.r)){ const d = hyp(n.x - p.x, n.y - p.y); if(d < nd){ nd = d; node = n; } } }
-    if(node){ if(node.k==='tree' && toolFor('chop') >= 0) wd.swingTool = 'hatchet'; else if(node.k==='rock' && toolFor('mine') >= 0) wd.swingTool = 'pickaxe'; wdChop(node, dmg); }
+    for(const n of wd.nodes){ if(n.gone || !hitKind(n) || Math.abs(n.x - p.x) > 70 || Math.abs(n.y - p.y) > 70) continue; if(inArc(n.x, n.y, n.r)){ const d = hyp(n.x - p.x, n.y - p.y); if(d < nd){ nd = d; node = n; } } }
+    if(node){ if(node.k==='tree' && toolFor('chop') >= 0) wd.swingTool = 'hatchet'; else if((node.k==='rock' || node.k==='crystal') && toolFor('mine') >= 0) wd.swingTool = 'pickaxe'; wdChop(node, dmg); }
   }
   function wdChop(n, dmg){
     if(n.gone || n.unbreakable)return;
     n.shk = 160;
-    for(let i=0;i<4;i++) wdFx({kind:'chip', x:n.x, y:n.y - (n.k==='tree' ? 10 : 2), vx:(Math.random() - 0.5)*120, vy:-30 - Math.random()*60, col:n.k==='tree' ? (i%2 ? '#6b4a2c' : '#7d9a4a') : n.k==='rock' ? '#8a847a' : '#e6dcc4', t:500});
-    if(n.k==='tree' || n.k==='rock'){ /* the sword only bounces off: it takes the right tool, from the bag */
+    for(let i=0;i<4;i++) wdFx({kind:'chip', x:n.x, y:n.y - (n.k==='tree' ? 10 : 2), vx:(Math.random() - 0.5)*120, vy:-30 - Math.random()*60, col:n.k==='tree' ? (i%2 ? '#6b4a2c' : '#7d9a4a') : n.k==='rock' ? '#8a847a' : n.k==='crystal' ? (i%2 ? '#9fe8ff' : '#e1d6ff') : '#e6dcc4', t:500});
+    if(n.k==='tree' || n.k==='rock' || n.k==='crystal'){ /* the sword only bounces off: it takes the right tool, from the bag */
       const ti = toolFor(n.k==='tree' ? 'chop' : 'mine');
       if(ti < 0){ thud(0.05, 0.08, 3000); beep(1700, 0.04, 'square', 0.015); wdNote(n.k==='tree' ? 'You need a hatchet' : 'You need a pickaxe'); return; }
       wear(ti); n.hp -= 1; }
@@ -1058,6 +1131,7 @@
     n.gone = true;
     if(n.k==='tree'){ const k = 2 + (Math.random() < 0.5 ? 1 : 0); for(let i=0;i<k;i++) dropItem('wood', 1, n.x, n.y + 4, {x:n.x, y:n.y - 14}); thud(0.4, 0.18, 260); wd.shake = 120; haptic(20); }
     else if(n.k==='rock'){if(n.ore)dropItem(n.ore+'ore',6,n.x,n.y,n); for(let i=0;i<2 + (Math.random() < 0.5 ? 1 : 0);i++) dropItem('stone', 1, n.x, n.y, n); dropItem('flint', 1 + (Math.random() < 0.4 ? 1 : 0), n.x, n.y, n); thud(0.4, 0.18, 400); wd.shake = 120; haptic(20); } /* Don't Starve's boulder: rocks and flint */
+    else if(n.k==='crystal'){ n.ready = wd.t + WD.day*3; dropItem('shard', 1 + (Math.random() < 0.5 ? 1 : 0), n.x, n.y, n); if(Math.random() < 0.4) dropItem('stone', 1, n.x, n.y, n); thud(0.3, 0.14, 2800); beep(1480, 0.12, 'triangle', 0.03); wd.shake = 100; }
     else { dropItem('bone', 2, n.x, n.y, n); thud(0.2, 0.12, 900); }
   }
   function wdSwing(){
@@ -1065,7 +1139,7 @@
     const dir=wdAim(), selected=wd.inv[wd.sel];
     let ti=selected && (ITEMS[selected.id].weapon || ['chop','mine'].includes(ITEMS[selected.id].tool)) ? wd.sel : -1;
     // Prefer the proper harvesting tool when facing a resource.
-    const target=wd.nodes.find(n=>!n.gone && ['tree','rock'].includes(n.k) && hyp(n.x-p.x,n.y-p.y)<WD_SW.r+n.r && (n.x-p.x)*dir.x+(n.y-p.y)*dir.y>0);
+    const target=wd.nodes.find(n=>!n.gone && ['tree','rock','crystal'].includes(n.k) && hyp(n.x-p.x,n.y-p.y)<WD_SW.r+n.r && (n.x-p.x)*dir.x+(n.y-p.y)*dir.y>0);
     if(target){ const need=toolFor(target.k==='tree'?'chop':'mine'); if(need>=0) ti=need; }
     if(ti<0) ti=wd.inv.findIndex(s=>s && (ITEMS[s.id].weapon || ['chop','mine'].includes(ITEMS[s.id].tool)));
     if(ti<0){ wdNote('Craft a weapon or tool first'); p.queued=false; return; }
@@ -1085,7 +1159,7 @@
     p.dx = dx/l; p.dy = dy/l; p.fx = p.dx; p.fy = p.dy; p.rollT = WD.rollMs; p.rollCd = WD.rollCd; p.inv = Math.max(p.inv, WD.iframes);
     p.swingT = 0; p.queued = false; p.combo = 0; p.comboT = 0; p.fishT = 0; thud(0.1, 0.08, 900);
   }
-  const shoreAt = p => p.z >= 12 ? 0 : p.y < WD.RIVER + p.r + WD.shore ? -1 : p.y > WD.H - WD.RIVER - p.r - WD.shore ? 1 : 0;
+  const shoreAt = p => p.z >= 12 || inUnder(p) ? 0 : p.y < WD.RIVER + p.r + WD.shore ? -1 : p.y > WD.H - WD.RIVER - p.r - WD.shore ? 1 : 0;
   function nearFire(r, lit){ const p = wd.p; if(p.z >= 12) return null; let best = null, bd = r; for(const f of wd.fires){ if(lit && !(f.fuel > 0)) continue; const d = hyp(f.x - p.x, f.y - p.y); if(d < bd){ bd = d; best = f; } } return best; }
   function nearPick(){ const p = wd.p; if(p.z >= 12) return null; let best = null, bd = WD.pickR;
     for(const n of wd.nodes){ if(!NODE[n.k].pick || n.gone || n.ready > wd.t || Math.abs(n.x - p.x) > 40 || Math.abs(n.y - p.y) > 40) continue; const d = hyp(n.x - p.x, n.y - p.y) - n.r; if(d < bd){ bd = d; best = n; } }
@@ -1150,7 +1224,9 @@
     const bed=nearCampPiece('bed'); if(bed) return {k:'bed',bed,text:(bed.l||0)===0 ? (darkAt(wd.t)>=0.3 ? 'Sleep until morning (also sets your bed)' : 'Set bed as home (you wake here)') : (darkAt(wd.t)>=0.3 ? 'Sleep until morning' : 'Bed upstairs · too early to sleep')};
     const f = nearFire(WD.fireNear), fuel = ['wood','charcoal','reed','twig'].find(id=>invCount(id)); if(f && fuel && f.fuel < WD.fireMax) return {k:'feed', f, fuel, text:(f.fuel > 0 ? 'Feed fire' : 'Relight fire') + ' (' + ITEMS[fuel].name.toLowerCase() + ')'};
     const garden=nearGarden();if(garden && wd.t>=garden.ready)return {k:'garden',garden,text:'Harvest garden (3 berries)'};
-    const n = nearPick(); if(n && n.k==='cave' && wd.foes.some(f=>f.kind==='shardling' && hyp(f.x-n.x,f.y-n.y)<220)) return {k:'need', text:'Shardlings guard this cave. Defeat them first'};
+    const cv = nearCave(); if(cv) return {k:'cavein', n:cv, text:'Enter the Shardling caves'};
+    const ex = nearExit(); if(ex) return {k:'caveout', n:ex, text:'Climb back to the surface'};
+    const n = nearPick(); if(n && n.k==='hoard' && wd.foes.some(f=>f.kind==='shardling' && f.zone==='under' && hyp(f.x-n.x,f.y-n.y)<200)) return {k:'need', text:'Shardlings guard this hoard. Defeat them first'};
     if(n) return {k:'pick', n, text:NODE[n.k].verb};
     if(garden)return {k:'need',text:'Garden growing · '+Math.ceil(garden.ready-wd.t)+' s until harvest'};
     const station=nearStation();if(station)return {k:'metalstation',station,text:'Use '+ITEMS[station.k].name.toLowerCase()};
@@ -1166,6 +1242,8 @@
     if(a.k==='sign')return signCycle(a.sign);
     if(a.k==='bed')return wdSleep(a.bed);
     if(a.k==='garden'){wdHarvestGarden(a.garden);return;}
+    if(a.k==='cavein') return wdAction('Descend',900,()=>nearCave()===a.n,()=>wdTravel(true));
+    if(a.k==='caveout') return wdAction('Climb',900,()=>nearExit()===a.n,()=>wdTravel(false));
     if(a.k==='pick') return wdAction(a.text,['cache','shrine'].includes(a.n.k)?1400:550,
       ()=>!a.n.gone && a.n.ready<=wd.t && nearPick()===a.n, ()=>wdActNow());
     return wdActNow();
@@ -1176,7 +1254,7 @@
     if(a.k==='chest'){ bagOpen('bag',a.chest); return; }
     if(a.k==='need'){ wdNote(a.text); return; }
     if(a.k==='feed') wdRefuel(invFind(a.fuel));
-    else if(a.k==='pick'){ const n = a.n; if(NODE[n.k].once) n.gone = true; else n.ready = wd.t + WD.regrow; if(n.k==='shrine'){give('trailcharm',1,n);give('salve',2,n);give('stone',3,n);wdBanner('Woodland shrine','You found a Forager Leaf Charm and forgotten remedies.',2800);wdSave();} else if(n.k==='cache'){ const R=wdRng('cache:'+wd.seed+':'+n.id); for(const [id,num] of [['wood',3],['flint',2],['reed',2],[R()<0.5?'salve':'charcoal',1]]) give(id,num,n); wdBanner('Abandoned supplies','Someone left enough to keep you going.',2200); wdSave(); } else if(n.k==='cave'){ give('shard',4,n); give('salve',1,n); wdBanner('Shardling hoard','Crystal slivers glitter in the dark.',2600); wdSave(); } else give(NODE[n.k].pick, 1, n); thud(0.05, 0.05, 2600); }
+    else if(a.k==='pick'){ const n = a.n; if(NODE[n.k].once) n.gone = true; else n.ready = wd.t + WD.regrow; if(n.k==='shrine'){give('trailcharm',1,n);give('salve',2,n);give('stone',3,n);wdBanner('Woodland shrine','You found a Forager Leaf Charm and forgotten remedies.',2800);wdSave();} else if(n.k==='cache'){ const R=wdRng('cache:'+wd.seed+':'+n.id); for(const [id,num] of [['wood',3],['flint',2],['reed',2],[R()<0.5?'salve':'charcoal',1]]) give(id,num,n); wdBanner('Abandoned supplies','Someone left enough to keep you going.',2200); wdSave(); } else if(n.k==='hoard'){ give('shard',5,n); give('salve',2,n); give('glowcap',3,n); wdBanner('Shardling hoard','Crystal slivers glitter in the dark.',2600); wdSave(); } else give(NODE[n.k].pick, 1, n); thud(0.05, 0.05, 2600); }
     else if(a.k==='fish'){ p.fishT = WD.fishMs; p.fishSide = shoreAt(p); beep(600, 0.08, 'triangle', 0.03); thud(0.06, 0.05, 2000, 0.3); }
   }
   function wdRefuel(i){ if(!wd) return false; const item=wd.inv[i]; if(!item) return false; return wdAction('Feed fire',450,()=>wd.inv[i]===item && !!nearFire(WD.fireNear) && nearFire(WD.fireNear).fuel<WD.fireMax,()=>wdRefuelNow(i)); }
@@ -1353,7 +1431,7 @@
     if(bag.length) wd.drops.push({bag, x:p.x, y:p.y, z:p.z, sx:p.x, sy:p.y - 20, pop:0});
     wd.dead = 3000; wd.deaths++; for(const f of wd.foes){ f.ag = false; f.wind = 0; }
     sfxDefeat(); haptic([60, 40, 120]); wd.shake = 260;
-    wdBanner('You died', cause + '.' + (bag.length ? ' Your things lie where you fell.' : ''), 3000);
+    wdBanner(wd.cur ? 'Player ' + (wd.cur + 1) + ' died' : 'You died', cause + '.' + (bag.length ? ' Their things lie where they fell.' : ''), 3000);
     wdSave();
   }
   /* A spot you can stand and walk away from: clear of solids, fires, benches, and every stair cell (a ground player inside a stair's wedge cannot move at all) */
@@ -1381,21 +1459,126 @@
     p.hp = p.maxHp; p.hunger = Math.max(p.hunger, 15); p.inv = 3000; p.swingT = 0; p.combo = 0; p.comboT = 0; p.fishT = 0;
     wd.darkT = 0; wd.starveT = 0;
     let slept = false;
-    if(darkAt(wd.t) > 0.5 && !litAt(p.x, p.y)){ /* waking in the dark would only kill you again: you sleep to the morning instead */
+    if(wd.cur===0 && !inUnder(p) && darkAt(wd.t) > 0.5 && !litAt(p.x, p.y)){ /* waking in the dark would only kill you again: you sleep to the morning instead */
       const next = (Math.floor(wd.t/WD.day) + 1)*WD.day + 2; burnFires(next - wd.t); wd.t = next; slept = true; }
-    if(!quiet) wdBanner('You wake', (bedOk ? 'in your bed' : wd.home ? 'by your campfire' : 'where you first woke') + (slept ? ', at first light' : ''), 2400);
+    if(!quiet) wdBanner(wd.cur ? 'Player ' + (wd.cur + 1) + ' wakes' : 'You wake', (bedOk ? 'in your bed' : wd.home ? 'by your campfire' : 'where you first woke') + (slept ? ', at first light' : ''), 2400);
   }
+
+
+  // ---- local co-op: up to four on one world and one screen, each with their own kit ----
+  /* One world, one shared set of buildings, fires, chests and foes. A player's own things (body, bag, hand, gear, build mode)
+     live in wd.* for whoever is "current"; everyone else's wait in their seat and are swapped in for that player's turn. */
+  const PCOL = ['#e8d6a0', '#6ec6ff', '#ff8f6b', '#a6e36b'];
+  const PK = ['p','inv','sel','hand','armor','helmet','accessory','darkT','starveT','dead','build','mouse','chest','chestSel','bagSide','tab','csel','fullNote','beatT','lastI','buildDir'];
+  function mkBody(x, y, hp, hunger, torch){ return {action:null, x, y, z:0, vz:0, z0:0, air:false, h:PH, rollT:0, rollCd:0, dx:0, dy:1, r:9, hp, maxHp:WD.hp, hunger, fx:0, fy:1, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:torch || 0}; }
+  function mkKit(sv){ sv = sv || {}; const q = sv.p || {};
+    return {p:mkBody(0, 0, q.hp != null ? q.hp : WD.hp, q.hunger != null ? q.hunger : WD.hunger, q.torch), inv:sv.inv ? sv.inv.map(s=>s ? {...s} : null) : Array(WD.slots).fill(null), sel:0, hand:sv.hand ? {...sv.hand} : null,
+      armor:sv.armor ? {...sv.armor} : null, helmet:sv.helmet ? {...sv.helmet} : null, accessory:sv.accessory || null, darkT:0, starveT:0, dead:0, build:null, mouse:null, chest:null, chestSel:0, bagSide:'bag', tab:'bag', csel:0, fullNote:0, beatT:0, lastI:{mx:0, my:0}, buildDir:0}; }
+  function ctxStore(){ const s = wd.crew[wd.cur]; if(!s.kit) s.kit = {}; for(const k of PK) s.kit[k] = wd[k]; }
+  function ctxLoad(i){ const s = wd.crew[i]; for(const k of PK) wd[k] = s.kit[k]; wd.cur = i; }
+  function ctxSet(i){ if(!wd.crew || i===wd.cur) return; ctxStore(); ctxLoad(i); }
+  function withPlayer(i, fn){
+    if(!wd.crew || i===wd.cur) return fn();
+    const prev = wd.cur, bagBefore = wd.bag; ctxSet(i);
+    try{ return fn(); }
+    finally{ if(wd.bag && !bagBefore){ wd.bagSeat = i; const pd = wd.crew[i].pad; menuPadIdx = pd >= 0 ? pd : null; padSyncHeld(menuPadIdx); } /* their bag just opened: stay on their seat until it closes */ else ctxSet(prev); }
+  }
+  const ctxGet = (i, k) => !wd.crew || i===wd.cur ? wd[k] : wd.crew[i].kit[k];
+  function activeIdx(){ if(!wd.crew) return [0]; const a = []; wd.crew.forEach((s, i)=>{ if(s.on) a.push(i); }); return a; }
+  const coopCount = () => wd && wd.crew ? wd.crew.filter(s=>s.on).length : 1;
+  const bodyOf = i => ctxGet(i, 'p');
+  function livePlayers(){ return activeIdx().filter(i=>!(ctxGet(i, 'dead') > 0)).map(bodyOf); }
+  function nearestLive(f){ let best = null, bd = 1e9; const fu = inUnder(f);
+    for(const i of activeIdx()){ if(ctxGet(i, 'dead') > 0) continue; const q = bodyOf(i); if(inUnder(q)!==fu) continue; const d = hyp(q.x - f.x, q.y - f.y); if(d < bd){ bd = d; best = {i, p:q}; } }
+    return best; }
+  const coop = {st:{}, seen:{}};
+  const coopPads = () => navigator.getGamepads ? [...navigator.getGamepads()].filter(g=>g && g.connected!==false) : [];
+  function coopJoin(padIdx){
+    const i = wd.crew.findIndex((s, k)=>k > 0 && !s.on); if(i < 0){ wdNote('The crew is full'); return false; }
+    const s = wd.crew[i]; if(!s.kit) s.kit = mkKit(null);
+    const k = s.kit, anchor = livePlayers()[0] || wd.crew[0].kit && ctxGet(0, 'p') || wd.p;
+    k.dead = 0; k.build = null; k.chest = null; k.mouse = null; k.p.action = null; k.p.fishT = 0; k.p.swingT = 0; k.p.rollT = 0; k.p.air = false; k.p.vz = 0; k.darkT = 0; k.starveT = 0;
+    k.p.hp = Math.max(1, k.p.hp); const q = safeSpot(anchor.x + 22, anchor.y + 8); k.p.x = q.x; k.p.y = q.y; k.p.z = inUnder(q) ? 0 : surfaceAt(q.x, q.y, Math.min(anchor.z, 0)); k.p.inv = 2000;
+    s.on = true; s.pad = padIdx; wdIn.resync = true; hudLast = '';
+    wdBanner('Player ' + (i + 1) + ' joined', (s.kit.inv.some(Boolean) ? 'Welcome back. ' : '') + 'Own bag, own health. Start pauses for all.', 2400);
+    beep(520, 0.08, 'triangle', 0.04); beep(780, 0.12, 'triangle', 0.04, 0.08); wdSave();
+    return true;
+  }
+  function padSyncHeld(idx){ const g = rawPad(idx); if(g){ for(const k of [0,1,2,3,4,5,6,7,8,9]) padHeld[k] = !!(padBtn(g, k) && padBtn(g, k).pressed); padHeld.dir = true; } }
+  function coopLeave(i, why){
+    const s = wd.crew && wd.crew[i]; if(!s || i===0 || !s.on) return false;
+    if(wd.cur===i) ctxSet(0);
+    const k = s.kit; k.build = null; k.p.action = null; k.p.fishT = 0; k.p.swingT = 0; k.dead = 0; k.chest = null;
+    s.on = false; s.pad = -1; menuPadIdx = null; hudLast = '';
+    wdBanner('Player ' + (i + 1) + ' left', why || 'They keep their bag and can rejoin with Start.', 2200); wdSave(); return true;
+  }
+  function coopPoll(){
+    if(!wd || !wd.crew) return;
+    const pads = coopPads(), c0 = wd.crew[0], has = i => pads.some(g=>g.index===i);
+    for(let i = 1; i < 4; i++){ const s = wd.crew[i]; if(s.on && !has(s.pad)) coopLeave(i, 'Their controller disconnected.'); }
+    if(c0.pad!=null && c0.pad >= 0 && !has(c0.pad)) c0.pad = null;
+    const taken = new Set(wd.crew.filter((s, i)=>i > 0 && s.on).map(s=>s.pad)), free = pads.filter(g=>!taken.has(g.index));
+    if(c0.pad==null){ const g = free.find(g=>g.buttons.some(b=>b && b.pressed) || g.axes.some(a=>Math.abs(a) > 0.6)); if(g) c0.pad = g.index; }
+    for(const g of free){
+      const st = !!(g.buttons[9] && g.buttons[9].pressed), edge = st && !coop.st[g.index]; coop.st[g.index] = st;
+      if(c0.pad==null || g.index===c0.pad) continue;
+      if(edge) coopJoin(g.index);
+      else if(!coop.seen[g.index]){ coop.seen[g.index] = true; wdNote('Press Start on the new controller to join'); }
+    }
+    for(const k of Object.keys(coop.st)) if(!has(+k)) delete coop.st[k];
+    for(const k of Object.keys(coop.seen)) if(!has(+k)) delete coop.seen[k];
+  }
+  function coopTether(){ /* the camera zooms out as you spread; past what it can hold, the far one is held back */
+    if(!wd.crew || !wd.scr) return; const ids = activeIdx().filter(i=>!(ctxGet(i, 'dead') > 0)); if(ids.length < 2) return;
+    const a0 = inUnder(bodyOf(ids[0])), grp = ids.filter(i=>inUnder(bodyOf(i))===a0); if(grp.length < 2) return;
+    const base = Math.min(wd.scr.w, wd.scr.h)/WD.view, mx = Math.max(240, wd.scr.w/(base*0.6) - 230), my = Math.max(200, wd.scr.h/(base*0.6) - 270);
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; for(const i of grp){ const q = bodyOf(i); x0 = Math.min(x0, q.x); x1 = Math.max(x1, q.x); y0 = Math.min(y0, q.y); y1 = Math.max(y1, q.y); }
+    const cx = (x0 + x1)/2, cy = (y0 + y1)/2;
+    for(const i of grp){ const q = bodyOf(i); let dx = 0, dy = 0; if(q.x > cx + mx/2) dx = cx + mx/2 - q.x; else if(q.x < cx - mx/2) dx = cx - mx/2 - q.x; if(q.y > cy + my/2) dy = cy + my/2 - q.y; else if(q.y < cy - my/2) dy = cy - my/2 - q.y;
+      if(dx || dy) withPlayer(i, ()=>moveBy(wd.p, dx, dy)); }
+  }
+  function crewHud(){
+    const el = $('wdCrew'); if(!el || !wd || !wd.crew) return; const act = activeIdx().filter(i=>i > 0);
+    const key = act.map(i=>{ const q = bodyOf(i), inv = ctxGet(i, 'inv'), sl = inv[ctxGet(i, 'sel')]; return [i, Math.ceil(q.hp), Math.ceil(q.hunger), ctxGet(i, 'dead') > 0 ? 1 : 0, sl ? sl.id + sl.n : ''].join(':'); }).join('|');
+    if(key===el._key) return; el._key = key;
+    el.innerHTML = act.map(i=>{ const q = bodyOf(i), dead = ctxGet(i, 'dead') > 0, inv = ctxGet(i, 'inv'), sl = inv[ctxGet(i, 'sel')];
+      return `<div class="wd-crewp${dead ? ' dead' : ''}" style="border-color:${PCOL[i]}"><b style="color:${PCOL[i]}">P${i + 1}</b><span>HP ${Math.max(0, Math.ceil(q.hp))}</span><span>BELLY ${Math.ceil(q.hunger)}</span>${sl ? `<img alt="${ITEMS[sl.id].name}" src="${iconSrc(sl.id)}">` : ''}${dead ? '<span>down</span>' : ''}</div>`; }).join('');
+  }
+  function coopRender(){
+    const el = $('wdPauseCoop'); if(!el || !wd || !wd.crew) return; const c0 = wd.crew[0];
+    const lab0 = c0.pad===-1 ? 'keyboard only' : c0.pad!=null ? 'keyboard + controller' : 'keyboard + any controller';
+    let h = `<div class="uf-sub">Up to four share this world. Resume, then press Start on another controller to join. Each player has their own bag and health; everything built is shared.</div>`
+      + `<button id="wdCoopP1">Player 1: ${lab0}<small>${c0.pad===-1 ? 'Press to let Player 1 use a controller again' : 'Press to play Player 1 on keyboard only, freeing every controller'}</small></button>`;
+    for(let i = 1; i < 4; i++){ const s = wd.crew[i];
+      h += s.on ? `<button data-leave="${i}">Player ${i + 1}: controller ${s.pad + 1}<small>Press to drop out (keeps their bag)</small></button>`
+        : `<div class="uf-sub">Player ${i + 1}: ${s.kit ? 'away, keeps their bag. Start on a free controller to rejoin.' : 'empty'}</div>`; }
+    el.innerHTML = h;
+    $('wdCoopP1').onclick = ()=>{ c0.pad = c0.pad===-1 ? null : -1; coopRender(); padSet($('wdCoopP1')); };
+    el.querySelectorAll('button[data-leave]').forEach(b=>{ b.onclick = ()=>{ coopLeave(+b.dataset.leave, 'Dropped out from the pause menu.'); coopRender(); padSet($('wdPauseBack')); }; });
+  }
+  $('wdCoop').onclick = ()=>pauseView('coop');
+  function nodeUnder(){ return wd.unodes; }
 
   // ---- one step of the world ----
   function wdLive(){ return !!wd && !wd.paused && !wd.menu && !(wd.dead > 0); }
-  function wdStep(dt, I){
-    const p = wd.p, s = dt/1000;
-    wd.t += s;
+  function wdStep(dt, Is){ /* Is: one input per seat, {0:{mx,my}, 1:...}; a bare {mx,my} drives Player 1 */
+    if(!Is || Is.mx!==undefined) Is = {0:Is || {mx:0, my:0}};
+    const s = dt/1000; wd.t += s;
     { const day = Math.floor(wd.t/WD.day); if(day > wd.lastDay){ wd.lastDay = day; wdDawn(); } }
     burnFires(s);
     for(const f of wd.fires) f.fl += s;
     for(const n of wd.nodes) if(n.shk > 0) n.shk -= dt;
-    if(wd.dead > 0){ wd.dead -= dt; if(wd.dead <= 0) wdRespawn(); wdFoes(dt, s); return; }
+    const act = activeIdx();
+    for(const i of act) withPlayer(i, ()=>wdPlayerStep(dt, Is[i] || {mx:0, my:0}, s));
+    withPlayer(0, ()=>wdMachines()); wdFoes(dt, s); wdDefenses(dt); wdRaidCheck();
+    for(const i of act) withPlayer(i, ()=>{ if(!(wd.dead > 0)) wdPickups(dt); });
+    coopTether();
+    if(wd.shake > 0) wd.shake -= dt;
+    wd.saveT -= s; if(wd.saveT <= 0) wdSave();
+  }
+  function wdPlayerStep(dt, I, s){
+    const p = wd.p;
+    if(wd.dead > 0){ wd.dead -= dt; if(wd.dead <= 0) wdRespawn(); return; }
     for(const k of ['rollCd', 'inv']) if(p[k] > 0) p[k] -= dt;
     if(p.torch > 0){ p.torch = Math.max(0, p.torch - s); if(!p.torch) wdNote('Your torch burned out'); }
     if(p.comboT > 0){ p.comboT -= dt; if(p.comboT <= 0) p.combo = 0; }
@@ -1415,22 +1598,14 @@
     p.hunger = wd.creative ? WD.hunger : Math.max(0, p.hunger - WD.hungerRate*s*(wd.accessory ? ITEMS[wd.accessory].hunger || 1 : 1));
     if(p.hunger <= 0){ wd.starveT += s; if(wd.starveT >= WD.starveEvery){ wd.starveT = 0; p.inv = 0; wdHurtP(1, 'Starved'); } } else wd.starveT = 0;
     // the dark (Don't Starve's Charlie)
-    if(isNight() && !litAt(p.x, p.y)){ if(wd.darkT===0){ wdBanner('It is too dark', 'Something moves out there. Find light.', 2200); thud(0.6, 0.1, 140); }
+    if(isNight() && !inUnder(p) && !litAt(p.x, p.y)){ if(wd.darkT===0){ wdBanner('It is too dark', 'Something moves out there. Find light.', 2200); thud(0.6, 0.1, 140); }
       wd.darkT += s; if(wd.darkT >= WD.darkFirst){ wd.darkT = WD.darkFirst - WD.darkEvery; p.inv = 0; wdHurtP(WD.darkHit, 'Taken by the dark'); wdFx({kind:'claw', x:p.x, y:p.y, t:420}); } }
     else wd.darkT = 0;
-    wdMachines(); wdFoes(dt, s); wdDefenses(dt); wdRaidCheck();
-    wdPickups(dt);
-    if(wd.shake > 0) wd.shake -= dt;
-    wd.saveT -= s; if(wd.saveT <= 0) wdSave();
   }
-  const FOE_SIM_R2 = 640*640; /* wider than the widest screen's half-view, so nothing you can see is ever frozen */
   function wdFoes(dt, s){
-    const p = wd.p, decay = Math.exp(-10*s);
+    const decay = Math.exp(-10*s), P0 = wd.p;
     for(const f of wd.foes){
-      /* Animals far beyond the screen simply wait where they are (raiders always act). With the desert and frontier herds there are 60 or more,
-         and each one used to be steered and collided every frame wherever you were. */
-      { const ax = p.x - f.x, ay = p.y - f.y; if(!f.raid && ax*ax + ay*ay > FOE_SIM_R2){ f.moving = false; continue; } }
-      const J=animalDef(f);
+      const J=animalDef(f), T = nearestLive(f), noT = !T, p = T ? T.p : P0;
       let mx=0,my=0; // Intended locomotion, excluding knockback and collision pushes.
       if(f.hit > 0) f.hit -= dt; if(f.cd > 0) f.cd -= dt; if(f.flash > 0) f.flash -= dt;
       moveBy(f, f.kx*s, f.ky*s); f.kx *= decay; f.ky *= decay;
@@ -1438,20 +1613,20 @@
       const dx = p.x - f.x, dy = p.y - f.y, d = hyp(dx, dy) || 1;
       if(J.territory){
         const homeDistance=hyp(f.x-f.hx,f.y-f.hy), playerHomeDistance=hyp(p.x-f.hx,p.y-f.hy);
-        if(wd.dead>0 || playerHomeDistance>J.territory || homeDistance>J.leash){
+        if(noT || playerHomeDistance>J.territory || homeDistance>J.leash){
           if(f.ag || f.wind>0 || homeDistance>J.leash)f.returning=homeDistance>8;
           f.ag=false;f.wind=0;
         }else if(!f.returning && d<J.notice)f.ag=true;
         if(f.returning && homeDistance<=8){f.returning=false;f.tx=f.hx;f.ty=f.hy;f.wt=2000;}
         if(f.returning){f.ag=false;f.wind=0;}
       }else if(J.passive){
-        if(wd.dead<=0 && (d<160 || f.ag))f.flee=true;
+        if(!noT && (d<160 || f.ag))f.flee=true;
         // Hysteresis prevents fleeing/returning flips near one distance threshold.
-        if(f.flee && (wd.dead>0 || d>220)){
+        if(f.flee && (noT || d>220)){
           f.flee=false;f.hx=f.x;f.hy=f.y;f.tx=f.x;f.ty=f.y;f.wt=1600;
         }
         f.ag=false;
-      }else if(wd.dead > 0 || (d > WD.leash && !f.raid)) f.ag = false;
+      }else if(noT || (d > WD.leash && !f.raid)) f.ag = false;
       else if(d < WD.aggro || f.raid) f.ag = true;
       const reach = f.r + p.r + J.reach;
       if(f.returning && J.territory){const tx=f.hx-f.x,ty=f.hy-f.y,td=hyp(tx,ty);if(td>8){const st=Math.min(td,J.spd*.6*s);mx=tx/td*st;my=ty/td*st;}else{f.returning=false;f.wt=0;}}
@@ -1459,9 +1634,9 @@
         if(d > J.range*0.9){ mx=dx/d*J.spd*s; my=dy/d*J.spd*s; }
         else if(d < J.range*0.45){ mx=-dx/d*J.spd*0.8*s; my=-dy/d*J.spd*0.8*s; }
         else { const sg=(f.hx+f.hy)%2<1 ? 1 : -1; mx=-dy/d*J.spd*0.4*s*sg; my=dx/d*J.spd*0.4*s*sg; }
-        if(f.cd<=0 && d<J.range+25 && p.z<12 && wd.dead<=0){ f.cd=J.iv; f.flash=220; wd.fshots.push({x:f.x,y:f.y,vx:dx/d,vy:dy/d,sp:170,dmg:J.dmg,life:1500}); beep(1180,0.05,'triangle',0.02); thud(0.04,0.04,3200); }
+        if(f.cd<=0 && d<J.range+25 && p.z<12 && !noT){ f.cd=J.iv; f.flash=220; wd.fshots.push({x:f.x,y:f.y,vx:dx/d,vy:dy/d,sp:170,dmg:J.dmg,life:1500}); beep(1180,0.05,'triangle',0.02); thud(0.04,0.04,3200); }
       }
-      else if(f.wind > 0){ f.wind -= dt; if(f.wind <= 0){ f.cd = J.iv; if(d < reach + 6 && p.z < 12) wdHurtP(J.dmg, 'Killed by a '+J.name,true); wdFx({kind:'slash', x:f.x, y:f.y, ax:dx/d, ay:dy/d, r:reach, arc:1.4, t:140, foe:true}); } }
+      else if(f.wind > 0){ f.wind -= dt; if(f.wind <= 0){ f.cd = J.iv; if(!noT && d < reach + 6 && p.z < 12) withPlayer(T.i, ()=>wdHurtP(J.dmg, 'Killed by a '+J.name,true)); wdFx({kind:'slash', x:f.x, y:f.y, ax:dx/d, ay:dy/d, r:reach, arc:1.4, t:140, foe:true}); } }
       else if(J.passive && f.flee){f.wind=0;mx=-dx/d*J.spd*s;my=-dy/d*J.spd*s;}
       else if(f.ag){ if(d > reach - 2){ mx=dx/d*J.spd*s;my=dy/d*J.spd*s; } else if(f.cd <= 0){ f.wind = J.wind; } }
       else { f.wt -= dt; if(f.wt <= 0){ f.wt = 2000 + Math.random()*4000; const a = Math.random()*Math.PI*2, r = Math.random()*(J.territory?60:90); f.tx = f.hx + Math.cos(a)*r; f.ty = f.hy + Math.sin(a)*r; }
@@ -1484,7 +1659,7 @@
       }
       const moved=hyp(f.x-oldX,f.y-oldY);f.moving=moved>.05;
       if(f.moving)f.facing=Math.atan2(f.y-oldY,f.x-oldX);
-      for(const o of wd.foes){ if(o===f) continue; const ox = f.x - o.x, oy = f.y - o.y; if(ox > 30 || ox < -30 || oy > 30 || oy < -30) continue; const od = hyp(ox, oy), m = f.r + o.r; if(od < m && od > 0.01){ f.x += ox/od*(m - od)/2; f.y += oy/od*(m - od)/2; } }
+      for(const o of wd.foes){ if(o===f) continue; const ox = f.x - o.x, oy = f.y - o.y, od = hyp(ox, oy), m = f.r + o.r; if(od < m && od > 0.01){ f.x += ox/od*(m - od)/2; f.y += oy/od*(m - od)/2; } }
       wdSolid(f);
       if(f.spiked){ f.spiked = false; if(!(f.spk > 0)){ f.spk = 700; wdHurtF(f, 1, -dx/d*90, -dy/d*90); } } /* the barricade's stakes */
       const tb = wd.builds.get(gkey(Math.floor(f.x/GRID), Math.floor(f.y/GRID)));
@@ -1495,7 +1670,7 @@
   function wdDefenses(dt){ /* traps set themselves again; sentries shoot */
     for(const sh of wd.fshots){ sh.life -= dt; const st = sh.sp*dt/1000; sh.x += sh.vx*st; sh.y += sh.vy*st;
       if(wdBlocked(sh.x, sh.y, 1.5, 0, 8)){ sh.life = 0; continue; }
-      if(wd.dead<=0 && wd.p.z<14 && hyp(sh.x-wd.p.x, sh.y-wd.p.y) < wd.p.r+2){ sh.life = 0; wdHurtP(sh.dmg, 'Pierced by a Shardling', true); } }
+      for(const i of activeIdx()){ const q = bodyOf(i); if(ctxGet(i, 'dead') > 0 || q.z >= 14) continue; if(hyp(sh.x - q.x, sh.y - q.y) < q.r + 2){ sh.life = 0; withPlayer(i, ()=>wdHurtP(sh.dmg, 'Pierced by a Shardling', true)); break; } } }
     wd.fshots = wd.fshots.filter(sh=>sh.life > 0);
     for(const b of wd.builds.values()){ if(b.cd > 0) b.cd -= dt; if(b.k!=='sentry') continue; const B = BUILD.sentry;
       let tg = null, td = B.range; for(const f of wd.foes){ const d = hyp(f.x - b.x, f.y - b.y); if(!animalDef(f).passive && d < td){ td = d; tg = f; } }
@@ -1577,7 +1752,13 @@
     else if(id==='trailcharm'){loop();blob(()=>{c.moveTo(5,20);c.quadraticCurveTo(2,7,20,8);c.quadraticCurveTo(21,23,5,20);},'#79b15a',1.4);line([[5,21],[16,11]],'#e1d994',1);line([[10,16],[10,11]],'#476b36',.8);}
     else if(id==='hide'){blob(()=>{c.moveTo(5,3);c.quadraticCurveTo(12,7,19,3);c.lineTo(21,7);c.quadraticCurveTo(16,12,21,18);c.lineTo(18,22);c.quadraticCurveTo(12,18,6,22);c.lineTo(2,18);c.quadraticCurveTo(7,12,2,7);c.closePath();},'#a5774e',1.3);c.setLineDash([1,2]);c.strokeStyle='#e1bb86';c.lineWidth=.7;c.strokeRect(7,8,10,10);c.setLineDash([]);}
     else if(id==='tusk' || id==='huntertusk'){if(id==='huntertusk')loop();blob(()=>{c.moveTo(5,8);c.quadraticCurveTo(20,23,21,6);c.quadraticCurveTo(25,24,12,22);c.quadraticCurveTo(5,19,5,8);},'#eadbb4',1.2);if(id==='huntertusk'){line([[5,10],[10,15]],'#ae763a',3);blob(()=>c.arc(8,12,2,0,Math.PI*2),'#8b4535',.6);}}
-    else if(id==='mushroom' || id==='cmushroom'){
+    else if(id==='glowcap' || id==='cglowcap'){
+      const roast=id==='cglowcap', cap=roast?'#2f8f86':'#4fe3cf';
+      c.fillStyle=roast?'rgba(120,230,215,.22)':'rgba(120,255,235,.42)'; c.beginPath(); c.arc(12,10,10.5,0,Math.PI*2); c.fill();
+      blob(()=>c.rect(10,12,4,9),'#d9d3e6');
+      blob(()=>{ c.moveTo(3,13); c.quadraticCurveTo(5,1,12,3); c.quadraticCurveTo(20,2,21,13); c.closePath(); },cap); hi(9,7,3,1.3);
+      c.fillStyle='rgba(235,255,250,.9)'; for(const [x,y] of [[8,9],[13,7],[16,10]]){ c.beginPath(); c.arc(x,y,1.1,0,Math.PI*2); c.fill(); }
+    } else if(id==='mushroom' || id==='cmushroom'){
       blob(()=>c.rect(10,12,4,9),'#dbcaa1');
       blob(()=>{c.moveTo(3,13);c.quadraticCurveTo(5,1,12,3);c.quadraticCurveTo(20,2,21,13);c.closePath();},id==='mushroom'?'#b77a59':'#80502f'); hi(9,7,3,1.3);
     } else if(id==='salve'){
@@ -1688,23 +1869,7 @@
   }
   const iconSrc = id => iconUrl[id] || (iconUrl[id] = itemIcon(id).toDataURL());
   const OL = '#120c09';
-  /* A standing tree never changes, so each look (variant and canopy size) is painted once into its own small canvas and then stamped.
-     The unbreakable treelines round the biome edges are thousands of identical trees, and near the gates a hundred or more are on screen
-     at once: painting each from scratch every frame (about 25 arc and stroke calls apiece) was the stutter at the biome borders. */
-  const treeSprites = new Map(), TREE_SS = 3;
-  function treeSprite(v, cr0){
-    const cr = Math.round(cr0), key = v*100 + cr; let s = treeSprites.get(key); if(s) return s;
-    const hw = Math.ceil(1.3*cr + 6), top = Math.ceil(16 + 1.7*cr), bot = Math.ceil(7 + 0.45*cr), cv = document.createElement('canvas');
-    cv.width = hw*2*TREE_SS; cv.height = (top + bot)*TREE_SS; const g = cv.getContext('2d'); g.scale(TREE_SS, TREE_SS); g.translate(hw, top);
-    drawTreeRaw(g, {x:0, y:0, cr, v, shk:0, gone:false}, 0, false);
-    s = {cv, hw, top, h:top + bot}; treeSprites.set(key, s); return s;
-  }
   function drawTree(c, n, t, fade){
-    if(n.gone || n.shk > 0){ drawTreeRaw(c, n, t, fade); return; } /* stumps and a tree being struck keep the live drawing */
-    const s = treeSprite(n.v, n.cr), a = c.globalAlpha; if(fade) c.globalAlpha = a*0.5;
-    c.drawImage(s.cv, n.x - s.hw, n.y - s.top, s.hw*2, s.h); c.globalAlpha = a;
-  }
-  function drawTreeRaw(c, n, t, fade){
     const sx = n.shk > 0 ? Math.sin(n.shk/12)*2.2 : 0, x = n.x, y = n.y;
     if(n.gone){ /* a stump */
       c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 2, 9, 4, 0, 0, Math.PI*2); c.fill();
@@ -1724,6 +1889,7 @@
   function drawNode(c, n, t){
     const x = n.x, y = n.y, ready = n.ready <= wd.t;
     if(n.k==='cave'){ drawCave(c, n, t); return; }
+    if(drawUnderNode(c, n, t)) return;
     if(n.k==='mushroom' || n.k==='cache' || n.k==='shrine'){
       if(n.gone) return; if(!ready){ toonTuft(c,x,y,0.5,'#756c43');return; }
       c.drawImage(itemIcon(n.k),x-12,y-20,24,24);return;
@@ -1957,9 +2123,9 @@
     if(shape==='diamond'){ c.moveTo(x, y - R); c.lineTo(x + R, y); c.lineTo(x, y + R); c.lineTo(x - R, y); c.closePath(); }
     else c.arc(x, y, R, 0, Math.PI*2);
   }
-  function toonUnit(c, x, y, R, shape, frac, ringCol, coreCol, noShadow){ /* noShadow: the caller has already drawn the unit's own ground shadow */
+  function toonUnit(c, x, y, R, shape, frac, ringCol, coreCol){
     frac = clamp(frac, 0, 1); c.save();
-    if(!noShadow){ c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(x + 1.5, y + R*0.85, R*0.95, R*0.35, 0, 0, Math.PI*2); c.fill(); }
+    c.fillStyle = 'rgba(0,0,0,.42)'; c.beginPath(); c.ellipse(x + 1.5, y + R*0.85, R*0.95, R*0.35, 0, 0, Math.PI*2); c.fill();
     toonShape(c, shape, x, y, R); c.fillStyle = 'rgba(0,0,0,.6)'; c.fill();
     if(frac > 0){ c.save(); toonShape(c, shape, x, y, R); c.clip(); c.beginPath(); c.moveTo(x, y); c.arc(x, y, R*1.6, -Math.PI/2, -Math.PI/2 + frac*Math.PI*2); c.closePath(); c.fillStyle = ringCol; c.fill(); c.restore(); }
     const r2 = shape==='diamond' ? R*0.72 : R - 2.5;
@@ -1978,6 +2144,64 @@
     c.fillStyle = f.hit > 0 ? '#ffffff' : '#d8fbff'; c.beginPath(); c.moveTo(x, y - r*0.3); c.lineTo(x + r*0.3, y); c.lineTo(x, y + r*0.3); c.lineTo(x - r*0.3, y); c.closePath(); c.fill();
     if(f.flash > 0){ c.globalAlpha = Math.min(1, f.flash/220); c.fillStyle = '#bff3ff'; c.beginPath(); c.arc(x, y, r + 5, 0, Math.PI*2); c.fill(); }
     c.restore();
+  }
+  const CRYST=[['#5fc9e6','#c9f6ff','#1d5f78'],['#9b7cf0','#e1d6ff','#43308c'],['#ee7fb0','#ffd6e8','#8a2f5c']];
+  function crystalAt(c,x,y,k,P,pl,dim){ /* one prism: a lit left face, a dark right face, a bright tip */
+    c.beginPath(); c.moveTo(x-k*.5,y); c.lineTo(x-k*.62,y-k*2.4); c.lineTo(x,y-k*4); c.lineTo(x+k*.62,y-k*2.4); c.lineTo(x+k*.5,y); c.closePath();
+    c.fillStyle=dim?'#4a5560':P[0]; c.fill(); c.strokeStyle=OL; c.lineWidth=1.2; c.stroke();
+    c.fillStyle=dim?'rgba(255,255,255,.1)':P[1]; c.globalAlpha*=.55; c.beginPath(); c.moveTo(x-k*.42,y-k*.3); c.lineTo(x-k*.5,y-k*2.3); c.lineTo(x-k*.05,y-k*3.6); c.lineTo(x-k*.02,y-k*.5); c.closePath(); c.fill(); c.globalAlpha/=.55;
+    c.fillStyle=P[2]; c.globalAlpha*=.45; c.beginPath(); c.moveTo(x+k*.05,y-k*.4); c.lineTo(x+k*.05,y-k*3.6); c.lineTo(x+k*.58,y-k*2.3); c.lineTo(x+k*.46,y-k*.2); c.closePath(); c.fill(); c.globalAlpha/=.45;
+    if(!dim){ c.fillStyle='rgba(255,255,255,'+(.45+.45*pl)+')'; c.fillRect(x-.8,y-k*3.5,1.6,1.6); }
+  }
+  function drawUnderNode(c, n, t){ /* the cavern's furniture; returns false for anything it does not draw */
+    const x=n.x, y=n.y, pl=.5+.5*Math.sin(t*2.1+n.id*1.7);
+    if(n.k==='crystal'){ const P=CRYST[Math.floor(n.v*3)%3], k=n.r/13*1.15, sh=n.shk>0?Math.sin(n.shk/12)*1.6:0;
+      c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+3,n.r*1.2,n.r*.5,0,0,Math.PI*2); c.fill();
+      if(n.gone){ for(const [dx,dy,s] of [[-5,1,.5],[3,2,.45],[8,-1,.35]]) crystalAt(c,x+dx,y+dy,k*s,P,0,true); return true; }
+      c.save(); c.translate(sh,0); crystalAt(c,x-n.r*.55,y+2,k*.62,P,pl); crystalAt(c,x+n.r*.6,y+3,k*.55,P,pl); crystalAt(c,x-n.r*.1,y+4,k*.95,P,pl); crystalAt(c,x+n.r*.2,y+3,k*.5,P,pl); c.restore(); return true; }
+    if(n.k==='stalag'){ const r=n.r;
+      c.fillStyle='rgba(0,0,0,.38)'; c.beginPath(); c.ellipse(x+3,y+3,r*1.15,r*.5,0,0,Math.PI*2); c.fill();
+      c.beginPath(); c.moveTo(x-r,y+2); c.quadraticCurveTo(x-r*.55,y-r*1.1,x-r*.1,y-r*2.5); c.quadraticCurveTo(x+r*.2,y-r*2.5,x+r*.45,y-r*1.2); c.quadraticCurveTo(x+r*.95,y-r*.5,x+r,y+2); c.closePath();
+      c.fillStyle=n.v<.5?'#4b4656':'#433f4e'; c.fill(); c.strokeStyle=OL; c.lineWidth=1.5; c.stroke();
+      c.fillStyle='rgba(255,255,255,.12)'; c.beginPath(); c.moveTo(x-r*.7,y); c.quadraticCurveTo(x-r*.45,y-r*1.1,x-r*.15,y-r*2.2); c.lineTo(x-r*.1,y-r*.2); c.closePath(); c.fill();
+      c.fillStyle='rgba(0,0,0,.28)'; c.beginPath(); c.moveTo(x+r*.2,y-r*.4); c.lineTo(x+r*.45,y-r*1.2); c.quadraticCurveTo(x+r*.9,y-r*.5,x+r,y+2); c.lineTo(x+r*.2,y+2); c.closePath(); c.fill(); return true; }
+    if(n.k==='bigshroom'){ const col=n.v<.5?['#38d6c0','#9ff7ea','#12786b']:['#d65ad0','#f6b0f1','#7a2275'], bob=Math.sin(t*1.4+n.id)*1;
+      c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+4,15,5,0,0,Math.PI*2); c.fill();
+      c.fillStyle='#cfc6dc'; c.strokeStyle=OL; c.lineWidth=1.4; c.beginPath(); c.moveTo(x-4,y+3); c.lineTo(x-3,y-18); c.lineTo(x+3,y-18); c.lineTo(x+4,y+3); c.closePath(); c.fill(); c.stroke();
+      const cy=y-20+bob; c.beginPath(); c.moveTo(x-17,cy+3); c.quadraticCurveTo(x-18,cy-17,x,cy-18); c.quadraticCurveTo(x+18,cy-17,x+17,cy+3); c.quadraticCurveTo(x,cy+7,x-17,cy+3); c.closePath(); c.fillStyle=col[0]; c.fill(); c.stroke();
+      c.fillStyle=col[2]; c.globalAlpha=.5; c.beginPath(); c.moveTo(x+4,cy-17); c.quadraticCurveTo(x+18,cy-16,x+17,cy+3); c.quadraticCurveTo(x+8,cy+5,x+2,cy+5); c.closePath(); c.fill(); c.globalAlpha=1;
+      c.fillStyle=col[1]; for(const [dx,dy,rr] of [[-8,-8,2.4],[2,-12,2],[9,-6,1.8],[-2,-4,1.4]]){ c.globalAlpha=.55+.4*pl; c.beginPath(); c.arc(x+dx,cy+dy,rr,0,Math.PI*2); c.fill(); } c.globalAlpha=1; return true; }
+    if(n.k==='glowshroom'){ if(n.gone) return true; const ready=n.ready<=wd.t;
+      c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x+1,y+2,7,2.6,0,0,Math.PI*2); c.fill();
+      if(!ready){ c.fillStyle='#8b8497'; c.fillRect(x-1,y-3,2,4); return true; }
+      for(const [dx,dy,s] of [[-4,0,.8],[3,1,1],[0,-3,.7]]){ c.fillStyle='#d9d3e6'; c.fillRect(x+dx-.9*s,y+dy-4*s,1.8*s,4*s);
+        c.beginPath(); c.ellipse(x+dx,y+dy-4*s,4*s,2.6*s,0,Math.PI,0); c.closePath(); c.fillStyle=n.v<.5?'#52e8d0':'#8af07f'; c.fill(); c.strokeStyle=OL; c.lineWidth=.9; c.stroke(); c.fillStyle='rgba(255,255,255,'+(.4+.4*pl)+')'; c.fillRect(x+dx-1.2*s,y+dy-6*s,1.2,1.2); }
+      return true; }
+    if(n.k==='caveexit'){ /* a shaft of daylight and a rope ladder up */
+      const g=c.createRadialGradient(x,y,2,x,y,34); g.addColorStop(0,'rgba(255,235,170,.55)'); g.addColorStop(1,'rgba(255,235,170,0)'); c.fillStyle=g; c.beginPath(); c.ellipse(x,y,34,22,0,0,Math.PI*2); c.fill();
+      c.fillStyle='#14111a'; c.strokeStyle=OL; c.lineWidth=1.4; c.beginPath(); c.ellipse(x,y,13,8,0,0,Math.PI*2); c.fill(); c.stroke();
+      c.strokeStyle='#c9a66a'; c.lineWidth=1.3; c.beginPath(); c.moveTo(x-4,y-34); c.lineTo(x-4,y+2); c.moveTo(x+4,y-34); c.lineTo(x+4,y+2); c.stroke();
+      c.lineWidth=1.8; c.beginPath(); for(let i=0;i<7;i++){ c.moveTo(x-4,y-30+i*5); c.lineTo(x+4,y-30+i*5); } c.stroke(); return true; }
+    if(n.k==='hoard'){ const P=CRYST[0], dim=n.gone;
+      c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+5,26,8,0,0,Math.PI*2); c.fill();
+      c.fillStyle='#3a3642'; c.strokeStyle=OL; c.lineWidth=1.4; c.beginPath(); c.ellipse(x,y+2,22,9,0,0,Math.PI*2); c.fill(); c.stroke();
+      for(const [dx,dy,k,ci] of [[-14,3,3.4,0],[-5,5,5,1],[6,4,4.4,0],[15,3,3,2],[1,0,3.6,2]]) crystalAt(c,x+dx,y+dy,k,CRYST[ci],pl,dim);
+      if(!dim && !bareGfx){ c.fillStyle='rgba(235,252,255,'+(.4+.5*pl)+')'; c.fillRect(x-1+Math.sin(t*1.6)*14,y-14+Math.cos(t*1.2)*5,2,2); } return true; }
+    return false;
+  }
+  function drawUnderGround(c, t, x0, y0, x1, y1, vis){
+    const R=UNDER, D=wd.deco.under; if(!D) return;
+    c.fillStyle='#2a2631'; c.fillRect(R.left,R.top,R.right-R.left,R.bottom-R.top);
+    for(const q of D.patches) if(vis(q.x,q.y,q.rx)){ c.fillStyle=q.col; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.fill(); }
+    for(const q of D.pools) if(vis(q.x,q.y,q.rx+6)){ const rip=.5+.5*Math.sin(t*1.3+q.x);
+      c.fillStyle='#0e2c3b'; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.fill();
+      c.fillStyle='#14485d'; c.beginPath(); c.ellipse(q.x-2,q.y-1,q.rx*.78,q.ry*.7,0,0,Math.PI*2); c.fill();
+      c.strokeStyle='rgba(140,235,245,'+(.18+.22*rip)+')'; c.lineWidth=1; c.beginPath(); c.ellipse(q.x,q.y,q.rx*(.35+.4*rip),q.ry*(.35+.4*rip),0,0,Math.PI*2); c.stroke();
+      c.strokeStyle='rgba(60,40,60,.8)'; c.lineWidth=1.6; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.stroke(); }
+    c.strokeStyle='rgba(8,6,12,.55)'; c.lineWidth=.9; c.lineCap='round';
+    for(const q of D.cracks) if(vis(q.x,q.y,20)){ c.beginPath(); c.moveTo(q.x,q.y); for(const [dx,dy] of q.pts) c.lineTo(q.x+dx,q.y+dy); c.stroke(); }
+    c.lineCap='butt';
+    for(const q of D.edge) if(vis(q.x,q.y,24)) toonStone(c,q.x,q.y,q.r,q.r*.72,'#1d1a24');
   }
   function drawCave(c, n, t){ /* a rock mound with a dark mouth and crystals that hum; dimmer once the hoard is taken */
     const x = n.x, y = n.y, looted = n.gone, pl = 0.5 + 0.5*Math.sin(t*2.2 + n.id);
@@ -2005,13 +2229,20 @@
   /* ---- built pieces, drawn with height: a wall is a box LH tall, a floor a thin slab, a stair a ramp of treads ---- */
   const smooth = (a, b, v) => { const q = clamp((v - a)/(b - a), 0, 1); return q*q*(3 - 2*q); };
   function fadeFor(gx, gy, zb, hgt, key){ /* pieces above you, and pieces in front of you, turn to glass so you stay in sight */
-    const p = wd.p, x0 = gx*GRID, y0 = gy*GRID; let a = 1;
-    if(zb > p.z + 6) a = 0.2 + 0.8*smooth(90, 200, hyp(x0 + GRID/2 - p.x, y0 + GRID/2 - p.y));
-    const psx = p.x, psy = p.y - p.z;
-    const onIt = p.z >= zb + hgt - STEP || (p.z >= zb - 1 && psx > x0 - 4 && psx < x0 + GRID + 4 && p.y > y0 - 4 && p.y < y0 + GRID + 4); /* standing on or above this piece: never glass it */
-    if(!onIt && key > p.y + p.z*0.9 && psx > x0 - 6 && psx < x0 + GRID + 6 && psy > y0 - zb - hgt - 12 && psy < y0 + GRID - zb) a = Math.min(a, 0.38);
+    const x0 = gx*GRID, y0 = gy*GRID; let a = 1;
+    for(const p of (wd.fb || [wd.p])){
+      let ai = 1;
+      if(zb > p.z + 6) ai = 0.2 + 0.8*smooth(90, 200, hyp(x0 + GRID/2 - p.x, y0 + GRID/2 - p.y));
+      const psx = p.x, psy = p.y - p.z;
+      const onIt = p.z >= zb + hgt - STEP || (p.z >= zb - 1 && psx > x0 - 4 && psx < x0 + GRID + 4 && p.y > y0 - 4 && p.y < y0 + GRID + 4); /* standing on or above this piece: never glass it */
+      if(!onIt && key > p.y + p.z*0.9 && psx > x0 - 6 && psx < x0 + GRID + 6 && psy > y0 - zb - hgt - 12 && psy < y0 + GRID - zb) ai = Math.min(ai, 0.38);
+      a = Math.min(a, ai);
+    }
     return a;
   }
+  /* How high a thing reaches: used to draw every player over whatever lies at or below their feet, however far south it sits */
+  const nodeTop = n => n.k==='tree' || n.k==='cave' || n.k==='crystal' || n.k==='stalag' || n.k==='bigshroom' || n.k==='hoard' ? 1e9 : 16;
+  const pieceTop = b => { const l = b.l || 0; return b.k==='wall' || b.k==='spikes' || b.k==='stairs' ? (l + 1)*LH : b.k==='trap' ? l*LH : l*LH + 18; };
   function drawBox3(c, b, alpha){
     const l = b.l || 0, zb = l*LH, x0 = b.gx*GRID, tf = b.gy*GRID - zb - LH, wall = b.k==='wall';
     c.save(); c.globalAlpha *= alpha; c.lineJoin = 'round';
@@ -2057,58 +2288,37 @@
     else if(l){ const a = fadeFor(b.gx, b.gy, zb, 16, key); c.save(); c.globalAlpha *= a; c.translate(0, -zb); drawPiece(c, b.k, b.x, b.y, b, t); c.restore(); }
     else { const a = fadeFor(b.gx, b.gy, 0, 16, key); if(a < 1){ c.save(); c.globalAlpha *= a; drawPiece(c, b.k, b.x, b.y, b, t); c.restore(); } else drawPiece(c, b.k, b.x, b.y, b, t); }
   }
-  /* Beyond the playable land: a deep forest floor, with the grass fading into it, so the map never ends on a flat colour */
-  const edgeHash=(a,b)=>{ let h=Math.imul(a|0,374761393)^Math.imul(b|0,668265263); h=Math.imul(h^(h>>>13),1274126177); return ((h^(h>>>16))>>>0)/4294967296; };
-  const FLOOR_STEPS=[110,84,58,32,6];
-  const lerpHex=(a,b,t)=>{ const A=[1,3,5].map(i=>parseInt(a.substr(i,2),16)), B=[1,3,5].map(i=>parseInt(b.substr(i,2),16)); return 'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')'; };
-  function forestFloor(c,x0,y0,x1,y1){
-    if(x0>=54 && x1<=WD.W-54 && y0>=104 && y1<=WD.H-104) return; /* the view is wholly inside the home woodland */
-    c.fillStyle='#202c1d'; c.fillRect(x0,y0,x1-x0,y1-y0);
-    const S=56, g0=Math.floor(x0/S)-1, g1=Math.floor(x1/S)+1, h0=Math.floor(y0/S)-1, h1=Math.floor(y1/S)+1;
-    for(let gx=g0;gx<=g1;gx++) for(let gy=h0;gy<=h1;gy++){
-      const a=edgeHash(gx,gy), b=edgeHash(gy+977,gx-311), x=gx*S+a*S, y=gy*S+b*S;
-      c.fillStyle=a<.5 ? '#27361f' : '#1a2418'; c.beginPath(); c.ellipse(x,y,16+b*26,8+a*14,0,0,Math.PI*2); c.fill();
-      if(!bareGfx && a>.35){ toonTuft(c,x+10,y+4,.9,'#34462a'); if(b>.55) toonTuft(c,x-14,y-6,.7,'#2c3d25'); }
-    }
-  }
-  function featherGround(c,x0,y0,x1,y1){ /* grass over every walkable rect, ringed by wider, darker rounded rects that blend it into the floor */
-    const rs=worldRects();
-    FLOOR_STEPS.forEach((e,i)=>{
-      c.fillStyle=lerpHex('#2b3b25','#56603a',(i+1)/FLOOR_STEPS.length);
-      for(const [l,t,r,b] of rs){
-        if(r+e<x0 || l-e>x1 || b+e<y0 || t-e>y1) continue;
-        if(c.roundRect){ c.beginPath(); c.roundRect(l-e,t-e,r-l+2*e,b-t+2*e,e*0.8); c.fill(); }
-        else c.fillRect(l-e,t-e,r-l+2*e,b-t+2*e);
-      }
-    });
-  }
   let darkCv = null;
   function wdDraw(dt){
     const cv = $('wdCanvas'), st = cv.parentNode, dpr = lowFx ? 1 : Math.min(2, window.devicePixelRatio || 1), w = st.clientWidth, h = st.clientHeight;
     if(!w || !h) return;
     if(cv._w!==w || cv._h!==h || cv._d!==dpr){ cv._w = w; cv._h = h; cv._d = dpr; cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr); }
     const c = cv.getContext('2d'), p = wd.p, t = performance.now()/1000;
-    const sc = Math.min(w, h)/WD.view, vw = w/sc, vh = h/sc;
-    const camX = vw >= FRONTIER.right+60 ? (FRONTIER.right+60)/2 : clamp(p.x, vw/2, FRONTIER.right+60 - vw/2), camY = vh >= WD.H ? WD.H/2 : clamp(p.y - p.z, vh/2, WD.H - vh/2);
+    wd.scr = {w, h};
+    const act = activeIdx(), fb = act.map(bodyOf), live = livePlayers(), focus = live.length ? live : fb; wd.fb = fb;
+    let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9; for(const q of focus){ mnx = Math.min(mnx, q.x); mxx = Math.max(mxx, q.x); const sy = q.y - q.z; mny = Math.min(mny, sy); mxy = Math.max(mxy, sy); }
+    const base = Math.min(w, h)/WD.view, sc = Math.max(base*0.6, Math.min(base, w/((mxx - mnx) + 190), h/((mxy - mny) + 230))), vw = w/sc, vh = h/sc;
+    const under = inUnder(focus[0] || p), xlo = (under ? UNDER.left - 60 : 0) + vw/2, xhi = (under ? UNDER.right + 60 : FRONTIER.right + 60) - vw/2;
+    const camX = xhi < xlo ? (xlo + xhi)/2 : clamp((mnx + mxx)/2, xlo, xhi), camY = vh >= WD.H ? WD.H/2 : clamp((mny + mxy)/2, vh/2, WD.H - vh/2);
     const x0 = camX - vw/2, y0 = camY - vh/2, x1 = x0 + vw, y1 = y0 + vh, vis = (x, y, m) => x > x0 - m && x < x1 + m && y > y0 - m && y < y1 + m;
     wd.view = {sc, x0, y0};
-    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#34462a'; c.fillRect(0, 0, cv.width, cv.height);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = under ? '#0b0910' : '#34462a'; c.fillRect(0, 0, cv.width, cv.height);
     const sh = wd.shake > 0 ? 3 : 0;
     c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(-x0*sc + (Math.random() - .5)*sh), dpr*(-y0*sc + (Math.random() - .5)*sh));
     // Scenic terrain extends past playable bounds; ancient treelines close the land edges.
-    forestFloor(c,x0,y0,x1,y1);
+    c.fillStyle = under ? '#0b0910' : '#34462a'; c.fillRect(x0,y0,vw,vh);
+    c.fillStyle='#8b7656';c.fillRect(DESERT.left-90,DESERT.top-90,DESERT.right-DESERT.left+180,DESERT.bottom-DESERT.top+180);
     // the ground
-    featherGround(c,x0,y0,x1,y1);
+    c.fillStyle = '#56603a'; if(x0<WD.W && x1>0)c.fillRect(Math.max(0, x0), Math.max(0, y0), Math.min(WD.W, x1) - Math.max(0, x0), Math.min(WD.H, y1) - Math.max(0, y0));
     c.fillStyle='#56603a';c.fillRect(FRONTIER.left,FRONTIER.top,FRONTIER.right-FRONTIER.left,FRONTIER.bottom-FRONTIER.top);c.fillRect(FRONTIER.gateLeft,FRONTIER.gateTop,FRONTIER.gateRight-FRONTIER.gateLeft,FRONTIER.gateBottom-FRONTIER.gateTop);
+    if(under) drawUnderGround(c, t, x0, y0, x1, y1, vis);
     for(const q of wd.deco.patches) if(vis(q.x, q.y, q.rx)){ c.fillStyle = q.col; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill(); }
-    /* gkey builds a string, so the floor check only runs when something has been built (it used to allocate per tuft per frame) */
-    const noFl = wd.floors.size===0, bare = (x, y) => !noFl && wd.floors.has(gkey(Math.floor(x/GRID), Math.floor(y/GRID)));
-    if(!bareGfx) for(const q of wd.deco.tufts) if(vis(q.x, q.y, 8) && !bare(q.x, q.y)) toonTuft(c, q.x, q.y, q.s, q.col);
+    if(!bareGfx) for(const q of wd.deco.tufts) if(vis(q.x, q.y, 8) && !wd.floors.has(gkey(Math.floor(q.x/GRID), Math.floor(q.y/GRID)))) toonTuft(c, q.x, q.y, q.s, q.col);
     if(!bareGfx){ /* Story mode's ground: stones and hairline cracks */
-      for(const q of wd.deco.stones || []) if(vis(q.x, q.y, 8) && !bare(q.x, q.y)) toonStone(c, q.x, q.y, q.rx, q.ry, q.col);
-      if(!lowFx){ c.strokeStyle = 'rgba(30,22,16,.32)'; c.lineWidth = 0.8; c.lineCap = 'round';
-        for(const q of wd.deco.cracks || []) if(vis(q.x, q.y, 20) && !bare(q.x, q.y)){ c.beginPath(); c.moveTo(q.x, q.y); for(const [dx, dy] of q.pts) c.lineTo(q.x + dx, q.y + dy); c.stroke(); }
-        c.lineCap = 'butt'; } }
+      for(const q of wd.deco.stones || []) if(vis(q.x, q.y, 8) && !wd.floors.has(gkey(Math.floor(q.x/GRID), Math.floor(q.y/GRID)))) toonStone(c, q.x, q.y, q.rx, q.ry, q.col);
+      c.strokeStyle = 'rgba(30,22,16,.32)'; c.lineWidth = 0.8; c.lineCap = 'round';
+      for(const q of wd.deco.cracks || []) if(vis(q.x, q.y, 20) && !wd.floors.has(gkey(Math.floor(q.x/GRID), Math.floor(q.y/GRID)))){ c.beginPath(); c.moveTo(q.x, q.y); for(const [dx, dy] of q.pts) c.lineTo(q.x + dx, q.y + dy); c.stroke(); }
+      c.lineCap = 'butt'; }
     // Sandy pass through the eastern trees into a stone-heavy pocket.
     c.fillStyle='#99815b';c.fillRect(DESERT.gateLeft,DESERT.gateTop,DESERT.gateRight-DESERT.gateLeft,DESERT.gateBottom-DESERT.gateTop);
     c.fillStyle='#a68c64';c.fillRect(DESERT.left,DESERT.top,DESERT.right-DESERT.left,DESERT.bottom-DESERT.top);
@@ -2116,23 +2326,28 @@
     if(!bareGfx)for(const q of wd.deco.gravel || [])if(vis(q.x,q.y,8)){c.fillStyle=q.r>2.5?'#70695c':'#c5af85';c.fillRect(q.x,q.y,q.r*1.5,q.r);}
     for(const k of wd.floors){ const q = k.split(',').map(Number); if(q.length > 2) continue; const gx = q[0], gy = q[1], x = gx*GRID, y = gy*GRID; if(vis(x + 10, y + 10, 12)) drawFloor(c, x, y, gx, gy); }
     // the rivers, north and south: you cannot cross them
-    { const a = Math.max(0, x0 - 5), b = x1 + 5;
+    if(!under){ const a = Math.max(0, x0 - 5), b = Math.min(WD.W, x1 + 5);
       if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
       if(y1 > WD.H - WD.RIVER - 10){ c.save(); c.translate(0, WD.H); c.scale(1, -1); waterBody(c, a, b, 0, WD.RIVER, t, -1, 16); c.restore(); } }
     // Flat farm soil/crops are ground decals, always beneath actors and standing objects.
     for(const b of wd.builds.values())if(b.k==='farmplot' && vis(b.x,b.y,30))drawPiece(c,b.k,b.x,b.y,b,t);
     // all that stands, back to front
     const L = [];
-    for(const n of wd.nodes) if(vis(n.x, n.y, 50)) L.push({y:n.y, n});
-    for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push({y:f.y, f});
-    for(const b of wd.benches) if(vis(b.x,b.y,180)) L.push({y:b.y, bench:b});
-    for(const b of wd.builds.values()) if(b.k!=='farmplot' && vis(b.x,b.y,180)) L.push({y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b});
-    for(const f of wd.upFl.values()) if(vis(f.gx*GRID + 10, f.gy*GRID + 10, 180)) L.push({y:f.gy*GRID + f.l*0.02 - 0.01, slab:f});
-    for(const d of wd.drops) if(vis(d.x, d.y, 20)) L.push({y:d.y - 6, d});
-    for(const f of wd.foes) if(vis(f.x, f.y, 20)) L.push({y:f.y, foe:f});
-    if(wd.home && !wd.fires.some(f=>hyp(f.x - wd.home.x, f.y - wd.home.y) < 4) && vis(wd.home.x, wd.home.y, 20)) L.push({y:wd.home.y - 1, ash:wd.home});
-    L.push({y:p.y + p.z*0.9, me:true});
+    for(const n of wd.nodes) if(vis(n.x, n.y, 50)) L.push({y:n.y, n, top:nodeTop(n)});
+    for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push({y:f.y, f, top:20});
+    for(const b of wd.benches) if(vis(b.x,b.y,180)) L.push({y:b.y, bench:b, top:20});
+    for(const b of wd.builds.values()) if(b.k!=='farmplot' && vis(b.x,b.y,180)) L.push({y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)});
+    for(const f of wd.upFl.values()) if(vis(f.gx*GRID + 10, f.gy*GRID + 10, 180)) L.push({y:f.gy*GRID + f.l*0.02 - 0.01, slab:f, top:f.l*LH});
+    for(const d of wd.drops) if(vis(d.x, d.y, 20)) L.push({y:d.y - 6, d, top:(d.z || 0) + 10});
+    for(const f of wd.foes) if(vis(f.x, f.y, 20)) L.push({y:f.y, foe:f, top:12});
+    if(wd.home && !wd.fires.some(f=>hyp(f.x - wd.home.x, f.y - wd.home.y) < 4) && vis(wd.home.x, wd.home.y, 20)) L.push({y:wd.home.y - 1, ash:wd.home, top:4});
+    for(const gi of act){ const q = bodyOf(gi); L.push({y:q.y + q.z*0.9, me:gi, pz:q.z}); }
     L.sort((a, b)=>a.y - b.y);
+    /* Whatever lies at or below a player's feet is drawn before them: floors, walls and furniture on the levels beneath stay under their boots,
+       however far south of the player they sit. Only things that rise above their feet can still stand in front. */
+    for(let i=0;i<L.length;i++){ const m = L[i]; if(m.me===undefined) continue; const lift = [], rest = [];
+      for(let j=i+1;j<L.length;j++){ const e = L[j]; if(e.me===undefined && e.top!==undefined && e.top <= m.pz + 0.5) lift.push(e); else rest.push(e); }
+      if(lift.length){ L.splice(i, L.length - i, ...lift, m, ...rest); i += lift.length; } }
     const txt = (s, x, y, size, col)=>{ c.font = `bold ${size}px ui-monospace,Menlo,Consolas,monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = col; c.fillText(s, x, y); };
     for(const e of L){
       if(e.n){ if(e.n.k==='tree') drawTree(c, e.n, t, !e.n.gone && p.y < e.n.y - 4 && Math.abs(p.x - e.n.x) < e.n.cr && p.y > e.n.y - 18 - e.n.cr*1.8); else drawNode(c, e.n, t); }
@@ -2150,16 +2365,14 @@
         // Project the turning body onto a flattened ground footprint; light offset stays fixed.
         groundShadow(c,f.x,f.y,f.r*Math.hypot(Math.cos(facing),.6*Math.sin(facing)),f.r*.4*Math.hypot(Math.sin(facing),.6*Math.cos(facing)),1,f.r*.4);
         if(f.wind > 0){ c.beginPath(); c.arc(f.x, f.y, f.r + 4, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.85)'; c.lineWidth = 1.5; c.stroke(); }
-        /* Story mode's unit look for every animal: team health ring, hard highlight and crescent shading. Circle for melee, diamond for ranged.
-           The animal's own silhouette is drawn over it, so the ring reads as an outlined health gauge around the creature. */
-        if(f.kind==='shardling') toonUnit(c, f.x, f.y + Math.sin(t*3 + f.hx*0.1)*1.2, f.r + 2, 'diamond', f.hp/f.maxHp, '#3f8580', f.hit > 0 ? '#e8fdff' : '#2f8aa0', true);
-        else toonUnit(c, f.x, f.y, f.r + 2, 'circle', f.hp/f.maxHp, '#3f8580', f.hit > 0 ? '#e8fdff' : animalDef(f).color, true);
+        if(f.kind==='shardling') toonUnit(c, f.x, f.y + Math.sin(t*3 + f.hx*0.1)*1.2, f.r + 2, 'diamond', f.hp/f.maxHp, '#3f8580', f.hit > 0 ? '#e8fdff' : '#2f8aa0'); else ring(c, f.x, f.y, f.r, f.hp/f.maxHp, '#3f8580');
         drawAnimal(c,f,t);
+        if(f.kind!=='shardling'){ c.fillStyle='rgba(255,255,255,.22)'; c.beginPath(); c.ellipse(f.x - f.r*0.3, f.y - f.r*0.35, f.r*0.32, f.r*0.18, -0.3, 0, Math.PI*2); c.fill(); } /* cel highlight */
         if(hyp(f.x-p.x,f.y-p.y)<120)txt(animalDef(f).name,f.x,f.y-f.r-12,6,'#e6dcc4'); }
-      else if(e.me && !(wd.dead > 0)){
+      else if(e.me!==undefined){ withPlayer(e.me, ()=>{ if(wd.dead > 0) return; const p = wd.p, PC = PCOL[e.me];
         { const gz = p.air ? surfaceAt(p.x, p.y, p.z) : p.z; c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(p.x+1,p.y+p.r*.7-gz,p.r,p.r*.4,0,0,Math.PI*2); c.fill(); }
         c.save(); c.translate(0, -p.z);
-        if(p.rollT > 0) for(let i=1;i<=3;i++){ c.globalAlpha = 0.16*(4 - i); c.fillStyle = '#c73a5c'; c.beginPath(); c.arc(p.x - p.dx*i*6, p.y - p.dy*i*6, p.r - 2.5 - i*0.6, 0, Math.PI*2); c.fill(); }
+        if(p.rollT > 0) for(let i=1;i<=3;i++){ c.globalAlpha = 0.16*(4 - i); c.fillStyle = PC.ring; c.beginPath(); c.arc(p.x - p.dx*i*6, p.y - p.dy*i*6, p.r - 2.5 - i*0.6, 0, Math.PI*2); c.fill(); }
         if(p.fishT > 0){ const side = p.fishSide, bx = p.x + 6, by = side < 0 ? WD.RIVER - 26 : WD.H - WD.RIVER + 26, bob = Math.sin(t*4)*1.2 + (p.fishT < 500 ? Math.sin(t*40)*1.5 : 0);
           c.strokeStyle = 'rgba(230,220,195,.75)'; c.lineWidth = 0.7; c.beginPath(); c.moveTo(p.x + 4, p.y - 6); c.quadraticCurveTo((p.x + bx)/2 + 4, (p.y + by)/2, bx, by + bob); c.stroke();
           c.fillStyle = OL; c.beginPath(); c.arc(bx, by + bob, 2.4, 0, Math.PI*2); c.fill(); c.fillStyle = '#d6304f'; c.beginPath(); c.arc(bx, by + bob, 1.7, 0, Math.PI*2); c.fill(); }
@@ -2175,9 +2388,11 @@
           } }
         // shadow remains at the ground footprint
         c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
-        toonUnit(c, p.x, p.y, p.r, 'circle', p.hp/p.maxHp, '#c73a5c', '#9c2a44');
+        toonUnit(c, p.x, p.y, p.r, 'circle', p.hp/p.maxHp, PC.ring, PC.core);
         if(wd.armor){c.strokeStyle='#a97b48';c.lineWidth=3;c.strokeRect(p.x-6,p.y-6,12,12);}
-        txt('@', p.x, p.y + 0.5, 12, '#f0e2bd');
+        txt(e.me===0 ? '@' : String(e.me + 1), p.x, p.y + 0.5, 12, '#f0e2bd');
+        if(act.length > 1) txt('P' + (e.me + 1), p.x, p.y - p.r - 9, 6, PC.tag);
+        if(e.me > 0 && !p.action){ const hh = wdWhatAct(); if(hh && hh.k!=='fishing') txt(String(hh.text).slice(0, 40), p.x, p.y - p.r - 17, 5.5, '#e6dcc4'); }
         if(wd.helmet){ const hc = HELM_COL[wd.helmet.id] || '#a5774e'; c.beginPath(); c.arc(p.x, p.y - 1, p.r - 0.5, Math.PI*1.04, Math.PI*1.96); c.closePath(); c.fillStyle = hc; c.fill(); c.strokeStyle = OL; c.lineWidth = 1.2; c.stroke(); c.fillStyle = 'rgba(255,255,255,.38)'; c.beginPath(); c.ellipse(p.x - 3, p.y - 6.2, 2.2, 1.1, -0.3, 0, Math.PI*2); c.fill();
           if(wd.helmet.id==='shardhelm'){ c.fillStyle = '#bff3ff'; for(const dx of [-4, 0, 4]){ c.beginPath(); c.moveTo(p.x + dx - 1.6, p.y - 8); c.lineTo(p.x + dx, p.y - 13); c.lineTo(p.x + dx + 1.6, p.y - 8); c.closePath(); c.fill(); c.stroke(); } } } c.globalAlpha = 1;
         if(p.torch > 0){ const tx = p.x + 9, ty = p.y - 8, fl = performance.now()/90; /* the torch, held up */
@@ -2185,13 +2400,14 @@
           c.fillStyle = '#f39a2c'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.moveTo(tx - 3, ty); c.quadraticCurveTo(tx - 3, ty - 5, tx + Math.sin(fl)*1.2, ty - 9); c.quadraticCurveTo(tx + 3, ty - 5, tx + 3, ty); c.closePath(); c.stroke(); c.fill();
           c.fillStyle = '#ffe08a'; c.beginPath(); c.ellipse(tx, ty - 2.5, 1.2, 2.2, 0, 0, Math.PI*2); c.fill(); }
         if(p.action){ const a=p.action; c.fillStyle=OL; c.fillRect(p.x-19,p.y-25,38,5); c.fillStyle='#e0b54a'; c.fillRect(p.x-18,p.y-24,36*(1-a.left/a.ms),3); txt(a.label,p.x,p.y-32,6,'#e6dcc4'); }
-        c.restore(); }
+        c.restore();
+      }); }
     }
     // Ancient border trees are scenery, excluded from harvest targets and save node IDs.
     for(const n of wd.deco.borderTrees || [])if(vis(n.x,n.y,75))drawTree(c,n,t,false);
     for(const sh of wd.fshots){ c.save(); c.translate(sh.x, sh.y); c.rotate(Math.atan2(sh.vy, sh.vx)); c.fillStyle = 'rgba(127,214,232,.35)'; c.beginPath(); c.arc(0, 0, 6, 0, Math.PI*2); c.fill(); c.fillStyle = '#bff3ff'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.moveTo(5, 0); c.lineTo(0, -2.4); c.lineTo(-4, 0); c.lineTo(0, 2.4); c.closePath(); c.fill(); c.stroke(); c.restore(); }
     for(const sh of wd.shots){ c.strokeStyle = OL; c.lineWidth = 2.4; c.beginPath(); c.moveTo(sh.x - Math.cos(sh.a)*6, sh.y - Math.sin(sh.a)*6); c.lineTo(sh.x, sh.y); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.1; c.stroke(); }
-    if(wd.build && !(wd.dead > 0)){ /* the piece you hold, where it would go */
+    for(const gi of act) withPlayer(gi, ()=>{ if(!(wd.build && !(wd.dead > 0))) return; /* the piece you hold, where it would go */
       const cc = buildCell(), k = ITEMS[wd.build.id].build, x = cc.gx*GRID + GRID/2, y = cc.gy*GRID + GRID/2, ok = buildOk(k, cc.gx, cc.gy, cc.l), key = gkey(cc.gx,cc.gy,cc.l), has = wd.builds.has(key) || wd.floors.has(key), zb = cc.l*LH;
       if(!has){ c.globalAlpha = 0.5;
         if(k==='floor'){ if(cc.l) drawSlab(c, cc.gx, cc.gy, cc.l, 1); else drawFloor(c,x-10,y-10,cc.gx,cc.gy); }
@@ -2201,7 +2417,7 @@
         c.globalAlpha = 1; }
       c.strokeStyle = has ? '#e0b54a' : ok ? 'rgba(143,208,107,.95)' : 'rgba(238,90,117,.95)'; c.lineWidth = 1.5; c.setLineDash([3, 2]); c.strokeRect(x - 10, y - 10 - zb, 20, 20);
       if(zb){ c.globalAlpha = 0.4; c.strokeRect(x - 10, y - 10, 20, 20); c.globalAlpha = 1; }
-      c.setLineDash([]); }
+      c.setLineDash([]); });
     for(const e of wd.fx){
       const k = Math.max(0, e.t/e.t0);
       if(e.kind==='slash'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2; c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a - half, a + half); c.closePath();
@@ -2211,7 +2427,7 @@
       else if(e.kind==='num'){ c.globalAlpha = k; c.lineWidth = 2.5; c.strokeStyle = 'rgba(10,7,6,.8)'; c.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.strokeText(e.text, e.x, e.y - 14*(1 - k)); txt(e.text, e.x, e.y - 14*(1 - k), 8, e.col); c.globalAlpha = 1; }
     }
     // the dark: everything goes, except round the fires
-    const dk = darkAt(wd.t);
+    const dk = under ? 0.8 : darkAt(wd.t);
     if(dk > 0.01){
       const ds = 0.5, dw = Math.max(1, Math.round(w*ds)), dh = Math.max(1, Math.round(h*ds));
       if(!darkCv) darkCv = document.createElement('canvas'); if(darkCv.width!==dw || darkCv.height!==dh){ darkCv.width = dw; darkCv.height = dh; }
@@ -2223,16 +2439,27 @@
       const hole = (wx, wy, Rw)=>{ const hx = (wx - x0)*sc*ds, hy = (wy - y0)*sc*ds, R = Rw*sc*ds; if(hx < -R || hy < -R || hx > dw + R || hy > dh + R) return; const g = d.createRadialGradient(hx, hy, 0, hx, hy, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,.9)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(hx - R, hy - R, 2*R, 2*R); };
       for(const b of wd.builds.values()) if(b.k==='lamp') hole(b.x, b.y - (b.l || 0)*LH - 8, LAMP_R);
       for(const n of wd.nodes) if(n.k==='cave' && vis(n.x, n.y, 80)) hole(n.x, n.y, 46);
-      if(torchR() > 0){ const px = (p.x - x0)*sc*ds, py = (p.y - p.z - y0)*sc*ds, R = torchR()*sc*ds*(1 + 0.04*Math.sin(t*13)), g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
-      if(dk < 0.85){ const px = (p.x - x0)*sc*ds, py = (p.y - p.z - y0)*sc*ds, R = 60*sc*ds, g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,.45)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
+      if(under) for(const n of wd.unodes || []){ if(!vis(n.x, n.y, 130)) continue;
+        if(n.k==='crystal' && !n.gone) hole(n.x, n.y - 6, 58); else if(n.k==='bigshroom') hole(n.x, n.y - 18, 78); else if(n.k==='glowshroom' && !n.gone && n.ready <= wd.t) hole(n.x, n.y - 3, 32);
+        else if(n.k==='hoard') hole(n.x, n.y - 4, n.gone ? 40 : 70); else if(n.k==='caveexit') hole(n.x, n.y - 10, 62); }
+      for(const q of fb){ if(q.hp <= 0) continue; const tr = q.torch > 0 ? WD.torchR*(0.6 + 0.4*Math.min(1, q.torch/15)) : 0;
+        if(tr > 0){ const px = (q.x - x0)*sc*ds, py = (q.y - q.z - y0)*sc*ds, R = tr*sc*ds*(1 + 0.04*Math.sin(t*13)), g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
+        if(dk < 0.85 || under){ const px = (q.x - x0)*sc*ds, py = (q.y - q.z - y0)*sc*ds, R = (under ? 82 : 60)*sc*ds, g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,' + (under ? 0.8 : 0.45) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); } }
       c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(darkCv, 0, 0, cv.width, cv.height);
       c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(-x0*sc), dpr*(-y0*sc));
       c.globalCompositeOperation = 'lighter';
       for(const f of wd.fires){ if(!(f.fuel > 0) || !vis(f.x, f.y, 150)) continue; const R = lightR(f), g = c.createRadialGradient(f.x, f.y - 4, 0, f.x, f.y - 4, R); g.addColorStop(0, `rgba(255,140,50,${0.16*dk})`); g.addColorStop(1, 'rgba(255,140,50,0)'); c.fillStyle = g; c.fillRect(f.x - R, f.y - R, 2*R, 2*R); }
       for(const b of wd.builds.values()){ if(b.k!=='lamp' || !vis(b.x, b.y, 150)) continue; const ly = b.y - (b.l || 0)*LH - 8, g = c.createRadialGradient(b.x, ly, 0, b.x, ly, LAMP_R); g.addColorStop(0, `rgba(255,200,110,${0.2*dk})`); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(b.x - LAMP_R, ly - LAMP_R, 2*LAMP_R, 2*LAMP_R); }
       for(const n of wd.nodes){ if(n.k!=='cave' || n.gone || !vis(n.x, n.y, 120)) continue; const g = c.createRadialGradient(n.x, n.y, 0, n.x, n.y, 46); g.addColorStop(0, `rgba(127,214,232,${0.2*dk})`); g.addColorStop(1, 'rgba(127,214,232,0)'); c.fillStyle = g; c.fillRect(n.x - 46, n.y - 46, 92, 92); }
+      if(under) for(const n of wd.unodes || []){ if(!vis(n.x, n.y, 130)) continue; let col = null, R = 0, cy = n.y - 6;
+        if(n.k==='crystal' && !n.gone){ col = ['95,201,230', '155,124,240', '238,127,176'][Math.floor(n.v*3)%3]; R = 52; }
+        else if(n.k==='bigshroom'){ col = n.v < 0.5 ? '56,214,192' : '214,90,208'; R = 70; cy = n.y - 18; }
+        else if(n.k==='glowshroom' && !n.gone && n.ready <= wd.t){ col = n.v < 0.5 ? '82,232,208' : '138,240,127'; R = 28; cy = n.y - 3; }
+        else if(n.k==='hoard'){ col = '127,214,232'; R = n.gone ? 30 : 64; }
+        else if(n.k==='caveexit'){ col = '255,225,150'; R = 58; cy = n.y - 10; }
+        if(!col) continue; const pul = 0.8 + 0.2*Math.sin(t*2 + n.id), g = c.createRadialGradient(n.x, cy, 0, n.x, cy, R); g.addColorStop(0, `rgba(${col},${0.34*pul})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(n.x - R, cy - R, 2*R, 2*R); }
       c.globalCompositeOperation = 'source-over';
-      if(wd.darkT > 1 && !(wd.dead > 0)){ const a = Math.min(1, (wd.darkT - 1)/1.5), ex = p.x + Math.cos(t*0.7)*34, ey = p.y - p.z - 20 + Math.sin(t*0.9)*12; /* eyes in the dark */
+      for(const gi of act){ const q = bodyOf(gi), dT = ctxGet(gi, 'darkT'), dd = ctxGet(gi, 'dead'); if(!(dT > 1) || dd > 0) continue; const a = Math.min(1, (dT - 1)/1.5), ex = q.x + Math.cos(t*0.7)*34, ey = q.y - q.z - 20 + Math.sin(t*0.9)*12; /* eyes in the dark */
         c.fillStyle = `rgba(240,230,190,${0.85*a})`; for(const s of [-3.5, 3.5]){ c.beginPath(); c.ellipse(ex + s, ey, 2, 1.1, s*0.06, 0, Math.PI*2); c.fill(); } }
     }
     for(const e of wd.fx) if(e.kind==='claw'){ const k = Math.max(0, e.t/e.t0); c.strokeStyle = `rgba(20,10,30,${k})`; c.lineWidth = 2.5; c.beginPath(); for(const o of [-6, 0, 6]){ c.moveTo(e.x - 10 + o, e.y - 12); c.lineTo(e.x + 8 + o, e.y + 10); } c.stroke(); }
@@ -2243,27 +2470,22 @@
       c.font = `bold ${fs}px "Iowan Old Style","Palatino Linotype",Georgia,serif`; c.strokeText(b.text, w/2, h*0.36); c.fillStyle = '#d9c9a3'; c.fillText(b.text, w/2, h*0.36);
       if(b.sub){ c.font = `${fs*0.45}px "Iowan Old Style","Palatino Linotype",Georgia,serif`; c.strokeText(b.sub, w/2, h*0.36 + fs*0.85); c.fillStyle = '#b8aa88'; c.fillText(b.sub, w/2, h*0.36 + fs*0.85); }
       c.globalAlpha = 1; if(b.t <= 0) wd.banner = null; }
+    if(wd.fade){ wd.fade.t += dt; const fa = 1 - wd.fade.t/wd.fade.dur; if(fa <= 0) wd.fade = null; else { c.fillStyle = `rgba(0,0,0,${fa})`; c.fillRect(0, 0, w, h); } }
   }
 
   // ---- the HUD ----
   let hudLast = '', dialT = 0;
   const glyph = k => activePad() ? ({act:'B', atk:'X'})[k] : ({act:'E', atk:'J'})[k];
   function wdHud(){
-    const p = wd.p, hnow = performance.now();
-    /* The hint scans every camp piece and every node, so it refreshes about 11 times a second (and at once after any HUD reset), not every frame.
-       Pressing the action key still asks the world directly, never this cache. */
-    if(hudLast==='' || !wd._hAt || hnow - wd._hAt > 90 || wd._hAt > hnow){ wd._hAt = hnow; const idle = wd.dead > 0 || wd.build;
-      wd._hA = idle ? null : wdWhatAct();
-      wd._hN = idle ? null : wd.nodes.find(n=>(n.k==='tree' || n.k==='bone' || n.k==='rock') && !n.gone && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + WD_SW.r) || null; }
-    const a = wd.dead > 0 || wd.build ? null : wd._hA;
+    const p = wd.p, a = wd.dead > 0 || wd.build ? null : wdWhatAct();
     let hint = a ? (a.k==='fishing' ? a.text : `<b>${glyph('act')}</b> ${a.text}`) : '';
     if(wd.build && !(wd.dead > 0)){ const pad = !!activePad(), I = ITEMS[wd.build.id];
       hint = `${I.name} ×${invCount(wd.build.id)} · Floor <b>${wd.build.lvl + 1}</b> · <b>${pad ? 'A' : 'Space'}</b> place · <b>${pad ? 'X' : 'J'}</b> take back · <b>${pad ? 'LB RB' : '1 to 0'}</b> piece · <b>${pad ? 'LT RT' : 'Z X'}</b> level` + (I.build==='stairs' ? ` · <b>${pad ? 'Y' : 'R'}</b> turn (${['east','south','west','north'][wd.build.dir]})` : '') + ` · <b>${pad ? 'B' : 'E'}</b> done`; }
     if(a && a.k==='need') hint = a.text;
-    if(!hint && !(wd.dead > 0) && !wd.build){ const n = wd._hN && !wd._hN.gone ? wd._hN : null;
-      if(n) hint = n.k==='tree' ? (toolFor('chop') >= 0 ? `<b>${glyph('atk')}</b> Chop` : 'You need a hatchet to chop') : n.k==='rock' ? (toolFor('mine') >= 0 ? `<b>${glyph('atk')}</b> Mine${n.ore ? ' '+METALS[n.ore].name.toLowerCase()+' ore' : ''}` : 'You need a pickaxe to mine') : `<b>${glyph('atk')}</b> Break the bones`; }
+    if(!hint && !(wd.dead > 0) && !wd.build){ const n = wd.nodes.find(n=>hitKind(n) && !n.gone && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + WD_SW.r);
+      if(n) hint = n.k==='tree' ? (toolFor('chop') >= 0 ? `<b>${glyph('atk')}</b> Chop` : 'You need a hatchet to chop') : (n.k==='rock' || n.k==='crystal') ? (toolFor('mine') >= 0 ? `<b>${glyph('atk')}</b> Mine${n.ore ? ' '+METALS[n.ore].name.toLowerCase()+' ore' : n.k==='crystal' ? ' crystal' : ''}` : 'You need a pickaxe to mine') : `<b>${glyph('atk')}</b> Break the bones`; }
     if(!hint && !(wd.dead > 0) && p.torch > 0) hint = 'Torch ' + Math.ceil(p.torch) + ' s';
-    const region=(p.x>DESERT.right ? 'Eastern frontier' : p.x>WD.W-WD.EDGE ? 'Rocky desert' : 'Woodlands')+(p.z>=LH-6 ? ' · Floor '+(Math.round(p.z/LH)+1) : '');
+    const region=(wd.cur>0 ? 'P'+(wd.cur+1)+' · ' : '')+(inUnder(p) ? 'Shardling caves' : p.x>DESERT.right ? 'Eastern frontier' : p.x>WD.W-WD.EDGE ? 'Rocky desert' : 'Woodlands')+(p.z>=LH-6 ? ' · Floor '+(Math.round(p.z/LH)+1) : '');
     const key = [region,Math.ceil(p.hp), Math.ceil(p.hunger), Math.floor(wd.t/WD.day), wd.raidDone, wd.sel, wd.inv.map(s=>s ? s.id + s.n + (s.d || '') : '').join(','), hint].join('|');
     if(key!==hudLast){ hudLast = key; $('wdRegion').textContent=region;
       $('wdHp').innerHTML = Math.max(0, Math.ceil(p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small>`;
@@ -2397,7 +2619,7 @@
   const TABS = ['bag', 'craft', 'cook', 'cheat'];
   let cheatStack=true;
   function bagOpen(tab,chest){ if(!wdLive()) return; wdCancelAction(); if(wd.build) buildEnd(); wd.chest=chest || null; wd.bagSide='bag'; wd.chestSel=0; wd.paused = true; wd.bag = true; wd.tab = tab==='accessory' ? 'bag' : tab || 'bag'; $('wdBag').classList.add('on'); bagRender(true); if(tab==='accessory')equipmentFocus(); beep(500, 0.05, 'triangle', 0.03); }
-  function bagClose(){ if(wd){ bagReturnHand(); wd.chest=null; wd.bagSide='bag'; wdSave(); } $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; wd.paused = false; wdIn.resync = true; } hudLast = ''; }
+  function bagClose(){ if(wd){ bagReturnHand(); wd.chest=null; wd.bagSide='bag'; wdSave(); } $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; wd.paused = false; wdIn.resync = true; if(wd.crew){ menuPadIdx = null; wd.bagSeat = 0; ctxSet(0); } } hudLast = ''; }
   function bagTab(tab){ if(!wd || !wd.bag) return; if(tab==='accessory'){bagTab('bag');equipmentFocus();return;} if(wd.tab===tab) return; bagReturnHand(); wd.bagSide='bag'; wd.tab = tab; bagRender(true); beep(560, 0.04, 'triangle', 0.025); }
   function bagStep(d){ if(!wd || !wd.bag) return; bagTab(TABS[(TABS.indexOf(wd.tab) + d + TABS.length) % TABS.length]); }
   function bagRender(focus){
@@ -2449,12 +2671,12 @@
       b.onclick = ()=>{ wd.paused = false; const ok = wdCraft(r); if(ok){ bagClose(); return; } wd.paused = true; wd.csel = +b.dataset.i; craftRender(); };
       b.onpointerenter = ()=>craftInfo(r); }
     const all = btns(), live = all.filter(b=>!b.disabled);
-    if(had >= 0 && all[had]) padSet(all[had]);
+    if(had >= 0 && all[had] && !all[had].disabled) padSet(all[had]);
     else if((focus || had >= 0) && activePad()) padSet(live[0] || $('wdBagClose'));
     const cur = padEl && L.contains(padEl) ? list[+padEl.dataset.i] : list[wd.csel] || list[0];
     craftInfo(cur);
     if(!live.length && wd.tab==='cook' && !nearFire(WD.fireNear, true)) $('wdCraftInfo').textContent = 'Stand by a lit fire to cook.';
-    if(padEl && ((padEl.disabled && !L.contains(padEl)) || padEl.offsetParent===null)) padSet(live[0] || $('wdBagClose'));
+    if(padEl && (padEl.disabled || padEl.offsetParent===null)) padSet(live[0] || $('wdBagClose'));
   }
   function craftInfo(r){ if(!r) return; const I = ITEMS[r.id] || {}; $('wdCraftInfo').textContent = recName(r) + ': ' + (r.desc || I.desc || (I.light ? `Light it from the bag to see for ${WD.torch} seconds.` : I.food ? `Food ${I.food}` + (I.heal ? `, heals ${I.heal}.` : '.') : '')); }
   function cheatSpawn(id,n){
@@ -2492,10 +2714,11 @@
   let pausePage='main';
   function pauseView(page='main',msg){
     pausePage=page;
-    $('wdPauseMain').hidden=page!=='main';$('wdPauseSettings').hidden=page!=='settings';$('wdPauseHelp').hidden=page!=='help';$('wdPauseBack').hidden=page==='main';
-    $('wdPauseTitle').textContent=page==='settings'?'SETTINGS':page==='help'?'CONTROLS & SURVIVAL':'PAUSED';
+    $('wdPauseMain').hidden=page!=='main';$('wdPauseSettings').hidden=page!=='settings';$('wdPauseHelp').hidden=page!=='help';$('wdPauseCoop').hidden=page!=='coop';$('wdPauseBack').hidden=page==='main';
+    $('wdPauseTitle').textContent=page==='settings'?'SETTINGS':page==='help'?'CONTROLS & SURVIVAL':page==='coop'?'LOCAL CO-OP':'PAUSED';
     if(page==='help')$('wdPauseHelp').innerHTML=WD_HELP;
     if(page==='settings')pauseSettingsRender();
+    if(page==='coop')coopRender();
     wdPanel(`Day ${Math.floor(wd.t/WD.day)+1} · seed ${wd.seed} · ${wd.deaths} deaths\n`+(msg || 'World time, hunger and enemies are paused.'));
     const target=$(page==='main'?'wdResume':page==='settings'?'wdVolumeMaster':'wdPauseBack');
     if(activePad())padSet(target);try{target.focus({preventScroll:true});}catch(e){}
@@ -2503,22 +2726,11 @@
   }
   function pauseSettingsRender(){
     for(const [key,label] of [['master','Master'],['sfx','Sound effects'],['env','Environment'],['music','Music'],['danger','Danger sounds']])$('wdVolume'+key[0].toUpperCase()+key.slice(1)).textContent=label+': '+Math.round(sound[key]*100)+'%';
-    $('wdFullscreen').textContent=fsCan() ? 'Fullscreen: '+(fsEl()?'On':'Off') : 'Fullscreen: not supported here';$('wdFullscreen').disabled=!fsCan();
     $('wdHaptics').textContent='Vibration: '+(sound.haptics?'On':'Off');
     $('wdEffects').textContent='Effects: '+fxMode;
     $('wdScenery').textContent='Decorative scenery: '+(bareGfx?'Reduced':'Full');
     $('wdSwapAB').textContent='Swap A / B: '+(padSwap.ab?'On':'Off');$('wdSwapXY').textContent='Swap X / Y: '+(padSwap.xy?'On':'Off');
   }
-  const fsEl=()=>document.fullscreenElement || document.webkitFullscreenElement || null;
-  const fsCan=()=>!!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
-  function fsToggle(){
-    const d=document, e=d.documentElement, fail=()=>{ $('wdMsg').textContent='Fullscreen was refused. It needs a tap, click or key press; a controller button alone cannot start it.'; };
-    try{
-      const p = fsEl() ? (d.exitFullscreen || d.webkitExitFullscreen).call(d) : (e.requestFullscreen || e.webkitRequestFullscreen).call(e, {navigationUI:'hide'});
-      if(p && p.catch) p.catch(fail);
-    }catch(x){ fail(); }
-  }
-  for(const ev of ['fullscreenchange','webkitfullscreenchange']) document.addEventListener(ev, ()=>{ wdIn.resync=true; if(wd && wd.paused && pausePage==='settings') pauseSettingsRender(); });
   function pauseSetting(key){
     try{
       if(['master','sfx','env','music','danger'].includes(key)){sound[key]=sound[key]>=.999?0:Math.min(1,Math.round((sound[key]+.1)*10)/10);localStorage.setItem('bloodline_sound',JSON.stringify(sound));applySound();}
@@ -2533,7 +2745,7 @@
     if(!wd || wd.menu || wd.bag) return;
     wd.paused=!wd.paused;wdIn.resync=true;wdIn.keys={};
     if(wd.paused){const saved=wdSave();pauseView('main',saved?'World saved.\nWorld time, hunger and enemies are paused.':'Could not save: browser storage is unavailable. Your world remains open.');}
-    else{wdPanel(null);padSet(null);pausePage='main';try{$('wdCanvas').focus();}catch(e){}}
+    else{wdPanel(null);padSet(null);pausePage='main';menuPadIdx=null;try{$('wdCanvas').focus();}catch(e){}}
     $('wdPause').textContent=wd.paused?'Resume':'Pause';hudLast='';
   }
   $('wdPause').onclick=()=>{initAudio();wdTogglePause();};
@@ -2543,7 +2755,6 @@
   $('wdTitleMenu').onclick=()=>{if(wdSave()){wdIn.keys={};wd.bag=false;wd.chest=null;wdMenu();}else $('wdMsg').textContent='Could not save. Stay here and try again.';};
   $('wdLeave').onclick=()=>{if(wdSave())wdLeave();else $('wdMsg').textContent='Could not save. Stay here and try again.';};
   for(const key of ['master','sfx','env','music','danger'])$('wdVolume'+key[0].toUpperCase()+key.slice(1)).onclick=()=>pauseSetting(key);
-  $('wdFullscreen').onclick=fsToggle;
   for(const [id,key] of [['wdHaptics','haptics'],['wdEffects','effects'],['wdScenery','scenery'],['wdSwapAB','ab'],['wdSwapXY','xy']])$(id).onclick=()=>pauseSetting(key);
   function wdLeave(){
     if(wd) wdSave();
@@ -2589,8 +2800,14 @@
       ['Building up:', 'Z and X, the mouse wheel, or LT and RT change the level you build on. R or Y turns stairs.'],
       ['Equipment:', 'O opens the bag with the equipment panel focused'],
       ['Cheats:', 'K, or Bag → CHEATS. Spawn supplies and kits, restore stats, summon sunrise, or toggle damage/hunger protection. Cheats persist in this world.'],
-      ['Fullscreen:', 'Pause → Settings → Fullscreen. It needs a tap, click or key press; a controller button alone cannot start it.'],
       ['Pause:', 'Start or Esc. B or Esc backs out of settings and this guide first. Losing window focus pauses automatically; resume when ready.'],
+    ]],
+    ['Local co-op', [
+      [null, 'Up to four can play one world on one screen. Player 1 uses the keyboard, with a controller if they like. Press Start on another controller while playing to join as the next player.'],
+      ['Each player:', 'has their own bag, health, belly and gear. The world, buildings, fires, chests and the time of day are shared. Dropped things can be taken by anyone.'],
+      ['Bag and Pause:', 'Y on a controller opens that player\'s own bag. Start pauses for everyone. Pause, then Local co-op lets a player drop out, or puts Player 1 on keyboard only so a single controller can join as Player 2.'],
+      ['Camera:', 'follows the group and zooms out as you spread; the far player is held back once you are a screen apart. A player who dies wakes at the bed or campfire after a moment; the others carry on.'],
+      ['Saving:', 'each player\'s bag is saved with the world. Seats are not: press Start again to rejoin and you get your bag back.'],
     ]],
     ['Hotbar', [
       ['Hotbar:', '1–0 selects (or LB and RB). Q or RT uses, eats, equips, lights or refuels the selected item.'],
@@ -2606,6 +2823,7 @@
       [null, 'Gathering, eating, refueling and crafting take a short time. Move or take damage to cancel; resources are spent only on completion.'],
       [null, 'You can build up to four levels. Walls are one storey tall; a floor rests on a wall below it or on a floor beside it. Craft stairs at a workbench and walk up them to reach the next floor; leave the space above a stair open.'],
       [null, 'Floors above you turn see-through near you. Step off an edge and you fall: a fall of more than one storey hurts, and Jackals cannot follow you upstairs. You cannot take back a piece that something rests on, or the floor you stand on.'],
+      [null, 'The Shardling mound in the woods is a way down. Climb in and you reach the Shardling caves: crystals to mine with a pickaxe (they grow back), glowing mushrooms to eat, and a hoard deep inside. Shardlings nest there in groups. The whole party goes together; the exit mound brings you back.'],
     ]],
     ['Night, fire and death', [
       [null, 'Night is short and deadly: without light near you, something in the dark bites. A torch lights your way for a while.'],
@@ -2665,10 +2883,10 @@
 
 
   // ---- input ----
-  function wdPad(){
-    const g = activePad(); if(!g) return null;
-    const b = k => { const x = padBtn(g, k); return !!(x && (x.pressed || x.value > 0.4)); }, dz = v => Math.abs(v) < 0.2 ? 0 : v, P = wdIn.pad;
-    if(wdIn.resync){ wdIn.resync = false; for(let k=0;k<16;k++) P[k] = b(k); }
+  function wdPad(i = 0, rs = wdIn.resync){
+    const g = i===0 ? seat0Pad() : (wd && wd.crew && wd.crew[i].pad >= 0 ? rawPad(wd.crew[i].pad) : null); if(!g) return null;
+    const b = k => { const x = padBtn(g, k); return !!(x && (x.pressed || x.value > 0.4)); }, dz = v => Math.abs(v) < 0.2 ? 0 : v, P = i===0 ? wdIn.pad : ((wdIn.pads || (wdIn.pads = {}))[i] || (wdIn.pads[i] = {}));
+    if(rs){ if(i===0) wdIn.resync = false; for(let k=0;k<16;k++) P[k] = b(k); }
     const edge = k => { const now = b(k), was = !!P[k]; P[k] = now; return now && !was; };
     const o = {mx:dz(g.axes[0]||0), my:dz(g.axes[1]||0)};
     if(b(12)) o.my = -1; if(b(13)) o.my = 1; if(b(14)) o.mx = -1; if(b(15)) o.mx = 1;
@@ -2676,8 +2894,9 @@
     if(o.place || o.act || o.attack || o.bag || o.start || o.drop){ padWakeAudio(); initAudio(); }
     return o;
   }
-  function wdRead(g){
-    const K = wdIn.keys; let mx = (K.KeyD || K.ArrowRight ? 1 : 0) - (K.KeyA || K.ArrowLeft ? 1 : 0), my = (K.KeyS || K.ArrowDown ? 1 : 0) - (K.KeyW || K.ArrowUp ? 1 : 0);
+  function wdRead(g, i = 0){
+    let mx = 0, my = 0;
+    if(i===0){ const K = wdIn.keys; mx = (K.KeyD || K.ArrowRight ? 1 : 0) - (K.KeyA || K.ArrowLeft ? 1 : 0); my = (K.KeyS || K.ArrowDown ? 1 : 0) - (K.KeyW || K.ArrowUp ? 1 : 0); }
     if(g && (g.mx || g.my)){ mx = g.mx; my = g.my; }
     const l = hyp(mx, my); if(l > 1){ mx /= l; my /= l; }
     return {mx, my};
@@ -2706,22 +2925,27 @@
   window.addEventListener('pagehide', ()=>{ if(wd && !wd.menu) wdSave(); });
 
   // ---- the loop ----
+  function wdPlayInput(g){ /* one player's buttons; called with that player's seat swapped in */
+    if(!(g && wdLive())) return;
+    if(g.place){ if(wd.build)buildPlace(); else wdRoll(); } if(g.attack) wdAttack(); if(g.act) wdAct();
+    if(wd.build){ if(g.lb) buildCycle(-1); if(g.rb) buildCycle(1); if(g.use) buildLevel(1); if(g.cook) buildLevel(-1); } else { if(g.lb) wdSel(-1); if(g.rb) wdSel(1); if(g.use) hotbarAction('use'); if(g.cook)hotbarAction('cook'); if(g.drop)hotbarAction('drop',g.dropStack); }
+    if(g.bag){ if(wd.build) buildRotate(); else bagOpen(); }
+  }
   function wdLoop(ts){
     const dt = Math.min(50, ts - wdLast); wdLast = ts;
     if(wd && !wd.menu) try{
-      const g = wdPad();
-      if(padEl && wdLive()) padSet(null); /* no focus box on the HUD while you play */
+      if(!wd.paused) coopPoll();
+      const rs = wdIn.resync; wdIn.resync = false;
+      const act = activeIdx(), G = {}; for(const i of act) G[i] = wdPad(i, rs);
+      const g = G[0];
       if(g && g.start && !wd.bag && !(wd.dead > 0)) wdTogglePause();
+      if(!wd.paused && !wd.bag) for(const i of act) if(i > 0 && G[i] && G[i].start && !(ctxGet(i, 'dead') > 0)){ menuPadIdx = wd.crew[i].pad; wdTogglePause(); padSyncHeld(menuPadIdx); break; }
       if(!wd.paused){
-        const I = wdRead(g); wd.lastI = I;
-        if(g && wdLive()){ if(g.place){ if(wd.build)buildPlace(); else wdRoll(); } if(g.attack) wdAttack(); if(g.act) wdAct();
-          if(wd.build){ if(g.lb) buildCycle(-1); if(g.rb) buildCycle(1); if(g.use) buildLevel(1); if(g.cook) buildLevel(-1); } else { if(g.lb) wdSel(-1); if(g.rb) wdSel(1); if(g.use) hotbarAction('use'); if(g.cook)hotbarAction('cook'); if(g.drop)hotbarAction('drop',g.dropStack); }
-          if(g.bag){ if(wd.build) buildRotate(); else bagOpen(); } }
-        if(!wd.paused){ wdStep(dt, I); for(const e of wd.fx) e.t -= dt; wd.fx = wd.fx.filter(e=>e.t > 0); wdSound(dt); }
+        const Is = {}; for(const i of act) Is[i] = wdRead(G[i], i);
+        for(const i of act){ if(wd.paused) break; withPlayer(i, ()=>{ wd.lastI = Is[i]; wdPlayInput(G[i]); }); }
+        if(!wd.paused){ wdStep(dt, Is); for(const e of wd.fx) e.t -= dt; wd.fx = wd.fx.filter(e=>e.t > 0); wdSound(dt); }
       }
-      /* Effects: auto. Sustained slow frames (over about 28 ms for three seconds) switch to the lighter render path: native resolution, no cracks. */
-      if(fxMode==='auto' && !lowFx && !wd.paused){ fxEma += (dt - fxEma)*0.05; if(fxEma > 28){ fxSlowMs += dt; if(fxSlowMs > 3000){ lowFx = true; applyFx(); } } else fxSlowMs = Math.max(0, fxSlowMs - dt*2); }
-      wdDraw(wd.paused ? 0 : dt); wdHud();
+      wdDraw(wd.paused ? 0 : dt); wdHud(); crewHud();
     }catch(e){ noteError(e); }
     wdRaf = requestAnimationFrame(wdLoop);
   }
@@ -2738,7 +2962,7 @@
     if(!audioCtx || !amb || !wd || wd.menu) return;
     const BAR = 4.8; if(audioCtx.currentTime < nextBar - 0.6) return;
     const at = nextBar; nextBar += BAR; barN++;
-    const dk = darkAt(wd.t), night = dk > 0.6;
+    const dk = inUnder(wd.p) ? 0.8 : darkAt(wd.t), night = dk > 0.6;
     if(night){ grPad(at, BAR + 0.4, amb.musicBus, [[73.4, -5], [110, 4], [77.8, 0]]);
       if(barN%2===0) for(let i=0;i<3;i++) grPluck(midiHz(NIGHT_SCALE[Math.floor(Math.random()*NIGHT_SCALE.length)]), at + 1.2 + i*1.1, amb.musicBus); }
     else { if(barN%2===0) grPad(at, BAR*2, amb.musicBus, dk > 0.2 ? [[110, -4], [130.8, 5], [164.8, 0]] : [[130.8, -4], [196, 5], [164.8, 0]]);
@@ -2748,7 +2972,8 @@
   function wdSound(dt){
     if(!audioCtx || !amb) return; const s = dt/1000;
     wd.envT -= s; if(wd.envT <= 0){ const dk = darkAt(wd.t); wd.envT = 2 + Math.random()*5;
-      if(dk < 0.3){ const f = 2200 + Math.random()*1400; for(let i=0;i<2 + Math.floor(Math.random()*3);i++) beep(f*(1 + (i%2)*0.12), 0.06, 'sine', 0.018, i*0.09, amb.envBus); } /* birds */
+      if(inUnder(wd.p)){ beep(1500 + Math.random()*1200, 0.07, 'sine', 0.014, 0, amb.envBus); beep(2400 + Math.random()*900, 0.05, 'triangle', 0.008, 0.12, amb.envBus); } /* water drips in the caves */
+      else if(dk < 0.3){ const f = 2200 + Math.random()*1400; for(let i=0;i<2 + Math.floor(Math.random()*3);i++) beep(f*(1 + (i%2)*0.12), 0.06, 'sine', 0.018, i*0.09, amb.envBus); } /* birds */
       else if(dk > 0.6) for(let i=0;i<3;i++) beep(4300, 0.03, 'sine', 0.012, i*0.07, amb.envBus); } /* crickets */
     const f = nearFire(160, true); if(f && Math.random() < s*5) thud(0.03, 0.03*(1 - hyp(f.x - wd.p.x, f.y - wd.p.y)/160), 3000 + Math.random()*2000, 0, amb.envBus); /* the fire crackles */
     if(wd.darkT > 0){ wd.beatT -= s; if(wd.beatT <= 0){ wd.beatT = 0.75; thud(0.12, 0.22, 110, 0, amb.dangerBus); thud(0.1, 0.16, 100, 0.2, amb.dangerBus); } } else wd.beatT = 0;
@@ -2759,7 +2984,7 @@
   function padTop(){ const open = [...document.querySelectorAll('.overlay.show')]; if(!open.length) return null; const z = e => parseInt(getComputedStyle(e).zIndex,10) || 0, all = [...document.querySelectorAll('.overlay')];
     return open.sort((a,b)=> (z(a)-z(b)) || (all.indexOf(a)-all.indexOf(b))).pop(); }
   function padCands(){ const top = padTop(), root = top || document;
-    return [...root.querySelectorAll(PAD_SEL)].filter(e=>{ if((e.disabled && !e.closest('#wdCraftList')) || (!top && e.closest('.overlay')) || e.closest('#wdHotbar') || e.id==='wdPause') return false; const r = e.getBoundingClientRect(); if(r.width<2 || r.height<2) return false;
+    return [...root.querySelectorAll(PAD_SEL)].filter(e=>{ if(e.disabled || (!top && e.closest('.overlay'))) return false; const r = e.getBoundingClientRect(); if(r.width<2 || r.height<2) return false;
       const cs = getComputedStyle(e); if(e.id==='wdPause' && wd && (wd.bag || wd.paused)) return false; return cs.visibility!=='hidden' && cs.pointerEvents!=='none' && e.offsetParent!==null; }); }
   function padMove(dx, dy){
     if(dy!==0 && wd && wd.paused && pausePage==='help'){ $('wdPanel').scrollBy({top:dy*140}); return; }
@@ -2823,11 +3048,11 @@
     requestAnimationFrame(padPoll);
   }
   window.addEventListener('pointerdown', ()=>{ if(padEl) padSet(null); }, true);
-  window.addEventListener('gamepadconnected', ()=>{ if(wd && wd.bag) bagRender(true); else if(!padAny && !wdLive()) padMove(0, 1); });
+  window.addEventListener('gamepadconnected', ()=>{ if(wd && wd.bag) bagRender(true); else if(!padAny) padMove(0, 1); });
   window.addEventListener('gamepaddisconnected', ()=>{ padHeld={}; if(wd && wd.bag) bagRender(); });
   requestAnimationFrame(padPoll);
   try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
-  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP};
+  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, get menuPadIdx(){return menuPadIdx;}};
   wdMenu();
   wdLast = performance.now(); wdRaf = requestAnimationFrame(wdLoop);
 })();
