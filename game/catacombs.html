@@ -49,6 +49,14 @@
   .uf-crow{ display:flex; align-items:center; gap:.55em; font-size:.8em; line-height:1.2; text-shadow:0 0 6px #000, 0 0 3px #000; }
   .uf-crow b{ min-width:1.7em; letter-spacing:.06em; } .uf-crow.down{ opacity:.55; }
   .uf-crow .sl{ display:flex; gap:.25em; } .uf-crow .sl small{ font-size:.65em; color:var(--bone); margin-left:.05em; }
+  /* every other player gets the same stats box as Player 1, at the bottom of the screen, with their own health, blood and cards */
+  .uf-crewhud{ position:absolute; inset:0; pointer-events:none; z-index:2; font-size:clamp(14px, 2.6vmin, 30px); color:var(--bone); }
+  .uf-crewhud:empty{ display:none; }
+  .uf-crewhud .uf-col{ position:absolute; bottom:max(3vmin, env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column-reverse; gap:.5em; }
+  .uf-crewhud .uf-cl{ left:max(4vmin, env(safe-area-inset-left,0px)); align-items:flex-start; }
+  .uf-crewhud .uf-cr{ right:max(4vmin, env(safe-area-inset-right,0px)); align-items:flex-end; }
+  .uf-stats.uf-co{ border-left:.3em solid #888; }
+  .uf-stats.down{ opacity:.55; }
   .uf-seats{ display:flex; flex-direction:column; gap:.4em; align-items:center; margin:.3em 0; } .uf-seats:empty{ display:none; }
   .uf-pick{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:center; gap:.8em; background:rgba(10,7,6,.88); z-index:3; font-size:clamp(15px, 3.4vmin, 44px); padding:4vmin; text-align:center; }
   .uf-pick.on{ display:flex; }
@@ -75,7 +83,7 @@
   .uf-panel.on{ display:flex; }
   .uf-meta{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:.55em; background:rgba(10,7,6,.95); z-index:4; overflow-y:auto; padding:5vmin 4vmin; font-size:clamp(14px, 2.2vmin, 24px); text-align:center; color:var(--bone); }
   .uf-meta.on{ display:flex; }
-  #ufOverlay.uf-menu .uf-hud, #ufOverlay.uf-menu .uf-pause{ display:none; }
+  #ufOverlay.uf-menu .uf-hud, #ufOverlay.uf-menu .uf-pause, #ufOverlay.uf-menu .uf-crewhud{ display:none; }
   .uf-meta h2{ margin:0; letter-spacing:.2em; font-size:1.5em; color:var(--crimson-lt); }
   .uf-meta .uf-sub{ color:var(--bone-dim); font-size:.85em; }
   .uf-meta .uf-h{ margin-top:.5em; font-size:.72em; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); }
@@ -120,6 +128,7 @@
     <div class="uf-stats" id="ufStats"><div class="uf-hp"><span>HP</span> <b id="ufHpN">100</b></div><div class="uf-blv"><span>Blood</span> <b id="ufBlood">0</b></div><div class="uf-slots" id="ufSlots"></div><div class="uf-tarots" id="ufTarots"></div><div class="uf-crew" id="ufCrew"></div></div>
     <div class="uf-mapbox" id="ufMapBox"><canvas id="ufMap"></canvas><div class="uf-roomlab" id="ufRoomLab"></div></div>
   </div>
+  <div class="uf-crewhud" id="ufCrewHud"></div>
   <button id="ufPause" class="uf-pause">Pause</button>
 </div>
 
@@ -1462,7 +1471,8 @@
     const sr = st.getBoundingClientRect(), hb = Math.max(ufEl('ufStats').getBoundingClientRect().bottom, ufEl('ufMapBox').getBoundingClientRect().bottom) - sr.top + 8;
     const hw = Math.max(ufEl('ufStats').getBoundingClientRect().right - sr.left, sr.right - ufEl('ufMapBox').getBoundingClientRect().left) + 8;
     const sc0 = Math.min(w/UF_W, h/UF_H), top = UF_W > UF_H ? 0 : (w - UF_W*sc0)/2 < hw ? hb : 0; // a wide room fills the screen, with the HUD over its corners // the HUD keeps to the sides when there is room, otherwise the room sits below it
-    const c = cv.getContext('2d'), sc = Math.min(w/UF_W, (h - top - 8)/UF_H), ox = (w - UF_W*sc)/2, oy = top + (h - top - UF_H*sc)/2;
+    let bot = 0; if(UF_W <= UF_H) for(const e of ufEl('ufCrewHud').querySelectorAll('.uf-stats')){ const r = e.getBoundingClientRect(); if((w - UF_W*sc0)/2 < Math.max(r.right - sr.left, sr.right - r.left) + 8) bot = Math.max(bot, sr.bottom - r.top + 8); } // the other players' boxes sit at the bottom: on a tall screen with no room at the sides, the room sits above them
+    const c = cv.getContext('2d'), sc = Math.min(w/UF_W, (h - top - bot - 8)/UF_H), ox = (w - UF_W*sc)/2, oy = top + (h - top - bot - UF_H*sc)/2;
     uf.view = {sc, ox, oy};
     c.setTransform(1,0,0,1,0,0); c.fillStyle = '#0a0706'; c.fillRect(0, 0, cv.width, cv.height);
     const sh = uf.shake > 0 ? 3 : 0;
@@ -1706,20 +1716,28 @@
         sag(w.x, w.y, w.x + Math.cos(a0)*r, w.y + Math.sin(a0)*r, w.x + Math.cos(a1)*r, w.y + Math.sin(a1)*r, 0.22); } }
       c.stroke(); }
   }
+  // one stats box, the same look for every player: health, blood, the four card slots and (shared by the party) the tarot cards and curses
+  function ufSlotsHtml(k, flash){ return k.slots.map((x,i)=>{ if(!x) return '<div class="uf-slot"></div>'; const P = UF_PARAS[x.name]; return `<div class="uf-slot${i===flash ? ' uf-slot-new' : ''}"><span style="color:${P.col}">${P.emoji}</span><i>x${x.uses}</i></div>`; }).join(''); }
+  function ufTarotsHtml(){ return uf.tarot.map(id=>{ const T = UF_TAROT.find(t=>t.id===id); return `<span title="${T.name}">${T.glyph}</span>`; }).join('')
+      + uf.curses.map(id=>{ const C = UF_CURSES.find(t=>t.id===id); return `<span title="${C.name}: ${C.text}" style="color:#d6304f">${C.glyph}</span>`; }).join(''); }
   function ufHud(){
     const R = uf.here, H = uf.crew.length, K = uf.crew.map((c, i) => heroKit(i)), k0 = K[0], pk = k => k.slots.map(x=>x ? x.name + x.uses : '').join(',');
     const key = [Math.floor(k0.p.hp), k0.p.maxHp, Math.floor(k0.blood), uf.cap, uf.floor, R.n, uf.cleared, uf.kills, uf.keys, pk(k0), uf.tarot.length, uf.curses.length, uf.mapVer, ufEl('ufMap').clientWidth, H, k0.p.down ? 1 : 0,
       K.slice(1).map((k, i) => [uf.crew[i+1].id, Math.floor(k.p.hp), k.p.maxHp, Math.floor(k.blood), k.p.down ? 1 : 0, pk(k)].join(':')).join('/')].join('|');
     if(key===ufHudLast) return; ufHudLast = key;
     ufEl('ufStats').querySelector('.uf-hp span').textContent = H > 1 ? 'P1 · HP' : 'HP';
+    ufEl('ufStats').style.borderLeft = H > 1 ? '.3em solid ' + k0.p.col : ''; /* with a party, each box wears its player's colour */
+    ufEl('ufStats').classList.toggle('down', !!k0.p.down);
     ufEl('ufHpN').innerHTML = Math.max(0, Math.floor(k0.p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${k0.p.maxHp}</small>`;
     ufEl('ufBlood').textContent = Math.floor(k0.blood) + '/' + uf.cap;
     const fl = k0.flashSlot && performance.now() < k0.flashSlot.until ? k0.flashSlot.i : -1;
-    ufEl('ufSlots').innerHTML = k0.slots.map((x,i)=>{ if(!x) return '<div class="uf-slot"></div>'; const P = UF_PARAS[x.name]; return `<div class="uf-slot${i===fl ? ' uf-slot-new' : ''}"><span style="color:${P.col}">${P.emoji}</span><i>x${x.uses}</i></div>`; }).join('');
-    ufEl('ufTarots').innerHTML = uf.tarot.map(id=>{ const T = UF_TAROT.find(t=>t.id===id); return `<span title="${T.name}">${T.glyph}</span>`; }).join('')
-      + uf.curses.map(id=>{ const C = UF_CURSES.find(t=>t.id===id); return `<span title="${C.name}: ${C.text}" style="color:#d6304f">${C.glyph}</span>`; }).join('');
-    ufEl('ufCrew').innerHTML = K.slice(1).map((k, i) => { const p = k.p, id = uf.crew[i+1].id;
-      return `<div class="uf-crow${p.down ? ' down' : ''}" style="color:${p.col}"><b>P${id+1}</b><span>${p.down ? 'down' : '♥ ' + Math.max(0, Math.floor(p.hp)) + '/' + p.maxHp}</span><span>◆ ${Math.floor(k.blood)}</span><span class="sl">${k.slots.map(x => x ? `<span style="color:${UF_PARAS[x.name].col}">${UF_PARAS[x.name].emoji}${x.uses > 1 ? '<small>' + x.uses + '</small>' : ''}</span>` : '').join('')}</span></div>`; }).join('');
+    ufEl('ufSlots').innerHTML = ufSlotsHtml(k0, fl);
+    ufEl('ufTarots').innerHTML = ufTarotsHtml();
+    ufEl('ufCrew').innerHTML = '';
+    { const box = (k, i) => { const p = k.p, id = uf.crew[i].id, f = k.flashSlot && performance.now() < k.flashSlot.until ? k.flashSlot.i : -1; // the same box as Player 1's, with this player's own numbers
+        return `<div class="uf-stats uf-co${p.down ? ' down' : ''}" style="border-left-color:${p.col}"><div class="uf-hp"><span>P${id+1} · HP</span> <b>${Math.max(0, Math.floor(p.hp))}</b><small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small></div><div class="uf-blv"><span>Blood</span> <b>${Math.floor(k.blood)}/${uf.cap}</b></div><div class="uf-slots">${ufSlotsHtml(k, f)}</div><div class="uf-tarots">${ufTarotsHtml()}</div></div>`; };
+      const left = [], right = []; K.forEach((k, i) => { if(i < 1) return; (i % 2 ? left : right).push(box(k, i)); }); // Player 2 and 4 at the bottom left (2 lowest), Player 3 at the bottom right
+      ufEl('ufCrewHud').innerHTML = H > 1 ? `<div class="uf-col uf-cl">${left.join('')}</div><div class="uf-col uf-cr">${right.join('')}</div>` : ''; }
     ufEl('ufRoomLab').innerHTML = `Floor <b>${uf.floor}</b> · Room ${R.n}${uf.keys ? ` · <b>⚷${uf.keys}</b>` : ''} · ${uf.kills} kills`;
     ufDrawMap();
   }
