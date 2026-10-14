@@ -958,6 +958,14 @@
     {id:'trailcam',at:'anvil',cost:{ironbar:2,silverbar:1,brassbar:1,plank:2},ms:3000},
     {id:'curedhide',name:'Cured hide (vat)',at:'vat',cost:{hide:10,lye:2},n:10,ms:2600}
   );
+  /* ---- the shovel and dirt (digging, ditches, wells) ---- */
+  Object.assign(ITEMS, {
+    shovel:{name:'Shovel', dig:1, dur:40, stack:1, desc:'Select it and press B, E or Q to dig the square in front of you. Dig up to three deep. Where the earth is wet enough a hole fills with water, and a ditch carries water to your farm plots. 40 holes.'},
+    ironshovel:{name:'Iron shovel', dig:.55, dur:140, stack:1, desc:'Digs almost twice as fast as the wooden shovel and lasts 140 holes. Forge at an anvil.'},
+    dirt:{name:'Dirt', fill:true, stack:40, desc:'From digging. Select it and press B, E or Q facing a hole to fill it in a little.'}
+  });
+  RECIPES.push({id:'shovel', at:'hand', cost:{twig:2, flint:2, reed:1}}, {id:'ironshovel', at:'anvil', cost:{ironbar:2, plank:1}});
+  Object.assign(WEIGHT, {shovel:2, ironshovel:3, dirt:2});
   COOK.push({id:'lye',at:'fire',cost:{charcoal:2},desc:'Leach charcoal ash into lye.'});
   { const ORD = {hand:0, bench:1, def:2, fire:3, furnace:4, anvil:5, refiner:6, still:7, vat:8}; RECIPES.sort((a, b)=>(ORD[a.at] ?? 9) - (ORD[b.at] ?? 9)); }
   /* Every player can have their own bag panel open at once: seat 0 owns the page's #wdBag, the others get copies (same ids) made at start-up.
@@ -1165,6 +1173,221 @@
     return {nodes, deco:{patches, tufts, edge,gravel,borderTrees,stones,cracks,under:UD,ench:ED,ex:EX}, uspawns, espawns};
   }
 
+  // ---- terrain: hollows and plateaus with cliffs and ramps, springs, creeks and waterfalls (grown from the seed), and the ground you dig ----
+  /* The woodland's middle is cut into 20-unit cells. Each is low ground (0), the usual level (1) or high ground (2). A cell on the higher side of any step is a cliff (rim 1, solid);
+     a few cliff cells are worn into ramps (rim 2) so every level can be reached; a waterfall pours down a cliff cell (rim 3). Nothing here is ever edited, so it is rebuilt from the seed every time. */
+  const TR = {gx0:8, gy0:9, w:102, h:63};
+  const trIdx = (gx, gy) => gx >= TR.gx0 && gx < TR.gx0 + TR.w && gy >= TR.gy0 && gy < TR.gy0 + TR.h ? (gy - TR.gy0)*TR.w + gx - TR.gx0 : -1;
+  const dkey = (gx, gy) => gx*256 + gy;
+  function trGen(seed, nodes, flat){
+    const R = wdRng('terrain:' + seed), W = TR.w, H = TR.h, N = W*H, cx0 = TR.gx0, cy0 = TR.gy0;
+    const sm = t => t*t*(3 - 2*t), lat = cs => { const lw = Math.ceil(W/cs) + 2, lh = Math.ceil(H/cs) + 2, a = new Float32Array(lw*lh); for(let i=0;i<a.length;i++) a[i] = R(); return {cs, lw, a}; };
+    const samp = (L, x, y) => { const fx = x/L.cs, fy = y/L.cs, ix = Math.floor(fx), iy = Math.floor(fy), tx = sm(fx - ix), ty = sm(fy - iy), g = (i, j) => L.a[j*L.lw + i];
+      return (g(ix, iy)*(1 - tx) + g(ix + 1, iy)*tx)*(1 - ty) + (g(ix, iy + 1)*(1 - tx) + g(ix + 1, iy + 1)*tx)*ty; };
+    const L1 = lat(15), L2 = lat(6), f = new Float32Array(N);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++) f[y*W + x] = samp(L1, x, y)*.7 + samp(L2, x, y)*.3;
+    const sorted = Float32Array.from(f).sort(), lo = sorted[Math.floor(N*.24)], hi = sorted[Math.floor(N*.76)];
+    /* the ground stays level round the spawn, the caves, shrines, caches and old remains, under anything the player had already built, and at the edges of the region */
+    const wgt = new Float32Array(N), pts = [[spawnPt.x, spawnPt.y, 150, 320]];
+    for(const n of nodes) if(n.k==='cave' || n.k==='shrine' || n.k==='cache' || n.k==='remains') pts.push([n.x, n.y, 56, 140]);
+    for(let i=0;i+1<flat.length;i+=2) pts.push([flat[i]*80 + 40, flat[i + 1]*80 + 40, 66, 140]);
+    for(const [px, py, r0, r1] of pts){ const ga = Math.max(cx0, Math.floor((px - r1)/GRID)), gb = Math.min(cx0 + W - 1, Math.floor((px + r1)/GRID)), ha = Math.max(cy0, Math.floor((py - r1)/GRID)), hb = Math.min(cy0 + H - 1, Math.floor((py + r1)/GRID));
+      for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const v = clamp((r1 - hyp(gx*GRID + 10 - px, gy*GRID + 10 - py))/(r1 - r0), 0, 1), i = (gy - cy0)*W + gx - cx0; if(v > wgt[i]) wgt[i] = v; } }
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const v = clamp(1 - Math.min(x, y, W - 1 - x, H - 1 - y)/6, 0, 1), i = y*W + x; if(v > wgt[i]) wgt[i] = v; }
+    const lv = new Uint8Array(N); for(let i=0;i<N;i++){ const v = f[i]*(1 - wgt[i]) + .5*wgt[i]; lv[i] = v < lo ? 0 : v > hi ? 2 : 1; }
+    const lvAt = (x, y) => x < 0 || y < 0 || x >= W || y >= H ? 1 : lv[y*W + x];
+    for(let pass=0;pass<2;pass++){ const nl = lv.slice(); for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const me = lv[y*W + x], cnt = [0, 0, 0];
+      for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) if(dx || dy) cnt[lvAt(x + dx, y + dy)]++;
+      if(cnt[me] <= 2){ let b = me; for(let k=0;k<3;k++) if(cnt[k] > cnt[b]) b = k; nl[y*W + x] = b; } } lv.set(nl); }
+    const lab = (same) => { const id = new Int32Array(N).fill(-1), list = []; for(let s=0;s<N;s++){ if(id[s] >= 0 || !same(s, s)) continue; const cells = [s], c = list.length; id[s] = c;
+        for(let h=0;h<cells.length;h++){ const i = cells[h], x = i%W, y = (i/W)|0; for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny*W + nx; if(id[j] < 0 && same(i, j)){ id[j] = c; cells.push(j); } } }
+        list.push(cells); } return {id, list}; };
+    { const L = lab((a, b)=>lv[a]===lv[b]); for(const cells of L.list) if(lv[cells[0]]!==1 && cells.length < 14) for(const i of cells) lv[i] = 1; }
+    const rim = new Uint8Array(N);
+    for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const me = lv[y*W + x]; if(!me) continue; for(let dy=-1;dy<=1;dy++){ let hit = false; for(let dx=-1;dx<=1;dx++) if((dx || dy) && x + dx >= 0 && y + dy >= 0 && x + dx < W && y + dy < H && lv[(y + dy)*W + x + dx] < me){ hit = true; break; } if(hit){ rim[y*W + x] = 1; break; } } }
+    /* ramps: walk through the cliff cells in a shuffled order and open one wherever it would join two parts of the map that are not yet joined */
+    const C = lab((a, b)=>rim[b]===0 && (a===b ? rim[a]===0 : true)), comp = C.id, par = C.list.map((_, i)=>i), find = a => { while(par[a]!==a){ par[a] = par[par[a]]; a = par[a]; } return a; };
+    const rimList = []; for(let i=0;i<N;i++) if(rim[i]===1) rimList.push(i);
+    for(let i=rimList.length-1;i>0;i--){ const j = Math.floor(R()*(i + 1)), t = rimList[i]; rimList[i] = rimList[j]; rimList[j] = t; }
+    const ramps = [], makeRamp = i => { const x = i%W, y = (i/W)|0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; if(rim[ny*W + nx]===1) rim[ny*W + nx] = 2; } ramps.push([x, y]); };
+    for(const i of rimList){ if(rim[i]!==1) continue; const x = i%W, y = (i/W)|0, roots = new Set();
+      for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny*W + nx; if(rim[j]===0 && comp[j] >= 0) roots.add(find(comp[j])); }
+      if(roots.size >= 2){ const a = [...roots]; makeRamp(i); for(let k=1;k<a.length;k++) par[find(a[k])] = find(a[0]); } }
+    /* waterfalls: a spring on high ground, a creek to the lip, a drop down a cliff that faces south, a plunge pool, and a creek winding on */
+    const tw = new Uint8Array(N), falls = [], goodTo = (x, y, l) => x >= 0 && y >= 0 && x < W && y < H && rim[y*W + x]===0 && lv[y*W + x]===l && !tw[y*W + x] && wgt[y*W + x] < .5; /* never in the levelled ground round the spawn, the caves or the player's buildings */
+    const siteOk = (x, y, cl, spc) => { const i = y*W + x; if(rim[i]!==1 || x < 1 || x >= W - 1 || y < cl + 5 || y + 4 >= H) return false; const me = lv[i], lowL = lvAt(x, y + 1); if(lowL >= me || rim[(y + 1)*W + x]!==0) return false;
+      if(!((rim[i - 1]===1 && lv[i - 1]===me) || (rim[i + 1]===1 && lv[i + 1]===me))) return false;
+      for(let k=1;k<=cl;k++) if(!goodTo(x, y - k, me)) return false;
+      if(!goodTo(x, y - cl - 1, me)) return false;
+      for(const [dx, dy] of [[0, 1], [0, 2], [-1, 1], [1, 1]]) if(!goodTo(x + dx, y + dy, lowL)) return false;
+      return !falls.some(q=>hyp(q.gx - cx0 - x, q.gy - cy0 - y) < spc); };
+    const makeFall = (i, cl) => { const x = i%W, y = (i/W)|0, me = lv[i], lowL = lvAt(x, y + 1), pc = cl + 1; rim[i] = 3; falls.push({gx:cx0 + x, gy:cy0 + y, x:(cx0 + x)*GRID + 10, y:(cy0 + y)*GRID + 10});
+      for(let k=1;k<=cl;k++) tw[(y - k)*W + x] = 2;
+      for(let dy=-(pc + 3);dy<=-(pc - 2);dy++) for(let dx=-2;dx<=2;dx++) if(hyp(dx, dy + pc) <= 1.9 && goodTo(x + dx, y + dy, me)) tw[(y + dy)*W + x + dx] = 1;
+      for(let dy=1;dy<=2;dy++) for(let dx=-1;dx<=1;dx++) if(dy===1 || dx===0) tw[(y + dy)*W + x + dx] = 3;
+      let cx = x, cy = y + 3; for(let k=0;k<11;k++){ if(!goodTo(cx, cy, lowL)) break; tw[cy*W + cx] = 2; const r = R(), nx = r < .22 ? cx - 1 : r < .44 ? cx + 1 : cx; if(nx!==cx && goodTo(nx, cy, lowL)){ tw[cy*W + nx] = 2; cx = nx; } cy++; } };
+    for(const [cl, spc, want] of [[4, 13, 6], [3, 9, 3], [2, 8, 3]]){ if(falls.length >= want) continue;
+      for(const i of rimList){ if(falls.length >= 6) break; if(rim[i]!==1) continue; if(siteOk(i%W, (i/W)|0, cl, spc)) makeFall(i, cl); } }
+    /* ramps again, now and then along every cliff, so the climbs are not far apart (never beside a waterfall) */
+    for(const i of rimList){ if(rim[i]!==1) continue; const x = i%W, y = (i/W)|0; if(falls.some(q=>hyp(q.gx - cx0 - x, q.gy - cy0 - y) < 4) || ramps.some(q=>Math.abs(q[0] - x) + Math.abs(q[1] - y) < 11)) continue;
+      let up = false, dn = false; for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H || rim[ny*W + nx]!==0) continue; const l = lv[ny*W + nx]; if(l >= lv[i]) up = true; else dn = true; }
+      if(up && dn && R() < .7) makeRamp(i); }
+    /* a pond in the bottom of every large hollow */
+    { const L = lab((a, b)=>lv[a]===0 && lv[b]===0);
+      for(const cells of L.list){ if(lv[cells[0]]!==0 || cells.length < 18) continue; let mx = 0, my = 0; for(const i of cells){ mx += i%W; my += (i/W)|0; } mx /= cells.length; my /= cells.length;
+        let best = cells[0], bd = 1e9; for(const i of cells){ const d = hyp(i%W - mx, ((i/W)|0) - my); if(d < bd && rim[i]===0 && !tw[i]){ bd = d; best = i; } }
+        const rad = cells.length >= 70 ? 2.4 : cells.length >= 36 ? 1.8 : 1.3, bx = best%W, by = (best/W)|0;
+        for(let dy=-3;dy<=3;dy++) for(let dx=-3;dx<=3;dx++) if(hyp(dx, dy) <= rad && goodTo(bx + dx, by + dy, 0)) tw[(by + dy)*W + bx + dx] = 1; } }
+    /* how far (in cells) from standing water, for the soil */
+    const wdist = new Uint8Array(N).fill(9), q = []; for(let i=0;i<N;i++) if(tw[i]){ wdist[i] = 0; q.push(i); }
+    for(let h=0;h<q.length;h++){ const i = q[h], x = i%W, y = (i/W)|0; if(wdist[i] >= 8) continue; for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny*W + nx; if(wdist[j] > wdist[i] + 1){ wdist[j] = wdist[i] + 1; q.push(j); } } }
+    const wl = []; for(let i=0;i<N;i++) if(tw[i]){ const gx = cx0 + i%W, gy = cy0 + ((i/W)|0); wl.push({gx, gy, x:gx*GRID + 10, y:gy*GRID + 10, k:tw[i], h:trHash(gx, gy)}); }
+    let sig = flat.length; for(const v of flat) sig = (sig*31 + v) | 0;
+    return {lv, rim, tw, wdist, falls, wl, ramps, sig};
+  }
+  const trHash = (a, b) => { let h = (Math.imul(a, 374761393) + Math.imul(b, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0)/4294967296; };
+  const trLvl = (gx, gy) => { const T = wd.tr, i = T ? trIdx(gx, gy) : -1; return i < 0 ? 1 : T.lv[i]; };
+  const trRimAt = (gx, gy) => { const T = wd.tr, i = T ? trIdx(gx, gy) : -1; return i < 0 ? 0 : T.rim[i]; };
+  function trHit(x, y, r){ const T = wd.tr; if(!T || x < TR.gx0*GRID - r || x > (TR.gx0 + TR.w)*GRID + r || y < TR.gy0*GRID - r || y > (TR.gy0 + TR.h)*GRID + r) return false;
+    const ga = Math.floor((x - r)/GRID), gb = Math.floor((x + r)/GRID), ha = Math.floor((y - r)/GRID), hb = Math.floor((y + r)/GRID);
+    for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const i = trIdx(gx, gy); if(i < 0) continue; const v = T.rim[i]; if(v!==1 && v!==3) continue; if(hyp(x - clamp(x, gx*GRID, gx*GRID + GRID), y - clamp(y, gy*GRID, gy*GRID + GRID)) < r) return true; }
+    return false; }
+  function trPush(o){ const T = wd.tr, r = o.r; if(!T || o.x < TR.gx0*GRID - r || o.x > (TR.gx0 + TR.w)*GRID + r || o.y < TR.gy0*GRID - r || o.y > (TR.gy0 + TR.h)*GRID + r) return;
+    const ga = Math.floor((o.x - r)/GRID), gb = Math.floor((o.x + r)/GRID), ha = Math.floor((o.y - r)/GRID), hb = Math.floor((o.y + r)/GRID);
+    for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const i = trIdx(gx, gy); if(i < 0) continue; const v = T.rim[i]; if(v!==1 && v!==3) continue;
+      const bx = gx*GRID, by = gy*GRID, nx = clamp(o.x, bx, bx + GRID), ny = clamp(o.y, by, by + GRID), dx = o.x - nx, dy = o.y - ny, d = hyp(dx, dy); if(d >= r) continue;
+      if(d > 0.01){ o.x = nx + dx/d*r; o.y = ny + dy/d*r; } else { const px = GRID/2 + r - Math.abs(o.x - (bx + GRID/2)), py = GRID/2 + r - Math.abs(o.y - (by + GRID/2)); if(px < py) o.x += (o.x >= bx + GRID/2 ? 1 : -1)*px; else o.y += (o.y >= by + GRID/2 ? 1 : -1)*py; } } }
+  /* what the ground does to the soil: hollows are damp and rich, high ground dry and lean, and standing water soaks the land round it */
+  function trSoilAdj(x, y){ const T = wd && wd.tr, i = T ? trIdx(Math.floor(x/GRID), Math.floor(y/GRID)) : -1; if(i < 0) return {m:0, r:0};
+    const l = T.lv[i], d = T.wdist[i]; return {m:(l===0 ? .2 : l===2 ? -.16 : 0) + (d < 8 ? .22*(1 - d/8) : 0), r:l===0 ? .1 : l===2 ? -.08 : 0}; }
+  function trWetAt(gx, gy){ const T = wd.tr, i = T ? trIdx(gx, gy) : -1; return (i >= 0 && T.tw[i] > 0) || (wd.dwet && wd.dwet.has(dkey(gx, gy))); }
+  const trWaterNear = p => { if(!wd.tr || p.z >= 12 || !onMain(p)) return false; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID); for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) if(trWetAt(gx + dx, gy + dy)) return true; return false; };
+  const trWaterWord = p => { const T = wd.tr, gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID); for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const i = trIdx(gx + dx, gy + dy); if(i >= 0 && T.tw[i]) return T.tw[i]===2 ? 'creek' : T.tw[i]===3 ? 'falls pool' : 'spring pond'; } return wd.dug.size > 8 ? 'ditch' : 'hole'; };
+  function trSpeed(p){ if(!wd.tr || p.z >= 12 || !onMain(p)) return 1; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID), i = trIdx(gx, gy);
+    if(wd.dug && wd.dug.size){ const k = dkey(gx, gy); if(wd.dug.has(k)) return wd.dwet.has(k) ? .72 : .62; }
+    return i >= 0 ? (wd.tr.tw[i] ? .82 : wd.tr.rim[i]===2 ? .92 : 1) : 1; }
+  const trWord = p => { if(!wd || !wd.tr || p.z >= 12 || !onMain(p) || inBad(p) || p.x > WD.W) return ''; const i = trIdx(Math.floor(p.x/GRID), Math.floor(p.y/GRID)); return i < 0 ? '' : wd.tr.lv[i]===0 ? ' · low ground' : wd.tr.lv[i]===2 ? ' · high ground' : ''; };
+  const trWetHere = p => { if(!wd.tr || p.z >= 12 || !onMain(p)) return false; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID), i = trIdx(gx, gy); return (i >= 0 && wd.tr.tw[i] > 0) || (wd.dwet && wd.dwet.has(dkey(gx, gy))); };
+  function trSoundAt(P){ const T = wd.tr; if(!T || !T.falls.length) return 0; let best = 0; for(const f of T.falls){ const d = hyp(f.x - P.x, f.y - P.y); if(d < 340) best = Math.max(best, Math.pow(1 - d/340, 1.5)); } return best; }
+  /* the groundwater: a hole fills where the earth is wet enough for its depth, a ditch carries water along it from any water it touches (on the same level), and rain puddles every hole */
+  function trWetUpdate(){
+    const wet = new Set(), q = []; wd.dwet = wet; wd.dsize = new Map(); if(!wd.tr || !wd.dug.size) return wet;
+    const rr = rainRecent(), rainy = (wd.rain || 0) > .35;
+    for(const [k, d] of wd.dug){ const gx = k >> 8, gy = k & 255, l = trLvl(gx, gy); let src = rainy || gy <= 6 || gy >= 73; /* the rows beside the two rivers */
+      if(!src) for(const [dx, dy] of DIRS){ const i = trIdx(gx + dx, gy + dy); if(i >= 0 && wd.tr.tw[i] && wd.tr.lv[i]===l){ src = true; break; } }
+      if(!src) src = soilAt(gx*GRID + 10, gy*GRID + 10, rr).moist + .16*(d - 1) >= .66;
+      if(src){ wet.add(k); q.push(k); } }
+    while(q.length){ const k = q.pop(), gx = k >> 8, gy = k & 255, l = trLvl(gx, gy); for(const [dx, dy] of DIRS){ const k2 = dkey(gx + dx, gy + dy); if(wd.dug.has(k2) && !wet.has(k2) && trLvl(gx + dx, gy + dy)===l){ wet.add(k2); q.push(k2); } } }
+    wd.dsize = new Map(); const seen = new Set(); /* how big each pool of dug water is: a ditch or hole that joins four or more is a pond you can fish */
+    for(const k of wet){ if(seen.has(k)) continue; const comp = [k]; seen.add(k); for(let h=0;h<comp.length;h++){ const c = comp[h], gx = c >> 8, gy = c & 255; for(const [dx, dy] of DIRS){ const k2 = dkey(gx + dx, gy + dy); if(wet.has(k2) && !seen.has(k2)){ seen.add(k2); comp.push(k2); } } } for(const c of comp) wd.dsize.set(c, comp.length); }
+    return wet; }
+  function trFishSpot(p){ if(!wd.tr || p.z >= 12 || !onMain(p)) return null; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID); let best = null, bd = 44;
+    for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){ const cx = gx + dx, cy = gy + dy, i = trIdx(cx, cy), k = dkey(cx, cy); if(!((i >= 0 && (wd.tr.tw[i]===1 || wd.tr.tw[i]===3)) || (wd.dwet.has(k) && (wd.dsize.get(k) || 0) >= 5))) continue;
+      const x = cx*GRID + 10, y = cy*GRID + 10, d = hyp(x - p.x, y - p.y); if(d < bd){ bd = d; best = {x, y}; } }
+    return best; }
+  function trIrrigate(){ /* a plot with water beside it drinks like a watered one */
+    let n = 0; for(const b of kindOf('farmplot')){ if(!b.crop || b.watered || !(b.ready > wd.t)) continue; let near = false;
+      for(let dy=-1;dy<=1 && !near;dy++) for(let dx=-1;dx<=1;dx++) if((dx || dy) && trWetAt(b.gx + dx, b.gy + dy)){ near = true; break; }
+      if(near){ b.ready = wd.t + (b.ready - wd.t)*.75; b.watered = true; n++; wdFx({kind:'ring', x:b.x, y:b.y, r:22, t:500, col:'115,186,211'}); } }
+    return n; }
+  function trSlow(){ if(!wd.tr) return; trWetUpdate(); if(trIrrigate()){ const b = kindOf('farmplot').values().next().value; cuNote('les:irrig', 'lesson', 'A plot with water in any square beside it (ditch, pond, creek) is watered by it, once a planting, like a can pour. A ditch from the river saves hauling water.', ['plants'], b ? b.x : wd.p.x, b ? b.y : wd.p.y); wdSave(); }
+    for(const f of wd.tr.falls) cuNote('les:falls', 'note', 'A spring on the high ground spills over the cliff here, and the creek runs on across the low ground. Water like this needs no digging, and a ditch cut from it can carry water to your plots.', [], f.x, f.y, 170); }
+  /* digging */
+  const trCanBuild = (gx, gy) => { const T = wd.tr; if(!T) return true; const i = trIdx(gx, gy); return !(i >= 0 && (T.rim[i] || T.tw[i])) && !wd.dug.has(dkey(gx, gy)); };
+  const trAim = () => { const p = wd.p; return {gx:Math.floor((p.x + p.fx*(p.r + 8))/GRID), gy:Math.floor((p.y + p.fy*(p.r + 8))/GRID)}; };
+  function trDigCheck(gx, gy, s){ /* {ok, fill, ms, text} or {ok:false, why} */
+    const p = wd.p, I = ITEMS[s.id], x = gx*GRID + 10, y = gy*GRID + 10, T = wd.tr; if(!T || p.z >= 12 || !onMain(p) || x < WD.EDGE + 8 || x > WD.W - WD.EDGE - 8 || y < WD.RIVER + 10 || y > WD.H - WD.RIVER - 10) return {ok:false, why:'The ground here is too hard to dig'};
+    const k = dkey(gx, gy), d = wd.dug.get(k) || 0, i = trIdx(gx, gy);
+    if(I.fill){ if(!d) return {ok:false, why:'No hole to fill'}; return {ok:true, fill:true, ms:500, text:'Fill the hole with dirt'}; }
+    if(i >= 0 && T.rim[i]) return {ok:false, why:T.rim[i]===2 ? 'Packed earth: nothing to dig on a ramp' : 'Solid rock'};
+    if(i >= 0 && T.tw[i]) return {ok:false, why:'Water already stands here'};
+    if(wd.builds.has(gkey(gx, gy)) || wd.floors.has(gkey(gx, gy))) return {ok:false, why:'Something is built here'};
+    if(wd.fires.some(f=>hyp(f.x - x, f.y - y) < 16) || wd.benches.some(b=>hyp(b.x - x, b.y - y) < 18)) return {ok:false, why:'Something stands in the way'};
+    let blocked = false; nodesNear(x, y, 26, n=>{ if(!blocked && !n.gone && (n.sol || n.k==='berry' || n.k==='herb' || n.k==='sapling') && hyp(n.x - x, n.y - y) < n.r + 8) blocked = true; }); if(blocked) return {ok:false, why:'Roots are in the way'};
+    if(d >= 3) return {ok:false, why:'As deep as you can dig. Hold dirt to fill it in'};
+    return {ok:true, fill:false, ms:Math.round(900*(I.dig || 1)), text:d===0 ? 'Dig a hole' : d===1 ? 'Dig deeper' : 'Dig a well', d}; }
+  function trDigAct(i){ const s = wd.inv[i]; if(!s) return false; const a = trAim(), r = trDigCheck(a.gx, a.gy, s); if(!r.ok){ if(r.why) wdNote(r.why); return false; }
+    return wdAction(r.fill ? 'Fill' : 'Dig', r.ms, ()=>wd.inv[i]===s && trDigCheck(a.gx, a.gy, s).ok, ()=>trDigNow(a.gx, a.gy, i, r.fill)); }
+  function trSay(text, col){ wdFx({kind:'num', x:wd.p.x, y:wd.p.y - 26, text, col:col || '#9fd6e8', t:1300}); }
+  function trDigNow(gx, gy, i, fill){
+    const k = dkey(gx, gy), x = gx*GRID + 10, y = gy*GRID + 10, p = wd.p;
+    if(fill){ const d = wd.dug.get(k); if(!d || invCount('dirt') < 1) return false; invTake('dirt', 1); if(d <= 1) wd.dug.delete(k); else wd.dug.set(k, d - 1); thud(0.08, 0.1, 380); }
+    else { const s = wd.inv[i], d = (wd.dug.get(k) || 0) + 1; if(!s || d > 3) return false; wd.dug.set(k, d); wear(i); thud(0.12, 0.1, 240);
+      give('dirt', 1, {x, y}); const r = Math.random(); if(r < .1) give('stone', 1, {x, y}); else if(r < .18) give('flint', 1, {x, y}); else if(r < .22 && d >= 2) give('bone', 1, {x, y}); }
+    for(let n=0;n<7;n++) wdFx({kind:'chip', x, y, vx:(Math.random() - .5)*90, vy:-30 - Math.random()*60, col:n%2 ? '#7a5d3a' : '#5d4529', t:520});
+    const was = wd.dwet.has(k); trWetUpdate(); const d = wd.dug.get(k);
+    if(!fill && d){ if(wd.dwet.has(k)){ trSay(d >= 3 ? 'A well. Water fills it' : 'Water seeps in'); cuNote('les:dugwet', 'lesson', 'A hole fills with water where the earth is wet enough for its depth: low ground, the river banks, beside a pond or creek, or after rain. A hole three deep is a well. Holes joined in a ditch carry the water along, and a plot beside them drinks for itself.', ['soil'], x, y); }
+      else { trSay(d >= 3 ? 'Deep, but dry' : 'Dry earth', '#d8c49a'); if(d >= 2) cuNote('les:dugdry', 'lesson', 'Dry high ground gives up no water at any depth. Dig lower down, by the river or a pond, or cut a ditch from water to where you need it.', ['soil'], x, y); } }
+    else if(fill && !d) trSay('Filled in', '#d8c49a'); else if(fill && was && !wd.dwet.has(k)) trSay('The water drains away', '#d8c49a');
+    trIrrigate(); wdSave(); return true; }
+  const trAimText = () => { const s = wd.inv[wd.sel]; if(!s || !(ITEMS[s.id].dig || ITEMS[s.id].fill)) return null; const a = trAim(), r = trDigCheck(a.gx, a.gy, s); if(!r.ok) return null; const k = dkey(a.gx, a.gy); return {k:'dig', text:r.text + (!r.fill && wd.dug.get(k) && wd.dwet.has(k) ? ' (it holds water)' : '')}; };
+  /* the ground, painted once into the cached tiles: tints under everything, cliffs and ramps over it */
+  const TRC = {low:'#3a5a45', high:'#778049', lip:'#7e8b4f'};
+  function trStatic(c, x0, y0, x1, y1, over){
+    const T = wd.tr; if(!T) return; const ga = Math.max(TR.gx0, Math.floor(x0/GRID) - 1), gb = Math.min(TR.gx0 + TR.w - 1, Math.floor(x1/GRID) + 1), ha = Math.max(TR.gy0, Math.floor(y0/GRID) - 1), hb = Math.min(TR.gy0 + TR.h - 1, Math.floor(y1/GRID) + 1); if(ga > gb || ha > hb) return;
+    if(!over){
+      for(const [lvl, col] of [[0, TRC.low], [2, TRC.high]]){ c.fillStyle = col; c.beginPath(); let any = false;
+        for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ if(T.lv[(gy - TR.gy0)*TR.w + gx - TR.gx0]!==lvl) continue; c.moveTo(gx*GRID + 24.3, gy*GRID + 10); c.arc(gx*GRID + 10, gy*GRID + 10, 14.3, 0, 6.2832); any = true; }
+        if(any) c.fill(); }
+      c.fillStyle = '#41382a'; c.beginPath(); let any = false;
+      for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++) if(T.tw[(gy - TR.gy0)*TR.w + gx - TR.gx0]){ c.moveTo(gx*GRID + 27, gy*GRID + 10); c.arc(gx*GRID + 10, gy*GRID + 10, 17, 0, 6.2832); any = true; }
+      if(any) c.fill();
+      return; }
+    for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const i = (gy - TR.gy0)*TR.w + gx - TR.gx0, v = T.rim[i]; if(!v) continue;
+      const px = gx*GRID, py = gy*GRID, l = T.lv[i], sLow = trLvl(gx, gy + 1) < l, nLow = trLvl(gx, gy - 1) < l, wetFace = v===3;
+      if(v===2){ c.fillStyle = '#8d7d5a'; c.fillRect(px, py, 20, 20); c.fillStyle = 'rgba(255,236,190,.17)'; for(let k=0;k<3;k++) c.fillRect(px + 1, py + 3 + k*6, 18, 2); c.fillStyle = 'rgba(40,28,14,.18)'; c.fillRect(px, py + 18, 20, 2); c.fillRect(px, py, 2, 20); c.fillRect(px + 18, py, 2, 20); continue; }
+      if(sLow){ c.fillStyle = wetFace ? '#47565b' : '#6a6252'; c.fillRect(px, py, 20, 20); c.fillStyle = wetFace ? '#586a70' : '#867c69'; c.fillRect(px, py + 5, 20, 5); c.fillStyle = wetFace ? '#394549' : '#51493c'; c.fillRect(px, py + 14, 20, 6);
+        c.fillStyle = TRC.lip; c.fillRect(px, py, 20, 5); for(let k=0;k<4;k++) c.fillRect(px + k*5, py + 5, 5, 1 + trHash(gx*4 + k, gy)*3);
+        if(!lowFx){ c.strokeStyle = 'rgba(25,18,12,.36)'; c.lineWidth = .8; c.beginPath(); for(let k=0;k<2;k++){ const hx = px + 3 + trHash(gx, gy*3 + k)*14; c.moveTo(hx, py + 6); c.lineTo(hx + (trHash(k, gx + gy) - .5)*4, py + 19); } c.stroke(); }
+        c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(px, py + 20, 20, 6); }
+      else { c.fillStyle = '#7b7362'; c.fillRect(px, py, 20, 20); c.fillStyle = '#8c8470'; c.fillRect(px + 1, py + 1, 18, 7); if(nLow){ c.fillStyle = TRC.lip; c.fillRect(px, py, 20, 4); }
+        if(!lowFx){ c.fillStyle = 'rgba(40,30,20,.3)'; const hh = trHash(gx, gy); c.beginPath(); c.ellipse(px + 4 + hh*12, py + 11 + hh*5, 2.4, 1.5, 0, 0, 6.2832); c.fill(); } }
+      if(trLvl(gx - 1, gy) < l){ c.fillStyle = 'rgba(0,0,0,.16)'; c.fillRect(px, py, 3, 20); } if(trLvl(gx + 1, gy) < l){ c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(px + 17, py, 3, 20); } }
+  }
+  /* what moves: standing water, creeks, waterfalls, and the holes the player has dug */
+  function trDrawDyn(c, vis, t){
+    const T = wd.tr; if(!T) return;
+    for(const q of T.wl){ if(!vis(q.x, q.y, 20)) continue; c.fillStyle = q.k===3 ? '#3f8aa0' : q.k===2 ? '#3d8196' : '#3a7a8f'; c.beginPath(); c.arc(q.x, q.y, 14.3, 0, 6.2832); c.fill();
+      c.fillStyle = 'rgba(130,205,220,.3)'; c.beginPath(); c.ellipse(q.x - 2, q.y - 3, 7, 4, 0, 0, 6.2832); c.fill();
+      const ph = (t*.7 + q.h*6) % 1; c.strokeStyle = `rgba(235,250,255,${.42*(1 - ph)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(q.x + (q.h - .5)*8, q.y + ((q.h*7)%1 - .5)*8, 2 + ph*6, 1 + ph*3, 0, 0, 6.2832); c.stroke();
+      if(q.k===2){ c.fillStyle = 'rgba(230,248,255,.5)'; for(let s=0;s<2;s++) c.fillRect(q.x - 4 + s*7, q.y - 9 + ((t*20 + q.h*20 + s*9) % 20), 1.4, 5); } }
+    if(wd.dug.size){ const list = []; for(const [k, d] of wd.dug){ const gx = k >> 8, gy = k & 255; if(vis(gx*GRID + 10, gy*GRID + 10, 24)) list.push([gx, gy, d, wd.dwet.has(k), k]); }
+      c.fillStyle = '#7b5e3b'; c.beginPath(); for(const [gx, gy] of list){ c.moveTo(gx*GRID + 24.3, gy*GRID + 10); c.arc(gx*GRID + 10, gy*GRID + 10, 14.3, 0, 6.2832); } c.fill();
+      for(const [gx, gy] of list){ if(wd.dug.has(dkey(gx + 1, gy))) c.fillRect(gx*GRID + 10, gy*GRID + 1, 20, 18); if(wd.dug.has(dkey(gx, gy + 1))) c.fillRect(gx*GRID + 1, gy*GRID + 10, 18, 20); }
+      for(const [gx, gy, d, wet, k] of list){ const x = gx*GRID, y = gy*GRID; c.fillStyle = wet ? (d===1 ? '#3b7a8f' : d===2 ? '#336f84' : '#2b6277') : (d===1 ? '#4c3524' : d===2 ? '#3b2a1b' : '#2c1f13');
+        c.beginPath(); c.arc(x + 10, y + 10, 11.5, 0, 6.2832); c.fill(); if(wd.dug.has(dkey(gx + 1, gy))) c.fillRect(x + 10, y + 3, 20, 14); if(wd.dug.has(dkey(gx, gy + 1))) c.fillRect(x + 3, y + 10, 14, 20);
+        if(wet){ const h = trHash(gx, gy), ph = (t*.8 + h*5) % 1; c.strokeStyle = `rgba(235,250,255,${.4*(1 - ph)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(x + 10, y + 10, 2 + ph*6, 1 + ph*3, 0, 0, 6.2832); c.stroke(); c.fillStyle = 'rgba(130,205,220,.25)'; c.beginPath(); c.ellipse(x + 8, y + 7, 5, 3, 0, 0, 6.2832); c.fill(); }
+        else { c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 10, y + 13, 7, 4, 0, 0, 6.2832); c.fill(); } } }
+    for(const f of T.falls){ if(!vis(f.x, f.y, 50)) continue; const x = f.gx*GRID, y = f.gy*GRID;
+      c.fillStyle = 'rgba(112,188,212,.9)'; c.fillRect(x + 1, y, 18, 21); c.fillStyle = 'rgba(70,150,180,.5)'; c.fillRect(x + 1, y, 3, 21); c.fillRect(x + 16, y, 3, 21); c.fillStyle = 'rgba(244,252,255,.9)';
+      for(let s=0;s<7;s++){ const off = (t*50 + s*7.1) % 20; c.fillRect(x + 2 + s*2.4, y + off*.95, 1.5, 8); c.fillRect(x + 3 + s*2.4, y + ((off + 10) % 20)*.95, 1.1, 6); }
+      const pf = Math.sin(t*5) * .5 + .5; c.fillStyle = `rgba(255,255,255,${.45 + .25*pf})`; c.beginPath(); c.ellipse(x + 10, y + 23, 13 + pf*2, 5 + pf, 0, 0, 6.2832); c.fill(); c.beginPath(); c.ellipse(x + 3, y + 26, 5, 2.5, 0, 0, 6.2832); c.ellipse(x + 17, y + 27, 5, 2.5, 0, 0, 6.2832); c.fill();
+      if(!lowFx) for(let m=0;m<4;m++){ const ph = (t*.5 + m*.25) % 1; c.fillStyle = `rgba(235,248,255,${.22*(1 - ph)})`; c.beginPath(); c.arc(x + 10 + Math.sin(m*2.1 + t)*7, y + 22 - ph*16, 4 + ph*5, 0, 6.2832); c.fill(); } }
+  }
+  /* a new world, or a loaded one: the ground, then the reeds that grow by its water */
+  function trBegin(S, gone){
+    let tz = Array.isArray(S.tz) ? S.tz.filter(Number.isInteger).slice(0, 1600) : null;
+    if(!tz){ tz = []; if(Array.isArray(S.builds)){ /* an older save: keep the ground level under whatever is already there */
+        const seen = new Set(), add = (x, y) => { if(!isFinite(x) || !isFinite(y)) return; const bx = Math.floor(x/80), by = Math.floor(y/80), k = bx*512 + by; if(seen.has(k) || tz.length >= 1600) return; seen.add(k); tz.push(bx, by); };
+        for(const b of S.builds) add(b[0]*GRID + 10, b[1]*GRID + 10);
+        for(const k of S.floors || []){ const q = String(k).split(',').map(Number); add(q[0]*GRID + 10, q[1]*GRID + 10); }
+        for(const f of S.fires || []) add(f.x, f.y); for(const b of S.benches || []) add(b.x, b.y); for(const d of S.drops || []) add(d.x, d.y);
+        if(S.home) add(S.home.x, S.home.y); if(S.bed) add(S.bed.x, S.bed.y); if(S.p) add(S.p.x, S.p.y);
+        if(S.cu && Array.isArray(S.cu.carts)) for(const ct of S.cu.carts) if(ct) add(ct.x, ct.y); } }
+    wd.tz = tz; const T = wd.tr = trGen(S.seed, wd.nodes, tz);
+    wd.dug = new Map(); for(const d of S.dug || []){ const i = trIdx(d[0], d[1]), x = d[0]*GRID + 10, y = d[1]*GRID + 10; if(x < WD.EDGE + 8 || x > WD.W - WD.EDGE - 8 || y < WD.RIVER + 10 || y > WD.H - WD.RIVER - 10 || (i >= 0 && (T.rim[i] || T.tw[i]))) continue; wd.dug.set(dkey(d[0], d[1]), d[2]); }
+    wd.dwet = new Set();
+    for(const n of wd.nodes){ if(n.gone || n.x < 140 || n.x > 2220 || n.y < 160 || n.y > 1440) continue; const i = trIdx(Math.floor(n.x/GRID), Math.floor(n.y/GRID)); if(i >= 0 && (T.rim[i]===1 || T.rim[i]===3 || T.tw[i])){ n.gone = true; n.perm = true; n.ready = 0; } }
+    const RE = wdRng('terrain-reeds:' + wd.seed), occ = new Map(), ck = (x, y) => Math.floor(x/40)*4096 + Math.floor(y/40);
+    for(const n of wd.nodes){ if(n.gone || !(n.x >= 120 && n.x <= 2240 && n.y >= 150 && n.y <= 1450)) continue; const kk = ck(n.x, n.y); let a = occ.get(kk); if(!a) occ.set(kk, a = []); a.push(n); }
+    const free = (x, y, sp) => { for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++){ const a = occ.get(ck(x, y) + i*4096 + j); if(a) for(const n of a) if(hyp(n.x - x, n.y - y) < n.sp + sp) return false; } return true; };
+    for(const q of T.wl){ if(q.k===2) continue; for(const [dx, dy] of DIRS){ if(RE() > .4) continue; const gx = q.gx + dx, gy = q.gy + dy, i = trIdx(gx, gy); if(i < 0 || T.rim[i] || T.tw[i]) continue;
+      const x = gx*GRID + 10 + (RE() - .5)*8, y = gy*GRID + 10 + (RE() - .5)*8; if(!free(x, y, 8)) continue;
+      const n = {id:wd.nodes.length, k:'reed', x, y, r:6, sp:8, v:RE(), hp:0, gone:false, ready:0, shk:0, ore:null, sol:false}; wd.nodes.push(n); const kk = ck(x, y); let a = occ.get(kk); if(!a) occ.set(kk, a = []); a.push(n);
+      const rg = S.regrow && S.regrow[n.id]; if(isFinite(rg)) n.ready = +rg; if(gone.has(n.id)) n.gone = true; } }
+    trWetUpdate();
+  }
+
   // ---- saves ----
   const finite = (v, d) => typeof v==='number' && isFinite(v) ? v : d;
   function wdClean(o){
@@ -1188,7 +1411,9 @@
       builds:(Array.isArray(o.builds) ? o.builds : []).filter(b=>Array.isArray(b) && Number.isInteger(b[0]) && Number.isInteger(b[1]) && BUILD[b[2]] && !BUILD[b[2]].floor && finite(b[5],0)===0 && (Math.floor(finite(b[8],0))===0 || BUILD[b[2]].up)).slice(0, 4000).map(b=>[b[0],b[1],b[2],b[3],isStorage(b[2]) ? Array.from({length:storageSlots(b[2])},(_,i)=>slot(Array.isArray(b[4]) ? b[4][i] : null)) : null, 0, Math.max(0,finite(b[6],0)), b[2]==='farmplot' ? {crop:CROPS[b[7]?.crop] ? b[7].crop : null,watered:!!b[7]?.watered} : b[2]==='trailsign' ? {label:clamp(Math.floor(finite(b[7]?.label,0)),0,3)} : null, clamp(Math.floor(finite(b[8],0)),0,MAXL), clamp(Math.floor(finite(b[9],0)),0,3)]),
       raidDone:Math.floor(finite(o.raidDone, 0)), torch:clamp(finite(p.torch, 0), 0, WD.torch), crew, cu:o.cu && typeof o.cu==='object' ? o.cu : null, cp:o.cp && typeof o.cp==='object' ? o.cp : null,
       rat:o.rat && typeof o.rat==='object' ? ratSave(mkRat(o.rat)) : null,
-      drops, deaths:Math.max(0, Math.floor(finite(o.deaths, 0))), home:pt(o.home), bed:pt(o.bed)};
+      drops, deaths:Math.max(0, Math.floor(finite(o.deaths, 0))), home:pt(o.home), bed:pt(o.bed),
+      dug:(Array.isArray(o.dug) ? o.dug : []).filter(d=>Array.isArray(d) && Number.isInteger(d[0]) && Number.isInteger(d[1]) && d[0] >= 0 && d[0] < 200 && d[1] >= 0 && d[1] < 200 && d[2] >= 1 && d[2] <= 3).slice(0, 3000).map(d=>[d[0], d[1], Math.floor(d[2])]),
+      tz:Array.isArray(o.tz) ? o.tz.filter(Number.isInteger).slice(0, 1600) : null};
   }
   function wdLoadSave(){ try{ return wdClean(JSON.parse(localStorage.getItem(WD_KEY) || 'null')); }catch(e){ return null; } }
   function wdSave(){ /* always written from Player 1's seat, so a guest's open bag never lands in Player 1's slot */
@@ -1206,7 +1431,7 @@
       benches:wd.benches.map(b=>({x:Math.round(b.x), y:Math.round(b.y), k:b.k})),
       floors:[...wd.floors], builds:[...wd.builds.values()].map(b=>[b.gx, b.gy, b.k, b.u==null ? null : b.u, isStorage(b.k) ? b.slots : null,0,b.ready || 0,b.k==='farmplot' ? {crop:b.crop,watered:b.watered} : b.k==='trailsign' ? {label:b.label} : null,b.l||0,b.dir||0]), raidDone:wd.raidDone,
       drops:wd.drops.map(d=>d.bag ? Object.assign({bag:d.bag, x:Math.round(d.x), y:Math.round(d.y)}, d.z ? {z:Math.round(d.z)} : {}) : Object.assign({id:d.id, n:d.n, x:Math.round(d.x), y:Math.round(d.y)}, d.d ? {d:d.d} : {}, d.z ? {z:Math.round(d.z)} : {})),
-      deaths:wd.deaths, home:wd.home, bed:wd.bed || null, rat:ratSave(wd.rat), cu:cuSaveWorld(), cp:cuSavePlayer(wd)};
+      deaths:wd.deaths, home:wd.home, bed:wd.bed || null, rat:ratSave(wd.rat), cu:cuSaveWorld(), cp:cuSavePlayer(wd), dug:[...wd.dug].map(([k, d])=>[k >> 8, k & 255, d]), tz:wd.tz || []};
     if(wd.crew){ const cr = [1,2,3].map(i=>{ const s = wd.crew[i], k = s.kit; if(!k) return null; const dead = k.dead > 0;
       return {inv:k.inv, pack:k.pack || null, hand:k.hand || null, armor:k.armor || null, helmet:k.helmet || null, accessory:k.accessory || null, rat:ratSave(k.rat), cp:cuSavePlayer(k), p:{hp:dead ? WD.hp : k.p.hp, hunger:dead ? Math.max(k.p.hunger, 15) : +k.p.hunger.toFixed(3), thirst:dead ? Math.max(k.p.thirst || 0, 15) : +(k.p.thirst == null ? WD.thirst : k.p.thirst).toFixed(3), torch:dead ? 0 : +(k.p.torch || 0).toFixed(1)}}; });
       if(cr.some(Boolean)) o.crew = cr; }
@@ -1233,6 +1458,7 @@
     const gone = new Set(S.gone || []);
     for(const n of wd.nodes){n.ore=oreFor(wd.seed,n); n.sol=!!NODE[n.k].solid; if(desertMouth(n) || frontierMouth(n)){n.gone=true;n.perm=true;} if(gone.has(n.id)) n.gone = true; if(n.k==='cave') n.gone = false; const r = S.regrow && S.regrow[n.id]; if(isFinite(r)) n.ready = +r;
       if(n.k==='tree' && n.gone && !n.perm && !(n.ready > wd.t)) n.ready = wd.t + 30 + Math.random()*WD.day*1.5; } /* felled trees grow back */
+    trBegin(S, gone);
     buildNodeGrid(); { const g = new Map(); for(const n of wd.deco.borderTrees || []){ const k = ngKey(Math.floor(n.x/128), Math.floor(n.y/128)); let a = g.get(k); if(!a) g.set(k, a = []); a.push(n); } wd.btg = g; } wd.trees = wd.nodes.filter(n=>n.k==='tree'); wd.caveNodes = wd.nodes.filter(n=>n.k==='cave');
     for(const k of wd.floors){const q=k.split(',').map(Number);if(q.length>2)wd.upFl.set(k,{gx:q[0],gy:q[1],l:q[2]});else fkAdd(q[0],q[1]);}
     for(const b of S.builds || []){const piece=putBuild(b[0],b[1],b[2],b[3],b[8] || 0,b[9] || 0);if(isStorage(piece.k) && Array.isArray(b[4]))piece.slots=Array.from({length:storageSlots(piece.k)},(_,i)=>b[4][i] || null);if(piece.k==='irrigationpump')piece.ready=b[6] || 0;if(piece.k==='garden')piece.ready=b[6] || wd.t+WD.day;if(piece.k==='farmplot'){piece.crop=CROPS[b[7]?.crop] ? b[7].crop : null;piece.watered=!!b[7]?.watered;piece.ready=piece.crop ? (b[6] ?? wd.t+WD.day*CROPS[piece.crop].days) : 0;}if(piece.k==='trailsign')piece.label=b[7]?.label || 0;}
@@ -1384,7 +1610,7 @@
     }
     for(const n of wd.trees){ if(!n.gone || n.perm || !(n.ready > 0) || n.ready > wd.t) continue;
       if(treeSpotFree(n)){ n.gone = false; n.hp = NODE.tree.hp; n.born = wd.t; n.ready = 0; } else n.ready = wd.t + 30; }
-    cuSlow(es);
+    cuSlow(es); trSlow();
   }
   const GRAZE = {rabbit:['herb'], deer:['berry','herb'], sheep:['herb']}, FOOD_DROPS = new Set(['berry','herb','carrot','wheat']);
   const BREED = {rabbit:{cap:[14,22], cd:80, mate:90, young:35}, deer:{cap:[8,12], cd:150, mate:120, young:50}, sheep:{cap:[6,9], cd:170, mate:110, young:55}};
@@ -1630,9 +1856,9 @@
   function rainDayV(day){ if(day < 2) return null; const R = wdRng('rain:' + wd.seed + ':' + day); return R() < rainChance(day) ? {s:50 + R()*220, d:70 + R()*130} : null; }
   function rainRecent(){ const day = Math.floor(wd.t/WD.day); return ((rainDayV(day) ? 1 : 0) + (rainDayV(day - 1) ? 1 : 0))/2; }
   function soilCell(cx, cy){ const k = cx + ',' + cy; let s = wd.cu.soilC.get(k); if(!s){ const R = wdRng('soil:' + wd.seed + ':' + k); s = {m:R(), r:R(), d:R()}; wd.cu.soilC.set(k, s); } return s; }
-  function soilAt(x, y){
-    const s = soilCell(Math.floor(x/90), Math.floor(y/90)), river = Math.max(0, 1 - Math.max(0, Math.min(y - WD.RIVER, WD.H - WD.RIVER - y))/150), desert = x > WD.W - WD.EDGE ? 1 : 0;
-    return {moist:clamp(.18 + .45*s.m + .3*river + .25*rainRecent() - .4*desert, 0, 1), rich:clamp(.12 + .72*s.r + .14*river - .5*desert, 0, 1), drain:clamp(.78*s.d + .22*(1 - river), 0, 1)};
+  function soilAt(x, y, rr){ /* rr: how wet the last two days were, if the caller already knows */
+    const s = soilCell(Math.floor(x/90), Math.floor(y/90)), river = Math.max(0, 1 - Math.max(0, Math.min(y - WD.RIVER, WD.H - WD.RIVER - y))/150), desert = x > WD.W - WD.EDGE ? 1 : 0, ta = trSoilAdj(x, y);
+    return {moist:clamp(.18 + .45*s.m + .3*river + .25*(rr == null ? rainRecent() : rr) - .4*desert + ta.m, 0, 1), rich:clamp(.12 + .72*s.r + .14*river - .5*desert + ta.r, 0, 1), drain:clamp(.78*s.d + .22*(1 - river), 0, 1)};
   }
   const moistW = m => m < .3 ? 'dry' : m < .55 ? 'moist' : m < .8 ? 'damp' : 'wet', colourW = r => r > .66 ? 'dark' : r > .33 ? 'brown' : 'pale', textureW = d => d > .6 ? 'crumbly' : d < .35 ? 'sticky' : 'loamy', nitW = r => r < .33 ? 'low' : r < .66 ? 'fair' : 'high';
   const DIR8 = ['east','southeast','south','southwest','west','northwest','north','northeast'], dirWord = a => DIR8[((Math.round(a/(Math.PI/4)) % 8) + 8) % 8];
@@ -2850,6 +3076,7 @@
         for(let i = 0; i < a.length; i++){ const n = a[i]; if(!n.sol || n.gone) continue; if(hyp(n.x - x, n.y - y) < n.r + r) return true; } } }
     for(const f of wd.fires) if(hyp(f.x - x, f.y - y) < 10 + r) return true;
     for(const b of wd.benches) if(hyp(b.x - x, b.y - y) < 13 + r) return true;
+    if(z < 20 && wd.tr && trHit(x, y, r)) return true;
     return !inWorld(x,y,r);
   }
   const bandHit = (b, z, h) => { const zb = (b.l || 0)*LH; return z + h > zb + 0.5 && z < zb + LH - 0.5; }; /* does a body from z to z+h share height with this piece's storey? */
@@ -2930,6 +3157,7 @@
       if(d > 0.01){ o.x = nx + dx/d*o.r; o.y = ny + dy/d*o.r; }
       else { const px = GRID/2 + o.r - Math.abs(o.x - b.x), py = GRID/2 + o.r - Math.abs(o.y - b.y); if(px < py) o.x += (o.x >= b.x ? 1 : -1)*px; else o.y += (o.y >= b.y ? 1 : -1)*py; }
       if(b.k==='spikes') o.spiked = true; });
+    if(oz < 20 && wd.tr) trPush(o);
     const q=clampWorld(o.x,o.y,o.r);o.x=q.x;o.y=q.y;
   }
   function moveBy(o,dx,dy){ /* in small steps, so a roll never jumps a wall */
@@ -3090,7 +3318,7 @@
   }
   const shoreAt = p => p.z >= 12 || !onMain(p) || inBad(p) || p.x > WD.W ? 0 : p.y < WD.RIVER + p.r + WD.shore ? -1 : p.y > WD.H - WD.RIVER - p.r - WD.shore ? 1 : 0;
   const oasisAt = p => { const P = wd && wd.deco && wd.deco.ex && wd.deco.ex.pools; if(!P || p.z >= 12 || !onMain(p)) return false; for(const q of P) if(Math.abs(p.x-q.x) < q.rx+16 && Math.abs(p.y-q.y) < q.ry+16 && ((p.x-q.x)/(q.rx+8))**2 + ((p.y-q.y)/(q.ry+8))**2 < 1) return true; return false; };
-  const waterNear = p => shoreAt(p) !== 0 || oasisAt(p); /* a river bank, or the edge of an oasis pool */
+  const waterNear = p => shoreAt(p) !== 0 || oasisAt(p) || trWaterNear(p); /* a river bank, or the edge of an oasis pool */
   function nearFire(r, lit){ const p = wd.p; if(p.z >= 12) return null; let best = null, bd = r; for(const f of wd.fires){ if(lit && !(f.fuel > 0)) continue; const d = hyp(f.x - p.x, f.y - p.y); if(d < bd){ bd = d; best = f; } } return best; }
   function nearPick(){ const p = wd.p; if(p.z >= 12) return null; let best = null, bd = WD.pickR;
     nodesNear(p.x, p.y, 42, n=>{ if(!NODE[n.k].pick || n.gone || n.ready > wd.t || Math.abs(n.x - p.x) > 40 || Math.abs(n.y - p.y) > 40) return; const d = hyp(n.x - p.x, n.y - p.y) - n.r; if(d < bd){ bd = d; best = n; } });
@@ -3149,6 +3377,7 @@
     if(p.fishT > 0) return {k:'fishing', text:'Fishing. Hold still'};
     const farm=nearFarm(),sign=nearCampPiece('trailsign'),selected=wd.inv[wd.sel];
     const distance=b=>hyp(b.x-p.x,b.y-p.y);
+    { const dg = trAimText(); if(dg) return dg; } /* a shovel or dirt in hand: digging comes first */
     const chest=nearChest(); if(chest && (!farm || distance(chest)<=distance(farm)) && (!sign || distance(chest)<=distance(sign))) return {k:'chest',chest,text:isStorage(chest.k) && chest.k==='supplychest' ? 'Open camp supplies (20 slots)' : 'Open storage chest'};
     if(farm && (!sign || distance(farm)<=distance(sign))){if(farm.crop && wd.t>=farm.ready)return {k:'farmharvest',farm,text:'Harvest '+farm.crop};if(!farm.crop)return selected && ITEMS[selected.id].seed ? {k:'farmplant',farm,text:'Plant '+ITEMS[selected.id].seed} : {k:'need',text:'Empty farm plot · select carrot or wheat seeds'};if(!farm.watered && cuCanWater())return {k:'farmwater',farm,text:'Water '+farm.crop};return {k:'need',text:farm.crop+' growing · '+Math.ceil(farm.ready-wd.t)+' s'+(farm.watered ? ' · watered' : ' · watering can speeds growth')};}
     if(sign)return {k:'sign',sign,text:SIGN_LABELS[sign.label]+' sign · change label'};
@@ -3175,12 +3404,15 @@
       if(dry && !rod) return {k:'drink', text:'Drink from the river'};
       return toolFor('fish') >= 0 ? {k:'fish', text:'Fish' + (dry ? ' (select anything else to drink)' : '')} : {k:'need', text:'You need a fishing rod'}; }
     if(oasisAt(p) && p.thirst < WD.thirst - 2) return {k:'drink', text:'Drink from the oasis'};
+    if(selected && ITEMS[selected.id].tool==='fish'){ const fs = trFishSpot(p); if(fs) return {k:'fish', at:fs, text:'Fish the ' + trWaterWord(p)}; }
+    if(trWaterNear(p) && p.thirst < WD.thirst - 2) return {k:'drink', text:'Drink from the ' + trWaterWord(p)};
     return cuLate(true);
   }
   function wdAct(){
     if(!wdLive()) return; if(wd.build){ buildEnd(); return; }
     const a=wdWhatAct(); if(!a || busy()) return;
     if(a.k==='cu') return a.run();
+    if(a.k==='dig') return trDigAct(wd.sel);
     if(a.k==='farmplant')return farmPlant(wd.sel);
     if(a.k==='farmwater')return farmWater();
     if(a.k==='farmharvest')return farmHarvest(a.farm);
@@ -3203,13 +3435,14 @@
   function wdActNow(){
     if(!wdLive()) return; if(wd.build){ buildEnd(); return; } const a = wdWhatAct(), p = wd.p; if(!a || busy()) return;
     if(a.k==='cu'){ a.run(); return; }
+    if(a.k==='dig'){ trDigAct(wd.sel); return; }
     if(a.k==='metalstation'){bagOpen('craft');const i=RECIPES.findIndex(r=>r.at===a.station.k);wd.csel=i<0?0:i;craftRender();$('wdCraftInfo').textContent=ITEMS[a.station.k].desc;return;}
     if(a.k==='chest'){ bagOpen('bag',a.chest); return; }
     if(a.k==='need'){ wdNote(a.text); return; }
     if(a.k==='drink'){ wdDrinkNow(15); return; }
     if(a.k==='feed') wdRefuel(invFind(a.fuel));
     else if(a.k==='pick'){ const n = a.n; if(NODE[n.k].once) n.gone = true; else n.ready = wd.t + WD.regrow; if(n.k==='shrine'){give('trailcharm',1,n);give('salve',2,n);give('stone',3,n);sfxChime();wdSave();} else if(n.k==='cache'){ const R=wdRng('cache:'+wd.seed+':'+n.id); for(const [id,num] of [['wood',3],['flint',2],['reed',2],[R()<0.5?'salve':'charcoal',1]]) give(id,num,n); sfxChime(); wdSave(); } else if(n.k==='hoard'){ give('shard', 5, n); give('salve', 2, n); give('glowcap', 3, n); sfxChime(); wdSave(); } else if(n.k==='feycache'){ give('heartwood', 4, n); give('wispglass', 2, n); give('moonpetal', 3, n); give('salve', 2, n); sfxChime(); wdSave(); } else if(n.k==='remains') cuRemains(n); else { give(NODE[n.k].pick, 1, n); cuForage(n); } sfxHarvest(1); }
-    else if(a.k==='fish'){ p.fishT = WD.fishMs; p.fishSide = shoreAt(p); sfxSplash(false); }
+    else if(a.k==='fish'){ p.fishT = WD.fishMs; p.fishSide = shoreAt(p); p.fishAt = a.at || null; sfxSplash(false); }
   }
   function wdRefuel(i){ if(!wd) return false; const item=wd.inv[i]; if(!item) return false; return wdAction('Feed fire',450,()=>wd.inv[i]===item && !!nearFire(WD.fireNear) && nearFire(WD.fireNear).fuel<WD.fireMax,()=>wdRefuelNow(i)); }
   function wdRefuelNow(i){
@@ -3299,7 +3532,7 @@
     s.n--; if(!s.n) wd.inv[i] = null; wd.p.torch = WD.torch; sfxIgnite();
     return true;
   }
-  function wdUse(i){ const s = wd.inv[i]; if(!s) return; if(ITEMS[s.id].drink || s.id==='skin') return wdDrinkSkin(i); if(ITEMS[s.id].cu) return cuUse(i); if(ITEMS[s.id].pack){packEquip(i);return;} if(ITEMS[s.id].layer) return layerEquip(i); if(ITEMS[s.id].seed)return farmPlant(i);if(ITEMS[s.id].water)return farmWater(); if(ITEMS[s.id].armor){armorEquip(i);return;} if(ITEMS[s.id].helmet){helmetEquip(i);return;} if(ITEMS[s.id].accessory){accessoryEquip(i);return;} if(ITEMS[s.id].rat){ratEquipAuto(i);return;} if(ITEMS[s.id].build) buildStart(s.id); else if(ITEMS[s.id].light) wdLightTorch(i); else if(ITEMS[s.id].medical) wdHeal(i); else if(ITEMS[s.id].fuel) wdRefuel(i); else wdEat(i); } /* RT or Q: eat it, light it, or build with it */
+  function wdUse(i){ const s = wd.inv[i]; if(!s) return; if(ITEMS[s.id].dig || ITEMS[s.id].fill) return trDigAct(i); if(ITEMS[s.id].drink || s.id==='skin') return wdDrinkSkin(i); if(ITEMS[s.id].cu) return cuUse(i); if(ITEMS[s.id].pack){packEquip(i);return;} if(ITEMS[s.id].layer) return layerEquip(i); if(ITEMS[s.id].seed)return farmPlant(i);if(ITEMS[s.id].water)return farmWater(); if(ITEMS[s.id].armor){armorEquip(i);return;} if(ITEMS[s.id].helmet){helmetEquip(i);return;} if(ITEMS[s.id].accessory){accessoryEquip(i);return;} if(ITEMS[s.id].rat){ratEquipAuto(i);return;} if(ITEMS[s.id].build) buildStart(s.id); else if(ITEMS[s.id].light) wdLightTorch(i); else if(ITEMS[s.id].medical) wdHeal(i); else if(ITEMS[s.id].fuel) wdRefuel(i); else wdEat(i); } /* RT or Q: eat it, light it, or build with it */
   // ---- build mode (Terraria's: hold the piece, place it on the grid, take it back whole) ----
   function buildStart(id){ if(!wdLive() || !invCount(id)) return; wd.build = {id, lvl:clamp(Math.floor((wd.p.z + 2)/LH), 0, MAXL), dir:wd.buildDir || 0}; p0Fish(); beep(600, 0.05, 'triangle', 0.03); hudLast = ''; }
   function p0Fish(){ wd.p.fishT = 0; }
@@ -3320,6 +3553,7 @@
     if(!B || l < 0 || l > MAXL) return false;
     if(l > 0 && !B.up) return false;
     if(!inWorld(x,y,h))return false;
+    if(l===0 && !trCanBuild(gx, gy)) return false;
     if(B.floor ? floorAt(gx,gy,l) : wd.builds.has(gkey(gx,gy,l))) return false;
     if(!reachOk(l)) return false;
     const box = {x, y}, under = l > 0 ? structOf(gx, gy, l - 1) : null;
@@ -3670,7 +3904,7 @@
     if(ml > 0.2 && p.swingT <= 0 && p.rollT <= 0){ p.fx=I.mx/ml; p.fy=I.my/ml; }
     const ox0 = p.x, oy0 = p.y;
     if(p.rollT > 0){ p.rollT -= dt; moveBy(p, p.dx*WD.rollSpd*s, p.dy*WD.rollSpd*s); }
-    else { const k=(p.swingT>0?WD_SW.move:1)*accessorySpeed()*cuSpeed();moveBy(p,I.mx*WD.spd*k*s,I.my*WD.spd*k*s); }
+    else { const k=(p.swingT>0?WD_SW.move:1)*accessorySpeed()*cuSpeed()*trSpeed(p);moveBy(p,I.mx*WD.spd*k*s,I.my*WD.spd*k*s); }
     pGravity(s); wdFootsteps(p, hyp(p.x - ox0, p.y - oy0), wd.cur);
     if(p.z < 12 && inEnch(p) && p.inv <= 0) nodesNear(p.x, p.y, 28, n=>{ if(n.k==='briar' && !n.gone && p.inv <= 0 && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + 2) wdHurtP(1, 'Torn apart by briars'); });
     if(!p.air && p.rollT <= 0 && zBlocked(p, p.z)) wdUnstick();
@@ -3935,6 +4169,10 @@
       if(id==='hatchet') blob(()=>{ c.moveTo(13, 6); c.lineTo(20, 2.5); c.quadraticCurveTo(23, 8, 21, 13); c.lineTo(16, 10); c.closePath(); }, '#9aa3ad', 2);
       else blob(()=>{ c.moveTo(6, 6); c.quadraticCurveTo(15, 0, 23, 9); c.quadraticCurveTo(16, 5, 7, 8.5); c.closePath(); }, '#9aa3ad', 2);
       hi(18, 6, 2, 0.7); }
+    else if(id==='shovel' || id==='ironshovel'){ c.strokeStyle = OL; c.lineWidth = 4.2; c.beginPath(); c.moveTo(7, 3.5); c.lineTo(16, 15); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 2.4; c.stroke();
+      line([[4.5, 4], [9.5, 1.5]], OL, 3.6); line([[4.5, 4], [9.5, 1.5]], '#8a6440', 2);
+      blob(()=>{ c.moveTo(13, 13.5); c.lineTo(20.5, 15.5); c.quadraticCurveTo(22.5, 21, 17, 22.5); c.quadraticCurveTo(12, 21.5, 12.5, 15.5); c.closePath(); }, id==='ironshovel' ? '#b9c2cc' : '#9aa3ad', 2); hi(17, 17.5, 1.8, 0.7); }
+    else if(id==='dirt'){ blob(()=>{ c.moveTo(3, 19); c.quadraticCurveTo(5, 8, 12, 7); c.quadraticCurveTo(20, 8, 21, 19); c.closePath(); }, '#7a5c3a', 2); c.fillStyle = '#5d4529'; for(const [x, y] of [[8, 15], [13, 12], [16, 16], [11, 17.5]]){ c.beginPath(); c.arc(x, y, 1.2, 0, 6.2832); c.fill(); } hi(10, 11, 2.6, 1.1); }
     else if(id==='rod'){ c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(4, 21); c.lineTo(19, 3); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 1.8; c.stroke();
       c.strokeStyle = '#e6dcc4'; c.lineWidth = 0.7; c.beginPath(); c.moveTo(19, 3); c.quadraticCurveTo(22, 12, 19, 17); c.stroke(); blob(()=>{ c.arc(19, 18.5, 2, 0, Math.PI*2); }, '#d6304f', 1.4); }
     else if(id==='torch'){ c.strokeStyle = OL; c.lineWidth = 4; c.beginPath(); c.moveTo(9, 22); c.lineTo(14, 10); c.stroke(); c.strokeStyle = '#8a6440'; c.lineWidth = 2.2; c.stroke();
@@ -4677,6 +4915,7 @@
     c.fillStyle='#56603a';c.fillRect(FRONTIER.left,FRONTIER.top,FRONTIER.right-FRONTIER.left,FRONTIER.bottom-FRONTIER.top);c.fillRect(FRONTIER.gateLeft,FRONTIER.gateTop,FRONTIER.gateRight-FRONTIER.gateLeft,FRONTIER.gateBottom-FRONTIER.gateTop);
   }
   function groundB(c, x0, y0, x1, y1, vis){ /* patches, tufts, stones, cracks, the desert and its gravel */
+    trStatic(c, x0, y0, x1, y1, false);
     for(const q of wd.deco.patches) if(vis(q.x, q.y, q.rx)){ c.fillStyle = q.col; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill(); }
     if(!bareGfx) drawTufts(c, wd.deco.tufts, vis, lowFx ? 2 : 1); /* floors are drawn on top of the ground, so nothing needs to skip them */
     if(!bareGfx){ /* Story mode's ground: stones and hairline cracks */
@@ -4708,6 +4947,7 @@
         for(const q of E.stones) if(vis(q.x, q.y, 8)) toonStone(c, q.x, q.y, q.rx, q.ry, q.col);
         for(const q of E.gravel) if(vis(q.x, q.y, 8)){ c.fillStyle = q.r > 2.5 ? '#70695c' : '#c5af85'; c.fillRect(q.x, q.y, q.r*1.5, q.r); } } } }
     if(!bareGfx)for(const q of wd.deco.gravel || [])if(vis(q.x,q.y,8)){c.fillStyle=q.r>2.5?'#70695c':'#c5af85';c.fillRect(q.x,q.y,q.r*1.5,q.r);}
+    trStatic(c, x0, y0, x1, y1, true);
   }
   /* The treeline round the edges never changes either, so it is painted into the same kind of tiles (clear background) and blitted over everything. */
   function btIn(xa, ya, xb, yb){ const g = wd.btg, out = [], c1 = Math.floor(xb/128), d1 = Math.floor(yb/128); if(!g) return out;
@@ -4739,7 +4979,7 @@
   let gK = 1, gEx = 0, gEy = 0, sprS = 0, gcSig = '', gcFail = false, gcTick = 0, gcPx = 0; const gcMap = new Map(), sprMap = new Map();
   const scaleBucket = k => { for(const b of GC_BUCKETS) if(b >= k*0.93) return b; return 0; }; /* 0: too big a screen to cache, draw as vectors */
   function sprBegin(k){ sprS = gcFail ? 0 : scaleBucket(k); }
-  function gcBegin(k){ const b = gcFail ? 0 : scaleBucket(k); if(!b) return 0; const sig = (bareGfx ? 1 : 0) + '|' + (lowFx ? 1 : 0) + '|' + wd.seed; if(sig !== gcSig){ gcMap.clear(); gcPx = 0; gcSig = sig; } return b; }
+  function gcBegin(k){ const b = gcFail ? 0 : scaleBucket(k); if(!b) return 0; const sig = (bareGfx ? 1 : 0) + '|' + (lowFx ? 1 : 0) + '|' + wd.seed + '|' + (wd.tr ? wd.tr.sig : 0); if(sig !== gcSig){ gcMap.clear(); gcPx = 0; gcSig = sig; } return b; }
   function gcPaint(g, X0, Y0){ const X1 = X0 + GT, Y1 = Y0 + GT, vis = (x, y, m) => x > X0 - m && x < X1 + m && y > Y0 - m && y < Y1 + m; groundA(g, X0, Y0, X1, Y1); groundB(g, X0, Y0, X1, Y1, vis); }
   function gcBuild(b, tx, ty, key){
     try{ const px = GT*b, cv = document.createElement('canvas'); cv.width = px; cv.height = px; const g = cv.getContext('2d');
@@ -4794,6 +5034,7 @@
     if(scn===0 && x0 < WD.W + 10){ const a = Math.max(0, x0 - 5), b = Math.min(WD.W, x1 + 5);
       if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
       if(y1 > WD.H - WD.RIVER - 10){ c.save(); c.translate(0, WD.H); c.scale(1, -1); waterBody(c, a, b, 0, WD.RIVER, t, -1, 16); c.restore(); } }
+    if(scn===0) trDrawDyn(c, vis, t);
     // Flat farm soil/crops are ground decals, always beneath actors and standing objects.
     for(const b of kindOf('farmplot'))if(vis(b.x,b.y,30))drawPiece(c,b.k,b.x,b.y,b,t);
     if(scn===0) cuDrawGround(c, vis, t);
@@ -4844,7 +5085,7 @@
         { const gz = p.air ? surfaceAt(p.x, p.y, p.z) : p.z; c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(p.x+1,p.y+p.r*.7-gz,p.r,p.r*.4,0,0,Math.PI*2); c.fill(); }
         c.save(); c.translate(0, -p.z);
         if(p.rollT > 0) for(let i=1;i<=3;i++){ c.globalAlpha = 0.16*(4 - i); c.fillStyle = PC.ring; c.beginPath(); c.arc(p.x - p.dx*i*6, p.y - p.dy*i*6, p.r - 2.5 - i*0.6, 0, Math.PI*2); c.fill(); }
-        if(p.fishT > 0){ const side = p.fishSide, bx = p.x + 6, by = side < 0 ? WD.RIVER - 26 : WD.H - WD.RIVER + 26, bob = Math.sin(t*4)*1.2 + (p.fishT < 500 ? Math.sin(t*40)*1.5 : 0);
+        if(p.fishT > 0){ const side = p.fishSide, bx = p.fishAt ? p.fishAt.x : p.x + 6, by = p.fishAt ? p.fishAt.y : side < 0 ? WD.RIVER - 26 : WD.H - WD.RIVER + 26, bob = Math.sin(t*4)*1.2 + (p.fishT < 500 ? Math.sin(t*40)*1.5 : 0);
           c.strokeStyle = 'rgba(230,220,195,.75)'; c.lineWidth = 0.7; c.beginPath(); c.moveTo(p.x + 4, p.y - 6); c.quadraticCurveTo((p.x + bx)/2 + 4, (p.y + by)/2, bx, by + bob); c.stroke();
           c.fillStyle = OL; c.beginPath(); c.arc(bx, by + bob, 2.4, 0, Math.PI*2); c.fill(); c.fillStyle = '#d6304f'; c.beginPath(); c.arc(bx, by + bob, 1.7, 0, Math.PI*2); c.fill(); }
         { const sw = p.sword; if(sw && sw.t < sw.dur + 120){ const k = Math.min(1, sw.t/sw.dur), ez = 1 - Math.pow(1 - k, 3), ang = sw.a + sw.side*(-sw.arc/2 + sw.arc*ez);
@@ -4891,6 +5132,8 @@
       c.strokeStyle = has ? '#e0b54a' : ok ? 'rgba(143,208,107,.95)' : 'rgba(238,90,117,.95)'; c.lineWidth = 1.5; c.setLineDash([3, 2]); c.strokeRect(x - 10, y - 10 - zb, 20, 20);
       if(zb){ c.globalAlpha = 0.4; c.strokeRect(x - 10, y - 10, 20, 20); c.globalAlpha = 1; }
       c.setLineDash([]); });
+    for(const gi of act) withPlayer(gi, ()=>{ if(wd.dead > 0 || wd.build || wd.book || sceneOf(wd.p)!==scn) return; const s = wd.inv[wd.sel]; if(!s || !(ITEMS[s.id].dig || ITEMS[s.id].fill)) return; /* the square a shovel or dirt would work on */
+      const a = trAim(), ok = trDigCheck(a.gx, a.gy, s).ok; c.strokeStyle = ok ? 'rgba(143,208,107,.9)' : 'rgba(238,90,117,.6)'; c.lineWidth = 1.2; c.setLineDash([3, 2]); c.strokeRect(a.gx*GRID + 1, a.gy*GRID + 1, GRID - 2, GRID - 2); c.setLineDash([]); });
     for(const e of wd.fx){
       const k = Math.max(0, e.t/e.t0);
       if(e.kind==='slash'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2; c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a - half, a + half); c.closePath();
@@ -4983,7 +5226,7 @@
     if(!hint && !(wd.dead > 0) && p.torch > 0) hint = 'Torch ' + Math.ceil(p.torch) + ' s';
     return hint;
   }
-  const regionOf = p => (inBad(p) ? 'The Badlands' : inEnch(p) ? 'Enchanted forest' : inUnder(p) ? 'Shardling caves' : p.x>DESERT.right ? 'Eastern frontier' : p.x>WD.W-WD.EDGE ? 'Rocky desert' : 'Woodlands')+(p.z>=LH-6 ? ' · Floor '+(Math.round(p.z/LH)+1) : '');
+  const regionOf = p => (inBad(p) ? 'The Badlands' : inEnch(p) ? 'Enchanted forest' : inUnder(p) ? 'Shardling caves' : p.x>DESERT.right ? 'Eastern frontier' : p.x>WD.W-WD.EDGE ? 'Rocky desert' : 'Woodlands')+(p.z>=LH-6 ? ' · Floor '+(Math.round(p.z/LH)+1) : '')+trWord(p);
   function meterOf(i){ /* player i's warmth, wet, load and wounds, as the bars that sit in the HP / belly / thirst box; -1 = not worth showing */
     const warm = ctxGet(i, 'warm'); if(warm === undefined) return null;
     const wet = ctxGet(i, 'wet') || 0, load = ctxGet(i, 'cuLoad') || 0, cap = ctxGet(i, 'cuCapV') || CU.cap, inj = ctxGet(i, 'inj'), q = v=>Math.round(clamp(v, 0, 1)*50)/50;
@@ -5017,7 +5260,7 @@
   function hotbarInfo(i){ /* the same facts hotbarRender shows for Player 1, worked out for player i */
     return withPlayer(i, ()=>{ const item = wd.inv[wd.sel], I = item && ITEMS[item.id], ready = wdLive() && !wd.p.action && !wd.build, fire = nearFire(WD.fireNear), farm = nearFarm();
       return {label:item ? I.name + (item.n > 1 ? ' ×' + item.n : '') + (I.dur ? ' · ' + item.d + ' uses' : '') : 'Empty slot',
-        use:'RT · ' + hotbarLabel(I), useOff:!(ready && I && (I.seed && farm && !farm.crop || I.water && farm?.crop && !farm.watered && wd.t < farm.ready || I.cu || I.layer || I.drink || I.armor || I.accessory || I.helmet || I.rat || I.pack || I.build || I.light || I.food || I.medical && wd.p.hp < wd.p.maxHp || I.fuel && fire && fire.fuel < WD.fireMax)),
+        use:'RT · ' + hotbarLabel(I), useOff:!(ready && I && (I.seed && farm && !farm.crop || I.water && farm?.crop && !farm.watered && wd.t < farm.ready || I.cu || I.layer || I.drink || I.armor || I.accessory || I.helmet || I.rat || I.pack || I.dig || I.fill || I.build || I.light || I.food || I.medical && wd.p.hp < wd.p.maxHp || I.fuel && fire && fire.fuel < WD.fireMax)),
         cookOff:!(ready && I && I.cook && nearFire(WD.fireNear, true)), dropOff:!(ready && item), bagOff:!wdLive(), rat:wd.rat ? (wd.rat.down > 0 ? 'down' : Math.ceil(wd.rat.hp)) : null, ratLow:!!wd.rat && (wd.rat.down > 0 || wd.rat.hp < wd.rat.maxHp*.35)}; });
   }
   function bagPlace(on, fit = true){ /* a panel per player: in split screen it fills only its owner's view. Also called the moment a bag opens, so it is never seen full screen for a frame */
@@ -5078,7 +5321,7 @@
     const a = -Math.PI/2 + phase(wd.t)/WD.day*Math.PI*2; c.strokeStyle = '#efe6cf'; c.lineWidth = 2.4; c.lineCap = 'round'; c.beginPath(); c.moveTo(o + Math.cos(a)*r*0.42, o + Math.sin(a)*r*0.42); c.lineTo(o + Math.cos(a)*(r - 1), o + Math.sin(a)*(r - 1)); c.stroke();
     dialCopy();
   }
-  function hotbarLabel(I){return !I ? 'Use' : I.armor || I.accessory || I.helmet || I.rat || I.pack ? 'Equip' : I.cu ? I.cuLabel : I.layer ? 'Wear' : I.seed ? 'Plant' : I.water ? 'Water' : I.drink ? 'Drink' : I.build ? 'Place' : I.light ? 'Light' : I.medical ? 'Heal' : I.fuel ? 'Refuel' : I.food ? 'Eat' : I.tool ? 'Use tool with attack' : 'No direct use';}
+  function hotbarLabel(I){return !I ? 'Use' : I.armor || I.accessory || I.helmet || I.rat || I.pack ? 'Equip' : I.cu ? I.cuLabel : I.layer ? 'Wear' : I.seed ? 'Plant' : I.water ? 'Water' : I.drink ? 'Drink' : I.build ? 'Place' : I.light ? 'Light' : I.medical ? 'Heal' : I.fuel ? 'Refuel' : I.food ? 'Eat' : I.dig ? 'Dig' : I.fill ? 'Fill hole' : I.tool ? 'Use tool with attack' : 'No direct use';}
   function hotbarAction(kind,stack=false){
     if(!wdLive() || wd.p.action || wd.build || wd.book)return false;
     const item=wd.inv[wd.sel];if(!item)return false;
@@ -5093,7 +5336,7 @@
     $('wdHotbarItem').textContent=item ? ITEMS[item.id].name+(item.n>1 ? ' ×'+item.n : '')+(I.dur ? ' · '+item.d+' uses' : '') : 'Empty slot';
     const fire=nearFire(WD.fireNear);
     $('wdHotbarUse').textContent=(pad ? 'RT' : 'Q')+' · '+hotbarLabel(I);
-    $('wdHotbarUse').disabled=!(ready && I && (I.seed && nearFarm() && !nearFarm().crop || I.water && nearFarm()?.crop && !nearFarm().watered && wd.t<nearFarm().ready || I.cu || I.layer || I.drink || I.armor || I.accessory || I.helmet || I.rat || I.pack || I.build || I.light || I.food || I.medical && wd.p.hp<wd.p.maxHp || I.fuel && fire && fire.fuel<WD.fireMax));
+    $('wdHotbarUse').disabled=!(ready && I && (I.seed && nearFarm() && !nearFarm().crop || I.water && nearFarm()?.crop && !nearFarm().watered && wd.t<nearFarm().ready || I.cu || I.layer || I.drink || I.armor || I.accessory || I.helmet || I.rat || I.pack || I.dig || I.fill || I.build || I.light || I.food || I.medical && wd.p.hp<wd.p.maxHp || I.fuel && fire && fire.fuel<WD.fireMax));
     $('wdHotbarCook').textContent=(pad ? 'LT' : 'Shift+V')+' · Cook';$('wdHotbarCook').disabled=!(ready && I && I.cook && nearFire(WD.fireNear,true));
     $('wdHotbarDrop').textContent=pad ? 'R3 · Drop 1' : 'R · Drop 1';$('wdHotbarDrop').title=pad ? 'Click right stick (R3) to drop one; hold left stick click (L3) and click R3 to drop the stack.' : 'Drop one selected item; Shift-click or Shift+R drops the stack.';$('wdHotbarDrop').disabled=!(ready && item);
     $('wdHotbarBag').textContent=(pad ? 'Y' : 'Tab / I')+' · Bag';$('wdHotbarBag').disabled=!wdLive();
@@ -5376,7 +5619,7 @@
   $('wdCheatHeal').onclick=()=>{wd.p.hp=wd.p.maxHp;wd.p.hunger=WD.hunger;wd.p.thirst=WD.thirst;wdSave();};
   $('wdCheatAmount').onclick=()=>{cheatStack=!cheatStack;$('wdCheatAmount').textContent='Spawn amount: '+(cheatStack ? 'full stack' : 'one');cheatRender();};
   $('wdCheatKit').onclick=()=>{for(const id of ['wall','floor','stairs','chest','supplychest','trailsign','table','chair','bed','shelf','lamp','garden','farmplot','carrotseed','wheatseed','wateringcan','plank'])cheatSpawn(id,20);};
-  $('wdCheatTools').onclick=()=>{for(const id of ['hatchet','pickaxe','rod','spear','torch','salve','stew'])cheatSpawn(id,1);};
+  $('wdCheatTools').onclick=()=>{for(const id of ['hatchet','pickaxe','shovel','rod','spear','torch','salve','stew'])cheatSpawn(id,1);};
   $('wdCheatDawn').onclick=()=>{const next=(Math.floor(wd.t/WD.day)+1)*WD.day+21;burnFires(next-wd.t);wd.t=next;wd.darkT=0;wdDawn();wd.lastDay=Math.floor(wd.t/WD.day);wdSave();};
   $('wdTabBag').onclick = ()=>bagTab('bag');
   $('wdTabCraft').onclick = ()=>bagTab('craft');
@@ -5558,6 +5801,13 @@
       [null, 'Birds perch in the trees and scatter when you come near. Butterflies drift over the meadows by day and fireflies by night. Fish leap in the rivers.'],
       [null, 'The Craft and Cook tabs have a Craft again button (R, or X on a controller) that makes the last thing you crafted or cooked once more.'],
       [null, 'The bag and equipment use the biggest size that fits their view, and in split screen the equipment slides under the bag whenever that fits bigger. Equipment descriptions have a panel of their own.'],
+    ]],
+    ['Terrain, water and digging', [
+      [null, 'The woodland is no longer flat. Hollows sink below the usual ground and plateaus rise above it. A step between two levels is a cliff you cannot walk through; worn ramps (pale, stepped earth) join the levels. The status line says when you stand on low or high ground. Hollows are damp and rich, so crops do better there; high ground is dry and lean. Hollows keep a pond in their bottom.'],
+      [null, 'Springs on the plateaus feed creeks that leap off a cliff as a waterfall into a pool below, and the creek goes on across the lower ground. You can wade water (a little slower), drink from it with B or E, and fill a waterskin or can there. Falls and creeks are loud: you hear them from far off.'],
+      [null, 'Craft a shovel by hand (2 twigs, 2 flint, 1 reed), or an iron shovel at an anvil (2 iron bars, 1 plank). Select it and press B, E or Q to dig the square in front of you, up to three deep. Each dig gives dirt and sometimes a stone, flint or bone. Select dirt and press the same keys on a hole to fill it back in. You cannot dig on cliffs, ramps, water, buildings or beside roots.'],
+      [null, 'A hole fills with water when the earth is wet enough for its depth: shallow holes in hollows and beside a river or pond, deeper ones elsewhere, and a three-deep hole on ordinary ground is a well if the soil is damp. Dry hard ground may give nothing at any depth, and high ground is driest. In heavy rain every hole puddles. Water spreads along connected holes on the same level, so a ditch dug from the river or a pond carries water to wherever it ends.'],
+      [null, 'Irrigation: a farm plot with water in any square touching it (a ditch, a pond, a creek) is watered automatically, once per planting, exactly as if you had used a watering can. Dig a ditch from the bank to your plots and the pump and the can are no longer needed. Holes slow you down, wet ones a little less. You cannot build on a hole, so fill it first.'],
     ]],
     ['Thirst', [
       [null, 'A second meter sits beside the belly. It drains a bit slower than the belly: a full one lasts about two and a half days. Drink at either river bank (stand at the water and press B or E; hold the fishing rod to fish instead), catch rain in the open, or eat and drink juicy things: berries, broths, soups, tonics and cordials quench some.'],
@@ -5862,6 +6112,7 @@
   function surfKind(p){
     if(p.z >= 2) return 'wood'; if(inEnch(p)) return 'moss'; if(inUnder(p)) return 'stone';
     if(wd.floors.has(gkey(Math.floor(p.x/GRID), Math.floor(p.y/GRID)))) return 'wood';
+    if(trWetHere(p)) return 'wet';
     if(inBad(p) || (p.x > DESERT.left - 20 && p.x < DESERT.right + 20 && p.y > DESERT.top && p.y < DESERT.bottom)) return 'sand';
     return wd.rain > 0.3 && !roofed(p.x, p.y) ? 'wet' : 'grass';
   }
@@ -6081,6 +6332,7 @@
         { const fc = (380 + 520*wg + 250*rain)*(1 + 0.22*S.wd); for(let k=0;k<abed.wind.lp.length;k++) abed.wind.lp[k].frequency.setTargetAtTime(k%2 ? fc*1.3 : fc, T, 0.9); } /* brighter in a gust, and drifting on its own */
         abed.wind.rs.gain.setTargetAtTime(0.04 + 0.34*Math.pow(wg, 2.4) + 0.2*rain, T, 0.5); } /* rustle only when it blows */
       let rv = 0; if(main && P.x > WD.EDGE - 20 && P.x < WD.W - WD.EDGE + 20 && P.z < 40){ const dn = Math.min(P.y - WD.RIVER, WD.H - WD.RIVER - P.y); rv = Math.pow(clamp(1 - dn/280, 0, 1), 1.4); }
+      rv = Math.max(rv, main && P.z < 40 ? trSoundAt(P) : 0);
       g('river', duck*rv*2.2*(cover ? 0.4 : 1));
       const fr = P.z < 30 ? nearFire(200, true) : null, fd = fr ? hyp(fr.x - P.x, fr.y - P.y) : 999; S.fireNear = fr ? Math.pow(clamp(1 - fd/200, 0, 1), 1.3) : 0;
       g('fire', duck*S.fireNear*1.7);
@@ -6200,7 +6452,7 @@
   window.addEventListener('gamepaddisconnected', ()=>{ padHeld={}; if(wd && wd.crew && anyBag()){ for(const i of activeIdx()) if(ctxGet(i, 'bag')) withPlayer(i, ()=>bagRender()); } });
   requestAnimationFrame(padPoll);
   try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
-  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}};
+  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trHit, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}};
   (function makeBagPanels(){
     const orig = document.getElementById('wdBag');
     bagIds = new Set(['wdBag', ...[...orig.querySelectorAll('[id]')].map(e=>e.id)]);
