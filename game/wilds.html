@@ -430,7 +430,7 @@
   try{ bareGfx = localStorage.getItem('bloodline_bare')==='1'; }catch(e){}
   let fxMode = 'auto';
   try{ fxMode = localStorage.getItem('bloodline_fx') || 'auto'; }catch(e){}
-  let lowFx = fxMode==='low', fxEma = 16, fxSlowMs = 0, fxRes = 0; /* fxRes 1: a slow device first draws at a lower resolution, and only then loses effects */
+  let lowFx = fxMode==='low', fxEma = 16, fxSlowMs = 0, fxRes = 0, fxGrace = 0; /* fxRes 1: a slow device first draws at a lower resolution, and only then loses effects */
   let padEl = null, padHeld = {}, padNext = 0, padAny = false;
   let kbNav = false; /* the last thing used was the keyboard: show the highlight in menus, as a controller does */
   const padSwap = {ab:false, xy:false};
@@ -6168,7 +6168,7 @@
     try{
       if(['master','sfx','env','music','danger'].includes(key)){sound[key]=sound[key]>=.999?0:Math.min(1,Math.round((sound[key]+.1)*10)/10);localStorage.setItem('bloodline_sound',JSON.stringify(sound));applySound();}
       else if(key==='haptics'){sound.haptics=!sound.haptics;localStorage.setItem('bloodline_sound',JSON.stringify(sound));}
-      else if(key==='effects'){fxMode=({auto:'low',low:'high',high:'auto'})[fxMode] || 'auto';lowFx=fxMode==='low';fxEma=16;fxSlowMs=0;fxRes=0;localStorage.setItem('bloodline_fx',fxMode);applyFx();}
+      else if(key==='effects'){fxMode=({auto:'low',low:'high',high:'auto'})[fxMode] || 'auto';lowFx=fxMode==='low';fxEma=16;fxSlowMs=0;fxRes=0;fxGrace=0;localStorage.setItem('bloodline_fx',fxMode);applyFx();}
       else if(key==='scenery'){bareGfx=!bareGfx;localStorage.setItem('bloodline_bare',bareGfx?'1':'0');applyFx();}
       else if(key==='fullscreen'){if(fsOk()){fsWant=!fsOn();fsSet(!fsOn());}else $('wdMsg').textContent='This browser does not allow fullscreen from a page. On iPhone, add the game to the Home Screen to play fullscreen.';}
       else if(key==='ab' || key==='xy'){padSwap[key]=!padSwap[key];localStorage.setItem('bloodline_pad'+key,padSwap[key]?'1':'0');const g=activePad();if(g)for(const k of [0,1,2,3,4,5,6,7,8,9])padHeld[k]=!!(padBtn(g,k)&&padBtn(g,k).pressed);wdIn.resync=true;}
@@ -6441,8 +6441,9 @@
   function wdLoop(ts){
     const raw = ts - wdLast, dt = Math.min(50, raw); wdLast = ts;
     if(fxMode==='auto' && !lowFx && wd && !wd.menu && !wd.paused && raw < 500){ /* quality steps down on its own if frames run slow, and stays down */
-      fxEma += (raw - fxEma)*0.04;
-      if(fxEma > 27){ fxSlowMs += raw; if(fxSlowMs > 3000){ fxSlowMs = 0; if(!fxRes){ fxRes = 1; fxEma = 16; } else { lowFx = true; applyFx(); } } } else fxSlowMs = Math.max(0, fxSlowMs - raw); }
+      if(fxGrace > 0) fxGrace -= raw; /* right after a step the canvas resize and cache rebuild make a hitch of their own: it must not count as slow frames, or one step chains into the next */
+      else{ fxEma += (Math.min(raw, 45) - fxEma)*0.04; /* one stall (a ground tile building as you walk into new terrain) is capped, so only a steady run of slow frames moves the average */
+        if(fxEma > 31){ fxSlowMs += raw; if(fxSlowMs > 4000){ fxSlowMs = 0; fxGrace = 6000; fxEma = 16; if(!fxRes) fxRes = 1; else { lowFx = true; applyFx(); } } } else fxSlowMs = Math.max(0, fxSlowMs - raw); } }
     if(wd && !wd.menu) try{
       if(!wd.paused) coopPoll();
       const rs = wdIn.resync; wdIn.resync = false;
