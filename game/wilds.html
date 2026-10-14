@@ -170,7 +170,7 @@
   #wdVps{position:absolute;inset:0;pointer-events:none;z-index:2}
   .wd-vp{position:absolute;overflow:hidden;color:var(--bone,#e8dcc0)}
   .wd-vp .vp-side{position:absolute;top:0;left:0;box-sizing:border-box;padding:.4em;display:flex;flex-direction:column;align-items:flex-start;gap:.5em;overflow:hidden}
-  .wd-vp .vp-side.r{left:auto;right:0}
+  .wd-vp .vp-side.r{left:auto;right:0;align-items:flex-end}
   .wd-vp .vp-side .uf-stats{max-width:100%;box-sizing:border-box}
   .wd-vp .wd-dial2{width:3.6em;height:3.6em}
   .wd-vp .vp-bottom{position:absolute;bottom:.6em;display:flex;flex-direction:column;align-items:center;gap:.35em}
@@ -248,7 +248,7 @@
       <div id="wdPauseMain"><button id="wdResume">Resume</button><button id="wdSaveNow">Save world</button><button id="wdSettings">Settings</button><button id="wdControls">Controls &amp; survival guide</button><button id="wdCoop">Local co-op</button><button id="wdTitleMenu">Save &amp; return to Wilds menu</button><button id="wdLeave">Save &amp; leave Wilds</button></div>
       <div id="wdPauseSettings" hidden><div class="uf-sub">Volume (0–100%) · select to increase; wraps to 0</div>
         <button id="wdVolumeMaster"></button><button id="wdVolumeSfx"></button><button id="wdVolumeEnv"></button><button id="wdVolumeMusic"></button><button id="wdVolumeDanger"></button>
-        <button id="wdHaptics"></button><button id="wdEffects"></button><button id="wdScenery"></button><button id="wdSwapAB"></button><button id="wdSwapXY"></button>
+        <button id="wdHaptics"></button><button id="wdEffects"></button><button id="wdScenery"></button><button id="wdSwapAB"></button><button id="wdSwapXY"></button><button id="wdFullscreen"></button>
       </div><div id="wdPauseCoop" hidden></div><div id="wdPauseHelp" class="uf-help" hidden></div><button id="wdPauseBack" hidden>Back to pause menu</button>
     </div>
     <div class="uf-panel" id="wdBag" role="dialog" aria-label="Bag, crafting and equipment">
@@ -564,7 +564,7 @@
   const animalDef=f=>ANIMALS[f.kind || 'jackal'];
   const hitKind=n=>n.k==='tree' || n.k==='bone' || n.k==='rock' || n.k==='crystal' || n.k==='briar';
   const METALS={iron:{name:'Iron',col:'#b07f61'},copper:{name:'Copper',col:'#ce8b55'},silver:{name:'Silver',col:'#d2e0e7'},zinc:{name:'Zinc',col:'#92a6b8'}};
-  const oreFor=(seed,n)=>{if(n.k!=='rock' || (n.biome!=='desert' && n.biome!=='bad'))return null;const R=wdRng('desert-ore:'+seed+':'+n.id);if(R()>=(n.biome==='bad' ? .15 : .10))return null;const v=R();return v<.4?'iron':v<.7?'copper':v<.9?'zinc':'silver';};
+  const oreFor=(seed,n)=>{if(n.k!=='rock' || (n.biome!=='desert' && n.biome!=='bad' && n.biome!=='under'))return null;const R=wdRng('desert-ore:'+seed+':'+n.id);if(R()>=(n.biome==='bad' ? .15 : n.biome==='under' ? (n.bz===3 ? .22 : .12) : .10))return null;const v=R();return v<.4?'iron':v<.7?'copper':v<.9?'zinc':'silver';};
   const ITEMS = {
     irrigationpump:{name:'Brass irrigation pump',build:'irrigationpump',desc:'Automatic watering within 80 units (4 tiles). Put charcoal in a chest within 48 units. Checks every 10 seconds; spends 1 charcoal only when watering growing, dry crops. Same one-time 25% bonus as a watering can.'},
     furnace:{name:'Furnace',build:'furnace',desc:'Smelt 2 raw ore or 2 concentrate with 1 charcoal into a metal bar. Craft beside the placed furnace.'},
@@ -676,6 +676,7 @@
     moonpetal:{name:'Moonpetal',one:'moonpetal',food:3,heal:2,cook:'moonbrew',desc:'A pale flower that opens in the dark. Edible raw; steeping it at a fire makes a healing tea.'},
     moonbrew:{name:'Moonpetal tea',food:8,heal:6,desc:'Warm and bitter-sweet. Fills the belly and mends a little.'},
     wispcharm:{name:'Wisp Lantern Charm',accessory:true,speed:1.08,attack:1,stack:1,desc:'+8% movement speed and +1 attack damage. Craft from wispglass at a workbench.'},
+    compass:{name:'Compass',stack:1,desc:'A lodestone needle in a flint-and-reed case. Keep it anywhere in your bag: a dial appears at the top of your view, its needle pointing to camp (or, in the caves, the forest and the Badlands, to the way out), and a coloured pip swings toward anything strange nearby. Craft at a workbench.'},
     heartwoodhelm:{name:'Heartwood Helm',helmet:true,prot:.45,dur:70,stack:1,desc:'Helmet. Absorbs 45% of animal and fey damage. 70 durability. Craft from heartwood at a workbench.'},
     ratcap:{name:'Rat cap',ratHead:true,rat:true,prot:.3,dur:25,stack:1,desc:'A tiny hide cap for your combat rat. Absorbs 30% of the damage it takes. Only a rat can wear it.'},
     ratvest:{name:'Rat vest',ratBody:true,rat:true,prot:.4,dur:30,stack:1,desc:'A stitched hide vest for your combat rat. Absorbs 40% of the damage it takes. Only a rat can wear it.'},
@@ -764,6 +765,7 @@
   RECIPES.push({id:'scythe',at:'bench',cost:{twig:3,flint:3,reed:2}},
     {id:'heartwoodhelm',at:'bench',cost:{heartwood:4,reed:2}},
     {id:'wispcharm',at:'bench',cost:{wispglass:3,moonpetal:2,reed:2}},
+    {id:'compass',at:'bench',cost:{flint:2,stone:2,reed:2}},
     {id:'ratcap',at:'bench',cost:{hide:1,reed:1}},
     {id:'ratvest',at:'bench',cost:{hide:2,reed:2}},
     {id:'heartratvest',at:'bench',cost:{heartwood:3,reed:2}},
@@ -984,11 +986,17 @@
   const DESERT={left:2440,right:3040,top:60,bottom:1540,gateTop:720,gateBottom:880,gateLeft:2300,gateRight:2500}; /* the whole desert, now stretching north and south of that pocket */
   const FRONTIER={left:3100,right:6300,top:160,bottom:1440,gateLeft:2980,gateRight:3160,gateTop:720,gateBottom:880};
   /* The Shardling caves: a cavern far to the east of the map. You only get there through the cave mound, never on foot. */
-  const UNDER={left:6900,right:8500,top:160,bottom:1440};
+  const UNDER={left:6700,right:8980,top:110,bottom:1490}; /* 2280 x 1380: the same playable size as the default world */
+  const UNDER0={left:6900,right:8500,top:160,bottom:1440}; /* the old, smaller cavern: only used to keep its node ids taken, so every later id and every save stays valid */
   /* The Enchanted Forest: a dream-lit wood past the fairy ring in the eastern frontier. Only the ring leads there. */
-  const ENCH={left:9100,right:10900,top:160,bottom:1440};
+  const ENCH={left:9100,right:11380,top:110,bottom:1490}; /* 2280 x 1380 as well */
+  const ENCH0={left:9100,right:10900,top:160,bottom:1440};
   /* The Badlands: a vast canyon country far to the east, reached only through the buried gate in the south of the desert. Open sky like the surface, so it counts as the surface (onMain) and is its own scene 0. */
   const BAD={left:11500,right:14000,top:160,bottom:1440};
+  /* Each of the two is four biomes side by side, west to east. UBAND/EBAND are where each begins, measured from the region's left edge. */
+  const UBAND=[0,640,1260,1880], EBAND=[0,620,1250,1830];
+  const UNAMES=['Glowcap Grotto','Crystal Gallery','Drowned Caverns','Ember Hollows'], ENAMES=['Moonlit Glade','Briarwood','Mirror Mere','Heart Grove'];
+  const bandIx=(B,dx)=>dx>=B[3]?3:dx>=B[2]?2:dx>=B[1]?1:0;
   const inBad=o=>!!o && o.x>=BAD.left-30;
   const inEnch=o=>!!o && o.x>=ENCH.left-30 && o.x<BAD.left-30;
   const inUnder=o=>!!o && o.x>=UNDER.left-30 && o.x<ENCH.left-30;
@@ -1043,9 +1051,10 @@
     // The Shardling cave: appended last, with its own seed stream, so every older node id stays put.
     const CV=wdRng('shardling-cave:'+seed);
     for(let a=0;a<600;a++){ const x=xl+CV()*(xr-xl), y=lo+CV()*(hi-lo); if(hyp(x-spawnPt.x,y-spawnPt.y)<520 || !ok(x,y,36)) continue; nodes.push({id:nodes.length,k:'cave',x,y,r:18,sp:36,v:CV()}); break; }
-    // The caves under the mound: appended after every older node, with their own seed stream, so older node ids stay put.
+    { /* the old caverns: nothing of them is placed any more, but their node ids stay taken (as invisible placeholders) so later ids and saves stay valid */
+    const UNDER=UNDER0;
     const U=wdRng('shardling-under:'+seed), uW=UNDER.right-UNDER.left, uH=UNDER.bottom-UNDER.top, uMid=UNDER.top+uH/2, un=[];
-    const uAdd=(k,x,y,r,sp,ex)=>{ const n=Object.assign({id:nodes.length,k,x,y,r,sp,biome:'under'},ex||{}); nodes.push(n); un.push(n); return n; };
+    const uAdd=(k,x,y,r,sp,ex)=>{ const n={x,y,sp}; un.push(n); nodes.push({id:nodes.length,k:'stalag',x:-9e3,y:-9e3,r:0,sp:0,v:0,biome:'dead',dead:true}); return n; };
     const uFree=(x,y,sp)=>!un.some(n=>Math.abs(n.x-x)<n.sp+sp && Math.abs(n.y-y)<n.sp+sp && hyp(n.x-x,n.y-y)<n.sp+sp);
     uAdd('caveexit',UNDER.left+70,uMid,14,30,{v:U()});
     const hoardY=uMid+(U()-.5)*240; uAdd('hoard',UNDER.right-150,hoardY,16,60,{v:U()});
@@ -1060,21 +1069,16 @@
     uPlace('bigshroom',16,()=>12,()=>({v:U()}));
     for(let cl=0;cl<24;cl++){ const cx=UNDER.left+60+U()*(uW-120), cy=UNDER.top+60+U()*(uH-120), m=3+Math.floor(U()*3);
       for(let i=0;i<m;i++) for(let a=0;a<20;a++){ const x=cx+(U()-.5)*70, y=cy+(U()-.5)*50; if(x<UNDER.left+150 || x>UNDER.right-40 || y<UNDER.top+30 || y>UNDER.bottom-30 || !uFree(x,y,10)) continue; uAdd('glowshroom',x,y,6,9,{v:U()}); break; } }
-    const UD={patches:[],pools:[],cracks:[],edge:[]}, UC=['#2f2a38','#232029','#2c2833','#252f2d','#34303e'];
-    for(let i=0;i<260;i++) UD.patches.push({x:UNDER.left+U()*uW,y:UNDER.top+U()*uH,rx:26+U()*80,ry:14+U()*40,col:UC[Math.floor(U()*UC.length)]});
-    for(let i=0;i<9;i++) UD.pools.push({x:UNDER.left+230+U()*(uW-320),y:UNDER.top+90+U()*(uH-180),rx:36+U()*50,ry:20+U()*26,v:U()});
-    for(let i=0;i<140;i++){ let px=0,py=0; const pts=[]; for(let k=0;k<4;k++){ px+=(U()-.4)*8; py+=(U()-.5)*6; pts.push([px,py]); } UD.cracks.push({x:UNDER.left+U()*uW,y:UNDER.top+U()*uH,pts}); }
-    for(let x=UNDER.left-6;x<=UNDER.right+6;x+=24) for(const sgn of [-1,1]){ UD.edge.push({x:x+U()*8,y:(sgn<0?UNDER.top:UNDER.bottom)+sgn*(2+U()*10),r:10+U()*9}); }
-    for(let y=UNDER.top;y<=UNDER.bottom;y+=24) for(const sgn of [-1,1]){ UD.edge.push({x:(sgn<0?UNDER.left:UNDER.right)+sgn*(2+U()*10),y:y+U()*8,r:10+U()*9}); }
-    const uspawns=[]; [480,940,1220].forEach((dx,i)=>uspawns.push({i,x:UNDER.left+dx+(U()-.5)*60,y:UNDER.top+220+U()*(uH-440),n:2})); uspawns.push({i:3,x:UNDER.right-250,y:hoardY,n:3});
+    }
     // The fairy ring in the eastern frontier: appended after every older node, with its own seed stream.
     const FR=wdRng('fairy-ring:'+seed);
     { let placed=false; for(let a=0;a<900 && !placed;a++){ const x=FRONTIER.left+1500+FR()*(FRONTIER.right-FRONTIER.left-1900), y=FRONTIER.top+120+FR()*(FRONTIER.bottom-FRONTIER.top-240);
         if(nodes.some(n=>hyp(n.x-x,n.y-y)<n.sp+60)) continue; nodes.push({id:nodes.length,k:'fairyring',x,y,r:26,sp:60,v:FR(),biome:'frontier'}); placed=true; }
       if(!placed) nodes.push({id:nodes.length,k:'fairyring',x:FRONTIER.right-420,y:FRONTIER.top+(FRONTIER.bottom-FRONTIER.top)/2,r:26,sp:20,v:.5,biome:'frontier'}); }
-    // The Enchanted Forest: its own seed stream, appended last.
+    { /* the old forest, likewise */
+    const ENCH=ENCH0;
     const EN=wdRng('enchanted-forest:'+seed), eW=ENCH.right-ENCH.left, eH=ENCH.bottom-ENCH.top, eMid=ENCH.top+eH/2, en=[];
-    const eAdd=(k,x,y,r,sp,ex)=>{ const n=Object.assign({id:nodes.length,k,x,y,r,sp,biome:'ench'},ex||{}); nodes.push(n); en.push(n); return n; };
+    const eAdd=(k,x,y,r,sp,ex)=>{ const n={x,y,sp}; en.push(n); nodes.push({id:nodes.length,k:'stalag',x:-9e3,y:-9e3,r:0,sp:0,v:0,biome:'dead',dead:true}); return n; };
     const eFree=(x,y,sp)=>!en.some(n=>Math.abs(n.x-x)<n.sp+sp && Math.abs(n.y-y)<n.sp+sp && hyp(n.x-x,n.y-y)<n.sp+sp);
     eAdd('ringexit',ENCH.left+90,eMid,16,30,{v:EN()});
     const grX=ENCH.right-230, grY=eMid+(EN()-.5)*320;
@@ -1091,14 +1095,7 @@
     ePlace('briar',36,()=>10,()=>({v:EN()}));
     for(let cl=0;cl<22;cl++){ const cx=ENCH.left+250+EN()*(eW-400), cy=ENCH.top+90+EN()*(eH-180), m=3+Math.floor(EN()*3);
       for(let i=0;i<m;i++) for(let a=0;a<20;a++){ const x=cx+(EN()-.5)*70, y=cy+(EN()-.5)*50; if(x>ENCH.right-40 || y<ENCH.top+30 || y>ENCH.bottom-30 || hedges.some(dx=>Math.abs(x-(ENCH.left+dx))<34) || hyp(x-grX,y-grY)<135 || !eFree(x,y,10)) continue; eAdd('moonbloom',x,y,6,9,{v:EN()}); break; } }
-    const ED={patches:[],pools:[],tufts:[]}, EC=['#18283a','#1e3040','#16363a','#262244','#1a2c46'], ETC=['#3f9a9a','#5b84c8','#7a66c4','#4cc0a0'];
-    for(let i=0;i<240;i++) ED.patches.push({x:ENCH.left+EN()*eW,y:ENCH.top+EN()*eH,rx:30+EN()*90,ry:16+EN()*44,col:EC[Math.floor(EN()*EC.length)]});
-    for(let i=0;i<7;i++) ED.pools.push({x:ENCH.left+260+EN()*(eW-380),y:ENCH.top+110+EN()*(eH-220),rx:34+EN()*46,ry:18+EN()*24,v:EN()});
-    for(let i=0;i<1500;i++) ED.tufts.push({x:ENCH.left+EN()*eW,y:ENCH.top+6+EN()*(eH-12),s:.8+EN()*.7,col:ETC[Math.floor(EN()*ETC.length)]});
-    const espawns=[];
-    for(let i=0;i<7;i++) for(let a=0;a<40;a++){ const x=ENCH.left+380+EN()*(eW-640), y=ENCH.top+120+EN()*(eH-240); if(hyp(x-grX,y-grY)<200) continue; espawns.push({i:espawns.length,kind:'thornling',x,y,n:2+Math.floor(EN()*2)}); break; }
-    for(let i=0;i<4;i++) for(let a=0;a<40;a++){ const x=ENCH.left+520+EN()*(eW-780), y=ENCH.top+120+EN()*(eH-240); if(hyp(x-grX,y-grY)<200) continue; espawns.push({i:espawns.length,kind:'wisp',x,y,n:2}); break; }
-    espawns.push({i:espawns.length,kind:'warden',x:grX-20,y:grY,n:1});
+    }
     { const RM = wdRng('remains:' + seed); for(let i = 0; i < 3; i++) for(let a = 0; a < 60; a++){ const x = xl + RM()*(xr - xl), y = lo + RM()*(hi - lo); if(hyp(x - spawnPt.x, y - spawnPt.y) < 340 || !ok(x, y, 30)) continue; nodes.push({id:nodes.length, k:'remains', x, y, r:12, sp:30, v:RM()}); break; } }
     // ---- A bigger desert with an oasis, and the Badlands beyond the buried gate: appended after every older node, each with its own seed stream, so older node ids stay put.
     const DW=wdRng('desert-wide:'+seed), OA={x:2672,y:1318,rx:96,ry:54}, DG={x:2900,y:1452}, dOld=nodes.filter(n=>n.biome==='desert'), dNew=[];
@@ -1140,6 +1137,86 @@
     for(let i=0;i<420;i++) EX.gravel.push({x:BAD.left+BD()*bw,y:BAD.top+BD()*bh,r:1+BD()*3});
     EX.pools.sort((a,b)=>a.y-b.y);
 
+    // ---- The Shardling Caves and the Enchanted Forest, each grown to the size of the default world and split into four biomes: appended after every older node, with their own seed streams.
+    const nid0=nodes.length; /* the nodes from here on get ids from 100000, so the reeds the terrain adds after generation keep the ids they always had */
+    const mkSpace=()=>{ const g=new Map(), K=(a,b)=>a*8192+b; return {
+      add(n){ const k=K(Math.floor(n.x/64),Math.floor(n.y/64)); let a=g.get(k); if(!a) g.set(k,a=[]); a.push(n); },
+      free(x,y,sp){ const cx=Math.floor(x/64), cy=Math.floor(y/64); for(let i=cx-2;i<=cx+2;i++) for(let j=cy-2;j<=cy+2;j++){ const a=g.get(K(i,j)); if(a) for(let q=0;q<a.length;q++){ const n=a[q]; if(Math.abs(n.x-x)<n.sp+sp && Math.abs(n.y-y)<n.sp+sp && hyp(n.x-x,n.y-y)<n.sp+sp) return false; } } return true; } }; };
+    /* -- the caves -- */
+    const UW=wdRng('under-wide:'+seed), UL=UNDER.left, uW=UNDER.right-UL, uH=UNDER.bottom-UNDER.top, uMid=UNDER.top+uH/2, uSp=mkSpace(), uPools=[];
+    const uA=(k,x,y,r,sp,ex)=>{ const n=Object.assign({id:100000+nodes.length-nid0,k,x,y,r,sp,biome:'under',bz:bandIx(UBAND,x-UL)},ex||{}); nodes.push(n); uSp.add(n); return n; };
+    const uXa=b=>UL+UBAND[b], uXb=b=>UL+(b<3?UBAND[b+1]:uW);
+    uA('caveexit',UL+70,uMid,14,30,{v:UW()});
+    const hoardY=uMid+(UW()-.5)*300, hoardX=UNDER.right-170; uA('hoard',hoardX,hoardY,16,60,{v:UW()});
+    const uRibs=[320,640,950,1260,1570,1880]; /* rock ribs split the caverns into chambers, each with a gap or two to walk through */
+    const uWet=(x,y,m)=>uPools.some(o=>((x-o.x)/(o.rx+m))**2+((y-o.y)/(o.ry+m))**2<1);
+    for(const [b,cnt] of [[0,3],[1,2],[2,7],[3,2]]) for(let i=0;i<cnt;i++) for(let a=0;a<40;a++){ const rx=b===2?70+UW()*90:34+UW()*46, ry=rx*(.45+UW()*.2), x=uXa(b)+(b?60:260)+rx+UW()*(uXb(b)-uXa(b)-(b?120:320)-2*rx), y=UNDER.top+90+ry+UW()*(uH-180-2*ry);
+      if(uRibs.some(dx=>Math.abs(x-(UL+dx))<rx+56) || uPools.some(o=>hyp(o.x-x,o.y-y)<o.rx+rx+34) || hyp(x-hoardX,y-hoardY)<rx+120) continue; uPools.push({x,y,rx,ry,v:UW(),t:b}); break; }
+    uRibs.forEach((dx,ri)=>{ const rx0=UL+dx, gaps=[]; const ng=1+Math.floor(UW()*2); for(let g=0;g<ng;g++) gaps.push(UNDER.top+170+UW()*(uH-340)); if(ri===0) gaps.push(uMid);
+      for(let y=UNDER.top+14;y<UNDER.bottom-8;y+=22){ if(gaps.some(g=>Math.abs(y-g)<78)) continue; const r=9+UW()*5; uA('stalag',rx0+(UW()-.5)*14,y,r,r+3,{v:UW()}); } });
+    const uPl=(b,k,count,rf,ex)=>{ const xa=uXa(b)+30, xb=uXb(b)-30; for(let i=0;i<count;i++) for(let a=0;a<60;a++){ const x=xa+UW()*(xb-xa), y=UNDER.top+30+UW()*(uH-60), r=rf();
+      if(x<UL+190 && Math.abs(y-uMid)<120) continue; if(uRibs.some(dx=>Math.abs(x-(UL+dx))<48)) continue; if(hyp(x-hoardX,y-hoardY)<90 || uWet(x,y,r+8) || !uSp.free(x,y,r+6)) continue;
+      uA(k,x,y,r,r+6,ex?ex():{v:UW()}); break; } };
+    const uClu=(b,count)=>{ const xa=uXa(b)+30, xb=uXb(b)-30; for(let cl=0;cl<count;cl++){ const cx=xa+UW()*(xb-xa), cy=UNDER.top+60+UW()*(uH-120), m=3+Math.floor(UW()*3);
+      for(let i=0;i<m;i++) for(let a=0;a<20;a++){ const x=cx+(UW()-.5)*70, y=cy+(UW()-.5)*50; if(x<xa || x>xb || y<UNDER.top+30 || y>UNDER.bottom-30 || (x<UL+170 && Math.abs(y-uMid)<120) || uRibs.some(dx=>Math.abs(x-(UL+dx))<40) || uWet(x,y,8) || !uSp.free(x,y,10)) continue; uA('glowshroom',x,y,6,9,{v:UW()}); break; } } };
+    /* the Glowcap Grotto: where the ladder comes down. Mushrooms to eat, a little crystal, quiet */
+    uPl(0,'stalag',18,()=>8+UW()*8); uPl(0,'crystal',10,()=>11+UW()*5); uPl(0,'bigshroom',9,()=>12); uClu(0,16); uPl(0,'mushroom',10,()=>6);
+    /* the Crystal Gallery: prisms in every colour, thick on the walls */
+    uPl(1,'crystal',54,()=>11+UW()*5,()=>({v:.34+UW()*.66})); uPl(1,'stalag',16,()=>8+UW()*8); uPl(1,'bigshroom',3,()=>12); uClu(1,6);
+    /* the Drowned Caverns: black lakes, tall columns, bones, ore in the rock */
+    uPl(2,'stalag',28,()=>8+UW()*8); uPl(2,'bigshroom',6,()=>12); uClu(2,12); uPl(2,'rock',16,()=>11+UW()*4); uPl(2,'bone',10,()=>9); uPl(2,'crystal',8,()=>11+UW()*5,()=>({v:UW()*.33}));
+    for(const o of uPools) if(o.t===2) for(let i=0;i<10;i++){ const a=UW()*Math.PI*2, x=o.x+Math.cos(a)*(o.rx+8+UW()*8), y=o.y+Math.sin(a)*(o.ry+6+UW()*6); if(uSp.free(x,y,8) && !uRibs.some(dx=>Math.abs(x-(UL+dx))<30)) uA('reed',x,y,6,8,{v:UW()}); }
+    /* the Ember Hollows: the hot, red end, with the hoard */
+    uPl(3,'rock',22,()=>11+UW()*5); uPl(3,'stalag',14,()=>8+UW()*8); uPl(3,'crystal',9,()=>11+UW()*5,()=>({v:.67+UW()*.33})); uPl(3,'flint',10,()=>4); uPl(3,'bone',8,()=>9); uClu(3,3);
+    const UD={patches:[],pools:uPools,cracks:[],edge:[],specks:[[],[],[],[]],embers:[]}, UPAL=[['#2f2a38','#232029','#2c2833','#252f2d','#34303e'],['#35283f','#2c2038','#3a2c48','#2a2434','#40305a'],['#1f3038','#1a2a33','#243a40','#18262e','#2a4046'],['#3a2428','#2e1c20','#40282b','#331f25','#4a2c2c']];
+    for(let i=0;i<900;i++){ const x=UL+UW()*uW, y=UNDER.top+UW()*uH; UD.patches.push({x,y,rx:26+UW()*80,ry:14+UW()*40,col:UPAL[bandIx(UBAND,x-UL+(UW()-.5)*160)][Math.floor(UW()*5)]}); }
+    for(let i=0;i<300;i++){ let px=0,py=0; const pts=[]; for(let k=0;k<4;k++){ px+=(UW()-.4)*8; py+=(UW()-.5)*6; pts.push([px,py]); } UD.cracks.push({x:UL+UW()*uW,y:UNDER.top+UW()*uH,pts}); }
+    for(let i=0;i<150;i++){ let px=0,py=0; const pts=[]; for(let k=0;k<6;k++){ px+=(UW()-.4)*10; py+=(UW()-.5)*9; pts.push([px,py]); } UD.embers.push({x:UL+UBAND[3]+30+UW()*(uW-UBAND[3]-60),y:UNDER.top+20+UW()*(uH-40),pts}); }
+    for(let i=0;i<1600;i++){ const x=UL+UW()*uW, y=UNDER.top+UW()*uH; UD.specks[bandIx(UBAND,x-UL)].push([x,y,1+UW()*2.2]); }
+    for(let x=UNDER.left-6;x<=UNDER.right+6;x+=24) for(const sgn of [-1,1]){ UD.edge.push({x:x+UW()*8,y:(sgn<0?UNDER.top:UNDER.bottom)+sgn*(2+UW()*10),r:10+UW()*9}); }
+    for(let y=UNDER.top;y<=UNDER.bottom;y+=24) for(const sgn of [-1,1]){ UD.edge.push({x:(sgn<0?UNDER.left:UNDER.right)+sgn*(2+UW()*10),y:y+UW()*8,r:10+UW()*9}); }
+    const uspawns=[], uNest=(b,n,dxMin)=>{ for(let a=0;a<60;a++){ const xa=Math.max(uXa(b),UL+(dxMin||0))+60, xb=uXb(b)-60, x=xa+UW()*(xb-xa), y=UNDER.top+150+UW()*(uH-300);
+      if(uRibs.some(dx=>Math.abs(x-(UL+dx))<80) || uWet(x,y,24) || hyp(x-hoardX,y-hoardY)<150 || !uSp.free(x,y,26)) continue; uspawns.push({i:uspawns.length,x,y,n}); return; } };
+    uNest(0,2,380); uNest(1,2); uNest(1,2); uNest(2,2); uNest(2,2); uNest(2,2); uNest(3,3); uNest(3,3); uspawns.push({i:uspawns.length,x:hoardX-90,y:hoardY,n:4});
+    /* -- the forest -- */
+    const EW=wdRng('ench-wide:'+seed), EL=ENCH.left, eW=ENCH.right-EL, eH=ENCH.bottom-ENCH.top, eMid=ENCH.top+eH/2, eSp=mkSpace(), ePools=[];
+    const eA=(k,x,y,r,sp,ex)=>{ const n=Object.assign({id:100000+nodes.length-nid0,k,x,y,r,sp,biome:'ench',bz:bandIx(EBAND,x-EL)},ex||{}); nodes.push(n); eSp.add(n); return n; };
+    const eXa=b=>EL+EBAND[b], eXb=b=>EL+(b<3?EBAND[b+1]:eW);
+    eA('ringexit',EL+90,eMid,16,30,{v:EW()});
+    const grX=ENCH.right-230, grY=eMid+(EW()-.5)*320; eA('feycache',grX,grY,14,50,{v:EW()});
+    for(let i=0;i<16;i++){ const a=i/16*Math.PI*2; if(Math.abs(a-Math.PI)<.42) continue; eA('feystone',grX+Math.cos(a)*105,grY+Math.sin(a)*105,12,15,{v:EW()}); }
+    const eHedges=[300,620,940,1250,1560,1830]; /* briar hedges split the wood into chambers; each has a gap or two to slip through, or you can cut your way in */
+    const eWet=(x,y,m)=>ePools.some(o=>((x-o.x)/(o.rx+m))**2+((y-o.y)/(o.ry+m))**2<1);
+    for(const [b,cnt] of [[0,2],[1,2],[2,8],[3,3]]) for(let i=0;i<cnt;i++) for(let a=0;a<40;a++){ const rx=b===2?90+EW()*90:34+EW()*46, ry=rx*(.42+EW()*.2), x=eXa(b)+(b?60:260)+rx+EW()*(eXb(b)-eXa(b)-(b?120:320)-2*rx), y=ENCH.top+90+ry+EW()*(eH-180-2*ry);
+      if(eHedges.some(dx=>Math.abs(x-(EL+dx))<rx+50) || ePools.some(o=>hyp(o.x-x,o.y-y)<o.rx+rx+34) || hyp(x-grX,y-grY)<rx+190) continue; ePools.push({x,y,rx,ry,v:EW(),t:b}); break; }
+    eHedges.forEach((dx,hi)=>{ const hx=EL+dx, gaps=[]; const ng=1+Math.floor(EW()*2); for(let g=0;g<ng;g++) gaps.push(ENCH.top+180+EW()*(eH-360)); if(hi===0) gaps.push(eMid);
+      for(let y=ENCH.top+14;y<ENCH.bottom-8;y+=20){ if(gaps.some(g=>Math.abs(y-g)<70)) continue; eA('briar',hx+(EW()-.5)*16,y,10,12,{v:EW()}); } });
+    const ePl=(b,k,count,rf,ex)=>{ const xa=eXa(b)+40, xb=eXb(b)-40; for(let i=0;i<count;i++) for(let a=0;a<60;a++){ const x=xa+EW()*(xb-xa), y=ENCH.top+40+EW()*(eH-80), r=rf();
+      if(x<EL+220 && Math.abs(y-eMid)<150) continue; if(eHedges.some(dx=>Math.abs(x-(EL+dx))<34)) continue; if(hyp(x-grX,y-grY)<135 || eWet(x,y,r+8) || !eSp.free(x,y,r+6)) continue;
+      eA(k,x,y,r,r+6,ex?ex():{v:EW()}); break; } };
+    const eClu=(b,count)=>{ const xa=eXa(b)+40, xb=eXb(b)-40; for(let cl=0;cl<count;cl++){ const cx=xa+EW()*(xb-xa), cy=ENCH.top+90+EW()*(eH-180), m=3+Math.floor(EW()*3);
+      for(let i=0;i<m;i++) for(let a=0;a<20;a++){ const x=cx+(EW()-.5)*70, y=cy+(EW()-.5)*50; if(x<xa || x>xb || y<ENCH.top+30 || y>ENCH.bottom-30 || (x<EL+200 && Math.abs(y-eMid)<150) || eHedges.some(dx=>Math.abs(x-(EL+dx))<34) || hyp(x-grX,y-grY)<135 || eWet(x,y,8) || !eSp.free(x,y,10)) continue; eA('moonbloom',x,y,6,9,{v:EW()}); break; } } };
+    const eTree=v=>()=>({v:v(),cr:18+EW()*8});
+    /* the Moonlit Glade: open, bright with moonblooms, berries to pick */
+    ePl(0,'tree',34,()=>9,eTree(()=>EW()<.5?0:1)); ePl(0,'feystone',8,()=>11); ePl(0,'briar',5,()=>10); eClu(0,14); ePl(0,'berry',8,()=>10);
+    /* Briarwood: dense, dark and thorny */
+    ePl(1,'tree',84,()=>9,eTree(()=>EW()<.75?2:1)); ePl(1,'briar',70,()=>10); ePl(1,'feystone',4,()=>11); eClu(1,5);
+    /* Mirror Mere: still water and reeds, herbs on the shore */
+    ePl(2,'tree',26,()=>9,eTree(()=>0)); ePl(2,'feystone',10,()=>11); ePl(2,'briar',6,()=>10); eClu(2,14); ePl(2,'herb',12,()=>6);
+    for(const o of ePools) if(o.t===2) for(let i=0;i<12;i++){ const a=EW()*Math.PI*2, x=o.x+Math.cos(a)*(o.rx+8+EW()*8), y=o.y+Math.sin(a)*(o.ry+6+EW()*6); if(eSp.free(x,y,8) && !eHedges.some(dx=>Math.abs(x-(EL+dx))<30)) eA('reed',x,y,6,8,{v:EW()}); }
+    /* the Heart Grove: old trees round the cache, the Hollow Stag's ground */
+    ePl(3,'tree',40,()=>9,eTree(()=>EW()<.5?1:2)); ePl(3,'feystone',12,()=>11); ePl(3,'briar',10,()=>10); eClu(3,9);
+    const ED={patches:[],pools:ePools,tufts:[],rings:[]}, EPAL=[['#18283a','#1e3040','#16363a','#262244','#1a2c46'],['#1d1a2e','#241e38','#1a2230','#2a1f3c','#17202c'],['#16424a','#1b4f58','#12383f','#1e5a60','#174650'],['#30284a','#3a3058','#2a2f4a','#443a66','#26324c']];
+    const ETCB=[['#3f9a9a','#5b84c8','#7a66c4','#4cc0a0'],['#4a3f8a','#3b5a6a','#5c4a96','#2f6a5a'],['#58d0c8','#7ae0d4','#4cb8d0','#8ae8c8'],['#a08ae0','#c0a4f0','#80d0b0','#e0c0f0']];
+    for(let i=0;i<900;i++){ const x=EL+EW()*eW, y=ENCH.top+EW()*eH; ED.patches.push({x,y,rx:30+EW()*90,ry:16+EW()*44,col:EPAL[bandIx(EBAND,x-EL+(EW()-.5)*160)][Math.floor(EW()*5)]}); }
+    for(let i=0;i<4200;i++){ const x=EL+EW()*eW, y=ENCH.top+6+EW()*(eH-12); ED.tufts.push({x,y,s:.8+EW()*.7,col:ETCB[bandIx(EBAND,x-EL+(EW()-.5)*120)][Math.floor(EW()*4)]}); }
+    for(let i=0;i<16;i++) for(let a=0;a<20;a++){ const x=EL+260+EW()*(eW-520), y=ENCH.top+120+EW()*(eH-240), r=26+EW()*18; if(eWet(x,y,r+10) || eHedges.some(dx=>Math.abs(x-(EL+dx))<r+20) || hyp(x-grX,y-grY)<200 || ED.rings.some(o=>hyp(o.x-x,o.y-y)<90)) continue; ED.rings.push({x,y,r,n:7+Math.floor(EW()*5),v:EW()}); break; }
+    const espawns=[], eNest=(b,kind,n,dxMin)=>{ for(let a=0;a<60;a++){ const xa=Math.max(eXa(b),EL+(dxMin||0))+60, xb=eXb(b)-60, x=xa+EW()*(xb-xa), y=ENCH.top+130+EW()*(eH-260);
+      if(eHedges.some(dx=>Math.abs(x-(EL+dx))<70) || eWet(x,y,24) || hyp(x-grX,y-grY)<200 || !eSp.free(x,y,26)) continue; espawns.push({i:espawns.length,kind,x,y,n}); return; } };
+    eNest(0,'wisp',2,400); eNest(0,'wisp',2,400);
+    for(let i=0;i<6;i++) eNest(1,'thornling',2+Math.floor(EW()*2));
+    eNest(2,'wisp',2); eNest(2,'wisp',2); eNest(2,'wisp',2); eNest(2,'thornling',2); eNest(2,'thornling',3);
+    eNest(3,'thornling',3); eNest(3,'thornling',2); eNest(3,'thornling',3); espawns.push({i:espawns.length,kind:'warden',x:grX-20,y:grY,n:1});
     for(const n of nodes){ const D = NODE[n.k]; n.hp = D.hp || 0; n.gone = false; n.ready = 0; n.shk = 0; }
     // the ground's look: drawn every frame from these, so it stays sharp at any zoom
     const G = wdRng('ground:' + seed), patches = [], tufts = [];
@@ -1170,15 +1247,26 @@
     const sgPt=()=>SG()<.45 ? {x:FRONTIER.left+SG()*(FRONTIER.right-FRONTIER.left), y:FRONTIER.top+SG()*(FRONTIER.bottom-FRONTIER.top)} : {x:SG()*W, y:WD.RIVER+8+SG()*(H-2*WD.RIVER-16)};
     for(let i=0;i<420;i++){ const q=sgPt(); stones.push({x:q.x,y:q.y,rx:1.5+SG()*2.4,ry:1+SG()*1.4,col:SG()<.5?'#6b655c':'#77706a'}); }
     for(let i=0;i<130;i++){ const q=sgPt(); let px=0,py=0; const pts=[]; for(let k=0;k<4;k++){ px+=(SG()-.4)*7; py+=(SG()-.5)*5; pts.push([px,py]); } cracks.push({x:q.x,y:q.y,pts}); }
-    return {nodes, deco:{patches, tufts, edge,gravel,borderTrees,stones,cracks,under:UD,ench:ED,ex:EX}, uspawns, espawns};
+    return {nodes, n0:nid0, deco:{patches, tufts, edge,gravel,borderTrees,stones,cracks,under:UD,ench:ED,ex:EX}, uspawns, espawns};
   }
 
-  // ---- terrain: hollows and plateaus with cliffs and ramps, springs, creeks and waterfalls (grown from the seed), and the ground you dig ----
-  /* The woodland's middle is cut into 20-unit cells. Each is low ground (0), the usual level (1) or high ground (2). A cell on the higher side of any step is a cliff (rim 1, solid);
-     a few cliff cells are worn into ramps (rim 2) so every level can be reached; a waterfall pours down a cliff cell (rim 3). Nothing here is ever edited, so it is rebuilt from the seed every time. */
+  // ---- terrain: hollows and plateaus with real heights, cliffs and ramps, springs, creeks and waterfalls (grown from the seed), and the ground you dig ----
+  /* The woodland's middle is cut into 20-unit squares. Each is low ground (0), the usual level (1) or high ground (2); a level is TH units tall.
+     Between two levels is a cliff: a rock face you can see, that you cannot climb, and that you drop off if you walk over its edge. A ramp is three squares of slope joining two levels.
+     Digging lowers a square's floor by DD per depth. Heights are real: bodies stand at trH(x, y) (their th), fall when the ground drops away and are stopped by ground that rises more than a step.
+     p.z stays the height above the local ground, as before, so stairs, floors and walls (which are only built on level ground) work unchanged. Nothing here is saved but the holes; the rest grows from the seed. */
   const TR = {gx0:8, gy0:9, w:102, h:63};
+  const TH = 20, DD = 5, STEPUP = 6, STEPDN = 4, CLIMB = 16, DDV = 2.6; /* DDV: how deep a dug square is drawn per depth (a little shallower than it is, so you can still see into it) */
   const trIdx = (gx, gy) => gx >= TR.gx0 && gx < TR.gx0 + TR.w && gy >= TR.gy0 && gy < TR.gy0 + TR.h ? (gy - TR.gy0)*TR.w + gx - TR.gx0 : -1;
   const dkey = (gx, gy) => gx*256 + gy;
+  /* the heights of a square's four corners (nw, ne, se, sw); a ramp's two low corners are on the side it descends to */
+  function trCornersI(T, i, out, depth){
+    const d = T.rd[i];
+    if(!d){ const h = T.hb[i] - DD*depth; out[0] = out[1] = out[2] = out[3] = h; return out; }
+    const lo = T.rb[i] + TH*T.rk[i]/3, hi = lo + TH/3;
+    if(d===1){ out[0] = lo; out[3] = lo; out[1] = hi; out[2] = hi; } else if(d===2){ out[0] = lo; out[1] = lo; out[2] = hi; out[3] = hi; }
+    else if(d===3){ out[1] = lo; out[2] = lo; out[0] = hi; out[3] = hi; } else { out[2] = lo; out[3] = lo; out[0] = hi; out[1] = hi; }
+    return out; }
   function trGen(seed, nodes, flat){
     const R = wdRng('terrain:' + seed), W = TR.w, H = TR.h, N = W*H, cx0 = TR.gx0, cy0 = TR.gy0;
     const sm = t => t*t*(3 - 2*t), lat = cs => { const lw = Math.ceil(W/cs) + 2, lh = Math.ceil(H/cs) + 2, a = new Float32Array(lw*lh); for(let i=0;i<a.length;i++) a[i] = R(); return {cs, lw, a}; };
@@ -1202,61 +1290,125 @@
     const lab = (same) => { const id = new Int32Array(N).fill(-1), list = []; for(let s=0;s<N;s++){ if(id[s] >= 0 || !same(s, s)) continue; const cells = [s], c = list.length; id[s] = c;
         for(let h=0;h<cells.length;h++){ const i = cells[h], x = i%W, y = (i/W)|0; for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny*W + nx; if(id[j] < 0 && same(i, j)){ id[j] = c; cells.push(j); } } }
         list.push(cells); } return {id, list}; };
-    { const L = lab((a, b)=>lv[a]===lv[b]); for(const cells of L.list) if(lv[cells[0]]!==1 && cells.length < 14) for(const i of cells) lv[i] = 1; }
-    const rim = new Uint8Array(N);
+    const small = () => { const L = lab((a, b)=>lv[a]===lv[b]); for(const cells of L.list) if(lv[cells[0]]!==1 && cells.length < 14) for(const i of cells) lv[i] = 1; };
+    /* a hollow never touches high ground: one step at a time, so every cliff is one level tall */
+    const pull = () => { const a = []; for(let y=0;y<H;y++) for(let x=0;x<W;x++){ if(lv[y*W + x]!==0) continue; let hit = false; for(let dy=-1;dy<=1 && !hit;dy++) for(let dx=-1;dx<=1;dx++) if(lvAt(x + dx, y + dy)===2){ hit = true; break; } if(hit) a.push(y*W + x); } for(const i of a) lv[i] = 1; };
+    small(); pull(); small();
+    const at = (x, y) => x >= 0 && y >= 0 && x < W && y < H ? y*W + x : -1;
+    const rd = new Uint8Array(N), rk = new Uint8Array(N), rb = new Float32Array(N), tw = new Uint8Array(N), wf = new Uint8Array(N), hb = new Float32Array(N), part = {rd, rk, rb, hb}, c4 = new Float32Array(N*4), cq = [0, 0, 0, 0];
+    let ramps = [], cand = [];
+    /* a ramp: three squares long, two wide, climbing one level. It is laid on the low ground in front of a cliff, or cut into the high ground behind its edge. */
+    const putRamp = (cells, d, lo) => { for(const [j, k] of cells){ rd[j] = d + 1; rk[j] = k; rb[j] = (lo - 1)*TH; } ramps.push([cells[0][0]%W, (cells[0][0]/W)|0]); return cells; };
+    const placeRamp = (i, d) => { const x = i%W, y = (i/W)|0, dx = DIRS[d][0], dy = DIRS[d][1], px = -dy, py = dx, hl = lv[i], lo = hl - 1;
+      for(const cs of [[0, 1], [-1, 0]]){ let okA = true, okB = true; const A = [], Bc = [];
+        for(const c of cs){
+          const t = at(x + px*c, y + py*c); if(t < 0 || lv[t]!==hl){ okA = false; okB = false; break; }
+          for(let a=1;a<=3;a++){ const j = at(x - dx*a + px*c, y - dy*a + py*c); if(j < 0 || lv[j]!==lo || rd[j] || tw[j]){ okA = false; break; } A.push([j, 3 - a]); }
+          const f = at(x - dx*4 + px*c, y - dy*4 + py*c); if(f < 0 || lv[f]!==lo) okA = false;
+          for(let a=0;a<3;a++){ const j = at(x + dx*a + px*c, y + dy*a + py*c); if(j < 0 || lv[j]!==hl || rd[j] || tw[j]){ okB = false; break; } Bc.push([j, a]); }
+          const f2 = at(x - dx + px*c, y - dy + py*c); if(f2 < 0 || lv[f2]!==lo) okB = false;
+          const e = at(x + dx*3 + px*c, y + dy*3 + py*c); if(e < 0 || lv[e]!==hl) okB = false; }
+        if(okA && A.length===6) return putRamp(A, d, lo);
+        if(okB && Bc.length===6) return putRamp(Bc, d, lo); }
+      return null; };
+    /* walk the cliffs in a shuffled order and open a ramp wherever it joins two parts of the map that are not yet joined */
+    const buildRamps = () => {
+      rd.fill(0); rk.fill(0); rb.fill(0); ramps = []; cand = [];
+      const C = lab((a, b)=>lv[a]===lv[b]), comp = C.id, par = C.list.map((_, i)=>i), find = a => { while(par[a]!==a){ par[a] = par[par[a]]; a = par[a]; } return a; };
+      for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const i = y*W + x; for(let d=0;d<4;d++){ const j = at(x - DIRS[d][0], y - DIRS[d][1]); if(j >= 0 && lv[j]===lv[i] - 1) cand.push(i*4 + d); } }
+      for(let a=cand.length-1;a>0;a--){ const b = Math.floor(R()*(a + 1)), t = cand[a]; cand[a] = cand[b]; cand[b] = t; }
+      for(const cd of cand){ const i = cd >> 2, d = cd & 3, j = at(i%W - DIRS[d][0], ((i/W)|0) - DIRS[d][1]), ra = find(comp[i]), rb2 = find(comp[j]); if(ra===rb2) continue; if(placeRamp(i, d)) par[ra] = rb2; }
+      return {C, comp, find}; };
+    /* what can be walked to from the spawn: two squares are joined where the heights along their shared edge agree (a cliff, or the side of a slope, does not join) */
+    const sp = at(Math.floor(spawnPt.x/GRID) - cx0, Math.floor(spawnPt.y/GRID) - cy0), start = sp >= 0 ? sp : at(W >> 1, H >> 1);
+    const EDGE = [[1, 2, 0, 3], [3, 2, 0, 1], [0, 3, 1, 2], [0, 1, 3, 2]]; /* east, south, west, north: my two corners on that side, then the other square's two */
+    const reach = () => { for(let i=0;i<N;i++){ hb[i] = (lv[i] - 1)*TH; trCornersI(part, i, cq, 0); c4[i*4] = cq[0]; c4[i*4 + 1] = cq[1]; c4[i*4 + 2] = cq[2]; c4[i*4 + 3] = cq[3]; }
+      const seen = new Uint8Array(N), st = [start]; seen[start] = 1;
+      while(st.length){ const i = st.pop(), x = i%W, y = (i/W)|0;
+        for(let d=0;d<4;d++){ const j = at(x + DIRS[d][0], y + DIRS[d][1]); if(j < 0 || seen[j]) continue; const e = EDGE[d];
+          if(Math.abs(c4[i*4 + e[0]] - c4[j*4 + e[2]]) <= 4 && Math.abs(c4[i*4 + e[1]] - c4[j*4 + e[3]]) <= 4){ seen[j] = 1; st.push(j); } } }
+      return seen; };
+    /* any part still cut off (no room for a ramp, or a ramp laid across its way out) is levelled into its surroundings, and we try again */
+    for(let attempt=0;attempt<10;attempt++){
+      buildRamps(); const seen = reach(), grp = new Int32Array(N).fill(-1), groups = [];
+      for(let s0=0;s0<N;s0++){ if(seen[s0] || grp[s0] >= 0) continue; const g = [s0]; grp[s0] = groups.length; for(let h=0;h<g.length;h++){ const i = g[h], x = i%W, y = (i/W)|0; for(const [dx, dy] of DIRS){ const j = at(x + dx, y + dy); if(j >= 0 && !seen[j] && grp[j] < 0){ grp[j] = groups.length; g.push(j); } } } groups.push(g); }
+      if(!groups.length) break;
+      const nl = groups.map(g=>{ const cnt = [0, 0, 0]; for(const i of g){ const x = i%W, y = (i/W)|0; for(const [dx, dy] of DIRS){ const j = at(x + dx, y + dy); if(j >= 0 && seen[j] && !rd[j]) cnt[lv[j]]++; } } let b = 1; for(let k=0;k<3;k++) if(cnt[k] > cnt[b]) b = k; return attempt >= 9 ? 1 : b; });
+      groups.forEach((g, n)=>{ for(const i of g) lv[i] = nl[n]; });
+      small(); pull(); small(); if(attempt >= 9){ buildRamps(); reach(); } }
+    const rim = new Uint8Array(N); /* the high side of a step: no water, no ponds */
     for(let y=0;y<H;y++) for(let x=0;x<W;x++){ const me = lv[y*W + x]; if(!me) continue; for(let dy=-1;dy<=1;dy++){ let hit = false; for(let dx=-1;dx<=1;dx++) if((dx || dy) && x + dx >= 0 && y + dy >= 0 && x + dx < W && y + dy < H && lv[(y + dy)*W + x + dx] < me){ hit = true; break; } if(hit){ rim[y*W + x] = 1; break; } } }
-    /* ramps: walk through the cliff cells in a shuffled order and open one wherever it would join two parts of the map that are not yet joined */
-    const C = lab((a, b)=>rim[b]===0 && (a===b ? rim[a]===0 : true)), comp = C.id, par = C.list.map((_, i)=>i), find = a => { while(par[a]!==a){ par[a] = par[par[a]]; a = par[a]; } return a; };
-    const rimList = []; for(let i=0;i<N;i++) if(rim[i]===1) rimList.push(i);
+    const rimList = []; for(let i=0;i<N;i++) if(rim[i]===1 && !rd[i]) rimList.push(i);
     for(let i=rimList.length-1;i>0;i--){ const j = Math.floor(R()*(i + 1)), t = rimList[i]; rimList[i] = rimList[j]; rimList[j] = t; }
-    const ramps = [], makeRamp = i => { const x = i%W, y = (i/W)|0; for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; if(rim[ny*W + nx]===1) rim[ny*W + nx] = 2; } ramps.push([x, y]); };
-    for(const i of rimList){ if(rim[i]!==1) continue; const x = i%W, y = (i/W)|0, roots = new Set();
-      for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny*W + nx; if(rim[j]===0 && comp[j] >= 0) roots.add(find(comp[j])); }
-      if(roots.size >= 2){ const a = [...roots]; makeRamp(i); for(let k=1;k<a.length;k++) par[find(a[k])] = find(a[0]); } }
     /* waterfalls: a spring on high ground, a creek to the lip, a drop down a cliff that faces south, a plunge pool, and a creek winding on */
-    const tw = new Uint8Array(N), falls = [], goodTo = (x, y, l) => x >= 0 && y >= 0 && x < W && y < H && rim[y*W + x]===0 && lv[y*W + x]===l && !tw[y*W + x] && wgt[y*W + x] < .5; /* never in the levelled ground round the spawn, the caves or the player's buildings */
-    const siteOk = (x, y, cl, spc) => { const i = y*W + x; if(rim[i]!==1 || x < 1 || x >= W - 1 || y < cl + 5 || y + 4 >= H) return false; const me = lv[i], lowL = lvAt(x, y + 1); if(lowL >= me || rim[(y + 1)*W + x]!==0) return false;
-      if(!((rim[i - 1]===1 && lv[i - 1]===me) || (rim[i + 1]===1 && lv[i + 1]===me))) return false;
+    const falls = [], goodTo = (x, y, l) => { const j = at(x, y); return j >= 0 && rim[j]===0 && !rd[j] && lv[j]===l && !tw[j] && wgt[j] < .5; }; /* never in the levelled ground round the spawn, the caves or the player's buildings */
+    const siteOk = (x, y, cl, spc) => { const i = y*W + x; if(rd[i] || x < 1 || x >= W - 1 || y < cl + 5 || y + 4 >= H) return false; const me = lv[i], lowL = lvAt(x, y + 1); if(lowL!==me - 1) return false;
+      const wide = j => j >= 0 && !rd[j] && lv[j]===me && lvAt(j%W, ((j/W)|0) + 1)===me - 1; if(!wide(at(x - 1, y)) && !wide(at(x + 1, y))) return false;
       for(let k=1;k<=cl;k++) if(!goodTo(x, y - k, me)) return false;
       if(!goodTo(x, y - cl - 1, me)) return false;
       for(const [dx, dy] of [[0, 1], [0, 2], [-1, 1], [1, 1]]) if(!goodTo(x + dx, y + dy, lowL)) return false;
       return !falls.some(q=>hyp(q.gx - cx0 - x, q.gy - cy0 - y) < spc); };
-    const makeFall = (i, cl) => { const x = i%W, y = (i/W)|0, me = lv[i], lowL = lvAt(x, y + 1), pc = cl + 1; rim[i] = 3; falls.push({gx:cx0 + x, gy:cy0 + y, x:(cx0 + x)*GRID + 10, y:(cy0 + y)*GRID + 10});
+    const makeFall = (i, cl) => { const x = i%W, y = (i/W)|0, me = lv[i], lowL = lvAt(x, y + 1), pc = cl + 1; wf[i] = 1; tw[i] = 2; falls.push({gx:cx0 + x, gy:cy0 + y, x:(cx0 + x)*GRID + 10, y:(cy0 + y)*GRID + 10});
       for(let k=1;k<=cl;k++) tw[(y - k)*W + x] = 2;
       for(let dy=-(pc + 3);dy<=-(pc - 2);dy++) for(let dx=-2;dx<=2;dx++) if(hyp(dx, dy + pc) <= 1.9 && goodTo(x + dx, y + dy, me)) tw[(y + dy)*W + x + dx] = 1;
       for(let dy=1;dy<=2;dy++) for(let dx=-1;dx<=1;dx++) if(dy===1 || dx===0) tw[(y + dy)*W + x + dx] = 3;
       let cx = x, cy = y + 3; for(let k=0;k<11;k++){ if(!goodTo(cx, cy, lowL)) break; tw[cy*W + cx] = 2; const r = R(), nx = r < .22 ? cx - 1 : r < .44 ? cx + 1 : cx; if(nx!==cx && goodTo(nx, cy, lowL)){ tw[cy*W + nx] = 2; cx = nx; } cy++; } };
     for(const [cl, spc, want] of [[4, 13, 6], [3, 9, 3], [2, 8, 3]]){ if(falls.length >= want) continue;
-      for(const i of rimList){ if(falls.length >= 6) break; if(rim[i]!==1) continue; if(siteOk(i%W, (i/W)|0, cl, spc)) makeFall(i, cl); } }
+      for(const i of rimList){ if(falls.length >= 6) break; if(rim[i]!==1 || rd[i]) continue; if(siteOk(i%W, (i/W)|0, cl, spc)) makeFall(i, cl); } }
     /* ramps again, now and then along every cliff, so the climbs are not far apart (never beside a waterfall) */
-    for(const i of rimList){ if(rim[i]!==1) continue; const x = i%W, y = (i/W)|0; if(falls.some(q=>hyp(q.gx - cx0 - x, q.gy - cy0 - y) < 4) || ramps.some(q=>Math.abs(q[0] - x) + Math.abs(q[1] - y) < 11)) continue;
-      let up = false, dn = false; for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H || rim[ny*W + nx]!==0) continue; const l = lv[ny*W + nx]; if(l >= lv[i]) up = true; else dn = true; }
-      if(up && dn && R() < .7) makeRamp(i); }
+    { const count = () => { const s = reach(); let n = 0; for(let i=0;i<N;i++) n += s[i]; return n; }, base = count();
+      for(const cd of cand){ const i = cd >> 2, d = cd & 3, x = i%W, y = (i/W)|0; if(rd[i] || tw[i]) continue; if(falls.some(q=>hyp(q.gx - cx0 - x, q.gy - cy0 - y) < 5) || ramps.some(q=>Math.abs(q[0] - x) + Math.abs(q[1] - y) < 11)) continue; if(R() >= .6) continue;
+        const cells = placeRamp(i, d); if(!cells) continue;
+        if(count() < base){ for(const [j] of cells){ rd[j] = 0; rk[j] = 0; rb[j] = 0; } ramps.pop(); } /* it cut something off: take it back */ } }
     /* a pond in the bottom of every large hollow */
     { const L = lab((a, b)=>lv[a]===0 && lv[b]===0);
       for(const cells of L.list){ if(lv[cells[0]]!==0 || cells.length < 18) continue; let mx = 0, my = 0; for(const i of cells){ mx += i%W; my += (i/W)|0; } mx /= cells.length; my /= cells.length;
-        let best = cells[0], bd = 1e9; for(const i of cells){ const d = hyp(i%W - mx, ((i/W)|0) - my); if(d < bd && rim[i]===0 && !tw[i]){ bd = d; best = i; } }
+        let best = cells[0], bd = 1e9; for(const i of cells){ const d = hyp(i%W - mx, ((i/W)|0) - my); if(d < bd && rim[i]===0 && !rd[i] && !tw[i]){ bd = d; best = i; } }
         const rad = cells.length >= 70 ? 2.4 : cells.length >= 36 ? 1.8 : 1.3, bx = best%W, by = (best/W)|0;
         for(let dy=-3;dy<=3;dy++) for(let dx=-3;dx<=3;dx++) if(hyp(dx, dy) <= rad && goodTo(bx + dx, by + dy, 0)) tw[(by + dy)*W + bx + dx] = 1; } }
     /* how far (in cells) from standing water, for the soil */
     const wdist = new Uint8Array(N).fill(9), q = []; for(let i=0;i<N;i++) if(tw[i]){ wdist[i] = 0; q.push(i); }
     for(let h=0;h<q.length;h++){ const i = q[h], x = i%W, y = (i/W)|0; if(wdist[i] >= 8) continue; for(const [dx, dy] of DIRS){ const nx = x + dx, ny = y + dy; if(nx < 0 || ny < 0 || nx >= W || ny >= H) continue; const j = ny*W + nx; if(wdist[j] > wdist[i] + 1){ wdist[j] = wdist[i] + 1; q.push(j); } } }
-    const wl = []; for(let i=0;i<N;i++) if(tw[i]){ const gx = cx0 + i%W, gy = cy0 + ((i/W)|0); wl.push({gx, gy, x:gx*GRID + 10, y:gy*GRID + 10, k:tw[i], h:trHash(gx, gy)}); }
+    const wl = [], wrows = new Map(); for(let i=0;i<N;i++) if(tw[i]){ const gx = cx0 + i%W, gy = cy0 + ((i/W)|0), o = {gx, gy, x:gx*GRID + 10, y:gy*GRID + 10, k:tw[i], h:trHash(gx, gy)}; wl.push(o); let a = wrows.get(gy); if(!a) wrows.set(gy, a = []); a.push(o); }
+    /* heights: each square has one, flat or sloped, and the rows that need drawing are marked */
+    for(let i=0;i<N;i++) hb[i] = (lv[i] - 1)*TH;
+    const act = new Uint8Array(N), ca = [0, 0, 0, 0], cb = [0, 0, 0, 0];
+    for(let i=0;i<N;i++){ trCornersI(part, i, ca, 0); const j = i + W < N ? i + W : -1; if(j >= 0) trCornersI(part, j, cb, 0); else cb[0] = cb[1] = cb[2] = cb[3] = 0;
+      if(ca[0] || ca[1] || ca[2] || ca[3] || tw[i] || ca[3] > cb[0] + .01 || ca[2] > cb[1] + .01) act[i] = 1; }
     let sig = flat.length; for(const v of flat) sig = (sig*31 + v) | 0;
-    return {lv, rim, tw, wdist, falls, wl, ramps, sig};
+    return {lv, rim, rd, rk, rb, hb, act, tw, wf, wdist, falls, wl, wrows, ramps, sig};
   }
   const trHash = (a, b) => { let h = (Math.imul(a, 374761393) + Math.imul(b, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0)/4294967296; };
   const trLvl = (gx, gy) => { const T = wd.tr, i = T ? trIdx(gx, gy) : -1; return i < 0 ? 1 : T.lv[i]; };
-  const trRimAt = (gx, gy) => { const T = wd.tr, i = T ? trIdx(gx, gy) : -1; return i < 0 ? 0 : T.rim[i]; };
-  function trHit(x, y, r){ const T = wd.tr; if(!T || x < TR.gx0*GRID - r || x > (TR.gx0 + TR.w)*GRID + r || y < TR.gy0*GRID - r || y > (TR.gy0 + TR.h)*GRID + r) return false;
-    const ga = Math.floor((x - r)/GRID), gb = Math.floor((x + r)/GRID), ha = Math.floor((y - r)/GRID), hb = Math.floor((y + r)/GRID);
-    for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const i = trIdx(gx, gy); if(i < 0) continue; const v = T.rim[i]; if(v!==1 && v!==3) continue; if(hyp(x - clamp(x, gx*GRID, gx*GRID + GRID), y - clamp(y, gy*GRID, gy*GRID + GRID)) < r) return true; }
+  /* the ground's height at a point: a level, a slope, or a hole's floor */
+  function trH(x, y, v){
+    const T = wd.tr; if(!T) return 0; const gx = Math.floor(x/GRID), gy = Math.floor(y/GRID), i = trIdx(gx, gy); if(i < 0) return 0;
+    const d = T.rd[i];
+    if(d){ const fx = x/GRID - gx, fy = y/GRID - gy, u = d===1 ? fx : d===2 ? fy : d===3 ? 1 - fx : 1 - fy; return T.rb[i] + TH*(T.rk[i] + u)/3; }
+    const n = wd.dug.size ? wd.dug.get(gx*256 + gy) : 0; return n ? T.hb[i] - (v ? DDV : DD)*n : T.hb[i]; }
+  /* what a body of radius r stands on: the highest ground under it */
+  const trSup = (x, y, r, v) => { const q = r*.65; return Math.max(trH(x, y, v), trH(x - q, y, v), trH(x + q, y, v), trH(x, y - q, v), trH(x, y + q, v)); };
+  const trInHole = (x, y) => wd.dug.size > 0 && wd.dug.has(dkey(Math.floor(x/GRID), Math.floor(y/GRID)));
+  /* may a player stand here? Ground that rises more than a step is a wall; a body in the air cannot enter ground above its feet; out of a hole you can climb */
+  function trOk(o, ox, oy){
+    if(!wd.tr || !onMain(o)) return true; const sup = trSup(o.x, o.y, o.r), th = o.th || 0;
+    if(o.air) return sup <= th + o.z + .75;
+    const up = sup - th; if(up <= STEPUP + .01) return true;
+    if(up <= CLIMB && trInHole(ox, oy)){ o.clWant = true; return (o.clT || 0) >= 380; } /* out of a hole: push against the wall for a moment and you pull yourself up */
     return false; }
-  function trPush(o){ const T = wd.tr, r = o.r; if(!T || o.x < TR.gx0*GRID - r || o.x > (TR.gx0 + TR.w)*GRID + r || o.y < TR.gy0*GRID - r || o.y > (TR.gy0 + TR.h)*GRID + r) return;
-    const ga = Math.floor((o.x - r)/GRID), gb = Math.floor((o.x + r)/GRID), ha = Math.floor((o.y - r)/GRID), hb = Math.floor((o.y + r)/GRID);
-    for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const i = trIdx(gx, gy); if(i < 0) continue; const v = T.rim[i]; if(v!==1 && v!==3) continue;
-      const bx = gx*GRID, by = gy*GRID, nx = clamp(o.x, bx, bx + GRID), ny = clamp(o.y, by, by + GRID), dx = o.x - nx, dy = o.y - ny, d = hyp(dx, dy); if(d >= r) continue;
-      if(d > 0.01){ o.x = nx + dx/d*r; o.y = ny + dy/d*r; } else { const px = GRID/2 + r - Math.abs(o.x - (bx + GRID/2)), py = GRID/2 + r - Math.abs(o.y - (by + GRID/2)); if(px < py) o.x += (o.x >= bx + GRID/2 ? 1 : -1)*px; else o.y += (o.y >= by + GRID/2 ? 1 : -1)*py; } } }
+  /* after a move (or a dig): follow the ground, or step off an edge and fall */
+  function trSettle(o){
+    if(!wd.tr || !onMain(o)){ o.th = 0; o.vth = 0; o.tv = 0; o.sx = undefined; return; }
+    const sup = trSup(o.x, o.y, o.r || 9), th = o.th || 0; o.tv = trSup(o.x, o.y, o.r || 9, true); /* tv: the same ground as it is drawn */
+    if(o.sx === undefined || hyp(o.x - o.sx, o.y - o.sy) > 60){ o.th = sup; o.vth = o.tv; }
+    else if(o.air){ if(sup!==th){ o.z += th - sup; if(o.z < 0) o.z = 0; o.th = sup; o.vth = sup; } }
+    else { const d = sup - th;
+      if(d >= -.01){ if(d > STEPUP) o.clT = 0; o.th = sup; }
+      else if(-d <= STEPDN) o.th = sup;
+      else { o.air = true; o.vz = 0; o.z0 = th + o.z; o.z += -d; o.th = sup; o.vth = sup; } }
+    o.sx = o.x; o.sy = o.y; }
+  /* foes, pets and the like cannot go up or down a step bigger than a small one (a pit holds them, but they can climb out of it) */
+  function trWalkOk(o, ox, oy){ if(!wd.tr || !onMain(o)) return true; const a = trH(ox, oy), b = trH(o.x, o.y); return b <= a + (trInHole(ox, oy) ? CLIMB : 8) && b >= a - 8; }
   /* what the ground does to the soil: hollows are damp and rich, high ground dry and lean, and standing water soaks the land round it */
   function trSoilAdj(x, y){ const T = wd && wd.tr, i = T ? trIdx(Math.floor(x/GRID), Math.floor(y/GRID)) : -1; if(i < 0) return {m:0, r:0};
     const l = T.lv[i], d = T.wdist[i]; return {m:(l===0 ? .2 : l===2 ? -.16 : 0) + (d < 8 ? .22*(1 - d/8) : 0), r:l===0 ? .1 : l===2 ? -.08 : 0}; }
@@ -1265,13 +1417,13 @@
   const trWaterWord = p => { const T = wd.tr, gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID); for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const i = trIdx(gx + dx, gy + dy); if(i >= 0 && T.tw[i]) return T.tw[i]===2 ? 'creek' : T.tw[i]===3 ? 'falls pool' : 'spring pond'; } return wd.dug.size > 8 ? 'ditch' : 'hole'; };
   function trSpeed(p){ if(!wd.tr || p.z >= 12 || !onMain(p)) return 1; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID), i = trIdx(gx, gy);
     if(wd.dug && wd.dug.size){ const k = dkey(gx, gy); if(wd.dug.has(k)) return wd.dwet.has(k) ? .72 : .62; }
-    return i >= 0 ? (wd.tr.tw[i] ? .82 : wd.tr.rim[i]===2 ? .92 : 1) : 1; }
+    return i >= 0 ? (wd.tr.tw[i] ? .82 : wd.tr.rd[i] ? .92 : 1) : 1; }
   const trWord = p => { if(!wd || !wd.tr || p.z >= 12 || !onMain(p) || inBad(p) || p.x > WD.W) return ''; const i = trIdx(Math.floor(p.x/GRID), Math.floor(p.y/GRID)); return i < 0 ? '' : wd.tr.lv[i]===0 ? ' · low ground' : wd.tr.lv[i]===2 ? ' · high ground' : ''; };
   const trWetHere = p => { if(!wd.tr || p.z >= 12 || !onMain(p)) return false; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID), i = trIdx(gx, gy); return (i >= 0 && wd.tr.tw[i] > 0) || (wd.dwet && wd.dwet.has(dkey(gx, gy))); };
   function trSoundAt(P){ const T = wd.tr; if(!T || !T.falls.length) return 0; let best = 0; for(const f of T.falls){ const d = hyp(f.x - P.x, f.y - P.y); if(d < 340) best = Math.max(best, Math.pow(1 - d/340, 1.5)); } return best; }
   /* the groundwater: a hole fills where the earth is wet enough for its depth, a ditch carries water along it from any water it touches (on the same level), and rain puddles every hole */
   function trWetUpdate(){
-    const wet = new Set(), q = []; wd.dwet = wet; wd.dsize = new Map(); if(!wd.tr || !wd.dug.size) return wet;
+    const wet = new Set(), q = [], oldWet = wd.dwet; wd.dwet = wet; wd.dsize = new Map(); if(!wd.tr || !wd.dug.size){ if(oldWet) for(const k of oldWet) trInval(k >> 8, k & 255); return wet; }
     const rr = rainRecent(), rainy = (wd.rain || 0) > .35;
     for(const [k, d] of wd.dug){ const gx = k >> 8, gy = k & 255, l = trLvl(gx, gy); let src = rainy || gy <= 6 || gy >= 73; /* the rows beside the two rivers */
       if(!src) for(const [dx, dy] of DIRS){ const i = trIdx(gx + dx, gy + dy); if(i >= 0 && wd.tr.tw[i] && wd.tr.lv[i]===l){ src = true; break; } }
@@ -1280,6 +1432,7 @@
     while(q.length){ const k = q.pop(), gx = k >> 8, gy = k & 255, l = trLvl(gx, gy); for(const [dx, dy] of DIRS){ const k2 = dkey(gx + dx, gy + dy); if(wd.dug.has(k2) && !wet.has(k2) && trLvl(gx + dx, gy + dy)===l){ wet.add(k2); q.push(k2); } } }
     wd.dsize = new Map(); const seen = new Set(); /* how big each pool of dug water is: a ditch or hole that joins four or more is a pond you can fish */
     for(const k of wet){ if(seen.has(k)) continue; const comp = [k]; seen.add(k); for(let h=0;h<comp.length;h++){ const c = comp[h], gx = c >> 8, gy = c & 255; for(const [dx, dy] of DIRS){ const k2 = dkey(gx + dx, gy + dy); if(wet.has(k2) && !seen.has(k2)){ seen.add(k2); comp.push(k2); } } } for(const c of comp) wd.dsize.set(c, comp.length); }
+    if(oldWet){ for(const k of oldWet) if(!wet.has(k)) trInval(k >> 8, k & 255); for(const k of wet) if(!oldWet.has(k)) trInval(k >> 8, k & 255); }
     return wet; }
   function trFishSpot(p){ if(!wd.tr || p.z >= 12 || !onMain(p)) return null; const gx = Math.floor(p.x/GRID), gy = Math.floor(p.y/GRID); let best = null, bd = 44;
     for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){ const cx = gx + dx, cy = gy + dy, i = trIdx(cx, cy), k = dkey(cx, cy); if(!((i >= 0 && (wd.tr.tw[i]===1 || wd.tr.tw[i]===3)) || (wd.dwet.has(k) && (wd.dsize.get(k) || 0) >= 5))) continue;
@@ -1293,14 +1446,21 @@
   function trSlow(){ if(!wd.tr) return; trWetUpdate(); if(trIrrigate()){ const b = kindOf('farmplot').values().next().value; cuNote('les:irrig', 'lesson', 'A plot with water in any square beside it (ditch, pond, creek) is watered by it, once a planting, like a can pour. A ditch from the river saves hauling water.', ['plants'], b ? b.x : wd.p.x, b ? b.y : wd.p.y); wdSave(); }
     for(const f of wd.tr.falls) cuNote('les:falls', 'note', 'A spring on the high ground spills over the cliff here, and the creek runs on across the low ground. Water like this needs no digging, and a ditch cut from it can carry water to your plots.', [], f.x, f.y, 170); }
   /* digging */
-  const trCanBuild = (gx, gy) => { const T = wd.tr; if(!T) return true; const i = trIdx(gx, gy); return !(i >= 0 && (T.rim[i] || T.tw[i])) && !wd.dug.has(dkey(gx, gy)); };
+  /* level ground: not a slope, and every square round it on the same level */
+  const trFlat = (gx, gy) => { const T = wd.tr; if(!T) return true; const i = trIdx(gx, gy); if(i < 0) return true; if(T.rd[i]) return false; const l = T.lv[i];
+    for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const j = trIdx(gx + dx, gy + dy); if(j >= 0 && (T.lv[j]!==l || T.rd[j])) return false; } return true; };
+  /* buildings go on the usual level; a plot of soil can go on any level ground (hollows are the best for crops) */
+  const trCanBuild = (gx, gy, kind) => { const T = wd.tr; if(!T) return true; const i = trIdx(gx, gy);
+    if(i >= 0){ if(T.tw[i] || T.rd[i] || !trFlat(gx, gy)) return false; if(kind!=='farmplot' && T.lv[i]!==1) return false; }
+    return !wd.dug.has(dkey(gx, gy)); };
   const trAim = () => { const p = wd.p; return {gx:Math.floor((p.x + p.fx*(p.r + 8))/GRID), gy:Math.floor((p.y + p.fy*(p.r + 8))/GRID)}; };
   function trDigCheck(gx, gy, s){ /* {ok, fill, ms, text} or {ok:false, why} */
     const p = wd.p, I = ITEMS[s.id], x = gx*GRID + 10, y = gy*GRID + 10, T = wd.tr; if(!T || p.z >= 12 || !onMain(p) || x < WD.EDGE + 8 || x > WD.W - WD.EDGE - 8 || y < WD.RIVER + 10 || y > WD.H - WD.RIVER - 10) return {ok:false, why:'The ground here is too hard to dig'};
     const k = dkey(gx, gy), d = wd.dug.get(k) || 0, i = trIdx(gx, gy);
     if(I.fill){ if(!d) return {ok:false, why:'No hole to fill'}; return {ok:true, fill:true, ms:500, text:'Fill the hole with dirt'}; }
-    if(i >= 0 && T.rim[i]) return {ok:false, why:T.rim[i]===2 ? 'Packed earth: nothing to dig on a ramp' : 'Solid rock'};
+    if(i >= 0 && T.rd[i]) return {ok:false, why:'Packed earth: nothing to dig on a ramp'};
     if(i >= 0 && T.tw[i]) return {ok:false, why:'Water already stands here'};
+    if(!trFlat(gx, gy) && !d) return {ok:false, why:'Too steep and rocky to dig here'};
     if(wd.builds.has(gkey(gx, gy)) || wd.floors.has(gkey(gx, gy))) return {ok:false, why:'Something is built here'};
     if(wd.fires.some(f=>hyp(f.x - x, f.y - y) < 16) || wd.benches.some(b=>hyp(b.x - x, b.y - y) < 18)) return {ok:false, why:'Something stands in the way'};
     let blocked = false; nodesNear(x, y, 26, n=>{ if(!blocked && !n.gone && (n.sol || n.k==='berry' || n.k==='herb' || n.k==='sapling') && hyp(n.x - x, n.y - y) < n.r + 8) blocked = true; }); if(blocked) return {ok:false, why:'Roots are in the way'};
@@ -1314,58 +1474,149 @@
     if(fill){ const d = wd.dug.get(k); if(!d || invCount('dirt') < 1) return false; invTake('dirt', 1); if(d <= 1) wd.dug.delete(k); else wd.dug.set(k, d - 1); thud(0.08, 0.1, 380); }
     else { const s = wd.inv[i], d = (wd.dug.get(k) || 0) + 1; if(!s || d > 3) return false; wd.dug.set(k, d); wear(i); thud(0.12, 0.1, 240);
       give('dirt', 1, {x, y}); const r = Math.random(); if(r < .1) give('stone', 1, {x, y}); else if(r < .18) give('flint', 1, {x, y}); else if(r < .22 && d >= 2) give('bone', 1, {x, y}); }
+    trInval(gx, gy);
     for(let n=0;n<7;n++) wdFx({kind:'chip', x, y, vx:(Math.random() - .5)*90, vy:-30 - Math.random()*60, col:n%2 ? '#7a5d3a' : '#5d4529', t:520});
     const was = wd.dwet.has(k); trWetUpdate(); const d = wd.dug.get(k);
     if(!fill && d){ if(wd.dwet.has(k)){ trSay(d >= 3 ? 'A well. Water fills it' : 'Water seeps in'); cuNote('les:dugwet', 'lesson', 'A hole fills with water where the earth is wet enough for its depth: low ground, the river banks, beside a pond or creek, or after rain. A hole three deep is a well. Holes joined in a ditch carry the water along, and a plot beside them drinks for itself.', ['soil'], x, y); }
       else { trSay(d >= 3 ? 'Deep, but dry' : 'Dry earth', '#d8c49a'); if(d >= 2) cuNote('les:dugdry', 'lesson', 'Dry high ground gives up no water at any depth. Dig lower down, by the river or a pond, or cut a ditch from water to where you need it.', ['soil'], x, y); } }
     else if(fill && !d) trSay('Filled in', '#d8c49a'); else if(fill && was && !wd.dwet.has(k)) trSay('The water drains away', '#d8c49a');
-    trIrrigate(); wdSave(); return true; }
+    trSettle(p); trIrrigate(); wdSave(); return true; }
   const trAimText = () => { const s = wd.inv[wd.sel]; if(!s || !(ITEMS[s.id].dig || ITEMS[s.id].fill)) return null; const a = trAim(), r = trDigCheck(a.gx, a.gy, s); if(!r.ok) return null; const k = dkey(a.gx, a.gy); return {k:'dig', text:r.text + (!r.fill && wd.dug.get(k) && wd.dwet.has(k) ? ' (it holds water)' : '')}; };
-  /* the ground, painted once into the cached tiles: tints under everything, cliffs and ramps over it */
-  const TRC = {low:'#3a5a45', high:'#778049', lip:'#7e8b4f'};
-  function trStatic(c, x0, y0, x1, y1, over){
-    const T = wd.tr; if(!T) return; const ga = Math.max(TR.gx0, Math.floor(x0/GRID) - 1), gb = Math.min(TR.gx0 + TR.w - 1, Math.floor(x1/GRID) + 1), ha = Math.max(TR.gy0, Math.floor(y0/GRID) - 1), hb = Math.min(TR.gy0 + TR.h - 1, Math.floor(y1/GRID) + 1); if(ga > gb || ha > hb) return;
-    if(!over){
-      for(const [lvl, col] of [[0, TRC.low], [2, TRC.high]]){ c.fillStyle = col; c.beginPath(); let any = false;
-        for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ if(T.lv[(gy - TR.gy0)*TR.w + gx - TR.gx0]!==lvl) continue; c.moveTo(gx*GRID + 24.3, gy*GRID + 10); c.arc(gx*GRID + 10, gy*GRID + 10, 14.3, 0, 6.2832); any = true; }
-        if(any) c.fill(); }
-      c.fillStyle = '#41382a'; c.beginPath(); let any = false;
-      for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++) if(T.tw[(gy - TR.gy0)*TR.w + gx - TR.gx0]){ c.moveTo(gx*GRID + 27, gy*GRID + 10); c.arc(gx*GRID + 10, gy*GRID + 10, 17, 0, 6.2832); any = true; }
-      if(any) c.fill();
-      return; }
-    for(let gy=ha;gy<=hb;gy++) for(let gx=ga;gx<=gb;gx++){ const i = (gy - TR.gy0)*TR.w + gx - TR.gx0, v = T.rim[i]; if(!v) continue;
-      const px = gx*GRID, py = gy*GRID, l = T.lv[i], sLow = trLvl(gx, gy + 1) < l, nLow = trLvl(gx, gy - 1) < l, wetFace = v===3;
-      if(v===2){ c.fillStyle = '#8d7d5a'; c.fillRect(px, py, 20, 20); c.fillStyle = 'rgba(255,236,190,.17)'; for(let k=0;k<3;k++) c.fillRect(px + 1, py + 3 + k*6, 18, 2); c.fillStyle = 'rgba(40,28,14,.18)'; c.fillRect(px, py + 18, 20, 2); c.fillRect(px, py, 2, 20); c.fillRect(px + 18, py, 2, 20); continue; }
-      if(sLow){ c.fillStyle = wetFace ? '#47565b' : '#6a6252'; c.fillRect(px, py, 20, 20); c.fillStyle = wetFace ? '#586a70' : '#867c69'; c.fillRect(px, py + 5, 20, 5); c.fillStyle = wetFace ? '#394549' : '#51493c'; c.fillRect(px, py + 14, 20, 6);
-        c.fillStyle = TRC.lip; c.fillRect(px, py, 20, 5); for(let k=0;k<4;k++) c.fillRect(px + k*5, py + 5, 5, 1 + trHash(gx*4 + k, gy)*3);
-        if(!lowFx){ c.strokeStyle = 'rgba(25,18,12,.36)'; c.lineWidth = .8; c.beginPath(); for(let k=0;k<2;k++){ const hx = px + 3 + trHash(gx, gy*3 + k)*14; c.moveTo(hx, py + 6); c.lineTo(hx + (trHash(k, gx + gy) - .5)*4, py + 19); } c.stroke(); }
-        c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(px, py + 20, 20, 6); }
-      else { c.fillStyle = '#7b7362'; c.fillRect(px, py, 20, 20); c.fillStyle = '#8c8470'; c.fillRect(px + 1, py + 1, 18, 7); if(nLow){ c.fillStyle = TRC.lip; c.fillRect(px, py, 20, 4); }
-        if(!lowFx){ c.fillStyle = 'rgba(40,30,20,.3)'; const hh = trHash(gx, gy); c.beginPath(); c.ellipse(px + 4 + hh*12, py + 11 + hh*5, 2.4, 1.5, 0, 0, 6.2832); c.fill(); } }
-      if(trLvl(gx - 1, gy) < l){ c.fillStyle = 'rgba(0,0,0,.16)'; c.fillRect(px, py, 3, 20); } if(trLvl(gx + 1, gy) < l){ c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(px + 17, py, 3, 20); } }
+  /* ---- drawing: every row of squares that has height is one entry in the back-to-front list, so plateaus hide what is behind them, cliffs show their faces, and things standing on them are drawn on top ---- */
+  const TRC = {hi:'#70804a', hiLip:'#98a85e', hiDk:'#5d6b3b', lo:'#3b563a', loDk:'#2e4530', ramp:'#958258', rampLt:'rgba(255,238,196,.13)', rampDk:'rgba(50,34,16,.28)',
+    rock:['#837a68', '#6b6353', '#4e473b'], dirt:['#7a5d3a', '#5c4630', '#3a2a1b'], water:['#8fd0e4', '#6ab0c8', '#3f8aa0']};
+  const trA = [0, 0, 0, 0], trB = [0, 0, 0, 0]; let trLo = 0, trHi = 0, trXa = 0, trXb = 0; /* the box the last trRowCore painted into */
+  /* a cliff face (or a pit wall, or a waterfall) hanging below a square's south edge; hW and hE are its heights at the two ends */
+  function trFace(c, x0, yW, yE, hW, hE, pal, gx, gy, fall){
+    const top = Math.min(yW, yE), bot = Math.max(yW + hW, yE + hE), hh = bot - top;
+    c.save(); c.beginPath(); c.moveTo(x0 - .2, yW); c.lineTo(x0 + GRID + .2, yE); c.lineTo(x0 + GRID + .2, yE + hE); c.lineTo(x0 - .2, yW + hW); c.closePath(); c.clip();
+    c.fillStyle = pal[1]; c.fillRect(x0 - 1, top, GRID + 2, hh);
+    c.fillStyle = pal[0]; c.fillRect(x0 - 1, top, GRID + 2, Math.min(hh, 4.5));
+    c.fillStyle = pal[2]; const fh = Math.min(hh*.42, 9); c.fillRect(x0 - 1, bot - fh, GRID + 2, fh);
+    if(fall){ c.fillStyle = 'rgba(70,150,180,.5)'; c.fillRect(x0, top, 3, hh); c.fillRect(x0 + GRID - 3, top, 3, hh); }
+    else if(hh > 5){ c.strokeStyle = 'rgba(25,18,12,.34)'; c.lineWidth = .8; c.beginPath();
+      for(let s=1;s<=2;s++){ const yy = top + hh*(s*.31 + (trHash(gx, gy*3 + s) - .5)*.12); c.moveTo(x0, yy + (trHash(gx + s, gy) - .5)*2); c.lineTo(x0 + GRID, yy + (trHash(gx, gy + s) - .5)*2); }
+      if(!lowFx) for(let s=0;s<2;s++){ const hx = x0 + 3 + trHash(gx, gy*5 + s)*14, a = top + hh*.12; c.moveTo(hx, a); c.lineTo(hx + (trHash(s, gx + gy) - .5)*4, a + hh*.6); }
+      c.stroke(); }
+    c.restore(); }
+  function trWaterDisc(c, x, y, k, nE, nN){
+    c.fillStyle = '#41382a'; c.beginPath(); c.arc(x, y, 13.4, 0, 6.2832); c.fill();
+    c.fillStyle = k===3 ? '#3f8aa0' : k===2 ? '#3d8196' : '#3a7a8f'; c.beginPath(); c.arc(x, y, 11.6, 0, 6.2832); if(nE) c.rect(x, y - 11.6, 20, 23.2); if(nN) c.rect(x - 11.6, y - 20, 23.2, 20); c.fill();
+    c.fillStyle = 'rgba(130,205,220,.3)'; c.beginPath(); c.ellipse(x - 2, y - 3, 7, 4, 0, 0, 6.2832); c.fill(); }
+  function trRowCore(c, gy, ga, gb){ /* everything that holds still: tops, faces, lips, tufts, water beds, hole floors */
+    const T = wd.tr, dug = wd.dug, hasDug = dug.size > 0, y0 = gy*GRID, y1 = y0 + GRID, A = trA, B = trB; trLo = 1e9; trHi = -1e9; trXa = 1e9; trXb = -1e9;
+    for(let gx=ga;gx<=gb;gx++){
+      const i = trIdx(gx, gy); if(i < 0) continue; const k = gx*256 + gy, dn = hasDug ? (dug.get(k) || 0) : 0, ds = hasDug ? (dug.get(k + 1) || 0) : 0;
+      if(!(T.act[i] || dn || ds)) continue;
+      trCornersI(T, i, A, dn*DDV/DD); const j = trIdx(gx, gy + 1); if(j >= 0) trCornersI(T, j, B, ds*DDV/DD); else B[0] = B[1] = B[2] = B[3] = 0;
+      const x0 = gx*GRID, x1 = x0 + GRID, ramp = T.rd[i], water = T.tw[i], wet = dn && wd.dwet.has(k);
+      const bW = Math.max(A[3], B[0]), bE = Math.max(A[2], B[1]); /* where a higher square to the south starts to hide this one */
+      const yt0 = y0 - A[0], yt1 = y0 - A[1], yb0 = Math.max(y1 - bW, yt0), yb1 = Math.max(y1 - bE, yt1), vis = yb0 > yt0 + .05 || yb1 > yt1 + .05, occl = bW > A[3] + .01 || bE > A[2] + .01;
+      const mid = (A[0] + A[1] + A[2] + A[3])/4, flat0 = A[0]===0 && A[1]===0 && A[2]===0 && A[3]===0;
+      { const lo = Math.min(yt0, yt1) - (water ? 17 : 3), hi = Math.max(yb0, yb1, y1 - Math.min(A[3], A[2], B[0], B[1]) + 8); if(lo < trLo) trLo = lo; if(hi > trHi) trHi = hi; if(x0 - 15 < trXa) trXa = x0 - 15; if(x1 + 15 > trXb) trXb = x1 + 15; }
+      if(vis && (!flat0 || water)){
+        if(!flat0){
+          c.fillStyle = dn ? (wet ? (dn===1 ? '#3b7a8f' : dn===2 ? '#336f84' : '#2b6277') : (dn===1 ? '#4c3524' : dn===2 ? '#3b2a1b' : '#2c1f13')) : ramp ? TRC.ramp : mid > 0 ? TRC.hi : TRC.lo;
+          c.beginPath(); c.moveTo(x0 - .3, yt0); c.lineTo(x1 + .3, yt1); c.lineTo(x1 + .3, yb1); c.lineTo(x0 - .3, yb0); c.closePath(); c.fill();
+          if(ramp){ const g = ramp===1 ? c.createLinearGradient(x0, 0, x1, 0) : ramp===3 ? c.createLinearGradient(x1, 0, x0, 0) : ramp===2 ? c.createLinearGradient(0, yt0, 0, yb0) : c.createLinearGradient(0, yb0, 0, yt0); /* darker where it is low, paler where it is high */
+            const sh = u => u < .5 ? `rgba(45,30,14,${(.34*(1 - 2*u)).toFixed(3)})` : `rgba(255,244,210,${(.34*(2*u - 1)).toFixed(3)})`, kk = T.rk[i]; g.addColorStop(0, sh(kk/3)); g.addColorStop(1, sh((kk + 1)/3)); c.fillStyle = g; c.fill(); } }
+        if(occl){ c.save(); c.beginPath(); c.rect(x0 - 4, y0 - 60, GRID + 8, Math.min(yb0, yb1) - (y0 - 60)); c.clip(); }
+        if(!flat0 && i >= TR.w && !ramp && T.hb[i - TR.w] > T.hb[i] + .5 && !T.rd[i - TR.w]){ c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(x0, Math.min(yt0, yt1), GRID, 3); c.fillStyle = 'rgba(0,0,0,.1)'; c.fillRect(x0, Math.min(yt0, yt1) + 3, GRID, 3); }
+        if(dn){ const d1 = !dug.has(k - 256), d2 = !dug.has(k + 256); c.fillStyle = 'rgba(0,0,0,.3)'; if(d1) c.fillRect(x0, yt0, 2.6, yb0 - yt0); if(d2) c.fillRect(x1 - 2.6, yt1, 2.6, yb1 - yt1);
+          if(wet){ c.fillStyle = 'rgba(130,205,220,.25)'; c.beginPath(); c.ellipse(x0 + 8, y0 - A[0] + 7, 5, 3, 0, 0, 6.2832); c.fill(); } }
+        else if(ramp){ const d = ramp; c.lineWidth = 1.5;
+          for(let f=1;f<=2;f++){ const u = f/3; c.strokeStyle = TRC.rampLt; c.beginPath();
+            if(d===2 || d===4){ const yy = yt0 + (yb0 - yt0)*u; c.moveTo(x0, yy); c.lineTo(x1, yy); } else { const xx = x0 + GRID*u; c.moveTo(xx, yt0 + (yt1 - yt0)*u); c.lineTo(xx, yb0 + (yb1 - yb0)*u); } c.stroke(); }
+          c.strokeStyle = TRC.rampDk; c.lineWidth = 1.2; c.beginPath();
+          if(d===2 || d===4){ if(T.rd[i - 1]!==d){ c.moveTo(x0 + 1, yt0); c.lineTo(x0 + 1, yb0); } if(T.rd[i + 1]!==d){ c.moveTo(x1 - 1, yt1); c.lineTo(x1 - 1, yb1); } }
+          else { if(T.rd[i - TR.w]!==d){ c.moveTo(x0, yt0 + 1); c.lineTo(x1, yt1 + 1); } if(T.rd[i + TR.w]!==d){ c.moveTo(x0, yb0 - 1); c.lineTo(x1, yb1 - 1); } }
+          c.stroke(); }
+        else if(!flat0){ /* a plateau or a hollow: lit lip along the edge where it drops, sides shaded, a few tufts */
+          const me = T.lv[i], hi = mid > 0, W = TR.w;
+          if(A[3] > B[0] + .01 || A[2] > B[1] + .01){ c.fillStyle = hi ? TRC.hiLip : '#4d6a49'; c.fillRect(x0, Math.min(yb0, yb1) - 2, GRID, 2); }
+          if(T.lv[i - 1]!==undefined && i % W > 0 && T.lv[i - 1] < me && T.rd[i - 1]===0){ c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(x0, yt0, 2, yb0 - yt0); }
+          if(i % W < W - 1 && T.lv[i + 1] < me && T.rd[i + 1]===0){ c.fillStyle = 'rgba(0,0,0,.24)'; c.fillRect(x1 - 2, yt1, 2, yb1 - yt1); }
+          if(i >= W && T.lv[i - W] < me && T.rd[i - W]===0){ c.fillStyle = TRC.hiLip; c.fillRect(x0, yt0, GRID, 1.6); }
+          if(!lowFx && Math.min(yb0 - yt0, yb1 - yt1) > 9){ c.strokeStyle = hi ? TRC.hiDk : TRC.loDk; c.lineWidth = 1; c.beginPath();
+            for(let s=0;s<2;s++){ const px = x0 + 3 + trHash(gx*2 + s, gy)*14, py = yt0 + 5 + trHash(gx, gy*2 + s)*Math.max(1, Math.min(yb0 - yt0, yb1 - yt1) - 8); c.moveTo(px - 1.6, py); c.lineTo(px, py - 3); c.moveTo(px + 1.6, py); c.lineTo(px, py - 3); }
+            c.stroke(); } }
+        if(water){ const hw = mid, nE = gx + 1 < TR.gx0 + TR.w && T.tw[i + 1] > 0, nN = i >= TR.w && T.tw[i - TR.w] > 0;
+          trWaterDisc(c, x0 + 10, y0 + 10 - hw, water, nE, nN); }
+        if(occl) c.restore();
+      }
+      /* the face below: a cliff, a pit wall, or a waterfall */
+      const dW = A[3] - B[0], dE = A[2] - B[1];
+      if(dW > .01 || dE > .01){ const pit = (dn > 0 || ds > 0) && !T.rd[i] && (j < 0 || (!T.rd[j] && T.hb[j]===T.hb[i])); /* a pit wall is earth, not rock */
+        trFace(c, x0, y1 - A[3], y1 - A[2], Math.max(dW, 0), Math.max(dE, 0), T.wf[i] ? TRC.water : pit ? TRC.dirt : TRC.rock, gx, gy, !!T.wf[i]);
+        if(B[0]===0 && B[1]===0 && B[2]===0 && B[3]===0 && (j < 0 || !T.act[j]) && !dug.has(k + 1)){ const yb0f = y1 - A[3] + Math.max(dW, 0), yb1f = y1 - A[2] + Math.max(dE, 0); c.fillStyle = 'rgba(0,0,0,.2)'; c.fillRect(x0, Math.min(yb0f, yb1f), GRID, 3); c.fillStyle = 'rgba(0,0,0,.1)'; c.fillRect(x0, Math.min(yb0f, yb1f) + 3, GRID, 3); } }
+    }
   }
-  /* what moves: standing water, creeks, waterfalls, and the holes the player has dug */
-  function trDrawDyn(c, vis, t){
-    const T = wd.tr; if(!T) return;
-    for(const q of T.wl){ if(!vis(q.x, q.y, 20)) continue; c.fillStyle = q.k===3 ? '#3f8aa0' : q.k===2 ? '#3d8196' : '#3a7a8f'; c.beginPath(); c.arc(q.x, q.y, 14.3, 0, 6.2832); c.fill();
-      c.fillStyle = 'rgba(130,205,220,.3)'; c.beginPath(); c.ellipse(q.x - 2, q.y - 3, 7, 4, 0, 0, 6.2832); c.fill();
-      const ph = (t*.7 + q.h*6) % 1; c.strokeStyle = `rgba(235,250,255,${.42*(1 - ph)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(q.x + (q.h - .5)*8, q.y + ((q.h*7)%1 - .5)*8, 2 + ph*6, 1 + ph*3, 0, 0, 6.2832); c.stroke();
-      if(q.k===2){ c.fillStyle = 'rgba(230,248,255,.5)'; for(let s=0;s<2;s++) c.fillRect(q.x - 4 + s*7, q.y - 9 + ((t*20 + q.h*20 + s*9) % 20), 1.4, 5); } }
-    if(wd.dug.size){ const list = []; for(const [k, d] of wd.dug){ const gx = k >> 8, gy = k & 255; if(vis(gx*GRID + 10, gy*GRID + 10, 24)) list.push([gx, gy, d, wd.dwet.has(k), k]); }
-      c.fillStyle = '#7b5e3b'; c.beginPath(); for(const [gx, gy] of list){ c.moveTo(gx*GRID + 24.3, gy*GRID + 10); c.arc(gx*GRID + 10, gy*GRID + 10, 14.3, 0, 6.2832); } c.fill();
-      for(const [gx, gy] of list){ if(wd.dug.has(dkey(gx + 1, gy))) c.fillRect(gx*GRID + 10, gy*GRID + 1, 20, 18); if(wd.dug.has(dkey(gx, gy + 1))) c.fillRect(gx*GRID + 1, gy*GRID + 10, 18, 20); }
-      for(const [gx, gy, d, wet, k] of list){ const x = gx*GRID, y = gy*GRID; c.fillStyle = wet ? (d===1 ? '#3b7a8f' : d===2 ? '#336f84' : '#2b6277') : (d===1 ? '#4c3524' : d===2 ? '#3b2a1b' : '#2c1f13');
-        c.beginPath(); c.arc(x + 10, y + 10, 11.5, 0, 6.2832); c.fill(); if(wd.dug.has(dkey(gx + 1, gy))) c.fillRect(x + 10, y + 3, 20, 14); if(wd.dug.has(dkey(gx, gy + 1))) c.fillRect(x + 3, y + 10, 14, 20);
-        if(wet){ const h = trHash(gx, gy), ph = (t*.8 + h*5) % 1; c.strokeStyle = `rgba(235,250,255,${.4*(1 - ph)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(x + 10, y + 10, 2 + ph*6, 1 + ph*3, 0, 0, 6.2832); c.stroke(); c.fillStyle = 'rgba(130,205,220,.25)'; c.beginPath(); c.ellipse(x + 8, y + 7, 5, 3, 0, 0, 6.2832); c.fill(); }
-        else { c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 10, y + 13, 7, 4, 0, 0, 6.2832); c.fill(); } } }
-    for(const f of T.falls){ if(!vis(f.x, f.y, 50)) continue; const x = f.gx*GRID, y = f.gy*GRID;
-      c.fillStyle = 'rgba(112,188,212,.9)'; c.fillRect(x + 1, y, 18, 21); c.fillStyle = 'rgba(70,150,180,.5)'; c.fillRect(x + 1, y, 3, 21); c.fillRect(x + 16, y, 3, 21); c.fillStyle = 'rgba(244,252,255,.9)';
-      for(let s=0;s<7;s++){ const off = (t*50 + s*7.1) % 20; c.fillRect(x + 2 + s*2.4, y + off*.95, 1.5, 8); c.fillRect(x + 3 + s*2.4, y + ((off + 10) % 20)*.95, 1.1, 6); }
-      const pf = Math.sin(t*5) * .5 + .5; c.fillStyle = `rgba(255,255,255,${.45 + .25*pf})`; c.beginPath(); c.ellipse(x + 10, y + 23, 13 + pf*2, 5 + pf, 0, 0, 6.2832); c.fill(); c.beginPath(); c.ellipse(x + 3, y + 26, 5, 2.5, 0, 0, 6.2832); c.ellipse(x + 17, y + 27, 5, 2.5, 0, 0, 6.2832); c.fill();
-      if(!lowFx) for(let m=0;m<4;m++){ const ph = (t*.5 + m*.25) % 1; c.fillStyle = `rgba(235,248,255,${.22*(1 - ph)})`; c.beginPath(); c.arc(x + 10 + Math.sin(m*2.1 + t)*7, y + 22 - ph*16, 4 + ph*5, 0, 6.2832); c.fill(); } }
+  /* what moves: ripples, creek streaks, the fall's white threads and the plunge pool's foam, drawn each frame over the baked rows */
+  function trRowAnim(c, gy, ga, gb, t){
+    const T = wd.tr, dug = wd.dug, hasDug = dug.size > 0, y0 = gy*GRID, y1 = y0 + GRID, A = trA, B = trB;
+    for(let gx=ga;gx<=gb;gx++){
+      const i = trIdx(gx, gy); if(i < 0) continue; const water = T.tw[i], wf = T.wf[i], k = gx*256 + gy, dn = hasDug ? (dug.get(k) || 0) : 0, wet = dn > 0 && wd.dwet.has(k);
+      if(!(water || wf || wet)) continue;
+      const ds = hasDug ? (dug.get(k + 1) || 0) : 0, x0 = gx*GRID, h = trHash(gx, gy);
+      trCornersI(T, i, A, dn*DDV/DD); const j = trIdx(gx, gy + 1); if(j >= 0) trCornersI(T, j, B, ds*DDV/DD); else B[0] = B[1] = B[2] = B[3] = 0;
+      const bW = Math.max(A[3], B[0]), bE = Math.max(A[2], B[1]), yt0 = y0 - A[0], yt1 = y0 - A[1], yb0 = Math.max(y1 - bW, yt0), yb1 = Math.max(y1 - bE, yt1), vis = yb0 > yt0 + .05 || yb1 > yt1 + .05, occl = bW > A[3] + .01 || bE > A[2] + .01;
+      const mid = (A[0] + A[1] + A[2] + A[3])/4;
+      if(vis && (wet || water)){
+        if(occl){ c.save(); c.beginPath(); c.rect(x0 - 4, y0 - 60, GRID + 8, Math.min(yb0, yb1) - (y0 - 60)); c.clip(); }
+        if(wet){ const ph = (t*.8 + h*5) % 1; c.strokeStyle = `rgba(235,250,255,${.4*(1 - ph)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(x0 + 10, y0 - A[0] + 10, 2 + ph*6, 1 + ph*3, 0, 0, 6.2832); c.stroke(); }
+        if(water){ const x = x0 + 10, y = y0 + 10 - mid, ph = (t*.7 + h*6) % 1;
+          c.strokeStyle = `rgba(235,250,255,${.42*(1 - ph)})`; c.lineWidth = .8; c.beginPath(); c.ellipse(x + (h - .5)*8, y + ((h*7)%1 - .5)*8, 2 + ph*6, 1 + ph*3, 0, 0, 6.2832); c.stroke();
+          if(water===2){ c.fillStyle = 'rgba(230,248,255,.5)'; for(let s=0;s<2;s++) c.fillRect(x - 4 + s*7, y - 9 + ((t*20 + h*20 + s*9) % 20), 1.4, 5); }
+          if(water===3 && i >= TR.w && T.wf[i - TR.w]){ const pf = Math.sin(t*5)*.5 + .5; c.fillStyle = `rgba(255,255,255,${.5 + .25*pf})`; c.beginPath(); c.ellipse(x, y0 + 2 - mid, 13 + pf*2, 5 + pf, 0, 0, 6.2832); c.fill();
+            if(!lowFx) for(let m=0;m<4;m++){ const q = (t*.5 + m*.25) % 1; c.fillStyle = `rgba(235,248,255,${.22*(1 - q)})`; c.beginPath(); c.arc(x + Math.sin(m*2.1 + t)*7, y0 - mid - q*16, 4 + q*5, 0, 6.2832); c.fill(); } } }
+        if(occl) c.restore();
+      }
+      const dW = A[3] - B[0], dE = A[2] - B[1];
+      if(wf && (dW > .01 || dE > .01)){ const yW = y1 - A[3], yE = y1 - A[2], top = Math.min(yW, yE), hh = Math.max(yW + Math.max(dW, 0), yE + Math.max(dE, 0)) - top;
+        c.save(); c.beginPath(); c.rect(x0, top, GRID, hh); c.clip(); c.fillStyle = 'rgba(244,252,255,.88)';
+        for(let s=0;s<7;s++){ const off = (t*50 + s*7.1) % 20; c.fillRect(x0 + 2 + s*2.4, top + off*hh/20 - 3, 1.5, 7); c.fillRect(x0 + 3 + s*2.4, top + ((off + 10) % 20)*hh/20 - 3, 1.1, 5); }
+        c.restore(); }
+    }
+  }
+  /* the baked rows: eight squares wide, one square tall plus room for the heights above and the cliffs below; painted once and stamped, so only the water above moves */
+  const TRCW = 8, TRPU = 26, TRPD = 36, TRSH = GRID + TRPU + TRPD, TR_BUDGET = 5e6, trMap = new Map();
+  let trProbe = null, trPx = 0, trSig = '', trVer = 0, trUse = 0, trSeen = -1, trBuilt = 0, trFail = false;
+  function trInval(gx, gy){ for(let cx = Math.floor((gx - 1)/TRCW); cx <= Math.floor((gx + 1)/TRCW); cx++) for(let r = gy - 1; r <= gy; r++){ const key = cx*256 + r, e = trMap.get(key); if(e){ trPx -= e.px; trMap.delete(key); } } }
+  function trActive(gy, ga, gb){ const T = wd.tr, dug = wd.dug, hd = dug.size > 0;
+    for(let gx=ga;gx<=gb;gx++){ const i = trIdx(gx, gy); if(i < 0) continue; if(T.act[i]) return true; if(hd){ const k = gx*256 + gy; if(dug.has(k) || dug.has(k + 1)) return true; } }
+    return false; }
+  function trBake(b, cx, gy, key){
+    const ga = cx*TRCW, gb = ga + TRCW - 1; let e;
+    if(!trActive(gy, ga - 1, gb + 1)) e = {empty:true, px:0, b, use:trUse};
+    else{ try{ /* paint once into a throwaway to learn the box, then again into a canvas just that big */
+        const probe = trProbe || (trProbe = document.createElement('canvas').getContext('2d')); probe.setTransform(1, 0, 0, 1, 0, 0); trRowCore(probe, gy, ga - 1, gb + 1);
+        const xa = Math.max(ga*GRID, Math.floor(trXa)), xb = Math.min((ga + TRCW)*GRID, Math.ceil(trXb)), ya = Math.max(gy*GRID - TRPU, Math.floor(trLo)), yb = Math.min(gy*GRID + GRID + TRPD, Math.ceil(trHi));
+        if(xb <= xa || yb <= ya) e = {empty:true, px:0, b, use:trUse};
+        else{ /* painted at the screen's own scale, on the world's device-pixel grid, so it is stamped back one to one with no resampling */
+          const Lp = Math.floor(xa*b), Tp = Math.floor(ya*b), cv = document.createElement('canvas'); cv.width = Math.ceil(xb*b) - Lp; cv.height = Math.ceil(yb*b) - Tp; const g = cv.getContext('2d');
+          g.setTransform(b, 0, 0, b, -Lp, -Tp); trRowCore(g, gy, ga - 1, gb + 1); e = {cv, px:cv.width*cv.height, b, use:trUse, Lp, Tp}; }
+      }catch(err){ trFail = true; trMap.clear(); trPx = 0; noteError(err); return null; } }
+    trMap.set(key, e); trPx += e.px;
+    if(trPx > TR_BUDGET){ const old = [...trMap.entries()].filter(([q, v]) => v.use !== trUse && v.cv).sort((u, v) => u[1].use - v[1].use); for(const [q, v] of old){ if(trPx <= TR_BUDGET) break; trMap.delete(q); trPx -= v.px; } }
+    return e; }
+  function trRow(c, gy, ga, gb, t, b){
+    if(!wd.tr) return;
+    if(!b || trFail){ trRowCore(c, gy, ga, gb); trRowAnim(c, gy, ga, gb, t); return; }
+    if(trSeen !== gcTick){ trSeen = gcTick; trBuilt = 0; trUse++; }
+    const sig = (lowFx ? 1 : 0) + '|' + wd.seed + '|' + wd.tr.sig + '|' + trVer; if(sig !== trSig){ trMap.clear(); trPx = 0; trSig = sig; }
+    for(let cx = Math.floor(ga/TRCW), cx1 = Math.floor(gb/TRCW); cx <= cx1; cx++){
+      const key = cx*256 + gy; let e = trMap.get(key);
+      if(e && e.b !== b){ trPx -= e.px; trMap.delete(key); e = null; }
+      if(!e && trBuilt < 6){ trBuilt++; e = trBake(b, cx, gy, key); }
+      const X0 = cx*TRCW*GRID, Y0 = gy*GRID - TRPU;
+      if(e){ e.use = trUse; if(e.cv){ c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(e.cv, e.Lp + Math.round(gEx), e.Tp + Math.round(gEy)); c.setTransform(gK, 0, 0, gK, gEx, gEy); } }
+      else if(trActive(gy, cx*TRCW - 1, cx*TRCW + TRCW)){ c.save(); c.beginPath(); c.rect(X0, Y0, TRCW*GRID, TRSH); c.clip(); trRowCore(c, gy, cx*TRCW - 1, cx*TRCW + TRCW); c.restore(); } /* not baked yet: paint it directly this once */
+    }
+    trRowAnim(c, gy, ga, gb, t);
   }
   /* a new world, or a loaded one: the ground, then the reeds that grow by its water */
   function trBegin(S, gone){
+    trVer++;
     let tz = Array.isArray(S.tz) ? S.tz.filter(Number.isInteger).slice(0, 1600) : null;
     if(!tz){ tz = []; if(Array.isArray(S.builds)){ /* an older save: keep the ground level under whatever is already there */
         const seen = new Set(), add = (x, y) => { if(!isFinite(x) || !isFinite(y)) return; const bx = Math.floor(x/80), by = Math.floor(y/80), k = bx*512 + by; if(seen.has(k) || tz.length >= 1600) return; seen.add(k); tz.push(bx, by); };
@@ -1374,19 +1625,20 @@
         for(const f of S.fires || []) add(f.x, f.y); for(const b of S.benches || []) add(b.x, b.y); for(const d of S.drops || []) add(d.x, d.y);
         if(S.home) add(S.home.x, S.home.y); if(S.bed) add(S.bed.x, S.bed.y); if(S.p) add(S.p.x, S.p.y);
         if(S.cu && Array.isArray(S.cu.carts)) for(const ct of S.cu.carts) if(ct) add(ct.x, ct.y); } }
-    wd.tz = tz; const T = wd.tr = trGen(S.seed, wd.nodes, tz);
-    wd.dug = new Map(); for(const d of S.dug || []){ const i = trIdx(d[0], d[1]), x = d[0]*GRID + 10, y = d[1]*GRID + 10; if(x < WD.EDGE + 8 || x > WD.W - WD.EDGE - 8 || y < WD.RIVER + 10 || y > WD.H - WD.RIVER - 10 || (i >= 0 && (T.rim[i] || T.tw[i]))) continue; wd.dug.set(dkey(d[0], d[1]), d[2]); }
+    wd.tz = tz; wd.dug = new Map(); const T = wd.tr = trGen(S.seed, wd.nodes, tz);
+    for(const d of S.dug || []){ const i = trIdx(d[0], d[1]), x = d[0]*GRID + 10, y = d[1]*GRID + 10; if(x < WD.EDGE + 8 || x > WD.W - WD.EDGE - 8 || y < WD.RIVER + 10 || y > WD.H - WD.RIVER - 10 || (i >= 0 && (T.rd[i] || T.tw[i] || !trFlat(d[0], d[1])))) continue; wd.dug.set(dkey(d[0], d[1]), d[2]); }
     wd.dwet = new Set();
-    for(const n of wd.nodes){ if(n.gone || n.x < 140 || n.x > 2220 || n.y < 160 || n.y > 1440) continue; const i = trIdx(Math.floor(n.x/GRID), Math.floor(n.y/GRID)); if(i >= 0 && (T.rim[i]===1 || T.rim[i]===3 || T.tw[i])){ n.gone = true; n.perm = true; n.ready = 0; } }
+    for(const n of wd.nodes){ if(n.gone || n.x < 140 || n.x > 2220 || n.y < 160 || n.y > 1440) continue; const i = trIdx(Math.floor(n.x/GRID), Math.floor(n.y/GRID)); if(i >= 0 && (T.rd[i] || T.tw[i])){ n.gone = true; n.perm = true; n.ready = 0; } }
     const RE = wdRng('terrain-reeds:' + wd.seed), occ = new Map(), ck = (x, y) => Math.floor(x/40)*4096 + Math.floor(y/40);
     for(const n of wd.nodes){ if(n.gone || !(n.x >= 120 && n.x <= 2240 && n.y >= 150 && n.y <= 1450)) continue; const kk = ck(n.x, n.y); let a = occ.get(kk); if(!a) occ.set(kk, a = []); a.push(n); }
     const free = (x, y, sp) => { for(let i=-1;i<=1;i++) for(let j=-1;j<=1;j++){ const a = occ.get(ck(x, y) + i*4096 + j); if(a) for(const n of a) if(hyp(n.x - x, n.y - y) < n.sp + sp) return false; } return true; };
-    for(const q of T.wl){ if(q.k===2) continue; for(const [dx, dy] of DIRS){ if(RE() > .4) continue; const gx = q.gx + dx, gy = q.gy + dy, i = trIdx(gx, gy); if(i < 0 || T.rim[i] || T.tw[i]) continue;
+    for(const q of T.wl){ if(q.k===2) continue; for(const [dx, dy] of DIRS){ if(RE() > .4) continue; const gx = q.gx + dx, gy = q.gy + dy, i = trIdx(gx, gy); if(i < 0 || T.rd[i] || T.tw[i]) continue;
       const x = gx*GRID + 10 + (RE() - .5)*8, y = gy*GRID + 10 + (RE() - .5)*8; if(!free(x, y, 8)) continue;
-      const n = {id:wd.nodes.length, k:'reed', x, y, r:6, sp:8, v:RE(), hp:0, gone:false, ready:0, shk:0, ore:null, sol:false}; wd.nodes.push(n); const kk = ck(x, y); let a = occ.get(kk); if(!a) occ.set(kk, a = []); a.push(n);
+      const n = {id:wd.rid++, k:'reed', x, y, r:6, sp:8, v:RE(), hp:0, gone:false, ready:0, shk:0, ore:null, sol:false}; wd.nodes.push(n); const kk = ck(x, y); let a = occ.get(kk); if(!a) occ.set(kk, a = []); a.push(n);
       const rg = S.regrow && S.regrow[n.id]; if(isFinite(rg)) n.ready = +rg; if(gone.has(n.id)) n.gone = true; } }
     trWetUpdate();
   }
+
 
   // ---- saves ----
   const finite = (v, d) => typeof v==='number' && isFinite(v) ? v : d;
@@ -1452,7 +1704,7 @@
     menuPadIdx = null; wd.cur = 0; wd.pauseMenu = false;
     wd.crew = [0,1,2,3].map(i=>({on:i===0, pad:i===0 ? null : -1, kit:null}));
     (S.crew || []).forEach((c, k)=>{ if(c && k < 3){ wd.crew[k + 1].kit = mkKit(c); cuGift(wd.crew[k + 1].kit.inv, wd.crew[k + 1].kit.jr); } });
-    wd.unodes = G.nodes.filter(n=>inUnder(n)); wd.uspawns = G.uspawns || []; wd.enodes = G.nodes.filter(n=>inEnch(n)); wd.espawns = G.espawns || []; wd.ringNodes = G.nodes.filter(n=>n.k==='fairyring'); wd.spec = {}; for(const n of G.nodes) if(SPECK.has(n.k) && !wd.spec[n.k]) wd.spec[n.k] = n;
+    wd.unodes = G.nodes.filter(n=>inUnder(n)); wd.uspawns = G.uspawns || []; wd.enodes = G.nodes.filter(n=>inEnch(n)); wd.espawns = G.espawns || []; wd.ringNodes = G.nodes.filter(n=>n.k==='fairyring'); wd.rid = G.n0; wd.spec = {}; for(const n of G.nodes) if(SPECK.has(n.k) && !wd.spec[n.k]) wd.spec[n.k] = n;
     const p0 = S.p || {x:spawnPt.x, y:spawnPt.y, hp:WD.hp, hunger:WD.hunger, thirst:WD.thirst};
     wd.p = {action:null, x:p0.x, y:p0.y, z:0, vz:0, z0:0, air:false, h:PH, rollT:0, rollCd:0, dx:0, dy:1, r:9, hp:p0.hp, maxHp:WD.hp, hunger:p0.hunger, thirst:p0.thirst == null ? WD.thirst : p0.thirst, fx:0, fy:1, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:S.torch || 0};
     const gone = new Set(S.gone || []);
@@ -1872,6 +2124,11 @@
   const jrHas = tag => wd.jr.e.some(e=>e.g.includes(tag) && !jrStale(e));
   function jrExpire(){ const J = wd.jr; if(J.e.some(e=>jrStale(e))) J.e = J.e.filter(e=>!jrStale(e)); }
   const JR_AREAS = {desert:'Rocky Desert', frontier:'Eastern Frontier', caves:'Shardling Caves', forest:'Enchanted Forest'};
+  const UCOLD = [.34, .38, .5, .12], ECOLD = [.12, .18, .14, .08]; /* the drowned caverns bite; the ember hollows are warm */
+  function sbStep(p){ /* crossing into one of the caves' or the forest's biomes names it */
+    const u = inUnder(p), e = !u && inEnch(p), sb = u ? 1 + bandIx(UBAND, p.x - UNDER.left) : e ? 5 + bandIx(EBAND, p.x - ENCH.left) : 0;
+    if(sb === p.sb) return; p.sb = sb; if(sb && !(wd.dead > 0)) wdBanner(sb < 5 ? UNAMES[sb - 1] : ENAMES[sb - 5], sb < 5 ? 'Shardling Caves' : 'Enchanted Forest', 2600, true);
+  }
   function jrArea(p){ /* the first time you step onto new ground with a journal, it gets a page */
     if(!cuHasJournal()) return; const ar = inEnch(p) ? 'forest' : inUnder(p) ? 'caves' : p.x > DESERT.right ? 'frontier' : p.x > WD.W - WD.EDGE ? 'desert' : '';
     const A = wd.jr.a || (wd.jr.a = {}); if(!ar || A[ar]) return; A[ar] = 1;
@@ -2015,8 +2272,9 @@
   function cuPlayerStep(s){
     const p = wd.p, T = wd.t, main = onMain(p), under = inUnder(p), ench = inEnch(p), shelter = cuShelter(p);
     p.jrT = (p.jrT || 0) + s; if(p.jrT >= 2){ p.jrT = 0; jrExpire(); jrArea(p); }
+    sbStep(p);
     const rain = main && shelter >= 1 && p.z < 12 ? (wd.rain || 0) : 0;
-    let cold = under ? .38 : ench ? .12 : SEASON_COLD[seasonN(T) & 3] + darkAt(T)*.85 + rain*.4;
+    let cold = under ? UCOLD[bandIx(UBAND, p.x - UNDER.left)] : ench ? ECOLD[bandIx(EBAND, p.x - ENCH.left)] : SEASON_COLD[seasonN(T) & 3] + darkAt(T)*.85 + rain*.4;
     cold *= shelter; if(clsHas('survivalist')) cold *= (skHas('sv2') ? .55 : .75);
     /* wet: soaked by rain, dried only at a fire (or, very slowly, in clear daylight) */
     const fire = p.z < 12 ? nearFire(62, true) : null;
@@ -3062,7 +3320,7 @@
   }
   function buildsNear(x, y, r, fn){ buildsRect(x - r - GRID, y - r - GRID, x + r + GRID, y + r + GRID, fn); } /* every built piece whose cell is within r of x, y */
   const NGC = 64, ngKey = (cx, cy) => (cx + 4)*1024 + (cy + 4);
-  function buildNodeGrid(){ const g = new Map(); for(const n of wd.nodes){ const k = ngKey(Math.floor(n.x/NGC), Math.floor(n.y/NGC)); let a = g.get(k); if(!a) g.set(k, a = []); a.push(n); } wd.ng = g; }
+  function buildNodeGrid(){ const g = new Map(); for(const n of wd.nodes){ if(n.dead) continue; const k = ngKey(Math.floor(n.x/NGC), Math.floor(n.y/NGC)); let a = g.get(k); if(!a) g.set(k, a = []); a.push(n); } wd.ng = g; }
   function nodesRect(xa, ya, xb, yb, fn){ const g = wd.ng; if(!g) return; const c1 = Math.floor(xb/NGC), d1 = Math.floor(yb/NGC);
     for(let cx = Math.floor(xa/NGC); cx <= c1; cx++) for(let cy = Math.floor(ya/NGC); cy <= d1; cy++){ const a = g.get(ngKey(cx, cy)); if(a) for(let i = 0; i < a.length; i++){ const n = a[i]; if(n.x >= xa && n.x <= xb && n.y >= ya && n.y <= yb) fn(n); } } }
   function nodesNear(x, y, r, fn){ const g = wd.ng; if(!g) return; const c0 = Math.floor((x - r)/NGC), c1 = Math.floor((x + r)/NGC), d0 = Math.floor((y - r)/NGC), d1 = Math.floor((y + r)/NGC);
@@ -3076,7 +3334,6 @@
         for(let i = 0; i < a.length; i++){ const n = a[i]; if(!n.sol || n.gone) continue; if(hyp(n.x - x, n.y - y) < n.r + r) return true; } } }
     for(const f of wd.fires) if(hyp(f.x - x, f.y - y) < 10 + r) return true;
     for(const b of wd.benches) if(hyp(b.x - x, b.y - y) < 13 + r) return true;
-    if(z < 20 && wd.tr && trHit(x, y, r)) return true;
     return !inWorld(x,y,r);
   }
   const bandHit = (b, z, h) => { const zb = (b.l || 0)*LH; return z + h > zb + 0.5 && z < zb + LH - 0.5; }; /* does a body from z to z+h share height with this piece's storey? */
@@ -3105,13 +3362,14 @@
   function pFollow(o){ /* walking: ride the surface up and down, or step off an edge and fall */
     if(o.air) return;
     const S = surfaceAt(o.x, o.y, o.z);
-    if(S >= o.z - STEP - 0.01) o.z = S; else { o.air = true; o.vz = 0; o.z0 = o.z; }
+    if(S >= o.z - STEP - 0.01) o.z = S; else { o.air = true; o.vz = 0; o.z0 = o.z + (o.th || 0); }
   }
   function pGravity(s){
     const p = wd.p; if(!p.air) return;
     p.vz -= GRAV*s; const nz = p.z + p.vz*s, S = surfaceAt(p.x, p.y, p.z);
     if(nz > S){ p.z = nz; return; }
-    const fall = p.z0 - S; p.z = S; p.air = false; p.vz = 0;
+    const fall = p.z0 - (p.th || 0) - S; p.z = S; p.air = false; p.vz = 0;
+    if(fall > 8 && wd.tr) for(let n=0;n<6;n++) wdFx({kind:'chip', x:p.x + (Math.random() - .5)*10, y:p.y + 4, vx:(Math.random() - .5)*70, vy:-20 - Math.random()*40, col:n%2 ? '#8a7556' : '#6d5a3c', t:460});
     if(fall > FALL_SAFE){ const dmg = Math.ceil((fall - FALL_SAFE)/10); thud(0.25, 0.16, 300); wdHurtP(dmg, 'Fell from a height'); wd.shake = Math.max(wd.shake, 140); }
     else if(fall > 6) thud(0.08, 0.08, 500);
   }
@@ -3157,16 +3415,16 @@
       if(d > 0.01){ o.x = nx + dx/d*o.r; o.y = ny + dy/d*o.r; }
       else { const px = GRID/2 + o.r - Math.abs(o.x - b.x), py = GRID/2 + o.r - Math.abs(o.y - b.y); if(px < py) o.x += (o.x >= b.x ? 1 : -1)*px; else o.y += (o.y >= b.y ? 1 : -1)*py; }
       if(b.k==='spikes') o.spiked = true; });
-    if(oz < 20 && wd.tr) trPush(o);
     const q=clampWorld(o.x,o.y,o.r);o.x=q.x;o.y=q.y;
   }
   function moveBy(o,dx,dy){ /* in small steps, so a roll never jumps a wall */
     const n=Math.max(1,Math.ceil(hyp(dx,dy)/2));
-    if(o!==wd.p){ for(let i=0;i<n;i++){ o.x+=dx/n; o.y+=dy/n; wdSolid(o); } return; }
+    if(o!==wd.p){ for(let i=0;i<n;i++){ const ox=o.x, oy=o.y; o.x+=dx/n; o.y+=dy/n; wdSolid(o);
+        if(wd.tr && !trWalkOk(o, ox, oy)){ const nx=o.x, ny=o.y; o.x=nx; o.y=oy; if(!trWalkOk(o, ox, oy)){ o.x=ox; o.y=ny; if(!trWalkOk(o, ox, oy)){ o.x=ox; o.y=oy; } } } } return; }
     for(let i=0;i<n;i++){
-      const ox=o.x, oy=o.y, sx=dx/n, sy=dy/n, tryAt=(x,y)=>{ const oz=o.z; let zt=oz; if(!o.air){ const S=surfaceAt(x,y,oz); if(S>=oz-STEP-0.01) zt=S; } o.x=x; o.y=y; o.z=zt; wdSolid(o); o.z=oz; /* collide at the height the step will reach, not the old one */ return !zBlocked(o,zt); };
+      const ox=o.x, oy=o.y, sx=dx/n, sy=dy/n, tryAt=(x,y)=>{ const oz=o.z; let zt=oz; if(!o.air){ const S=surfaceAt(x,y,oz); if(S>=oz-STEP-0.01) zt=S; } o.x=x; o.y=y; o.z=zt; wdSolid(o); o.z=oz; /* collide at the height the step will reach, not the old one */ return !zBlocked(o,zt) && trOk(o,ox,oy); };
       if(!tryAt(ox+sx,oy+sy) && !tryAt(ox+sx,oy) && !tryAt(ox,oy+sy)){ o.x=ox; o.y=oy; }
-      pFollow(o);
+      pFollow(o); trSettle(o);
     }
   }
   function wdCancelAction(){ if(wd && wd.p.action){ wd.p.action=null;  } }
@@ -3553,7 +3811,7 @@
     if(!B || l < 0 || l > MAXL) return false;
     if(l > 0 && !B.up) return false;
     if(!inWorld(x,y,h))return false;
-    if(l===0 && !trCanBuild(gx, gy)) return false;
+    if(l===0 && !trCanBuild(gx, gy, k)) return false;
     if(B.floor ? floorAt(gx,gy,l) : wd.builds.has(gkey(gx,gy,l))) return false;
     if(!reachOk(l)) return false;
     const box = {x, y}, under = l > 0 ? structOf(gx, gy, l - 1) : null;
@@ -3902,9 +4160,10 @@
     cuPlayerStep(s);
     const ml = hyp(I.mx, I.my);
     if(ml > 0.2 && p.swingT <= 0 && p.rollT <= 0){ p.fx=I.mx/ml; p.fy=I.my/ml; }
-    const ox0 = p.x, oy0 = p.y;
+    const ox0 = p.x, oy0 = p.y; trSettle(p); if(!p.air) p.vth = (p.vth || 0) + ((p.tv || 0) - (p.vth || 0))*Math.min(1, dt*.02); /* the ground you stand on, followed smoothly when it steps */
     if(p.rollT > 0){ p.rollT -= dt; moveBy(p, p.dx*WD.rollSpd*s, p.dy*WD.rollSpd*s); }
     else { const k=(p.swingT>0?WD_SW.move:1)*accessorySpeed()*cuSpeed()*trSpeed(p);moveBy(p,I.mx*WD.spd*k*s,I.my*WD.spd*k*s); }
+    if(p.clWant){ p.clT = (p.clT || 0) + dt; p.clWant = false; if(Math.random() < dt/110) wdFx({kind:'chip', x:p.x + p.fx*8, y:p.y + p.fy*8, vx:-p.fx*30 + (Math.random() - .5)*40, vy:-20 - Math.random()*30, col:'#7a5d3a', t:420}); } else p.clT = 0; /* pulling yourself out of a hole */
     pGravity(s); wdFootsteps(p, hyp(p.x - ox0, p.y - oy0), wd.cur);
     if(p.z < 12 && inEnch(p) && p.inv <= 0) nodesNear(p.x, p.y, 28, n=>{ if(n.k==='briar' && !n.gone && p.inv <= 0 && hyp(n.x - p.x, n.y - p.y) < n.r + p.r + 2) wdHurtP(1, 'Torn apart by briars'); });
     if(!p.air && p.rollT <= 0 && zBlocked(p, p.z)) wdUnstick();
@@ -4214,6 +4473,7 @@
     if(id==='wispglass'){ blob(()=>{ c.moveTo(12,2); c.quadraticCurveTo(21,12,18,17); c.quadraticCurveTo(12,24,6,17); c.quadraticCurveTo(3,12,12,2); c.closePath(); },'#bff7e4',1.7); c.fillStyle='rgba(255,255,255,.7)'; c.beginPath(); c.ellipse(9.5,11,2,4.2,.3,0,Math.PI*2); c.fill(); c.fillStyle='rgba(60,160,140,.25)'; c.beginPath(); c.ellipse(14,16,3,2.4,0,0,Math.PI*2); c.fill(); return iconCache[id]=cv; }
     if(id==='moonpetal'){ line([[12,13],[12,22]],OL,3); line([[12,13],[12,22]],'#4f8a4a',1.4); for(let i=0;i<6;i++){ c.save(); c.translate(12,11); c.rotate(i/6*Math.PI*2+.3); blob(()=>c.ellipse(0,-5,2.6,5.2,0,0,Math.PI*2),'#dfeaff',1.3); c.restore(); } blob(()=>c.arc(12,11,2.6,0,Math.PI*2),'#fff2a8',1.2); return iconCache[id]=cv; }
     if(id==='moonbrew'){ blob(()=>{ c.moveTo(4,10); c.lineTo(18,10); c.quadraticCurveTo(18,20,11,20); c.quadraticCurveTo(4,20,4,10); c.closePath(); },'#d9d0bf',1.7); blob(()=>{ c.ellipse(11,10,7,2,0,0,Math.PI*2); },'#9cb8d8',1.2); c.strokeStyle=OL; c.lineWidth=2.4; c.beginPath(); c.arc(19,13,3,-1.2,1.3); c.stroke(); line([[8,7],[9,3]],'rgba(230,240,255,.8)',1); line([[13,7],[12,2]],'rgba(230,240,255,.8)',1); return iconCache[id]=cv; }
+    if(id==='compass'){ blob(()=>c.arc(12,12,9.5,0,Math.PI*2),'#c9a14a',2); blob(()=>c.arc(12,12,7,0,Math.PI*2),'#efe6cf',1.2); blob(()=>{ c.moveTo(12,4.6); c.lineTo(14.3,12); c.lineTo(9.7,12); c.closePath(); },'#c2304d',1); blob(()=>{ c.moveTo(12,19.4); c.lineTo(14.3,12); c.lineTo(9.7,12); c.closePath(); },'#4a4a56',1); c.fillStyle='#120c09'; c.beginPath(); c.arc(12,12,1.2,0,Math.PI*2); c.fill(); hi(8.6,7.8,2.2,1.2); return iconCache[id]=cv; }
     if(id==='wispcharm'){ loop(); blob(()=>{ c.moveTo(12,9); c.quadraticCurveTo(19,16,16,20); c.quadraticCurveTo(12,24,8,20); c.quadraticCurveTo(5,16,12,9); c.closePath(); },'#bff7e4',1.6); c.fillStyle='rgba(255,255,255,.75)'; c.beginPath(); c.ellipse(10.5,16,1.4,2.6,.3,0,Math.PI*2); c.fill(); return iconCache[id]=cv; }
     if(id==='ratcap' || id==='ironratcap'){ const iron=id==='ironratcap'; blob(()=>{ c.moveTo(4,18); c.quadraticCurveTo(3,6,12,6); c.quadraticCurveTo(21,6,20,18); c.closePath(); },iron ? '#aeb7bb' : '#a5774e',1.7); for(const x of [7,17]) blob(()=>c.ellipse(x,5.5,2.4,3.2,0,0,Math.PI*2),'#d9a8a0',1.1); hi(9,11,3,1.4); if(iron){ line([[6,16],[18,16]],'#5d676c',1.4); for(const x of [8,12,16]) blob(()=>c.arc(x,16,.8,0,Math.PI*2),'#e4ecef',.6); } else { c.setLineDash([1,1.6]); line([[6,16],[18,16]],'#e1bb86',.8); c.setLineDash([]); } return iconCache[id]=cv; }
     if(id==='ratvest' || id==='ironratmail' || id==='heartratvest'){ const iron=id==='ironratmail', wood=id==='heartratvest', stitch=iron ? '#5d676c' : wood ? '#c7dbe6' : '#e1bb86'; blob(()=>{ c.moveTo(6,4); c.lineTo(10,7); c.lineTo(14,7); c.lineTo(18,4); c.lineTo(20,10); c.lineTo(17,12); c.lineTo(17,21); c.lineTo(7,21); c.lineTo(7,12); c.lineTo(4,10); c.closePath(); },iron ? '#aeb7bb' : wood ? '#7d93a3' : '#b07842',1.7); line([[12,8],[12,21]],stitch,.9); for(const y of [11,14,17]) line([[10.5,y],[13.5,y]],stitch,.8); if(iron) for(const [x,y] of [[9,14],[15,14],[9,18],[15,18]]) blob(()=>c.arc(x,y,.8,0,Math.PI*2),'#e4ecef',.6); if(wood) for(const x of [9,15]) line([[x,10],[x,20]],'rgba(90,70,45,.7)',.9); hi(8.5,10,1.6,2.6); return iconCache[id]=cv; }
@@ -4589,25 +4849,31 @@
     c.restore();
   }
   const CRYST=[['#5fc9e6','#c9f6ff','#1d5f78'],['#9b7cf0','#e1d6ff','#43308c'],['#ee7fb0','#ffd6e8','#8a2f5c']];
-  function crystalAt(c,x,y,k,P,pl,dim){ /* one prism: a lit left face, a dark right face, a bright tip */
+  function crystalAt(c,x,y,k,P,pl,dim,ng){ /* one prism: a lit left face, a dark right face, a bright tip */
     c.beginPath(); c.moveTo(x-k*.5,y); c.lineTo(x-k*.62,y-k*2.4); c.lineTo(x,y-k*4); c.lineTo(x+k*.62,y-k*2.4); c.lineTo(x+k*.5,y); c.closePath();
     c.fillStyle=dim?'#4a5560':P[0]; c.fill(); c.strokeStyle=OL; c.lineWidth=1.2; c.stroke();
     c.fillStyle=dim?'rgba(255,255,255,.1)':P[1]; c.globalAlpha*=.55; c.beginPath(); c.moveTo(x-k*.42,y-k*.3); c.lineTo(x-k*.5,y-k*2.3); c.lineTo(x-k*.05,y-k*3.6); c.lineTo(x-k*.02,y-k*.5); c.closePath(); c.fill(); c.globalAlpha/=.55;
     c.fillStyle=P[2]; c.globalAlpha*=.45; c.beginPath(); c.moveTo(x+k*.05,y-k*.4); c.lineTo(x+k*.05,y-k*3.6); c.lineTo(x+k*.58,y-k*2.3); c.lineTo(x+k*.46,y-k*.2); c.closePath(); c.fill(); c.globalAlpha/=.45;
-    if(!dim){ c.fillStyle='rgba(255,255,255,'+(.45+.45*pl)+')'; c.fillRect(x-.8,y-k*3.5,1.6,1.6); }
+    if(!dim && !ng){ c.fillStyle='rgba(255,255,255,'+(.45+.45*pl)+')'; c.fillRect(x-.8,y-k*3.5,1.6,1.6); }
+  }
+  const STALC=[['#4b4656','#433f4e'],['#554a6a','#4a4060'],['#3f5258','#364a50'],['#4a3236','#3d2a2e']];
+  function stalagPaint(c,x,y,r,vv,bz){
+    c.fillStyle='rgba(0,0,0,.38)'; c.beginPath(); c.ellipse(x+3,y+3,r*1.15,r*.5,0,0,Math.PI*2); c.fill();
+    c.beginPath(); c.moveTo(x-r,y+2); c.quadraticCurveTo(x-r*.55,y-r*1.1,x-r*.1,y-r*2.5); c.quadraticCurveTo(x+r*.2,y-r*2.5,x+r*.45,y-r*1.2); c.quadraticCurveTo(x+r*.95,y-r*.5,x+r,y+2); c.closePath();
+    c.fillStyle=STALC[bz][vv]; c.fill(); c.strokeStyle=OL; c.lineWidth=1.5; c.stroke();
+    c.fillStyle='rgba(255,255,255,.12)'; c.beginPath(); c.moveTo(x-r*.7,y); c.quadraticCurveTo(x-r*.45,y-r*1.1,x-r*.15,y-r*2.2); c.lineTo(x-r*.1,y-r*.2); c.closePath(); c.fill();
+    c.fillStyle='rgba(0,0,0,.28)'; c.beginPath(); c.moveTo(x+r*.2,y-r*.4); c.lineTo(x+r*.45,y-r*1.2); c.quadraticCurveTo(x+r*.9,y-r*.5,x+r,y+2); c.lineTo(x+r*.2,y+2); c.closePath(); c.fill();
   }
   function drawUnderNode(c, n, t){ /* the cavern's furniture; returns false for anything it does not draw */
     const x=n.x, y=n.y, pl=.5+.5*Math.sin(t*2.1+n.id*1.7);
     if(n.k==='crystal'){ const P=CRYST[Math.floor(n.v*3)%3], k=n.r/13*1.15, sh=n.shk>0?Math.sin(n.shk/12)*1.6:0;
-      c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+3,n.r*1.2,n.r*.5,0,0,Math.PI*2); c.fill();
+      if(n.gone || !sprS || sh){ c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+3,n.r*1.2,n.r*.5,0,0,Math.PI*2); c.fill(); }
       if(n.gone){ for(const [dx,dy,s] of [[-5,1,.5],[3,2,.45],[8,-1,.35]]) crystalAt(c,x+dx,y+dy,k*s,P,0,true); return true; }
+      if(sprS && !sh){ const ci=Math.floor(n.v*3)%3, q=Math.round(n.r*2)/2, kq=q/13*1.15, e=sprGet('cy|'+ci+'|'+q,30,26,60,38,g=>{ g.fillStyle='rgba(0,0,0,.35)'; g.beginPath(); g.ellipse(3,3,q*1.2,q*.5,0,0,Math.PI*2); g.fill(); crystalAt(g,-q*.55,2,kq*.62,CRYST[ci],0,false,true); crystalAt(g,q*.6,3,kq*.55,CRYST[ci],0,false,true); crystalAt(g,-q*.1,4,kq*.95,CRYST[ci],0,false,true); crystalAt(g,q*.2,3,kq*.5,CRYST[ci],0,false,true); });
+        sprPut(c,e,x,y); c.fillStyle='rgba(255,255,255,'+(.45+.45*pl).toFixed(2)+')'; for(const [dx,dy,s2] of [[-.55,2,.62],[.6,3,.55],[-.1,4,.95],[.2,3,.5]]) c.fillRect(x+dx*n.r-.8,y+dy-k*s2*3.5,1.6,1.6); return true; }
       c.save(); c.translate(sh,0); crystalAt(c,x-n.r*.55,y+2,k*.62,P,pl); crystalAt(c,x+n.r*.6,y+3,k*.55,P,pl); crystalAt(c,x-n.r*.1,y+4,k*.95,P,pl); crystalAt(c,x+n.r*.2,y+3,k*.5,P,pl); c.restore(); return true; }
-    if(n.k==='stalag'){ const r=n.r;
-      c.fillStyle='rgba(0,0,0,.38)'; c.beginPath(); c.ellipse(x+3,y+3,r*1.15,r*.5,0,0,Math.PI*2); c.fill();
-      c.beginPath(); c.moveTo(x-r,y+2); c.quadraticCurveTo(x-r*.55,y-r*1.1,x-r*.1,y-r*2.5); c.quadraticCurveTo(x+r*.2,y-r*2.5,x+r*.45,y-r*1.2); c.quadraticCurveTo(x+r*.95,y-r*.5,x+r,y+2); c.closePath();
-      c.fillStyle=n.v<.5?'#4b4656':'#433f4e'; c.fill(); c.strokeStyle=OL; c.lineWidth=1.5; c.stroke();
-      c.fillStyle='rgba(255,255,255,.12)'; c.beginPath(); c.moveTo(x-r*.7,y); c.quadraticCurveTo(x-r*.45,y-r*1.1,x-r*.15,y-r*2.2); c.lineTo(x-r*.1,y-r*.2); c.closePath(); c.fill();
-      c.fillStyle='rgba(0,0,0,.28)'; c.beginPath(); c.moveTo(x+r*.2,y-r*.4); c.lineTo(x+r*.45,y-r*1.2); c.quadraticCurveTo(x+r*.9,y-r*.5,x+r,y+2); c.lineTo(x+r*.2,y+2); c.closePath(); c.fill(); return true; }
+    if(n.k==='stalag'){ const bz=n.bz|0, vv=n.v<.5?0:1;
+      if(sprS){ const q=Math.round(n.r*2)/2, e=sprGet('sg|'+q+'|'+vv+'|'+bz,30,46,60,56,g=>stalagPaint(g,0,0,q,vv,bz)); sprPut(c,e,x,y); } else stalagPaint(c,x,y,n.r,vv,bz); return true; }
     if(n.k==='bigshroom'){ const col=n.v<.5?['#38d6c0','#9ff7ea','#12786b']:['#d65ad0','#f6b0f1','#7a2275'], bob=Math.sin(t*1.4+n.id)*1;
       c.fillStyle='rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x+3,y+4,15,5,0,0,Math.PI*2); c.fill();
       c.fillStyle='#cfc6dc'; c.strokeStyle=OL; c.lineWidth=1.4; c.beginPath(); c.moveTo(x-4,y+3); c.lineTo(x-3,y-18); c.lineTo(x+3,y-18); c.lineTo(x+4,y+3); c.closePath(); c.fill(); c.stroke();
@@ -4632,32 +4898,45 @@
       if(!dim && !bareGfx){ c.fillStyle='rgba(235,252,255,'+(.4+.5*pl)+')'; c.fillRect(x-1+Math.sin(t*1.6)*14,y-14+Math.cos(t*1.2)*5,2,2); } return true; }
     return false;
   }
-  function drawUnderGround(c, t, x0, y0, x1, y1, vis){
+  const POOLU=[['#0e2c3b','#14485d','140,235,245'],['#2a1f4a','#3d2f75','190,170,255'],['#0b2a2c','#12525a','140,245,225'],['#241418','#4a2a30','255,150,90']], POOLE=[['#0c2236','#1b4a6a','170,220,255'],['#14122a','#2a2252','200,170,255'],['#0e3a4a','#2a8aa0','190,245,255'],['#241c40','#4a3a86','220,190,255']];
+  function drawUnderGround(c, t, vis){ /* the caves' floor, four biomes of it: painted into tiles once, so only the ripples on the lakes (drawUnderWater) move */
     const R=UNDER, D=wd.deco.under; if(!D) return;
     c.fillStyle='#2a2631'; c.fillRect(R.left,R.top,R.right-R.left,R.bottom-R.top);
     for(const q of D.patches) if(vis(q.x,q.y,q.rx)){ c.fillStyle=q.col; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.fill(); }
-    for(const q of D.pools) if(vis(q.x,q.y,q.rx+6)){ const rip=.5+.5*Math.sin(t*1.3+q.x);
-      c.fillStyle='#0e2c3b'; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.fill();
-      c.fillStyle='#14485d'; c.beginPath(); c.ellipse(q.x-2,q.y-1,q.rx*.78,q.ry*.7,0,0,Math.PI*2); c.fill();
-      c.strokeStyle='rgba(140,235,245,'+(.18+.22*rip)+')'; c.lineWidth=1; c.beginPath(); c.ellipse(q.x,q.y,q.rx*(.35+.4*rip),q.ry*(.35+.4*rip),0,0,Math.PI*2); c.stroke();
+    if(!bareGfx){ const SC=['#3d3849','#4a3f5e','#33505a','#5a3a38'];
+      for(let b=0;b<4;b++){ c.fillStyle=SC[b]; for(const q of D.specks[b]) if(vis(q[0],q[1],4)) c.fillRect(q[0],q[1],q[2]*1.4,q[2]); }
+      c.lineCap='round'; c.lineWidth=4; c.strokeStyle='rgba(255,90,30,.2)'; c.beginPath(); for(const q of D.embers) if(vis(q.x,q.y,30)){ c.moveTo(q.x,q.y); for(const [dx,dy] of q.pts) c.lineTo(q.x+dx,q.y+dy); } c.stroke();
+      c.lineWidth=1.1; c.strokeStyle='rgba(255,150,60,.85)'; c.beginPath(); for(const q of D.embers) if(vis(q.x,q.y,30)){ c.moveTo(q.x,q.y); for(const [dx,dy] of q.pts) c.lineTo(q.x+dx,q.y+dy); } c.stroke(); }
+    for(const q of D.pools) if(vis(q.x,q.y,q.rx+6)){ const P=POOLU[q.t];
+      c.fillStyle=P[0]; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.fill();
+      c.fillStyle=P[1]; c.beginPath(); c.ellipse(q.x-2,q.y-1,q.rx*.78,q.ry*.7,0,0,Math.PI*2); c.fill();
       c.strokeStyle='rgba(60,40,60,.8)'; c.lineWidth=1.6; c.beginPath(); c.ellipse(q.x,q.y,q.rx,q.ry,0,0,Math.PI*2); c.stroke(); }
-    c.strokeStyle='rgba(8,6,12,.55)'; c.lineWidth=.9; c.lineCap='round';
-    for(const q of D.cracks) if(vis(q.x,q.y,20)){ c.beginPath(); c.moveTo(q.x,q.y); for(const [dx,dy] of q.pts) c.lineTo(q.x+dx,q.y+dy); c.stroke(); }
+    c.strokeStyle='rgba(8,6,12,.55)'; c.lineWidth=.9; c.lineCap='round'; c.beginPath();
+    for(const q of D.cracks) if(vis(q.x,q.y,20)){ c.moveTo(q.x,q.y); for(const [dx,dy] of q.pts) c.lineTo(q.x+dx,q.y+dy); } c.stroke();
     c.lineCap='butt';
     for(const q of D.edge) if(vis(q.x,q.y,24)) toonStone(c,q.x,q.y,q.r,q.r*.72,'#1d1a24');
   }
+  function drawUnderWater(c, t, vis){ /* the live part: a ripple spreading on each lake in sight */
+    const D=wd.deco.under; if(!D) return; c.lineWidth=1;
+    for(const q of D.pools) if(vis(q.x,q.y,q.rx+6)){ const rip=.5+.5*Math.sin(t*1.3+q.x); c.strokeStyle='rgba('+POOLU[q.t][2]+','+(.18+.22*rip).toFixed(2)+')'; c.beginPath(); c.ellipse(q.x,q.y,q.rx*(.35+.4*rip),q.ry*(.35+.4*rip),0,0,Math.PI*2); c.stroke(); }
+  }
   /* ---- the Enchanted Forest ---- */
-  function drawEnchGround(c, t, vis){
+  function drawEnchGround(c, t, vis){ /* tiled like the caves' floor; drawEnchWater adds the ripples */
     const R = ENCH, D = wd.deco.ench; if(!D) return;
     c.fillStyle = '#1b2a3a'; c.fillRect(R.left, R.top, R.right - R.left, R.bottom - R.top);
     for(const q of D.patches) if(vis(q.x, q.y, q.rx)){ c.fillStyle = q.col; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill(); }
-    for(const q of D.pools) if(vis(q.x, q.y, q.rx + 6)){ const rip = .5 + .5*Math.sin(t*1.1 + q.x);
-      c.fillStyle = '#0c2236'; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill();
-      c.fillStyle = '#1b4a6a'; c.beginPath(); c.ellipse(q.x - 2, q.y - 1, q.rx*.78, q.ry*.7, 0, 0, Math.PI*2); c.fill();
-      c.fillStyle = 'rgba(220,235,255,' + (.25 + .25*rip).toFixed(2) + ')'; c.beginPath(); c.ellipse(q.x + q.rx*.2, q.y - q.ry*.2, q.rx*.12, q.ry*.1, 0, 0, Math.PI*2); c.fill();
-      c.strokeStyle = 'rgba(170,220,255,' + (.15 + .2*rip).toFixed(2) + ')'; c.lineWidth = 1; c.beginPath(); c.ellipse(q.x, q.y, q.rx*(.35 + .4*rip), q.ry*(.35 + .4*rip), 0, 0, Math.PI*2); c.stroke();
+    for(const q of D.pools) if(vis(q.x, q.y, q.rx + 6)){ const P = POOLE[q.t];
+      c.fillStyle = P[0]; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = P[1]; c.beginPath(); c.ellipse(q.x - 2, q.y - 1, q.rx*.78, q.ry*.7, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = 'rgba(220,235,255,.4)'; c.beginPath(); c.ellipse(q.x + q.rx*.2, q.y - q.ry*.2, q.rx*.12, q.ry*.1, 0, 0, Math.PI*2); c.fill();
       c.strokeStyle = 'rgba(30,50,70,.9)'; c.lineWidth = 1.6; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.stroke(); }
-    if(!bareGfx) drawTufts(c, D.tufts, vis, lowFx ? 2 : 1);
+    if(!bareGfx){ drawTufts(c, D.tufts, vis, lowFx ? 2 : 1);
+      for(const q of D.rings) if(vis(q.x, q.y, q.r + 8)){ c.strokeStyle = 'rgba(200,170,255,.16)'; c.lineWidth = 3; c.beginPath(); c.arc(q.x, q.y, q.r, 0, Math.PI*2); c.stroke();
+        for(let i = 0; i < q.n; i++){ const a = i/q.n*Math.PI*2 + q.v*6, x = q.x + Math.cos(a)*q.r, y = q.y + Math.sin(a)*q.r*.8; c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(x - 2, y + 1, 5, 1.6); c.fillStyle = '#d9cdf2'; c.fillRect(x - .6, y - 2, 1.2, 3); c.fillStyle = i%2 ? '#f0b8e0' : '#b8e4f4'; c.beginPath(); c.ellipse(x, y - 2.4, 2.4, 1.5, 0, Math.PI, 0); c.fill(); } } }
+  }
+  function drawEnchWater(c, t, vis){
+    const D = wd.deco.ench; if(!D) return; c.lineWidth = 1;
+    for(const q of D.pools) if(vis(q.x, q.y, q.rx + 6)){ const rip = .5 + .5*Math.sin(t*1.1 + q.x); c.strokeStyle = 'rgba(' + POOLE[q.t][2] + ',' + (.15 + .2*rip).toFixed(2) + ')'; c.beginPath(); c.ellipse(q.x, q.y, q.rx*(.35 + .4*rip), q.ry*(.35 + .4*rip), 0, 0, Math.PI*2); c.stroke(); }
   }
   function drawMotes(c, t, x0, y0, vw, vh){ /* drifting specks of light, in the air over everything */
     const n = lowFx ? 16 : 38, cols = ['190,240,255', '230,200,255', '200,255,225']; c.globalCompositeOperation = 'lighter';
@@ -4666,6 +4945,29 @@
       c.fillStyle = `rgba(${col},${(a*.18).toFixed(3)})`; c.beginPath(); c.arc(x, y, 4, 0, Math.PI*2); c.fill();
       c.fillStyle = `rgba(${col},${a.toFixed(3)})`; c.fillRect(x - .7, y - .7, 1.4, 1.4); }
     c.globalCompositeOperation = 'source-over';
+  }
+  function moonPaint(c, x, y, ready){ /* a moonbloom: shut bud, or open flower */
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 1, y + 1, 6, 2.2, 0, 0, Math.PI*2); c.fill();
+    c.lineCap = 'round'; c.strokeStyle = OL; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - (ready ? 9 : 4)); c.stroke(); c.strokeStyle = '#4f8a4a'; c.lineWidth = 1.4; c.stroke(); c.lineCap = 'butt';
+    if(!ready){ c.fillStyle = '#9cb8d8'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y - 6, 2, 3, 0, 0, Math.PI*2); c.fill(); c.stroke(); return; }
+    for(let i=0;i<6;i++){ c.save(); c.translate(x, y - 10); c.rotate(i/6*Math.PI*2 + .3); c.fillStyle = '#dfeaff'; c.strokeStyle = OL; c.lineWidth = .8; c.beginPath(); c.ellipse(0, -3.6, 2, 4, 0, 0, Math.PI*2); c.fill(); c.stroke(); c.restore(); }
+    c.fillStyle = '#fff2a8'; c.beginPath(); c.arc(x, y - 10, 2, 0, Math.PI*2); c.fill();
+  }
+  function briarPaint(c, x, y, v, R, sh){
+    c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 2, y + 3, R*1.1, R*.45, 0, 0, Math.PI*2); c.fill();
+    c.save(); c.translate(x + sh, y); c.lineCap = 'round';
+    for(const [w, col] of [[3.4, OL], [1.8, '#3f5a2a']]){ c.strokeStyle = col; c.lineWidth = w; c.beginPath();
+      for(let i=0;i<5;i++){ const a = i/5*Math.PI*2 + v*3; c.moveTo(Math.cos(a)*R*.2, -R*.5 + Math.sin(a)*R*.2); c.quadraticCurveTo(Math.cos(a + .8)*R*1.1, -R*.6 + Math.sin(a + .8)*R*.6, Math.cos(a)*R, -R*.4 + Math.sin(a)*R*.7); } c.stroke(); }
+    c.strokeStyle = '#d4e4b4'; c.lineWidth = 1; c.beginPath(); for(let i=0;i<9;i++){ const a = i/9*Math.PI*2 + v*5, px = Math.cos(a)*R*.95, py = -R*.45 + Math.sin(a)*R*.65; c.moveTo(px, py); c.lineTo(px + Math.cos(a)*3.2, py + Math.sin(a)*2.4 - 1); } c.stroke();
+    if(v > .55){ c.fillStyle = '#d6577d'; c.strokeStyle = OL; c.lineWidth = .7; c.beginPath(); c.arc(R*.3, -R*.9, 2, 0, Math.PI*2); c.fill(); c.stroke(); }
+    c.restore(); c.lineCap = 'butt';
+  }
+  function stonePaint(c, x, y, r){ /* a standing stone (its glowing cracks are drawn live on top) */
+    c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 3, y + 3, r*1.1, r*.5, 0, 0, Math.PI*2); c.fill();
+    c.beginPath(); c.moveTo(x - r*.9, y + 2); c.quadraticCurveTo(x - r*.8, y - r*1.6, x - r*.2, y - r*2.3); c.quadraticCurveTo(x + r*.5, y - r*2.2, x + r*.85, y - r*.5); c.lineTo(x + r*.9, y + 2); c.closePath();
+    c.fillStyle = '#586578'; c.fill(); c.strokeStyle = OL; c.lineWidth = 1.5; c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.12)'; c.beginPath(); c.moveTo(x - r*.6, y); c.quadraticCurveTo(x - r*.5, y - r*1.4, x - r*.15, y - r*2); c.lineTo(x - r*.05, y - r*.2); c.closePath(); c.fill();
+    c.fillStyle = '#3f5a52'; c.beginPath(); c.ellipse(x - r*.5, y - .5, r*.5, r*.2, 0, 0, Math.PI*2); c.fill();
   }
   function drawEnchNode(c, n, t){ /* the fairy ring, the moonblooms, briars, standing stones and the Heart grove cache; false for anything else */
     const x = n.x, y = n.y, pl = .5 + .5*Math.sin(t*2 + n.id*1.3);
@@ -4681,28 +4983,14 @@
       for(let i=0;i<4;i++){ const ph = (t*.5 + i*.25 + n.v)%1; c.fillStyle = 'rgba(240,225,255,' + ((1 - ph)*.8).toFixed(2) + ')'; c.fillRect(x + Math.sin(i*2.3 + t)*R*.5, y - ph*30, 1.6, 1.6); }
       return true; }
     if(n.k==='moonbloom'){ if(n.gone) return true; const ready = n.ready <= wd.t;
-      c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 1, y + 1, 6, 2.2, 0, 0, Math.PI*2); c.fill();
-      c.lineCap = 'round'; c.strokeStyle = OL; c.lineWidth = 3; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - (ready ? 9 : 4)); c.stroke(); c.strokeStyle = '#4f8a4a'; c.lineWidth = 1.4; c.stroke(); c.lineCap = 'butt';
-      if(!ready){ c.fillStyle = '#9cb8d8'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y - 6, 2, 3, 0, 0, Math.PI*2); c.fill(); c.stroke(); return true; }
-      for(let i=0;i<6;i++){ c.save(); c.translate(x, y - 10); c.rotate(i/6*Math.PI*2 + .3 + Math.sin(t + n.id)*.04); c.fillStyle = '#dfeaff'; c.strokeStyle = OL; c.lineWidth = .8; c.beginPath(); c.ellipse(0, -3.6, 2, 4, 0, 0, Math.PI*2); c.fill(); c.stroke(); c.restore(); }
-      c.fillStyle = '#fff2a8'; c.beginPath(); c.arc(x, y - 10, 2, 0, Math.PI*2); c.fill();
-      return true; }
-    if(n.k==='briar'){ const sh = n.shk > 0 ? Math.sin(n.shk/12)*1.6 : 0, R = n.r;
+      if(sprS){ const e = sprGet('mb|' + (ready ? 1 : 0), 20, 28, 40, 34, g=>moonPaint(g, 0, 0, ready)); sprPut(c, e, x, y); } else moonPaint(c, x, y, ready); return true; }
+    if(n.k==='briar'){ const sh = n.shk > 0 ? Math.sin(n.shk/12)*1.6 : 0;
       if(n.gone){ c.strokeStyle = '#2b3a22'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(x - 4, y + 1); c.lineTo(x - 2, y - 2); c.moveTo(x + 3, y + 1); c.lineTo(x + 4, y - 3); c.stroke(); return true; }
-      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 2, y + 3, R*1.1, R*.45, 0, 0, Math.PI*2); c.fill();
-      c.save(); c.translate(x + sh, y); c.lineCap = 'round';
-      for(const [w, col] of [[3.4, OL], [1.8, '#3f5a2a']]){ c.strokeStyle = col; c.lineWidth = w; c.beginPath();
-        for(let i=0;i<5;i++){ const a = i/5*Math.PI*2 + n.v*3; c.moveTo(Math.cos(a)*R*.2, -R*.5 + Math.sin(a)*R*.2); c.quadraticCurveTo(Math.cos(a + .8)*R*1.1, -R*.6 + Math.sin(a + .8)*R*.6, Math.cos(a)*R, -R*.4 + Math.sin(a)*R*.7); } c.stroke(); }
-      c.strokeStyle = '#d4e4b4'; c.lineWidth = 1; c.beginPath(); for(let i=0;i<9;i++){ const a = i/9*Math.PI*2 + n.v*5, px = Math.cos(a)*R*.95, py = -R*.45 + Math.sin(a)*R*.65; c.moveTo(px, py); c.lineTo(px + Math.cos(a)*3.2, py + Math.sin(a)*2.4 - 1); } c.stroke();
-      if(n.v > .55){ c.fillStyle = '#d6577d'; c.strokeStyle = OL; c.lineWidth = .7; c.beginPath(); c.arc(R*.3, -R*.9, 2, 0, Math.PI*2); c.fill(); c.stroke(); }
-      c.restore(); c.lineCap = 'butt'; return true; }
+      if(sprS && !sh){ const q = Math.round(n.v*32), e = sprGet('br|' + q + '|' + n.r, 24, 30, 48, 42, g=>briarPaint(g, 0, 0, q/32, n.r, 0)); sprPut(c, e, x, y); return true; }
+      briarPaint(c, x, y, n.v, n.r, sh); return true; }
     if(n.k==='feystone'){ const r = n.r;
-      c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 3, y + 3, r*1.1, r*.5, 0, 0, Math.PI*2); c.fill();
-      c.beginPath(); c.moveTo(x - r*.9, y + 2); c.quadraticCurveTo(x - r*.8, y - r*1.6, x - r*.2, y - r*2.3); c.quadraticCurveTo(x + r*.5, y - r*2.2, x + r*.85, y - r*.5); c.lineTo(x + r*.9, y + 2); c.closePath();
-      c.fillStyle = '#586578'; c.fill(); c.strokeStyle = OL; c.lineWidth = 1.5; c.stroke();
-      c.fillStyle = 'rgba(255,255,255,.12)'; c.beginPath(); c.moveTo(x - r*.6, y); c.quadraticCurveTo(x - r*.5, y - r*1.4, x - r*.15, y - r*2); c.lineTo(x - r*.05, y - r*.2); c.closePath(); c.fill();
+      if(sprS){ const e = sprGet('fs|' + r, 24, 34, 48, 44, g=>stonePaint(g, 0, 0, r)); sprPut(c, e, x, y); } else stonePaint(c, x, y, r);
       c.strokeStyle = 'rgba(120,230,255,' + (.45 + .4*pl).toFixed(2) + ')'; c.lineWidth = 1; c.beginPath(); c.moveTo(x, y - r*1.5); c.lineTo(x, y - r*.4); c.moveTo(x - r*.3, y - r*1.1); c.lineTo(x + r*.3, y - r*.8); c.stroke();
-      c.fillStyle = '#3f5a52'; c.beginPath(); c.ellipse(x - r*.5, y - .5, r*.5, r*.2, 0, 0, Math.PI*2); c.fill();
       return true; }
     if(n.k==='feycache'){ const looted = n.gone;
       c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 3, y + 5, 22, 7, 0, 0, Math.PI*2); c.fill();
@@ -4877,7 +5165,7 @@
   }
   /* Split screen HUD: every view gets the same HUD single player has, at the sizes single player uses on this screen, placed so that it covers nothing:
      a strip down the view's outer edge for the stats box and the clock (and Pause), and a band along its bottom for the hint, item name, action buttons and hotbar.
-     The map is drawn in what is left. Where the strip is short enough the band runs under it too; otherwise the band sits under the map only and the strip runs the full height.
+     The map fills the whole view and the HUD is drawn over it (fullscreen split screen). Where the strip is short enough the band runs under it too; otherwise the band sits under the map only and the strip runs the full height.
      Only if a view is so small that the map would shrink to about half of it do the HUD sizes scale down, all views together (k < 1). Sizes are in em of the strip's / band's own font. */
   const HUD_SW = 12.8, HUD_SH = 17.5, HUD_BH = 10, HUD_BAR = 28.4;
   function wdFrames(cells, act){
@@ -4888,7 +5176,7 @@
     const k = Math.max(.4, Math.min(...ks.map(q=>Math.max(q.full, q.map))));
     const fS = Math.max(9, fS0*k), fB = Math.max(8, fB0*k), fH = Math.max(8, fH0*k), fP = Math.max(8, fP0*k), sw = Math.round(HUD_SW*fS), bh = Math.round(HUD_BH*fB);
     return cells.map((c, j)=>{ const right = c.x > 0, full = ks[j].full >= k - 1e-6, bx = full ? c.x : right ? c.x : c.x + sw, bw = full ? c.w : c.w - sw;
-      return Object.assign({x:c.x + (right ? 0 : sw), y:c.y, w:c.w - sw, h:c.h - bh}, {i:act[j], cell:c, hud:{k, fS, fB, fH, fP, sw, bh, right, full, bx, bw}}); });
+      return Object.assign({x:c.x, y:c.y, w:c.w, h:c.h}, {i:act[j], cell:c, hud:{k, fS, fB, fH, fP, sw, bh, right, full, bx, bw}}); }); /* the map is the whole view: the strip and the band are drawn over it */
   }
   function wdDraw(dt){
     const cv = $('wdCanvas'), st = cv.parentNode, dpr = lowFx ? 1 : Math.min((wd.split ? (wd.vps && wd.vps.length > 2 ? 1.25 : 1.5) : 2)*(fxRes ? .75 : 1), window.devicePixelRatio || 1), w = st.clientWidth, h = st.clientHeight;
@@ -4915,7 +5203,6 @@
     c.fillStyle='#56603a';c.fillRect(FRONTIER.left,FRONTIER.top,FRONTIER.right-FRONTIER.left,FRONTIER.bottom-FRONTIER.top);c.fillRect(FRONTIER.gateLeft,FRONTIER.gateTop,FRONTIER.gateRight-FRONTIER.gateLeft,FRONTIER.gateBottom-FRONTIER.gateTop);
   }
   function groundB(c, x0, y0, x1, y1, vis){ /* patches, tufts, stones, cracks, the desert and its gravel */
-    trStatic(c, x0, y0, x1, y1, false);
     for(const q of wd.deco.patches) if(vis(q.x, q.y, q.rx)){ c.fillStyle = q.col; c.beginPath(); c.ellipse(q.x, q.y, q.rx, q.ry, 0, 0, Math.PI*2); c.fill(); }
     if(!bareGfx) drawTufts(c, wd.deco.tufts, vis, lowFx ? 2 : 1); /* floors are drawn on top of the ground, so nothing needs to skip them */
     if(!bareGfx){ /* Story mode's ground: stones and hairline cracks */
@@ -4947,7 +5234,6 @@
         for(const q of E.stones) if(vis(q.x, q.y, 8)) toonStone(c, q.x, q.y, q.rx, q.ry, q.col);
         for(const q of E.gravel) if(vis(q.x, q.y, 8)){ c.fillStyle = q.r > 2.5 ? '#70695c' : '#c5af85'; c.fillRect(q.x, q.y, q.r*1.5, q.r); } } } }
     if(!bareGfx)for(const q of wd.deco.gravel || [])if(vis(q.x,q.y,8)){c.fillStyle=q.r>2.5?'#70695c':'#c5af85';c.fillRect(q.x,q.y,q.r*1.5,q.r);}
-    trStatic(c, x0, y0, x1, y1, true);
   }
   /* The treeline round the edges never changes either, so it is painted into the same kind of tiles (clear background) and blitted over everything. */
   function btIn(xa, ya, xb, yb){ const g = wd.btg, out = [], c1 = Math.floor(xb/128), d1 = Math.floor(yb/128); if(!g) return out;
@@ -4980,7 +5266,10 @@
   const scaleBucket = k => { for(const b of GC_BUCKETS) if(b >= k*0.93) return b; return 0; }; /* 0: too big a screen to cache, draw as vectors */
   function sprBegin(k){ sprS = gcFail ? 0 : scaleBucket(k); }
   function gcBegin(k){ const b = gcFail ? 0 : scaleBucket(k); if(!b) return 0; const sig = (bareGfx ? 1 : 0) + '|' + (lowFx ? 1 : 0) + '|' + wd.seed + '|' + (wd.tr ? wd.tr.sig : 0); if(sig !== gcSig){ gcMap.clear(); gcPx = 0; gcSig = sig; } return b; }
-  function gcPaint(g, X0, Y0){ const X1 = X0 + GT, Y1 = Y0 + GT, vis = (x, y, m) => x > X0 - m && x < X1 + m && y > Y0 - m && y < Y1 + m; groundA(g, X0, Y0, X1, Y1); groundB(g, X0, Y0, X1, Y1, vis); }
+  function gcPaint(g, X0, Y0){ const X1 = X0 + GT, Y1 = Y0 + GT, vis = (x, y, m) => x > X0 - m && x < X1 + m && y > Y0 - m && y < Y1 + m;
+    if(X0 < FRONTIER.right + 200 || X1 > BAD.left - 200){ groundA(g, X0, Y0, X1, Y1); groundB(g, X0, Y0, X1, Y1, vis); } /* the surface */
+    if(X1 > UNDER.left - 100 && X0 < UNDER.right + 100) drawUnderGround(g, 0, vis);
+    if(X1 > ENCH.left - 100 && X0 < ENCH.right + 100) drawEnchGround(g, 0, vis); }
   function gcBuild(b, tx, ty, key){
     try{ const px = GT*b, cv = document.createElement('canvas'); cv.width = px; cv.height = px; const g = cv.getContext('2d');
       g.setTransform(b, 0, 0, b, -tx*GT*b, -ty*GT*b); gcPaint(g, tx*GT, ty*GT);
@@ -4990,7 +5279,7 @@
   function gcDraw(c, b, x0, y0, x1, y1){
     const tx0 = Math.floor(x0/GT), tx1 = Math.floor((x1 - 0.001)/GT), ty0 = Math.floor(y0/GT), ty1 = Math.floor((y1 - 0.001)/GT), use = ++gcTick; let built = 0;
     for(let ty = ty0; ty <= ty1; ty++) for(let tx = tx0; tx <= tx1; tx++){
-      if(ty*GT > WD.H + 140 || (ty + 1)*GT < -140 || !(((tx + 1)*GT >= -140 && tx*GT <= FRONTIER.right + 140) || ((tx + 1)*GT >= BAD.left - 140 && tx*GT <= BAD.right + 140))) continue; /* off the map */
+      if(ty*GT > WD.H + 140 || (ty + 1)*GT < -140 || !(((tx + 1)*GT >= -140 && tx*GT <= FRONTIER.right + 140) || ((tx + 1)*GT >= UNDER.left - 140 && tx*GT <= ENCH.right + 140) || ((tx + 1)*GT >= BAD.left - 140 && tx*GT <= BAD.right + 140))) continue; /* off the map */
       const key = b + '|' + tx + '|' + ty; let e = gcMap.get(key);
       if(!e && built < 1){ built++; e = gcBuild(b, tx, ty, key); } /* one new tile a frame; the rest are painted the old way until their turn */
       const L = Math.round(gEx + tx*GT*gK), T = Math.round(gEy + ty*GT*gK), R = Math.round(gEx + (tx + 1)*GT*gK), B = Math.round(gEy + (ty + 1)*GT*gK); /* whole device pixels, shared by neighbours: no seams */
@@ -5008,11 +5297,52 @@
     e = {cv, ox, oy, w:cv.width/sprS, h:cv.height/sprS}; sprMap.set(k, e); return e;
   }
   function sprPut(c, e, x, y){ c.drawImage(e.cv, (Math.round((x - e.ox)*gK + gEx) - gEx)/gK, (Math.round((y - e.oy)*gK + gEy) - gEy)/gK, e.w, e.h); } /* the corner lands on a whole device pixel, so edges stay crisp */
+  /* ---- the compass: a dial at the top of the view of any player who carries one ---- */
+  const cmpAng = [0, 0, 0, 0], cmpPip = [0, 0, 0, 0], CMP8 = ['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'];
+  function compassAims(p){ /* where the needle points, and what pulls the pip */
+    let a = null, b = null; const sp = wd.spec || {};
+    const ex = inUnder(p) ? sp.caveexit : inEnch(p) ? sp.ringexit : inBad(p) ? sp.dunegateexit : null;
+    if(ex) a = {x:ex.x, y:ex.y, label:'Way out'}; else { const h = wd.home || wd.bed || spawnPt; a = {x:h.x, y:h.y, label:wd.home || wd.bed ? 'Camp' : 'Start'}; }
+    let best = 640;
+    const pull = (n, col)=>{ if(!n || n.gone) return; const d = hyp(n.x - p.x, n.y - p.y); if(d < best){ best = d; b = {x:n.x, y:n.y, col}; } };
+    if(inUnder(p)){ if(!wd._hoard) wd._hoard = wd.unodes.find(n=>n.k==='hoard') || 0; pull(wd._hoard, '#7fd6e8'); }
+    else if(inEnch(p)){ if(!wd._cache) wd._cache = wd.enodes.find(n=>n.k==='feycache') || 0; pull(wd._cache, '#9ff7c8'); }
+    else if(!inBad(p)){ pull(sp.cave, '#7fd6e8'); pull(sp.fairyring, '#e6b8ff'); pull(sp.dunegate, '#e0b76a'); }
+    return {a, b};
+  }
+  function drawCompass(c, w, h, own, p, dt, cxm){
+    const inv = ctxGet(own, 'inv'); let has = false; for(let i = 0; i < inv.length; i++){ const q = inv[i]; if(q && q.id==='compass'){ has = true; break; } }
+    if(!has || ctxGet(own, 'dead') > 0) return;
+    const R = Math.max(18, Math.min(32, Math.min(w, h)*.055)), cx = cxm, cy = R + 10, T = Math.PI*2, A = compassAims(p), k = 1 - Math.exp(-dt/110);
+    const turn = (cur, to)=>{ let d = (to - cur)%T; if(d > Math.PI) d -= T; else if(d < -Math.PI) d += T; return cur + d*k; };
+    const ta = Math.atan2(A.a.y - p.y, A.a.x - p.x), da = hyp(A.a.x - p.x, A.a.y - p.y);
+    cmpAng[own] = turn(cmpAng[own], da < 16 ? cmpAng[own] + .9*dt/1000 : ta); /* it circles lazily when you are standing on the spot */
+    c.save(); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.fillStyle = 'rgba(16,11,8,.62)'; c.beginPath(); c.arc(cx, cy, R, 0, T); c.fill();
+    c.strokeStyle = '#c9a14a'; c.lineWidth = 2; c.stroke();
+    c.strokeStyle = 'rgba(230,220,196,.4)'; c.lineWidth = 1; c.beginPath(); for(let i = 0; i < 4; i++){ const a = i*T/4; c.moveTo(cx + Math.cos(a)*(R - 4), cy + Math.sin(a)*(R - 4)); c.lineTo(cx + Math.cos(a)*(R - 1.5), cy + Math.sin(a)*(R - 1.5)); } c.stroke();
+    c.font = 'bold ' + Math.max(7, R*.3) + 'px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = '#e0605a'; c.fillText('N', cx, cy - R + R*.3);
+    if(A.b){ const tb = Math.atan2(A.b.y - p.y, A.b.x - p.x); cmpPip[own] = turn(cmpPip[own], tb); const px = cx + Math.cos(cmpPip[own])*(R - 6), py = cy + Math.sin(cmpPip[own])*(R - 6);
+      c.fillStyle = A.b.col; c.globalAlpha = .55 + .35*Math.sin(performance.now()/260); c.beginPath(); c.arc(px, py, Math.max(2.2, R*.1), 0, T); c.fill(); c.globalAlpha = 1; c.strokeStyle = 'rgba(16,11,8,.8)'; c.lineWidth = 1; c.stroke(); }
+    const a = cmpAng[own], ca = Math.cos(a), sa = Math.sin(a), L = R*.74;
+    c.beginPath(); c.moveTo(cx + ca*L, cy + sa*L); c.lineTo(cx - sa*L*.2, cy + ca*L*.2); c.lineTo(cx - ca*L*.5, cy - sa*L*.5); c.lineTo(cx + sa*L*.2, cy - ca*L*.2); c.closePath();
+    c.fillStyle = '#f0d078'; c.fill(); c.strokeStyle = 'rgba(16,11,8,.9)'; c.lineWidth = 1.2; c.stroke();
+    c.fillStyle = '#120c09'; c.beginPath(); c.arc(cx, cy, 1.6, 0, T); c.fill();
+    const fs = Math.max(8, R*.36), dir = da < 16 ? 'here' : CMP8[Math.round(((ta%T + T)%T)/(T/8))%8] + ' · ' + Math.round(da/10) + ' m';
+    c.font = 'bold ' + fs + 'px ui-monospace,Menlo,Consolas,monospace'; c.lineWidth = 3; c.strokeStyle = 'rgba(10,7,6,.85)'; c.fillStyle = '#e6dcc4'; const ty = cy + R + fs*.9; c.strokeText(A.a.label + ' ' + dir, cx, ty); c.fillText(A.a.label + ' ' + dir, cx, ty);
+    c.restore();
+  }
+  /* Lights are blitted from small pre-painted radial sprites instead of building a gradient every time: the cut-out in the dark ('hole') and one additive glow per colour. */
+  const lightSprs = new Map();
+  function lightSpr(col){ let cv = lightSprs.get(col); if(cv) return cv; cv = document.createElement('canvas'); cv.width = cv.height = 128; const g = cv.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+    if(col==='hole'){ gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(0.55, 'rgba(0,0,0,.9)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); } else { gr.addColorStop(0, 'rgba(' + col + ',1)'); gr.addColorStop(1, 'rgba(' + col + ',0)'); }
+    g.fillStyle = gr; g.fillRect(0, 0, 128, 128); lightSprs.set(col, cv); return cv; }
+  const vnBuf = [], UDARK = [0.8, 0.78, 0.84, 0.66], EDARK = [0.52, 0.6, 0.44, 0.5];
   function drawView(c, vp, vk, dpr, t, dt){ /* one player's view of the world: their own camera, their own scene (the surface or the caves) */
     const w = vp.w, h = vp.h, own = vp.i, act = activeIdx(), p = bodyOf(own), under = inUnder(p), ench = inEnch(p), scn = sceneOf(p), mates = act.map(bodyOf).filter(q=>sceneOf(q)===scn); wd.fb = mates; /* who shares this view's scene */
     const base = Math.min(w, h)/WD.view, sc = Math.max(base*0.6, Math.min(base, w/190, h/230)), vw = w/sc, vh = h/sc;
     const reg = ench ? ENCH : under ? UNDER : inBad(p) ? BAD : null, xlo = (reg ? reg.left - 60 : 0) + vw/2, xhi = (reg ? reg.right + 60 : FRONTIER.right + 60) - vw/2;
-    const camX = xhi < xlo ? (xlo + xhi)/2 : clamp(p.x, xlo, xhi), camY = vh >= WD.H ? WD.H/2 : clamp(p.y - p.z, vh/2, WD.H - vh/2);
+    const camX = xhi < xlo ? (xlo + xhi)/2 : clamp(p.x, xlo, xhi), camY = vh >= WD.H ? WD.H/2 : clamp(p.y - p.z - (p.vth || 0), vh/2, WD.H - vh/2);
     const x0 = camX - vw/2, y0 = camY - vh/2, x1 = x0 + vw, y1 = y0 + vh, vis = (x, y, m) => x > x0 - m && x < x1 + m && y > y0 - m && y < y1 + m;
     if(own===0) wd.view = {sc, x0, y0, vx:vp.x, vy:vp.y, w, h}; /* Player 1's mouse points through this view */
     c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = (ench ? '#080b16' : under ? '#0b0910' : '#34462a'); c.fillRect(vp.x*dpr, vp.y*dpr, w*dpr, h*dpr);
@@ -5021,12 +5351,13 @@
     c.setTransform(gK, 0, 0, gK, gEx, gEy);
     // Scenic terrain extends past playable bounds; ancient treelines close the land edges.
     c.fillStyle = (ench ? '#080b16' : under ? '#0b0910' : '#34462a'); c.fillRect(x0,y0,vw,vh);
-    const gcb = scn===0 ? gcBegin(gK) : 0; /* the surface's flat ground is drawn once into tiles, then only blitted */
+    const gcb = gcBegin(gK); /* the flat ground (the surface, the caves and the forest alike) is drawn once into tiles, then only blitted */
     if(gcb) gcDraw(c, gcb, x0, y0, x1, y1);
     else { groundA(c, x0, y0, x1, y1);
-      if(under) drawUnderGround(c, t, x0, y0, x1, y1, vis);
+      if(under) drawUnderGround(c, t, vis);
       if(ench) drawEnchGround(c, t, vis);
       groundB(c, x0, y0, x1, y1, vis); }
+    if(under) drawUnderWater(c, t, vis); else if(ench) drawEnchWater(c, t, vis);
     { const ga = Math.floor((x0 - 12)/GRID), gb = Math.floor((x1 + 12)/GRID), ha = Math.floor((y0 - 12)/GRID), hb = Math.floor((y1 + 12)/GRID);
       for(let cx = ga >> 2; cx <= gb >> 2; cx++) for(let cy = ha >> 2; cy <= hb >> 2; cy++){ const s = wd.fk.get(bkKey(cx, cy)); if(!s) continue;
         for(const p of s){ const gx = Math.floor(p/4096) - 64, gy = p%4096 - 64; if(gx < ga || gx > gb || gy < ha || gy > hb) continue; drawFloor(c, gx*GRID, gy*GRID, gx, gy); } } }
@@ -5034,23 +5365,23 @@
     if(scn===0 && x0 < WD.W + 10){ const a = Math.max(0, x0 - 5), b = Math.min(WD.W, x1 + 5);
       if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
       if(y1 > WD.H - WD.RIVER - 10){ c.save(); c.translate(0, WD.H); c.scale(1, -1); waterBody(c, a, b, 0, WD.RIVER, t, -1, 16); c.restore(); } }
-    if(scn===0) trDrawDyn(c, vis, t);
     // Flat farm soil/crops are ground decals, always beneath actors and standing objects.
-    for(const b of kindOf('farmplot'))if(vis(b.x,b.y,30))drawPiece(c,b.k,b.x,b.y,b,t);
+    for(const b of kindOf('farmplot'))if(vis(b.x,b.y,30) && !(scn===0 && wd.tr && trH(b.x, b.y)!==0))drawPiece(c,b.k,b.x,b.y,b,t);
     if(scn===0) cuDrawGround(c, vis, t);
     // all that stands, back to front
-    const L = [];
-    nodesRect(x0 - 50, y0 - 50, x1 + 50, y1 + 50, n=>{ L.push({y:n.y, n, top:nodeTop(n)}); });
-    for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push({y:f.y, f, top:20});
-    for(const b of wd.benches) if(vis(b.x,b.y,180)) L.push({y:b.y, bench:b, top:20});
-    buildsRect(x0 - 180, y0 - 180, x1 + 180, y1 + 180, b=>{ if(b.k!=='farmplot') L.push({y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)}); });
+    const L = [], TL = scn===0 && !!wd.tr, trEnt = (e, x, y) => { if(!TL) return e; const h = trH(x, y, true); e.lift = h; const gyE = Math.floor(y/GRID), hs = trH(x, (gyE + 1)*GRID + .5, true); if(hs > h + .5) e.clip = (gyE + 1)*GRID - hs; return e; }; /* what stands on raised or sunken ground is drawn lifted or lowered, and cut off where higher ground in front hides it */
+    nodesRect(x0 - 50, y0 - 50, x1 + 50, y1 + 50, n=>{ L.push(trEnt({y:n.y, n, top:nodeTop(n)}, n.x, n.y)); });
+    for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push(trEnt({y:f.y, f, top:20}, f.x, f.y));
+    for(const b of wd.benches) if(vis(b.x,b.y,180)) L.push(trEnt({y:b.y, bench:b, top:20}, b.x, b.y));
+    buildsRect(x0 - 180, y0 - 180, x1 + 180, y1 + 180, b=>{ if(b.k!=='farmplot') L.push({y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)}); else if(TL && trH(b.x, b.y)!==0) L.push(trEnt({y:b.gy*GRID + .01, plot:b}, b.x, b.y)); });
     for(const f of wd.upFl.values()) if(vis(f.gx*GRID + 10, f.gy*GRID + 10, 180)) L.push({y:f.gy*GRID + f.l*0.02 - 0.01, slab:f, top:f.l*LH});
-    for(const d of wd.drops) if(vis(d.x, d.y, 20)) L.push({y:d.y - 6, d, top:(d.z || 0) + 10});
-    if(scn===0) for(const ct of wd.cu.carts) if(vis(ct.x, ct.y, 30)) L.push({y:ct.y, cart:ct, top:8});
-    for(const f of wd.foes) if(vis(f.x, f.y, 20)) L.push({y:f.y, foe:f, top:12});
-    if(wd.home && !wd.fires.some(f=>hyp(f.x - wd.home.x, f.y - wd.home.y) < 4) && vis(wd.home.x, wd.home.y, 20)) L.push({y:wd.home.y - 1, ash:wd.home, top:4});
-    for(const gi of act){ const q = bodyOf(gi); if(sceneOf(q)!==scn || !vis(q.x, q.y, 80)) continue; L.push({y:q.y + q.z*0.9, me:gi, pz:q.z}); }
-    for(const gi of act){ const r = ctxGet(gi, 'rat'); if(r && r.x != null && sceneOf(r)===scn && vis(r.x, r.y, 40)) L.push({y:r.y, rat:r, gi, top:6}); } /* each player's rat, in the same scene */ /* only players standing in this scene, and in sight */
+    for(const d of wd.drops) if(vis(d.x, d.y, 20)) L.push(trEnt({y:d.y - 6, d, top:(d.z || 0) + 10}, d.x, d.y));
+    if(scn===0) for(const ct of wd.cu.carts) if(vis(ct.x, ct.y, 30)) L.push(trEnt({y:ct.y, cart:ct, top:8}, ct.x, ct.y));
+    for(const f of wd.foes) if(vis(f.x, f.y, 20)) L.push(trEnt({y:f.y, foe:f, top:12}, f.x, f.y));
+    if(wd.home && !wd.fires.some(f=>hyp(f.x - wd.home.x, f.y - wd.home.y) < 4) && vis(wd.home.x, wd.home.y, 20)) L.push(trEnt({y:wd.home.y - 1, ash:wd.home, top:4}, wd.home.x, wd.home.y));
+    for(const gi of act){ const q = bodyOf(gi); if(sceneOf(q)!==scn || !vis(q.x, q.y, 80)) continue; const e = {y:q.y + q.z*0.9, me:gi, pz:q.z}; if(TL){ e.lift = q.vth || 0; const gyE = Math.floor(q.y/GRID), hs = trH(q.x, (gyE + 1)*GRID + .5, true); if(hs > e.lift + .5) e.clip = (gyE + 1)*GRID - hs; } L.push(e); }
+    for(const gi of act){ const r = ctxGet(gi, 'rat'); if(r && r.x != null && sceneOf(r)===scn && vis(r.x, r.y, 40)) L.push(trEnt({y:r.y, rat:r, gi, top:6}, r.x, r.y)); } /* each player's rat, in the same scene */ /* only players standing in this scene, and in sight */
+    if(TL){ const ha = Math.max(TR.gy0 - 1, Math.floor((y0 - 48)/GRID)), hb = Math.min(TR.gy0 + TR.h, Math.floor((y1 + 28)/GRID)); for(let gy=ha;gy<=hb;gy++) L.push({y:gy*GRID + .005, trow:gy}); } /* one entry for each row of squares that has height */
     L.sort((a, b)=>a.y - b.y);
     /* Whatever lies at or below a player's feet is drawn before them: floors, walls and furniture on the levels beneath stay under their boots,
        however far south of the player they sit. Only things that rise above their feet can still stand in front. */
@@ -5059,16 +5390,19 @@
       if(lift.length){ L.splice(i, L.length - i, ...lift, m, ...rest); i += lift.length; } }
     const txt = (s, x, y, size, col)=>{ c.font = `bold ${size}px ui-monospace,Menlo,Consolas,monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = col; c.fillText(s, x, y); };
     for(const e of L){
+      if(e.trow!==undefined){ trRow(c, e.trow, Math.floor(x0/GRID) - 1, Math.floor(x1/GRID) + 1, t, gcb ? gK : 0); continue; }
+      const lf = e.lift || 0, lc = e.clip; if(lf || lc!==undefined){ c.save(); if(lc!==undefined){ c.beginPath(); c.rect(x0 - 60, y0 - 400, vw + 120, lc - (y0 - 400)); c.clip(); } if(lf) c.translate(0, -lf); }
       if(e.n){ if(e.n.k==='tree') drawTree(c, e.n, t, !e.n.gone && mates.some(q=>q.y < e.n.y - 4 && Math.abs(q.x - e.n.x) < e.n.cr && q.y > e.n.y - 18 - e.n.cr*1.8)); else drawNode(c, e.n, t); }
       else if(e.f) drawFire(c, e.f, t);
       else if(e.bench) (e.bench.k==='def' ? drawDefBench : drawBench)(c, e.bench);
       else if(e.piece)drawBuilt(c,e.piece,t,e.y);
+      else if(e.plot)drawPiece(c,e.plot.k,e.plot.x,e.plot.y,e.plot,t);
       else if(e.slab)drawSlab(c,e.slab.gx,e.slab.gy,e.slab.l,fadeFor(e.slab.gx,e.slab.gy,e.slab.l*LH,SLAB,e.y));
       else if(e.ash) drawAsh(c, e.ash.x, e.ash.y);
       else if(e.d){ const d = e.d, k = Math.min(1, d.pop/400), x = d.sx + (d.x - d.sx)*k, y = d.sy + (d.y - d.sy)*k - Math.sin(Math.PI*k)*14 + (k >= 1 ? Math.sin(t*3 + d.x)*1 : 0) - (d.z || 0);
-        if(d.bag){ drawBag(c, x, y); continue; }
-        c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(d.x, d.y + 6 - (d.z || 0), 6, 2, 0, 0, Math.PI*2); c.fill(); c.drawImage(itemIcon(d.id), x - 8, y - 8, 16, 16);
-        if(d.n > 1) txt(String(d.n), x + 8, y + 5, 6, '#e6dcc4'); }
+        if(d.bag) drawBag(c, x, y);
+        else { c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(d.x, d.y + 6 - (d.z || 0), 6, 2, 0, 0, Math.PI*2); c.fill(); c.drawImage(itemIcon(d.id), x - 8, y - 8, 16, 16);
+          if(d.n > 1) txt(String(d.n), x + 8, y + 5, 6, '#e6dcc4'); } }
       else if(e.foe){ const f = e.foe;
         const facing=Number.isFinite(f.facing)?f.facing:0;
         // Project the turning body onto a flattened ground footprint; light offset stays fixed.
@@ -5114,6 +5448,7 @@
         if(p.action){ const a=p.action; c.fillStyle=OL; c.fillRect(p.x-19,p.y-25,38,5); c.fillStyle='#e0b54a'; c.fillRect(p.x-18,p.y-24,36*(1-a.left/a.ms),3); txt(a.label,p.x,p.y-32,6,'#e6dcc4'); }
         c.restore();
       }); }
+      if(lf || lc!==undefined) c.restore();
     }
     // Ancient border trees are scenery, excluded from harvest targets and save node IDs.
     if(gcb && !ench && !under) btDraw(c, gcb, x0, y0, x1, y1);
@@ -5122,7 +5457,7 @@
     for(const sh of wd.fshots){ c.save(); c.translate(sh.x, sh.y); c.rotate(Math.atan2(sh.vy, sh.vx)); const wp = sh.by==='wisp'; c.fillStyle = wp ? 'rgba(160,255,215,.42)' : 'rgba(127,214,232,.35)'; c.beginPath(); c.arc(0, 0, wp ? 7 : 6, 0, Math.PI*2); c.fill(); c.fillStyle = wp ? '#e6fff4' : '#bff3ff'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.moveTo(5, 0); c.lineTo(0, -2.4); c.lineTo(-4, 0); c.lineTo(0, 2.4); c.closePath(); c.fill(); c.stroke(); c.restore(); }
     for(const sh of wd.shots){ c.strokeStyle = OL; c.lineWidth = 2.4; c.beginPath(); c.moveTo(sh.x - Math.cos(sh.a)*6, sh.y - Math.sin(sh.a)*6); c.lineTo(sh.x, sh.y); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.1; c.stroke(); }
     for(const gi of act) withPlayer(gi, ()=>{ if(!(wd.build && !(wd.dead > 0))) return; /* the piece you hold, where it would go */
-      const cc = buildCell(), k = ITEMS[wd.build.id].build, x = cc.gx*GRID + GRID/2, y = cc.gy*GRID + GRID/2, ok = buildOk(k, cc.gx, cc.gy, cc.l), key = gkey(cc.gx,cc.gy,cc.l), has = wd.builds.has(key) || wd.floors.has(key), zb = cc.l*LH;
+      const cc = buildCell(), k = ITEMS[wd.build.id].build, x = cc.gx*GRID + GRID/2, y = cc.gy*GRID + GRID/2, ok = buildOk(k, cc.gx, cc.gy, cc.l), key = gkey(cc.gx,cc.gy,cc.l), has = wd.builds.has(key) || wd.floors.has(key), zb = cc.l*LH; c.save(); c.translate(0, -(scn===0 && wd.tr ? trH(x, y, true) : 0));
       if(!has){ c.globalAlpha = 0.5;
         if(k==='floor'){ if(cc.l) drawSlab(c, cc.gx, cc.gy, cc.l, 1); else drawFloor(c,x-10,y-10,cc.gx,cc.gy); }
         else if(k==='wall' || k==='spikes') drawBox3(c, {gx:cc.gx, gy:cc.gy, l:cc.l, k}, 1);
@@ -5131,19 +5466,21 @@
         c.globalAlpha = 1; }
       c.strokeStyle = has ? '#e0b54a' : ok ? 'rgba(143,208,107,.95)' : 'rgba(238,90,117,.95)'; c.lineWidth = 1.5; c.setLineDash([3, 2]); c.strokeRect(x - 10, y - 10 - zb, 20, 20);
       if(zb){ c.globalAlpha = 0.4; c.strokeRect(x - 10, y - 10, 20, 20); c.globalAlpha = 1; }
-      c.setLineDash([]); });
+      c.setLineDash([]); c.restore(); });
     for(const gi of act) withPlayer(gi, ()=>{ if(wd.dead > 0 || wd.build || wd.book || sceneOf(wd.p)!==scn) return; const s = wd.inv[wd.sel]; if(!s || !(ITEMS[s.id].dig || ITEMS[s.id].fill)) return; /* the square a shovel or dirt would work on */
-      const a = trAim(), ok = trDigCheck(a.gx, a.gy, s).ok; c.strokeStyle = ok ? 'rgba(143,208,107,.9)' : 'rgba(238,90,117,.6)'; c.lineWidth = 1.2; c.setLineDash([3, 2]); c.strokeRect(a.gx*GRID + 1, a.gy*GRID + 1, GRID - 2, GRID - 2); c.setLineDash([]); });
+      const a = trAim(), ok = trDigCheck(a.gx, a.gy, s).ok; c.strokeStyle = ok ? 'rgba(143,208,107,.9)' : 'rgba(238,90,117,.6)'; c.lineWidth = 1.2; c.setLineDash([3, 2]); c.strokeRect(a.gx*GRID + 1, a.gy*GRID + 1 - trH(a.gx*GRID + 10, a.gy*GRID + 10, true), GRID - 2, GRID - 2); c.setLineDash([]); });
     for(const e of wd.fx){
-      const k = Math.max(0, e.t/e.t0);
+      const k = Math.max(0, e.t/e.t0), fl = scn===0 && wd.tr ? trH(e.x, e.y, true) : 0; if(fl){ c.save(); c.translate(0, -fl); }
       if(e.kind==='slash'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2; c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a - half, a + half); c.closePath();
         c.fillStyle = e.foe ? `rgba(63,133,128,${0.4*k})` : `rgba(217,201,163,${(e.big ? 0.3 : 0.16)*k})`; c.fill(); }
       else if(e.kind==='ring'){ c.beginPath(); c.arc(e.x, e.y, e.r*(0.35 + 0.65*(1 - k)), 0, Math.PI*2); c.strokeStyle = `rgba(${e.col},${k})`; c.lineWidth = 2; c.stroke(); }
       else if(e.kind==='chip'){ const age = (e.t0 - e.t)/1000; c.fillStyle = e.col; c.globalAlpha = k; c.fillRect(e.x + e.vx*age - 1.5, e.y + e.vy*age + 160*age*age - 1.5, 3, 3); c.globalAlpha = 1; }
       else if(e.kind==='num'){ c.globalAlpha = k; c.lineWidth = 2.5; c.strokeStyle = 'rgba(10,7,6,.8)'; c.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.strokeText(e.text, e.x, e.y - 14*(1 - k)); txt(e.text, e.x, e.y - 14*(1 - k), 8, e.col); c.globalAlpha = 1; }
+      if(fl) c.restore();
     }
     // the dark: everything goes, except round the fires
-    const dk = under ? 0.8 : ench ? 0.52 : darkAt(wd.t);
+    const dk = under ? UDARK[bandIx(UBAND, p.x - UNDER.left)] : ench ? EDARK[bandIx(EBAND, p.x - ENCH.left)] : darkAt(wd.t);
+    const vn = vnBuf; vn.length = 0; if(dk > 0.01 && (under || ench)) nodesRect(x0 - 130, y0 - 130, x1 + 130, y1 + 130, n=>{ vn.push(n); }); /* the caves' and forest's lit things in sight, found once for all three light passes */
     if(dk > 0.01){
       const ds = (lowFx || wd.split) ? 0.4 : 0.5, dw = Math.max(1, Math.round(w*ds)), dh = Math.max(1, Math.round(h*ds));
       const darkCv = darkCvs[vk] || (darkCvs[vk] = document.createElement('canvas')); if(darkCv.width!==dw || darkCv.height!==dh){ darkCv.width = dw; darkCv.height = dh; }
@@ -5151,43 +5488,44 @@
       d.fillStyle = `rgba(4,6,16,${dk})`; d.fillRect(0, 0, dw, dh);
       d.globalCompositeOperation = 'destination-out';
       for(const f of wd.fires){ if(!(f.fuel > 0)) continue; const fx = (f.x - x0)*sc*ds, fy = (f.y - y0)*sc*ds, R = lightR(f)*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(fx < -R || fy < -R || fx > dw + R || fy > dh + R) continue;
-        const g = d.createRadialGradient(fx, fy, 0, fx, fy, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,.9)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(fx - R, fy - R, 2*R, 2*R); }
-      const hole = (wx, wy, Rw)=>{ const hx = (wx - x0)*sc*ds, hy = (wy - y0)*sc*ds, R = Rw*sc*ds; if(hx < -R || hy < -R || hx > dw + R || hy > dh + R) return; const g = d.createRadialGradient(hx, hy, 0, hx, hy, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.55, 'rgba(0,0,0,.9)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(hx - R, hy - R, 2*R, 2*R); };
+        d.drawImage(lightSpr('hole'), fx - R, fy - R, 2*R, 2*R); }
+      const hole = (wx, wy, Rw)=>{ const hx = (wx - x0)*sc*ds, hy = (wy - y0)*sc*ds, R = Rw*sc*ds; if(hx < -R || hy < -R || hx > dw + R || hy > dh + R) return; d.drawImage(lightSprs.get('hole') || lightSpr('hole'), hx - R, hy - R, 2*R, 2*R); };
       for(const b of kindOf('lamp')) hole(b.x, b.y - (b.l || 0)*LH - 8, LAMP_R);
       for(const n of wd.caveNodes) if(vis(n.x, n.y, 80)) hole(n.x, n.y, 46);
       for(const n of wd.ringNodes || []) if(vis(n.x, n.y, 80)) hole(n.x, n.y, 52);
-      if(ench){ for(const n of wd.enodes || []){ if(!vis(n.x, n.y, 130)) continue;
+      if(ench){ for(const n of vn){
           if(n.k==='moonbloom' && !n.gone && n.ready <= wd.t) hole(n.x, n.y - 4, 42); else if(n.k==='feycache') hole(n.x, n.y - 6, n.gone ? 50 : 84); else if(n.k==='ringexit') hole(n.x, n.y - 6, 78); else if(n.k==='feystone' && !lowFx) hole(n.x, n.y - 8, 24); }
         for(const f of wd.foes) if(f.kind==='wisp' && vis(f.x, f.y, 100)) hole(f.x, f.y - 6, 58); }
-      if(under) for(const n of wd.unodes || []){ if(!vis(n.x, n.y, 130)) continue;
+      if(under) for(const n of vn){
         if(n.k==='crystal' && !n.gone) hole(n.x, n.y - 6, 58); else if(n.k==='bigshroom') hole(n.x, n.y - 18, 78); else if(n.k==='glowshroom' && !n.gone && n.ready <= wd.t) hole(n.x, n.y - 3, 32);
         else if(n.k==='hoard') hole(n.x, n.y - 4, n.gone ? 40 : 70); else if(n.k==='caveexit') hole(n.x, n.y - 10, 62); }
       for(const q of mates){ if(q.hp <= 0) continue; const tr = q.torch > 0 ? WD.torchR*(0.6 + 0.4*Math.min(1, q.torch/15)) : 0;
-        if(tr > 0){ const px = (q.x - x0)*sc*ds, py = (q.y - q.z - y0)*sc*ds, R = tr*sc*ds*(1 + 0.04*Math.sin(t*13)), g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
-        if(dk < 0.85 || under || ench){ const px = (q.x - x0)*sc*ds, py = (q.y - q.z - y0)*sc*ds, R = (under || ench ? 82 : 60)*sc*ds, g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,' + (under ? 0.8 : ench ? 0.62 : 0.45) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); } }
+        if(tr > 0){ const px = (q.x - x0)*sc*ds, py = (q.y - q.z - (q.vth || 0) - y0)*sc*ds, R = tr*sc*ds*(1 + 0.04*Math.sin(t*13)), g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(0.5, 'rgba(0,0,0,.85)'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); }
+        if(dk < 0.85 || under || ench){ const px = (q.x - x0)*sc*ds, py = (q.y - q.z - (q.vth || 0) - y0)*sc*ds, R = (under || ench ? 82 : 60)*sc*ds, g = d.createRadialGradient(px, py, 0, px, py, R); g.addColorStop(0, 'rgba(0,0,0,' + (under ? 0.8 : ench ? 0.62 : 0.45) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = g; d.fillRect(px - R, py - R, 2*R, 2*R); } }
       c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(darkCv, vp.x*dpr, vp.y*dpr, w*dpr, h*dpr);
       c.setTransform(dpr*sc, 0, 0, dpr*sc, dpr*(vp.x - x0*sc), dpr*(vp.y - y0*sc));
       c.globalCompositeOperation = 'lighter';
-      for(const f of wd.fires){ if(!(f.fuel > 0) || !vis(f.x, f.y, 150)) continue; const R = lightR(f), g = c.createRadialGradient(f.x, f.y - 4, 0, f.x, f.y - 4, R); g.addColorStop(0, `rgba(255,140,50,${0.16*dk})`); g.addColorStop(1, 'rgba(255,140,50,0)'); c.fillStyle = g; c.fillRect(f.x - R, f.y - R, 2*R, 2*R); }
-      for(const b of kindOf('lamp')){ if(!vis(b.x, b.y, 150)) continue; const ly = b.y - (b.l || 0)*LH - 8, g = c.createRadialGradient(b.x, ly, 0, b.x, ly, LAMP_R); g.addColorStop(0, `rgba(255,200,110,${0.2*dk})`); g.addColorStop(1, 'rgba(255,200,110,0)'); c.fillStyle = g; c.fillRect(b.x - LAMP_R, ly - LAMP_R, 2*LAMP_R, 2*LAMP_R); }
-      for(const n of wd.caveNodes){ if(n.gone || !vis(n.x, n.y, 120)) continue; const g = c.createRadialGradient(n.x, n.y, 0, n.x, n.y, 46); g.addColorStop(0, `rgba(127,214,232,${0.2*dk})`); g.addColorStop(1, 'rgba(127,214,232,0)'); c.fillStyle = g; c.fillRect(n.x - 46, n.y - 46, 92, 92); }
-      if(under) for(const n of wd.unodes || []){ if(!vis(n.x, n.y, 130)) continue; let col = null, R = 0, cy = n.y - 6;
+      const lg = (x, y, R, col, a)=>{ c.globalAlpha = a; c.drawImage(lightSpr(col), x - R, y - R, 2*R, 2*R); }; /* one additive glow */
+      for(const f of wd.fires){ if(!(f.fuel > 0) || !vis(f.x, f.y, 150)) continue; lg(f.x, f.y - 4, lightR(f), '255,140,50', 0.16*dk); }
+      for(const b of kindOf('lamp')){ if(!vis(b.x, b.y, 150)) continue; lg(b.x, b.y - (b.l || 0)*LH - 8, LAMP_R, '255,200,110', 0.2*dk); }
+      for(const n of wd.caveNodes){ if(n.gone || !vis(n.x, n.y, 120)) continue; lg(n.x, n.y, 46, '127,214,232', 0.2*dk); }
+      if(under) for(const n of vn){ let col = null, R = 0, cy = n.y - 6;
         if(n.k==='crystal' && !n.gone){ col = ['95,201,230', '155,124,240', '238,127,176'][Math.floor(n.v*3)%3]; R = 52; }
         else if(n.k==='bigshroom'){ col = n.v < 0.5 ? '56,214,192' : '214,90,208'; R = 70; cy = n.y - 18; }
         else if(n.k==='glowshroom' && !n.gone && n.ready <= wd.t){ col = n.v < 0.5 ? '82,232,208' : '138,240,127'; R = 28; cy = n.y - 3; }
         else if(n.k==='hoard'){ col = '127,214,232'; R = n.gone ? 30 : 64; }
         else if(n.k==='caveexit'){ col = '255,225,150'; R = 58; cy = n.y - 10; }
-        if(!col) continue; const pul = 0.8 + 0.2*Math.sin(t*2 + n.id), g = c.createRadialGradient(n.x, cy, 0, n.x, cy, R); g.addColorStop(0, `rgba(${col},${0.34*pul})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(n.x - R, cy - R, 2*R, 2*R); }
-      for(const n of wd.ringNodes || []){ if(!vis(n.x, n.y, 120)) continue; const pul = .75 + .25*Math.sin(t*2 + n.id), g = c.createRadialGradient(n.x, n.y, 0, n.x, n.y, 52); g.addColorStop(0, `rgba(215,175,255,${0.3*pul*dk})`); g.addColorStop(1, 'rgba(215,175,255,0)'); c.fillStyle = g; c.fillRect(n.x - 52, n.y - 52, 104, 104); }
-      if(ench){ const glow = (x, y, R, col, a)=>{ const g = c.createRadialGradient(x, y, 0, x, y, R); g.addColorStop(0, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`); c.fillStyle = g; c.fillRect(x - R, y - R, 2*R, 2*R); };
-        for(const n of wd.enodes || []){ if(!vis(n.x, n.y, 130)) continue; const pul = .75 + .25*Math.sin(t*2 + n.id);
+        if(!col) continue; lg(n.x, cy, R, col, 0.34*(0.8 + 0.2*Math.sin(t*2 + n.id))); }
+      for(const n of wd.ringNodes || []){ if(!vis(n.x, n.y, 120)) continue; lg(n.x, n.y, 52, '215,175,255', 0.3*(.75 + .25*Math.sin(t*2 + n.id))*dk); }
+      if(ench){ const glow = lg;
+        for(const n of vn){ const pul = .75 + .25*Math.sin(t*2 + n.id);
           if(n.k==='moonbloom' && !n.gone && n.ready <= wd.t) glow(n.x, n.y - 4, 34, '170,210,255', .4*pul);
           else if(n.k==='feycache') glow(n.x, n.y - 6, n.gone ? 40 : 76, '150,255,200', (n.gone ? .12 : .42)*pul);
           else if(n.k==='ringexit') glow(n.x, n.y - 6, 70, '230,190,255', .42*pul);
           else if(n.k==='feystone' && !lowFx) glow(n.x, n.y - 10, 22, '120,230,255', .24*pul); }
         for(const f of wd.foes) if(f.kind==='wisp' && vis(f.x, f.y, 100)) glow(f.x, f.y - 6, 52, '170,255,225', .45 + (f.flash > 0 ? .3 : 0)); }
-      c.globalCompositeOperation = 'source-over';
-      for(const gi of act){ const q = bodyOf(gi), dT = ctxGet(gi, 'darkT'), dd = ctxGet(gi, 'dead'); if(!(dT > 1) || dd > 0) continue; const a = Math.min(1, (dT - 1)/1.5), ex = q.x + Math.cos(t*0.7)*34, ey = q.y - q.z - 20 + Math.sin(t*0.9)*12; /* eyes in the dark */
+      c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+      for(const gi of act){ const q = bodyOf(gi), dT = ctxGet(gi, 'darkT'), dd = ctxGet(gi, 'dead'); if(!(dT > 1) || dd > 0) continue; const a = Math.min(1, (dT - 1)/1.5), ex = q.x + Math.cos(t*0.7)*34, ey = q.y - q.z - (q.vth || 0) - 20 + Math.sin(t*0.9)*12; /* eyes in the dark */
         c.fillStyle = `rgba(240,230,190,${0.85*a})`; for(const s of [-3.5, 3.5]){ c.beginPath(); c.ellipse(ex + s, ey, 2, 1.1, s*0.06, 0, Math.PI*2); c.fill(); } }
     }
     if(scn===0) drawFireflies(c, t, vis);
@@ -5198,6 +5536,7 @@
     if((wd.rain || 0) > 0.02 && scn===0) drawRain(c, w, h, wd.rain, t);
     if(wd.flash > 0 && scn===0){ c.fillStyle = 'rgba(225,235,255,' + (0.6*wd.flash).toFixed(3) + ')'; c.fillRect(0, 0, w, h); }
     cuDrawOverlay(c, w, h, own, scn);
+    drawCompass(c, w, h, own, p, dt, vp.hud ? vp.hud.bx - vp.x + vp.hud.bw/2 : w/2);
     const downT = ctxGet(own, 'dead');
     if(wd.split && downT > 0){ c.fillStyle = 'rgba(70,6,14,.38)'; c.fillRect(0, 0, w, h);
       c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `bold ${Math.max(14, Math.min(w, h)*0.05)}px "Iowan Old Style","Palatino Linotype",Georgia,serif`; c.lineWidth = 4; c.strokeStyle = 'rgba(10,7,6,.85)';
@@ -5226,7 +5565,7 @@
     if(!hint && !(wd.dead > 0) && p.torch > 0) hint = 'Torch ' + Math.ceil(p.torch) + ' s';
     return hint;
   }
-  const regionOf = p => (inBad(p) ? 'The Badlands' : inEnch(p) ? 'Enchanted forest' : inUnder(p) ? 'Shardling caves' : p.x>DESERT.right ? 'Eastern frontier' : p.x>WD.W-WD.EDGE ? 'Rocky desert' : 'Woodlands')+(p.z>=LH-6 ? ' · Floor '+(Math.round(p.z/LH)+1) : '')+trWord(p);
+  const regionOf = p => (inBad(p) ? 'The Badlands' : inEnch(p) ? 'Forest · ' + ENAMES[bandIx(EBAND, p.x - ENCH.left)] : inUnder(p) ? 'Caves · ' + UNAMES[bandIx(UBAND, p.x - UNDER.left)] : p.x>DESERT.right ? 'Eastern frontier' : p.x>WD.W-WD.EDGE ? 'Rocky desert' : 'Woodlands')+(p.z>=LH-6 ? ' · Floor '+(Math.round(p.z/LH)+1) : '')+trWord(p);
   function meterOf(i){ /* player i's warmth, wet, load and wounds, as the bars that sit in the HP / belly / thirst box; -1 = not worth showing */
     const warm = ctxGet(i, 'warm'); if(warm === undefined) return null;
     const wet = ctxGet(i, 'wet') || 0, load = ctxGet(i, 'cuLoad') || 0, cap = ctxGet(i, 'cuCapV') || CU.cap, inj = ctxGet(i, 'inj'), q = v=>Math.round(clamp(v, 0, 1)*50)/50;
@@ -5647,11 +5986,21 @@
     if(activePad() || kbNav)padSet(target);try{target.focus({preventScroll:true});}catch(e){}
     $('wdPanel').scrollTop=0;
   }
+  /* browser fullscreen (settings): the Fullscreen API where the browser has it (not iPhone Safari); the choice is kept and, because browsers only allow it after a tap or key press, re-entered on the first one */
+  const fsEl = ()=>document.fullscreenElement || document.webkitFullscreenElement || null;
+  const fsOn = ()=>!!fsEl();
+  const fsOk = ()=>{ const e = document.documentElement; return !!((document.fullscreenEnabled || document.webkitFullscreenEnabled) && (e.requestFullscreen || e.webkitRequestFullscreen)); };
+  const fsSet = on=>{ try{ const e = document.documentElement, r = on ? (e.requestFullscreen ? e.requestFullscreen() : e.webkitRequestFullscreen()) : (document.exitFullscreen ? document.exitFullscreen() : document.webkitExitFullscreen()); if(r && r.catch) r.catch(()=>{}); }catch(x){} };
+  let fsWant = false; try{ fsWant = localStorage.getItem('bloodline_fullscreen')==='1'; }catch(e){}
+  const fsChanged = ()=>{ try{ localStorage.setItem('bloodline_fullscreen', fsOn() ? '1' : '0'); }catch(e){} fsWant = fsOn(); if(typeof pauseSettingsRender==='function') try{ pauseSettingsRender(); }catch(e){} };
+  document.addEventListener('fullscreenchange', fsChanged); document.addEventListener('webkitfullscreenchange', fsChanged);
+  for(const ev of ['pointerdown','keydown']) window.addEventListener(ev, ()=>{ if(fsWant && !fsOn() && fsOk()){ fsWant = false; fsSet(true); } }, true);
   function pauseSettingsRender(){
     for(const [key,label] of [['master','Master'],['sfx','Sound effects'],['env','Environment'],['music','Music'],['danger','Danger sounds']])$('wdVolume'+key[0].toUpperCase()+key.slice(1)).textContent=label+': '+Math.round(sound[key]*100)+'%';
     $('wdHaptics').textContent='Vibration: '+(sound.haptics?'On':'Off');
     $('wdEffects').textContent='Effects: '+fxMode;
     $('wdScenery').textContent='Decorative scenery: '+(bareGfx?'Reduced':'Full');
+    $('wdFullscreen').textContent='Fullscreen: '+(fsOk()?(fsOn()?'On':'Off'):'Not available here');
     $('wdSwapAB').textContent='Swap A / B: '+(padSwap.ab?'On':'Off');$('wdSwapXY').textContent='Swap X / Y: '+(padSwap.xy?'On':'Off');
   }
   function pauseSetting(key){
@@ -5660,6 +6009,7 @@
       else if(key==='haptics'){sound.haptics=!sound.haptics;localStorage.setItem('bloodline_sound',JSON.stringify(sound));}
       else if(key==='effects'){fxMode=({auto:'low',low:'high',high:'auto'})[fxMode] || 'auto';lowFx=fxMode==='low';fxEma=16;fxSlowMs=0;fxRes=0;localStorage.setItem('bloodline_fx',fxMode);applyFx();}
       else if(key==='scenery'){bareGfx=!bareGfx;localStorage.setItem('bloodline_bare',bareGfx?'1':'0');applyFx();}
+      else if(key==='fullscreen'){if(fsOk()){fsWant=!fsOn();fsSet(!fsOn());}else $('wdMsg').textContent='This browser does not allow fullscreen from a page. On iPhone, add the game to the Home Screen to play fullscreen.';}
       else if(key==='ab' || key==='xy'){padSwap[key]=!padSwap[key];localStorage.setItem('bloodline_pad'+key,padSwap[key]?'1':'0');const g=activePad();if(g)for(const k of [0,1,2,3,4,5,6,7,8,9])padHeld[k]=!!(padBtn(g,k)&&padBtn(g,k).pressed);wdIn.resync=true;}
     }catch(e){$('wdMsg').textContent='Setting changed for this session; browser storage is unavailable.';}
     pauseSettingsRender();
@@ -5678,7 +6028,7 @@
   $('wdTitleMenu').onclick=()=>{if(wdSave()){wdIn.keys={};wd.bag=false;wd.chest=null;wdMenu();}else $('wdMsg').textContent='Could not save. Stay here and try again.';};
   $('wdLeave').onclick=()=>{if(wdSave())wdLeave();else $('wdMsg').textContent='Could not save. Stay here and try again.';};
   for(const key of ['master','sfx','env','music','danger'])$('wdVolume'+key[0].toUpperCase()+key.slice(1)).onclick=()=>pauseSetting(key);
-  for(const [id,key] of [['wdHaptics','haptics'],['wdEffects','effects'],['wdScenery','scenery'],['wdSwapAB','ab'],['wdSwapXY','xy']])$(id).onclick=()=>pauseSetting(key);
+  for(const [id,key] of [['wdHaptics','haptics'],['wdEffects','effects'],['wdScenery','scenery'],['wdSwapAB','ab'],['wdSwapXY','xy'],['wdFullscreen','fullscreen']])$(id).onclick=()=>pauseSetting(key);
   function wdLeave(){
     if(wd) wdSave();
     let home = WD_HOME_FALLBACK; try{ const r = document.referrer; if(r && new URL(r).origin===location.origin && !/wilds\.html/.test(r)) home = r.split('#')[0]; }catch(e){}
@@ -5747,7 +6097,7 @@
       [null, 'Gathering, eating, refueling and crafting take a short time. Move or take damage to cancel; resources are spent only on completion.'],
       [null, 'You can build up to four levels. Walls are one storey tall; a floor rests on a wall below it or on a floor beside it. Craft stairs at a workbench and walk up them to reach the next floor; leave the space above a stair open.'],
       [null, 'Floors above you turn see-through near you. Step off an edge and you fall: a fall of more than one storey hurts, and Jackals cannot follow you upstairs. You cannot take back a piece that something rests on, or the floor you stand on.'],
-      [null, 'The Shardling mound in the woods is a way down. Climb in and you reach the Shardling caves: crystals to mine with a pickaxe (they grow back), glowing mushrooms to eat, and a hoard deep inside. Shardlings nest there in groups. The whole party goes together; the exit mound brings you back.'],
+      [null, 'The Shardling mound in the woods is a way down. Climb in and you reach the Shardling caves, a whole world of their own as big as the woods above, in four biomes from west to east: the Glowcap Grotto (mushrooms to eat), the Crystal Gallery (crystals to mine with a pickaxe; they grow back), the Drowned Caverns (black lakes, bones, ore-bearing rock; it is cold) and the Ember Hollows (warm, red, with the Shardling hoard at the very end). Rock ribs split each cavern into chambers. Shardlings nest in groups. A banner names each biome as you cross into it. The exit ladder brings you back.'],
     ]],
     ['Night, fire and death', [
       [null, 'Night is short and deadly: without light near you, something in the dark bites. A torch lights your way for a while.'],
@@ -5803,9 +6153,9 @@
       [null, 'The bag and equipment use the biggest size that fits their view, and in split screen the equipment slides under the bag whenever that fits bigger. Equipment descriptions have a panel of their own.'],
     ]],
     ['Terrain, water and digging', [
-      [null, 'The woodland is no longer flat. Hollows sink below the usual ground and plateaus rise above it. A step between two levels is a cliff you cannot walk through; worn ramps (pale, stepped earth) join the levels. The status line says when you stand on low or high ground. Hollows are damp and rich, so crops do better there; high ground is dry and lean. Hollows keep a pond in their bottom.'],
+      [null, 'The woodland is no longer flat. Hollows sink a step below the usual ground and plateaus rise a step above it, and you can see it: a plateau is paler and drawn higher, a hollow darker and lower, and between two levels is a rock face you cannot climb. Walk off the edge of a plateau and you drop to the ground below. Worn ramps (pale, banded earth) slope between the levels; the status line says when you stand on low or high ground. Hollows are damp and rich, so crops do better there; high ground is dry and lean. Hollows keep a pond in their bottom.'],
       [null, 'Springs on the plateaus feed creeks that leap off a cliff as a waterfall into a pool below, and the creek goes on across the lower ground. You can wade water (a little slower), drink from it with B or E, and fill a waterskin or can there. Falls and creeks are loud: you hear them from far off.'],
-      [null, 'Craft a shovel by hand (2 twigs, 2 flint, 1 reed), or an iron shovel at an anvil (2 iron bars, 1 plank). Select it and press B, E or Q to dig the square in front of you, up to three deep. Each dig gives dirt and sometimes a stone, flint or bone. Select dirt and press the same keys on a hole to fill it back in. You cannot dig on cliffs, ramps, water, buildings or beside roots.'],
+      [null, 'Craft a shovel by hand (2 twigs, 2 flint, 1 reed), or an iron shovel at an anvil (2 iron bars, 1 plank). Select it and press B, E or Q to dig the square in front of you, up to three deep. Each dig gives dirt and sometimes a stone, flint or bone. Select dirt and press the same keys on a hole to fill it back in. The ground really sinks: walk into a hole and you drop to the bottom, and holding toward the rim climbs you out again (slowly). You cannot dig on slopes, cliff edges, water, buildings or beside roots.'],
       [null, 'A hole fills with water when the earth is wet enough for its depth: shallow holes in hollows and beside a river or pond, deeper ones elsewhere, and a three-deep hole on ordinary ground is a well if the soil is damp. Dry hard ground may give nothing at any depth, and high ground is driest. In heavy rain every hole puddles. Water spreads along connected holes on the same level, so a ditch dug from the river or a pond carries water to wherever it ends.'],
       [null, 'Irrigation: a farm plot with water in any square touching it (a ditch, a pond, a creek) is watered automatically, once per planting, exactly as if you had used a watering can. Dig a ditch from the bank to your plots and the pump and the can are no longer needed. Holes slow you down, wet ones a little less. You cannot build on a hole, so fill it first.'],
     ]],
@@ -5822,6 +6172,9 @@
     ['Scythe', [
       [null, 'Craft a scythe at a workbench: 3 twigs, 3 flint, 2 reeds. Select it and swing (X, J or left click): one wide sweep reaps every ripe farm crop, berry garden and wild berry, herb, reed, mushroom or moonbloom in front of you, and hands back a seed for each crop. It does not chop trees or break boulders, but it cuts briars and fights (2 damage, 60 swings).'],
     ]],
+    ['Compass', [
+      [null, 'Craft a compass at a workbench: 2 flint, 2 stone, 2 reeds. Carry it anywhere in your bag and a dial appears at the top of your view. The gold needle points to your camp (your last campfire or bed; in the caves, the forest and the Badlands, to the way out), with the compass direction and distance in metres beneath it. A coloured pip on the rim swings toward anything strange within about 60 m: the cave mound, the fairy ring, the buried gate, the hoard, the Heart grove. Every player in split screen gets their own dial.'],
+    ]],
     ['Combat rat', [
       [null, 'Rats scurry about the woods. Hold raw or cooked meat (select it in the hotbar), walk up to a rat and press B or E to offer it: a tamed rat is yours alone, one per player, and it follows only you.'],
       [null, 'Your rat trots after you, bites enemies that threaten you and can be hurt. At 0 HP it goes down for about 22 seconds, then gets up. Feed it meat (B or E beside it) to heal it or wake it at once. It follows you through the mound and the fairy ring.'],
@@ -5830,6 +6183,7 @@
     ['The Enchanted Forest', [
       [null, 'Somewhere in the eastern frontier a ring of mushrooms glows violet. Stand in the fairy ring and press B or E to step through into the Enchanted Forest: a wood in permanent twilight. The ring on the far side leads home.'],
       [null, 'It is dangerous. Thornlings (spiked, in packs) rush you, wisps float and fire orbs, and a Hollow Stag guards the Heart grove at the far end. Briar hedges split the wood into chambers; they hurt to touch, so slip through the gaps or cut them with a scythe, hatchet or blade (they grow back at dawn).'],
+      [null, 'The forest is as big as the woods you started in, and has four biomes from west to east: the Moonlit Glade (open, with berries and moonblooms), Briarwood (dense, dark and thorny), Mirror Mere (still water, reeds and herbs) and the Heart Grove (old trees round the cache, where the Hollow Stag waits).'],
       [null, 'Fey trees give heartwood, which burns long and makes the Heartwood Helm. Moonblooms give moonpetals (a tea heals); the Heart grove cache holds heartwood, wispglass and salves. Wispglass from wisps makes the Wisp Lantern Charm (+8% speed, +1 attack) and the wisp bell for your rat.'],
     ]],
     ['Exploring and metalworking', [
@@ -5990,7 +6344,9 @@
     day:[{id:'sun', w:6}, {id:'wander', w:1.6}, {id:'hearth', w:1.6}],
     night:[{id:'chill', w:6}, {id:'moon', w:1.6}, {id:'wind', w:1.6}],
     cave:[{id:'drip', w:5}, {id:'crystal', w:3}],
+    cave1:[{id:'crystal', w:6}, {id:'drip', w:2}], cave2:[{id:'drip', w:7}, {id:'crystal', w:1.5}], cave3:[{id:'drip', w:3}, {id:'crystal', w:3}], /* each biome of the caves leans a different way */
     glade:[{id:'glade', w:6}, {id:'moon', w:1.5}],
+    glade1:[{id:'moon', w:4}, {id:'glade', w:3}], glade2:[{id:'glade', w:7}, {id:'moon', w:1}], glade3:[{id:'moon', w:3}, {id:'glade', w:3}],
   };
   const mv = {ctx:'', id:'', left:0};
   function musicPick(ctx){
@@ -6006,7 +6362,7 @@
     const BAR = 4.8; if(audioCtx.currentTime < nextBar - 0.6) return;
     const at = nextBar; nextBar += BAR; barN++;
     const under = inUnder(wd.p), ench = inEnch(wd.p), dk = under ? 0.8 : ench ? 0.55 : darkAt(wd.t), B = amb.musicBus, rnd = a=>a[Math.floor(Math.random()*a.length)], bar = barN%4;
-    const id = musicPick(ench ? 'glade' : under ? 'cave' : dk > 0.6 ? 'night' : 'day');
+    const id = musicPick(ench ? (['glade', 'glade1', 'glade2', 'glade3'])[bandIx(EBAND, wd.p.x - ENCH.left)] : under ? (['cave', 'cave1', 'cave2', 'cave3'])[bandIx(UBAND, wd.p.x - UNDER.left)] : dk > 0.6 ? 'night' : 'day');
     if(id==='chill' || id==='drip'){ /* the usual night and cave theme */
       grPad(at, BAR + 0.4, B, [[73.4, -5], [110, 4], [77.8, 0]]);
       if(barN%2===0) for(let i=0;i<3;i++) grPluck(midiHz(NIGHT_SCALE[Math.floor(Math.random()*NIGHT_SCALE.length)]), at + 1.2 + i*1.1, B); }
@@ -6452,7 +6808,7 @@
   window.addEventListener('gamepaddisconnected', ()=>{ padHeld={}; if(wd && wd.crew && anyBag()){ for(const i of activeIdx()) if(ctxGet(i, 'bag')) withPlayer(i, ()=>bagRender()); } });
   requestAnimationFrame(padPoll);
   try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
-  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trHit, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}};
+  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, UNDER, ENCH, UBAND, EBAND, bandIx, wdTravel, wdRingTravel, underRepopulate, enchRepopulate, inUnder, inEnch, sceneOf, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trH, trSup, trSettle, trOk, trWalkOk, trFlat, trCornersI, trRow, TH, DD, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}};
   (function makeBagPanels(){
     const orig = document.getElementById('wdBag');
     bagIds = new Set(['wdBag', ...[...orig.querySelectorAll('[id]')].map(e=>e.id)]);
