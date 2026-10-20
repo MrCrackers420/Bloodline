@@ -1312,7 +1312,7 @@
   <div class="title-sub title-hide" id="titleNext"></div>
   <button id="titleRematch" class="title-small title-hide" style="display:none">Rematches</button>
   <div class="title-hide chal-row" id="chalRow" style="display:none"></div>
-  <div class="title-hide title-row" id="titleWander" style="display:none"><button id="titleBattle" class="title-big">Battle</button><button id="titleBase" class="title-big">Camp</button></div>
+  <div class="title-hide title-row" id="titleWander"><button id="titleBattle" class="title-big">Battle</button><button id="titleBase" class="title-big" style="display:none">Camp</button></div>
   <div class="title-hide title-row">
     <button id="titleCollection">Collection</button>
     <button id="introSound">Settings</button>
@@ -1337,6 +1337,7 @@
       <button id="holdfastTest" style="font-size:.65rem; opacity:.6;">Holdfast (test)</button>
       <button id="ufTest" style="font-size:.65rem; opacity:.6;">Catacombs (test)</button>
       <button id="wildsTest" style="font-size:.65rem; opacity:.6;">The Wilds (test)</button>
+      <button id="weedTest" style="font-size:.65rem; opacity:.6;">Weed Warrior (test)</button>
     </div>
     <div class="tools-tab-content" id="cheats-tab">
       <button id="skipChallenger" style="font-size:.65rem; opacity:.6;">Skip to Next Challenger (test)</button>
@@ -1538,9 +1539,10 @@
   <h2>Battle</h2>
   <div class="sheet-list">
     <button id="titleSkirmish" class="sheet-btn">Skirmish<small>A wandering army. Earns Mortar, never moves the story.</small></button>
-    <button id="titleHoldfast" class="sheet-btn" style="display:none">Holdfast<small>Hold the Keep against wave after wave.</small></button>
-    <button id="titleUnderfield" class="sheet-btn" style="display:none">The Catacombs<small>Three floors down, and something at the bottom of each.</small></button>
-    <button id="titleWilds" class="sheet-btn" style="display:none">The Wilds<small>Live off the land. Keep a fire. Night always comes.</small></button>
+    <button id="titleHoldfast" class="sheet-btn">Holdfast<small>Hold the Keep against wave after wave.</small></button>
+    <button id="titleUnderfield" class="sheet-btn">The Catacombs<small>Three floors down, and something at the bottom of each.</small></button>
+    <button id="titleWilds" class="sheet-btn">The Wilds<small>Live off the land. Keep a fire. Night always comes.</small></button>
+    <button id="titleWeedWarrior" class="sheet-btn">Weed Warrior<small>One ant, a hedge maze, and locusts that never sleep for long.</small></button>
     <div class="sheet-head">Armies</div>
     <button id="titleFriend" class="sheet-btn">Army codes<small>Send your army to a friend, or face the army they sent you.</small></button>
     <button id="titleConsole" class="sheet-btn">Versus<small>Two controllers, one screen. Each player takes a side.</small></button>
@@ -9070,7 +9072,7 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   function reachableChallengers(){ return CHALLENGERS.filter(c=>c.id <= Math.min(unlockedTier, CHALLENGERS.length)); }
   function renderTitle(){
     updateChangelogBadge();
-    { const tw = document.getElementById('titleWander'); if(tw) tw.style.display = alchemyOpen() ? '' : 'none'; for(const id of ['titleHoldfast','titleUnderfield','titleWilds']){ const hb = document.getElementById(id); if(hb) hb.style.display = unlockedTier>=HOLDFAST_TIER ? '' : 'none'; } } // Skirmish and Alchemy, after Veyra
+    { const tw = document.getElementById('titleWander'); if(tw) tw.style.display = ''; const tb = document.getElementById('titleBase'); if(tb) tb.style.display = alchemyOpen() ? '' : 'none'; for(const id of ['titleHoldfast','titleUnderfield','titleWilds','titleWeedWarrior']){ const hb = document.getElementById(id); if(hb) hb.style.display = ''; } } // every game mode is open from the first launch, so nobody has to play the story to reach them; only the Camp waits for Alchemy (after Veyra)
     const live = matchStarted && !state.over, nx = storyNext();
     document.getElementById('titleNext').textContent = live ? 'Return to the match' : `Challenger ${nx.id}: ${nx.name}`;
     document.getElementById('titleRematch').style.display = (!live && rematchable().length) ? '' : 'none'; // once a challenger has fallen
@@ -9205,6 +9207,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     {since:2, kind:'Feature', title:'The Wilds', revealAt:11,
      hint:"Past the last camp there is open country, and nobody feeds you out there.",
      detail:"The Wilds is a survival mode, open from Battle. Pick twigs and flint, craft a hatchet and fell trees, cut reeds, pick berries and herbs, and hunt Jackals. Build a workbench to craft a pickaxe, a fishing rod and a fire pit. Your belly empties over two days. Night is short, and without light near you something in the dark bites. Build a campfire from 2 wood and 2 reeds, feed it wood, and cook on it: roast what you catch, or make kabobs, fishsticks, meatballs and stew. A torch lights your way for a while. Saw planks and build walls, floors and stairs. Every third night a pack comes for you: a defense bench makes spike traps, spiked barricades and sentries. When you die, everything you carry drops where you fell, and you wake at your last campfire. Your world is saved and waits for you."},
+    {since:2, kind:'Feature', title:'Every mode is open',
+     hint:"Not everyone wants the story, so the other games no longer wait behind it.",
+     detail:"Battle is on the title screen from the very first launch, and Skirmish, Holdfast, the Catacombs, the Wilds and Weed Warrior are all open there without finishing any challenger. The story is still there under Continue. Only the Camp still waits for its first building."},
+    {since:2, kind:'Feature', title:'Weed Warrior',
+     hint:"A small game about an ant and a very large lawn.",
+     detail:"Weed Warrior is a new game in Battle, with its own page. Gather every weed in the hedge maze while locusts patrol it, spend coin on weapons, upgrades and hats, and face a boss every twentieth level. Move with a stick, WASD or the arrow keys and hold fire. It works with a controller too. Its progress is saved on its own and does not touch your story."},
   ];
   const ROMAN = ['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
   function changelogEntries(){ return CHANGELOG.filter(e=>e.since > CHANGELOG_AFTER); }
@@ -12077,6 +12085,12 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
   }
   document.getElementById('wildsTest').onclick = wildsGo;
   document.getElementById('titleWilds').onclick = wildsGo;
+  function weedGo(){ /* Weed Warrior: its own page in this tab, like the Wilds */
+    try{ tickPit(true); sessionStorage.setItem('bloodline_home', location.href.split('#')[0]); }catch(e){}
+    location.replace('weedwarrior.html');
+  }
+  document.getElementById('weedTest').onclick = weedGo;
+  document.getElementById('titleWeedWarrior').onclick = weedGo;
   // the saves changed in another tab of this game: take them, so this page never writes back an older copy
   window.addEventListener('storage', e=>{ try{
     if(e.key==='bloodline_pit') pitState = pitClean(JSON.parse(e.newValue||'null'));

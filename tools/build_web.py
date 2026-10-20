@@ -3,7 +3,7 @@
 
   python3 build_web.py path/to/bloodline.html OUT_DIR [--build 2026-10-05.1]
 
-Writes OUT_DIR/: index.html (the game plus install tags and an update banner), catacombs.html and wilds.html (if they sit next to the game), manifest.webmanifest, sw.js, version.json,
+Writes OUT_DIR/: index.html (the game plus install tags and an update banner), catacombs.html, wilds.html and weedwarrior.html (if they sit next to the game), manifest.webmanifest, sw.js, version.json,
 icons/, HOSTING.md. Upload the contents of OUT_DIR to any static host (GitHub Pages, Netlify, Cloudflare Pages). All paths are
 relative, so it works at a sub-path such as https://name.github.io/bloodline/.
 
@@ -15,7 +15,7 @@ import json, math, os, re, shutil, sys, time
 
 # pages that sit beside the game, and the line in each that names where Leave goes (rewritten for the web build).
 # If you change one of these lines in the page, change it here too: the build asserts it is there
-SIDE_PAGES = [('catacombs.html', "let home = '%s'"), ('wilds.html', "const WD_HOME_FALLBACK = '%s'")]
+SIDE_PAGES = [('catacombs.html', "let home = '%s'"), ('wilds.html', "const WD_HOME_FALLBACK = '%s'"), ('weedwarrior.html', "const WW_HOME_FALLBACK = '%s'")]
 from PIL import Image, ImageDraw
 
 def icon(size, maskable=False):
@@ -107,7 +107,7 @@ def main():
 
     sw = r'''// Bloodline service worker (build __BUILD__): offline play, and fresh pages whenever the network is reachable.
 const CACHE = 'bloodline-__BUILD__';
-const SHELL = ['./', './index.html', './catacombs.html', './wilds.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
+const SHELL = ['./', './index.html', './catacombs.html', './wilds.html', './weedwarrior.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 function networkFirst(req) {                       // the page and the version file: newest when online, the saved copy offline or on a slow link
@@ -124,7 +124,7 @@ function networkFirst(req) {                       // the page and the version f
 self.addEventListener('fetch', e => {
   const req = e.request; if (req.method !== 'GET') return;
   const url = new URL(req.url); if (url.origin !== location.origin) return;
-  if (req.mode === 'navigate' || /\/(index\.html|catacombs\.html|wilds\.html|version\.json)?$/.test(url.pathname) && !/\/icons\//.test(url.pathname)) { e.respondWith(networkFirst(req)); return; }
+  if (req.mode === 'navigate' || /\/(index\.html|catacombs\.html|wilds\.html|weedwarrior\.html|version\.json)?$/.test(url.pathname) && !/\/icons\//.test(url.pathname)) { e.respondWith(networkFirst(req)); return; }
   e.respondWith(caches.match(req, { ignoreSearch: true }).then(r => r || fetch(req)));      // icons and the manifest: saved copy first
 });
 '''.replace('__BUILD__', build)

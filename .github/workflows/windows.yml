@@ -1,4 +1,4 @@
-# Builds the Windows app (a zip with Bloodline.exe) from game/bloodline.html, game/catacombs.html and game/wilds.html. Push a tag like v0.2.0 to attach it to a Release.
+# Builds the Windows app (a zip with Bloodline.exe) from game/bloodline.html, game/catacombs.html, game/wilds.html and game/weedwarrior.html. Push a tag like v0.2.0 to attach it to a Release.
 name: Windows build
 on:
   push:
@@ -20,6 +20,8 @@ jobs:
           grep -q "let home = 'index.html'" windows/www/catacombs.html
           sed "s/const WD_HOME_FALLBACK = 'bloodline.html'/const WD_HOME_FALLBACK = 'index.html'/" game/wilds.html > windows/www/wilds.html
           grep -q "const WD_HOME_FALLBACK = 'index.html'" windows/www/wilds.html
+          sed "s/const WW_HOME_FALLBACK = 'bloodline.html'/const WW_HOME_FALLBACK = 'index.html'/" game/weedwarrior.html > windows/www/weedwarrior.html
+          grep -q "const WW_HOME_FALLBACK = 'index.html'" windows/www/weedwarrior.html
       - name: Install
         working-directory: windows
         run: npm install --no-audit --no-fund

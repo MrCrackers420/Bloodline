@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Weed Warrior</title>
+<style>
+:root{color-scheme:dark;--bg:#15100f;--bg2:#1d1613;--island:#2b201c;--river:#182428;--plank:#3a2d22;--crimson:#8f2742;--crimson-lt:#c73a5c;--teal:#2c6460;--teal-lt:#3f8580;--bone:#d9c9a3;--bone-dim:#8f8470;--line:#3a2c27;--gold:#e0b54a;--deep:#0a0706;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:radial-gradient(120% 80% at 50% 0%,var(--bg2) 0%,var(--bg) 60%,var(--deep) 100%) fixed;color:var(--bone);font:16px/1.4 var(--serif);
+  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+main{max-width:980px;margin:auto}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:10px}
+h1{font-size:clamp(22px,4.2vw,32px);margin:0;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--bone);text-shadow:2px 2px 0 var(--deep)}
+.sub{font-size:13px;color:var(--bone-dim);font-style:italic;margin-top:2px}
+.hbtns{display:flex;gap:7px;flex-wrap:wrap}
+button{font-family:var(--serif);background:var(--plank);color:var(--bone);border:1px solid var(--line);border-bottom:3px solid var(--deep);border-radius:4px;padding:9px 12px;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.03em;touch-action:manipulation}
+button:hover:not(:disabled){border-color:var(--bone-dim);background:#46362a}
+button:active:not(:disabled){transform:translateY(2px);border-bottom-width:1px}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.42;cursor:not-allowed}
+.hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:6px;margin:0 0 8px}
+.stat,.panel{border:1px solid var(--line);border-radius:4px;background:var(--island);padding:6px 9px;box-shadow:inset 0 2px 0 #00000055}
+.stat small{display:block;font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
+.stat b{font:700 15px var(--mono);color:var(--bone)}
+.bar{height:7px;background:var(--deep);position:relative;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:var(--crimson-lt)}
+.bar.t i{background:var(--teal-lt)}
+.bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--deep) calc(10% - 2px) 10%)}
+.gear{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;font:13px var(--mono)}
+.gear b{color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
+#status{color:var(--bone-dim);font-family:var(--serif);font-style:italic;font-size:14px}
+canvas{display:block;width:100%;aspect-ratio:5/3;max-height:65vh;border:2px solid var(--line);border-radius:4px;background:var(--bg2);touch-action:none;box-shadow:0 0 0 1px var(--deep),0 6px 0 var(--deep)}
+.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.buttons button{min-width:96px;padding:12px 14px;line-height:1.15}
+.buttons button span{display:block;font:10px var(--mono);letter-spacing:.1em;text-transform:uppercase;opacity:.75;margin-top:3px}
+#fire{background:var(--crimson);border-color:var(--crimson-lt)}
+#fire:hover:not(:disabled){background:var(--crimson-lt)}
+#heal{background:var(--teal);border-color:var(--teal-lt)}
+#heal:hover:not(:disabled){background:var(--teal-lt)}
+#joy{width:112px;height:112px;border-radius:50%;border:2px solid var(--bone-dim);background:#0a070688;position:relative;touch-action:none;flex-shrink:0;box-shadow:inset 0 0 0 6px var(--island)}
+#nub{position:absolute;width:42px;height:42px;left:31px;top:31px;border-radius:50%;background:var(--teal-lt);border:2px solid var(--bone);pointer-events:none}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.panel{margin-top:10px;padding:12px}
+.panel h2{margin:0 0 2px;font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.muted{color:var(--bone-dim);font-size:13px}
+.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;margin:10px 0}
+.item{text-align:left;font-size:12px;font-weight:400;min-height:84px;background:var(--bg2)}
+.item b{display:block;font-size:14px;margin-bottom:3px;color:var(--bone)}
+.item .st{font:10px var(--mono);color:var(--teal-lt);letter-spacing:.06em;margin-top:2px}
+.item .ft{margin-top:6px;font:700 12px var(--mono);color:var(--gold)}
+.item.on{border-color:var(--teal-lt)}
+.item.on .ft{color:var(--teal-lt)}
+.tabs{grid-column:1/-1;display:flex;gap:7px;flex-wrap:wrap}
+.tabs button.cur{border-color:var(--gold);color:var(--gold)}
+.hidden{display:none!important}
+.pad-focus{outline:3px solid var(--gold)!important;outline-offset:2px;box-shadow:0 0 10px #e0b54a99!important}
+.foot{margin-top:12px;border-top:2px solid var(--line);padding-top:8px}
+@media(max-width:480px){body{padding-left:8px;padding-right:8px}.controls{gap:8px}#joy{width:96px;height:96px}#nub{left:25px;top:25px}.buttons button{padding:10px;min-width:82px}.hud{grid-template-columns:repeat(3,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body><main id="app">
+<header>
+  <div><h1>Weed Warrior</h1><div class="sub">Gather the weeds. Dodge the locusts. Dress your ant.</div></div>
+  <div class="hbtns"><button id="fullscreen">Fullscreen</button><button id="leave">Back to Bloodline</button></div>
+</header>
+<div class="hud">
+  <div class="stat"><small>Weeds</small><b id="leaves">0/8</b><div class="bar t"><i id="leafBar"></i></div></div>
+  <div class="stat"><small>Coin</small><b id="money">0</b></div>
+  <div class="stat"><small>Health</small><b id="hp">100/100</b><div class="bar"><i id="hpBar"></i></div></div>
+  <div class="stat"><small>Level</small><b id="level">1</b></div>
+  <div class="stat"><small>Save</small><b id="saveStatus">Autosave</b></div>
+</div>
+<div class="gear"><b id="weapon">Glock 19</b><span id="ammo">12/12</span><span id="status">Locusts patrol until they spot you.</span></div>
+<canvas id="field" width="700" height="420" aria-label="Weed Warrior game field"></canvas>
+<div class="controls">
+  <div id="joy" aria-label="Movement joystick"><div id="nub"></div></div>
+  <div class="buttons"><button id="fire">FIRE<span>hold to shoot</span></button><button id="heal">HEAL<span>20 coin</span></button></div>
+</div>
+<nav><button id="start">Start / next level</button><button id="shopBtn">Weapons &amp; upgrades</button><button id="hatBtn">Hat collection</button><button id="sightBtn">Sight rings: on</button><button id="restart">New run</button></nav>
+<section id="panel" class="panel hidden">
+  <h2 id="panelTitle">Shop</h2><p id="panelDesc" class="muted">Spend coin on gear.</p>
+  <div id="items" class="items"></div>
+  <p class="muted">Hats are only for show. Your progress saves on this device.</p>
+  <button id="closePanel">Close</button>
+</section>
+<p class="muted foot">Drag the joystick to move and hold FIRE to shoot. WASD or the arrow keys and space work too. Hedges block movement and locust sight. Every 20th level has a boss.</p>
+<p class="muted">Controller: left stick or d-pad moves, right stick aims (otherwise it aims at the nearest locust), A or a trigger fires, X heals, Y opens hats, Start opens the shop and pauses. In a menu: d-pad to choose, A to buy, B or Start to close, bumpers to switch tabs. Hold Back to return to Bloodline.</p>
+</main>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id),canvas=$('field'),ctx=canvas.getContext('2d'),W=700,H=420;
+const SAVE_KEY='bloodline_weedwarrior', OLD_KEY='weedWarriorSave_v1';
+const hedges=[{x:0,y:105,w:235,h:23},{x:285,y:105,w:415,h:23},{x:0,y:205,w:410,h:23},{x:460,y:205,w:240,h:23},{x:0,y:305,w:160,h:23},{x:210,y:305,w:490,h:23}];
+const weapons={
+glock:{name:'Glock 19',cost:0,d:1,rate:360,mag:12,speed:5,desc:'Starter pistol'},
+leaf:{name:'Leaf launcher',cost:90,d:4,rate:550,mag:6,speed:7,desc:'Heavy shots'},
+rapid:{name:'Rapid-fire blaster',cost:160,d:2,rate:130,mag:30,speed:6,desc:'Fast firing'},
+thorn:{name:'Thorn shotgun',cost:240,d:2,rate:650,mag:5,speed:6,spread:5,desc:'Five-shot spread'},
+pollen:{name:'Pollen cannon',cost:350,d:6,rate:850,mag:4,speed:5,splash:45,desc:'Explosive blasts'},
+seed:{name:'SEEDSTORM 9000',cost:600,d:3,rate:90,mag:45,speed:7,desc:'Seed spam'},
+rail:{name:'Railthorn',cost:850,d:12,rate:800,mag:8,speed:9,pierce:3,desc:'Piercing shots'}
+};
+/* hats are drawn as small shapes over the ant: k = shape, c = colour, c2 = trim */
+const hats=[
+{id:'none',name:'No hat',k:'',cost:0,desc:'Classic ant look'},
+{id:'tophat',name:'Top hat',k:'top',c:'#1a1412',c2:'#c73a5c',cost:30,desc:'Fancy field gentleman'},
+{id:'cowboy',name:'Cowboy hat',k:'cow',c:'#8a5a2b',c2:'#5b3a1b',cost:45,desc:'Yeehaw, partner'},
+{id:'crown',name:'Tiny crown',k:'crown',c:'#e0b54a',c2:'#c73a5c',cost:100,desc:'Ruler of the weeds'},
+{id:'helmet',name:'Army helmet',k:'dome',c:'#55623a',c2:'#2f3a20',cost:65,desc:'Field commander'},
+{id:'cap',name:'Baseball cap',k:'cap',c:'#c73a5c',c2:'#8f2742',cost:35,desc:'Street ant energy'},
+{id:'grad',name:'Graduation cap',k:'grad',c:'#1a1412',c2:'#e0b54a',cost:80,desc:'Top of the colony'},
+{id:'ninja',name:'Ninja headband',k:'band',c:'#c73a5c',c2:'#8f2742',cost:90,desc:'Silent but deadly'},
+{id:'frog',name:'Frog hat',k:'frog',c:'#4c8a3a',c2:'#d9c9a3',cost:120,desc:'Frog mode activated'},
+{id:'party',name:'Party hat',k:'cone',c:'#3f8580',c2:'#e0b54a',cost:55,desc:'Every weed is a celebration'},
+{id:'halo',name:'Golden halo',k:'halo',c:'#e0b54a',c2:'#e0b54a',cost:175,desc:'Innocent little ant'},
+{id:'devil',name:'Devil horns',k:'horns',c:'#c73a5c',c2:'#8f2742',cost:150,desc:'Menace of the wheat field'}
+];
+const upgrades=[
+{id:'speed',name:'Turbo legs',cost:35,desc:'Move faster',apply:g=>g.speed+=.45},
+{id:'armor',name:'Ant armor',cost:200,desc:'Take 25% less damage',apply:g=>g.armor=Math.min(.7,g.armor+.25)},
+{id:'health',name:'Stronger shell',cost:50,desc:'+25 maximum health',apply:g=>{g.max+=25;g.hp+=25}},
+{id:'damage',name:'Mega damage',cost:125,desc:'+1 weapon damage',apply:g=>g.bonus++},
+{id:'crit',name:'Critical stinger',cost:150,desc:'+10% chance for triple damage',apply:g=>g.crit=Math.min(.7,g.crit+.1)},
+{id:'mag',name:'Bigger magazine',cost:100,desc:'+50% ammo capacity',apply:g=>{g.magBonus+=.5;g.ammo=capacity()}},
+{id:'reload',name:'Hyper reload',cost:180,desc:'Reload 5 seconds faster',apply:g=>g.reload=Math.max(5000,g.reload-5000)},
+{id:'magnet',name:'Weed magnet',cost:100,desc:'Gather weeds from farther away',apply:g=>g.magnet+=30},
+{id:'drone',name:'Stinger drone',cost:300,desc:'Automatically attacks locusts',apply:g=>g.drones++},
+{id:'regen',name:'Nectar regen',cost:250,desc:'Slowly recover health',apply:g=>g.regen+=.3},
+{id:'double',name:'Double trouble',cost:400,desc:'Fire extra shots',apply:g=>g.double=Math.min(4,g.double+1)},
+{id:'nuke',name:'Pollen apocalypse',cost:500,desc:'Unlock field-clearing blast',apply:g=>g.nukes++}
+];
+let padJoy={x:0,y:0},padFire=false,aimA=null,padPrev={},padNext=0,padHeld=false,padEl=null,padIdx=0,leaveHold=0,padLastHp=null;
+let ownedHats=new Set(['none']),equippedHat='none',g,joy={x:0,y:0},keys={},firing=false,run=false,shopOpen=false,showSight=true,last=0,shopMode='weapons',saveTimer=0;
+function capacity(){return Math.ceil(g.weapon.mag*(1+g.magBonus))}
+function say(s){$('status').textContent=s}
+function freshState(){return{level:1,money:0,hp:100,max:100,speed:2.5,bonus:0,crit:0,magBonus:0,reload:30000,magnet:0,armor:0,drones:0,regen:0,double:0,nukes:0,weapon:weapons.glock,wid:'glock',ammo:12,reloadAt:0,lastShot:0,lastDrone:0,p:{x:350,y:375,r:11},leaves:[],bugs:[],bullets:[],enemy:[],count:0,quota:8,done:false,dead:false}}
+function save(){try{const data={version:1,level:g.level,money:g.money,hp:g.hp,max:g.max,speed:g.speed,bonus:g.bonus,crit:g.crit,magBonus:g.magBonus,reload:g.reload,magnet:g.magnet,armor:g.armor,drones:g.drones,regen:g.regen,double:g.double,nukes:g.nukes,wid:g.wid,ammo:g.ammo,ownedHats:[...ownedHats],equippedHat};localStorage.setItem(SAVE_KEY,JSON.stringify(data));$('saveStatus').textContent='Saved'}catch(e){$('saveStatus').textContent='No save'}}
+function readSave(){let raw=null;try{raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem(OLD_KEY)}catch(e){}try{return JSON.parse(raw||'null')}catch(e){return null}}
+function load(){try{const d=readSave();if(!d||d.version!==1)return false;g.level=Math.max(1,Number(d.level)||1);for(const k of ['money','hp','max','speed','bonus','crit','magBonus','reload','magnet','armor','drones','regen','double','nukes'])if(Number.isFinite(d[k]))g[k]=d[k];g.wid=weapons[d.wid]?d.wid:'glock';g.weapon=weapons[g.wid];g.ammo=Math.max(0,Math.min(capacity(),Number(d.ammo)||0));if(g.hp<=0)g.hp=g.max;ownedHats=new Set(['none',...(Array.isArray(d.ownedHats)?d.ownedHats.filter(id=>hats.some(h=>h.id===id)):[])]);equippedHat=ownedHats.has(d.equippedHat)?d.equippedHat:'none';return true}catch(e){return false}}
+function blocked(x,y,r=2){return hedges.some(h=>x+r>h.x&&x-r<h.x+h.w&&y+r>h.y&&y-r<h.y+h.h)}
+function move(e,dx,dy){let x=Math.max(e.r,Math.min(W-e.r,e.x+dx));if(!blocked(x,e.y,e.r))e.x=x;let y=Math.max(e.r,Math.min(H-e.r,e.y+dy));if(!blocked(e.x,y,e.r))e.y=y}
+function visible(a,b){let dx=b.x-a.x,dy=b.y-a.y,n=Math.ceil(Math.hypot(dx,dy)/5);for(let i=1;i<n;i++)if(blocked(a.x+dx*i/n,a.y+dy*i/n,1))return false;return true}
+function place(r=10){for(let i=0;i<300;i++){let x=20+Math.random()*660,y=20+Math.random()*380;if(!blocked(x,y,r)&&Math.hypot(x-g.p.x,y-g.p.y)>65)return{x,y}}return{x:35,y:35}}
+function newBug(boss=false){let p=place(boss?22:11),hp=boss?Math.min(240,65+g.level*4):Math.min(18,4+Math.floor(g.level/6));return{...p,r:boss?22:11,boss,hp,max:hp,speed:(boss?.7:.65+Math.random()*.42)*(1+g.level*.008),sight:boss?290:155,aggro:false,lastSeen:0,tx:p.x,ty:p.y,wanderAt:0,hitPlayer:0,shootAt:0}}
+function levelSetup(){g.leaves=[];g.bugs=[];g.bullets=[];g.enemy=[];g.count=0;g.quota=Math.min(8+Math.floor(g.level*1.4),35);g.p={x:350,y:375,r:11};for(let i=0;i<g.quota;i++)g.leaves.push({...place(8),r:8});for(let i=0;i<Math.min(3+Math.floor(g.level/2),12);i++)g.bugs.push(newBug());if(g.level%20===0)g.bugs.push(newBug(true));g.done=false;g.dead=false;run=true;shopOpen=false;$('panel').classList.add('hidden');say(g.level%20===0?'A boss locust is out there.':'Locusts are patrolling.');sync()}
+function newRun(){g=freshState();ownedHats=new Set(['none']);equippedHat='none';levelSetup();save();renderShop()}
+function sync(){$('leaves').textContent=g.count+'/'+g.quota;$('leafBar').style.width=(100*Math.min(1,g.count/g.quota))+'%';$('money').textContent=g.money;$('hp').textContent=Math.ceil(g.hp)+'/'+g.max;$('hpBar').style.width=(100*Math.max(0,g.hp/g.max))+'%';$('level').textContent=g.level;$('weapon').textContent=g.weapon.name;$('ammo').textContent=g.reloadAt?'Reload '+Math.max(0,Math.ceil((g.reloadAt-performance.now())/1000))+'s':'Ammo '+g.ammo+'/'+capacity()}
+function finish(){if(g.done||g.dead)return;g.done=true;run=false;g.money+=15+g.level*2;openPanel('hats');$('panelTitle').textContent='Level '+g.level+' cleared';$('panelDesc').textContent='Level bonus earned. Buy upgrades or hats, then go on to the next level.';say('Level cleared. Bonus coin earned.');save()}
+function damageBug(b,d){if(Math.random()<g.crit){d*=3;say('Critical hit.')}b.hp-=d;if(b.hp<=0){g.money+=b.boss?100:8;if(b.boss)say('Boss defeated. +100 coin.');g.bugs=g.bugs.filter(x=>x!==b);if(g.count>=g.quota&&!g.bugs.some(x=>x.boss))finish()}}
+function shoot(){let now=performance.now();if(!run||shopOpen||g.done||g.dead)return;if(g.reloadAt){if(now<g.reloadAt)return;g.reloadAt=0;g.ammo=capacity();say('Reloaded.')}if(g.ammo<=0){g.reloadAt=now+g.reload;say('Empty. Reloading.');return}if(now-g.lastShot<g.weapon.rate)return;g.lastShot=now;g.ammo--;let p=g.p,t=g.bugs.slice().sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0],a=aimA!==null?aimA:t?Math.atan2(t.y-p.y,t.x-p.x):-Math.PI/2,n=1+g.double,spread=g.weapon.spread||1;for(let k=0;k<n;k++)for(let j=0;j<spread;j++){let ang=a+(k-(n-1)/2)*.07+(j-(spread-1)/2)*.13;g.bullets.push({x:p.x+Math.cos(ang)*14,y:p.y+Math.sin(ang)*14,vx:Math.cos(ang)*g.weapon.speed,vy:Math.sin(ang)*g.weapon.speed,r:4,d:g.weapon.d+g.bonus,pierce:g.weapon.pierce||0,splash:g.weapon.splash||0,life:100})}if(!g.ammo){g.reloadAt=now+g.reload;say('Empty. Reloading.')}sync()}
+function openPanel(mode){shopMode=mode;shopOpen=true;run=false;$('panel').classList.remove('hidden');if(!g.done){$('panelTitle').textContent=mode==='hats'?'Hat collection':'Weapons & upgrades';$('panelDesc').textContent=mode==='hats'?'Buy hats with coin, then wear your favourite.':'Spend coin on weapons and upgrades.'}renderShop()}
+function renderShop(){const box=$('items');box.innerHTML='';
+const add=(title,desc,stat,disabled,action,foot,on)=>{const b=document.createElement('button');b.className='item'+(on?' on':'');b.disabled=disabled;b.innerHTML='<b></b>'+desc+(stat?'<div class="st"></div>':'')+'<div class="ft"></div>';b.querySelector('b').textContent=title;if(stat)b.querySelector('.st').textContent=stat;b.querySelector('.ft').textContent=foot;b.onclick=action;box.appendChild(b)};
+if(shopMode==='hats'){hats.forEach(h=>{let has=ownedHats.has(h.id);add(h.name,h.desc,'',(!has&&g.money<h.cost)||equippedHat===h.id,()=>{if(!ownedHats.has(h.id)){g.money-=h.cost;ownedHats.add(h.id)}equippedHat=h.id;sync();renderShop();save();say(h.name+' on. Pure style.')},equippedHat===h.id?'WORN':has?'OWNED, WEAR':h.cost===0?'FREE':h.cost+' COIN',equippedHat===h.id)})}
+else{Object.entries(weapons).forEach(([id,w])=>add(w.name,w.desc,'DMG '+w.d+'  MAG '+w.mag,g.money<w.cost||g.wid===id,()=>{g.money-=w.cost;g.weapon=w;g.wid=id;g.ammo=capacity();g.reloadAt=0;sync();renderShop();save();say(w.name+' equipped.')},g.wid===id?'EQUIPPED':w.cost+' COIN',g.wid===id));upgrades.forEach(u=>add(u.name,u.desc,'',g.money<u.cost,()=>{g.money-=u.cost;u.apply(g);sync();renderShop();save();say(u.name+' gained.')},u.cost+' COIN'))}
+const tabs=document.createElement('div');tabs.className='tabs';[['weapons','Weapons & upgrades'],['hats','Hat collection']].forEach(([mode,label])=>{const b=document.createElement('button');b.textContent=label;if(mode===shopMode)b.className='cur';b.onclick=()=>openPanel(mode);tabs.appendChild(b)});box.prepend(tabs);
+const next=document.createElement('button');next.className='next';next.style.gridColumn='1/-1';next.textContent=g.done?'NEXT LEVEL':'Close shop';next.onclick=()=>{if(g.done){g.level++;levelSetup();save()}else{$('panel').classList.add('hidden');shopOpen=false;run=true}};box.appendChild(next)}
+function gameover(){g.dead=true;run=false;$('panelTitle').textContent='Ant defeated';$('panelDesc').textContent='You reached level '+g.level+'. Your coin, upgrades and hats are kept. Retry this level, or start a new run to reset everything.';const box=$('items');box.innerHTML='';const r=document.createElement('button');r.className='item';r.innerHTML='<b>Retry level '+g.level+'</b>Back on your feet with full health.';r.onclick=()=>{g.hp=g.max;g.ammo=capacity();g.reloadAt=0;levelSetup();save()};box.appendChild(r);$('panel').classList.remove('hidden');save()}
+function update(dt,now){if(!run||shopOpen||g.done||g.dead)return;let dx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0)+joy.x+padJoy.x,dy=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0)+joy.y+padJoy.y,m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}move(g.p,dx*g.speed*dt/16.7,dy*g.speed*dt/16.7);if(firing||padFire||keys[' '])shoot();if(g.reloadAt&&now>=g.reloadAt){g.reloadAt=0;g.ammo=capacity();say('Magazine refilled.')}g.hp=Math.min(g.max,g.hp+g.regen*dt/16.7);
+g.leaves=g.leaves.filter(l=>{if(Math.hypot(l.x-g.p.x,l.y-g.p.y)<14+g.magnet){g.count++;g.money+=3;if(g.count>=g.quota&&!g.bugs.some(b=>b.boss))finish();return false}return true});
+for(const b of g.bugs.slice()){let d=Math.hypot(g.p.x-b.x,g.p.y-b.y),canSee=d<=b.sight&&visible(b,g.p);if(canSee){b.aggro=true;b.lastSeen=now;b.tx=g.p.x;b.ty=g.p.y}else if(b.aggro&&now-b.lastSeen>2200)b.aggro=false;if(b.aggro){let tx=canSee?g.p.x:b.tx,ty=canSee?g.p.y:b.ty,a=Math.atan2(ty-b.y,tx-b.x);if(Math.hypot(tx-b.x,ty-b.y)>b.r+g.p.r+4)move(b,Math.cos(a)*b.speed*dt/16.7,Math.sin(a)*b.speed*dt/16.7)}else{if(now>b.wanderAt||Math.hypot(b.tx-b.x,b.ty-b.y)<12){let p=place(b.r);b.tx=p.x;b.ty=p.y;b.wanderAt=now+1300+Math.random()*2400}let a=Math.atan2(b.ty-b.y,b.tx-b.x);move(b,Math.cos(a)*b.speed*.6*dt/16.7,Math.sin(a)*b.speed*.6*dt/16.7)}let close=Math.hypot(g.p.x-b.x,g.p.y-b.y);if(canSee&&close<b.r+g.p.r+3&&now-(b.hitPlayer||0)>700){g.hp=Math.max(0,g.hp-(b.boss?12:6)*(1-g.armor));b.hitPlayer=now;if(!g.hp){gameover();return}}if(b.boss&&canSee&&now>b.shootAt){b.shootAt=now+1900;let a=Math.atan2(g.p.y-b.y,g.p.x-b.x);for(let k=-1;k<=1;k++){let aa=a+k*.3;g.enemy.push({x:b.x,y:b.y,vx:Math.cos(aa)*2.2,vy:Math.sin(aa)*2.2,r:5,life:150})}}}
+for(const b of g.bullets){b.x+=b.vx*dt/16.7;b.y+=b.vy*dt/16.7;b.life--;if(b.splash&&b.life===99){for(const e of g.bugs.slice())if(Math.hypot(e.x-b.x,e.y-b.y)<b.splash)damageBug(e,b.d)}else for(const e of g.bugs.slice())if(Math.hypot(e.x-b.x,e.y-b.y)<e.r+b.r){damageBug(e,b.d);if(b.pierce>0)b.pierce--;else b.life=0;break}}g.bullets=g.bullets.filter(b=>b.life>0&&b.x>0&&b.x<W&&b.y>0&&b.y<H&&!blocked(b.x,b.y,b.r));
+for(const b of g.enemy){b.x+=b.vx*dt/16.7;b.y+=b.vy*dt/16.7;b.life--;if(Math.hypot(b.x-g.p.x,b.y-g.p.y)<g.p.r+b.r){g.hp=Math.max(0,g.hp-8*(1-g.armor));b.life=0;if(!g.hp){gameover();return}}if(blocked(b.x,b.y,b.r))b.life=0}g.enemy=g.enemy.filter(b=>b.life>0&&b.x>0&&b.x<W&&b.y>0&&b.y<H);
+if(g.drones&&now-g.lastDrone>500){g.lastDrone=now;const b=g.bugs.slice().sort((a,b)=>Math.hypot(a.x-g.p.x,a.y-g.p.y)-Math.hypot(b.x-g.p.x,b.y-g.p.y))[0];if(b)damageBug(b,g.drones)}
+if(now-saveTimer>3000){saveTimer=now;save()}sync()}
+
+/* ---- drawing: dark earth, hard cel shadows, ring-and-core tokens ---- */
+function ring(x,y,r,ringC,coreC,w){ctx.fillStyle='#0a0706';ctx.beginPath();ctx.arc(x+2,y+3,r,0,7);ctx.fill();ctx.fillStyle=ringC;ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.fillStyle=coreC;ctx.beginPath();ctx.arc(x,y,r-(w||4),0,7);ctx.fill()}
+function drawHat(id,x,y){const h=hats.find(q=>q.id===id);if(!h||!h.k)return;ctx.save();ctx.translate(x,y);ctx.lineJoin='round';const f=(c)=>ctx.fillStyle=c;
+switch(h.k){
+case'top':f(h.c);ctx.fillRect(-7,-17,14,13);f(h.c2);ctx.fillRect(-7,-8,14,3);f(h.c);ctx.fillRect(-11,-5,22,3);break;
+case'cow':f(h.c2);ctx.beginPath();ctx.ellipse(0,-5,14,4,0,0,7);ctx.fill();f(h.c);ctx.beginPath();ctx.arc(0,-6,7,Math.PI,0);ctx.fill();break;
+case'crown':f(h.c);ctx.beginPath();ctx.moveTo(-8,-5);ctx.lineTo(-8,-15);ctx.lineTo(-4,-10);ctx.lineTo(0,-16);ctx.lineTo(4,-10);ctx.lineTo(8,-15);ctx.lineTo(8,-5);ctx.closePath();ctx.fill();f(h.c2);ctx.fillRect(-1.5,-9,3,3);break;
+case'dome':f(h.c);ctx.beginPath();ctx.arc(0,-5,9,Math.PI,0);ctx.fill();f(h.c2);ctx.fillRect(-9,-5,18,2);break;
+case'cap':f(h.c);ctx.beginPath();ctx.arc(0,-5,8,Math.PI,0);ctx.fill();f(h.c2);ctx.fillRect(2,-5,11,2.5);break;
+case'grad':f(h.c);ctx.beginPath();ctx.moveTo(-11,-10);ctx.lineTo(0,-15);ctx.lineTo(11,-10);ctx.lineTo(0,-5);ctx.closePath();ctx.fill();f(h.c2);ctx.fillRect(8,-10,1.6,8);break;
+case'band':f(h.c);ctx.fillRect(-9,-8,18,4);ctx.fillRect(8,-8,7,2);ctx.fillRect(7,-5,6,2);break;
+case'frog':f(h.c);ctx.beginPath();ctx.arc(0,-5,9,Math.PI,0);ctx.fill();f(h.c2);ctx.beginPath();ctx.arc(-4,-12,2.6,0,7);ctx.arc(4,-12,2.6,0,7);ctx.fill();f('#0a0706');ctx.fillRect(-5,-13,2,2);ctx.fillRect(3,-13,2,2);break;
+case'cone':f(h.c);ctx.beginPath();ctx.moveTo(-7,-5);ctx.lineTo(0,-19);ctx.lineTo(7,-5);ctx.closePath();ctx.fill();f(h.c2);ctx.beginPath();ctx.arc(0,-19,2.4,0,7);ctx.fill();break;
+case'halo':ctx.strokeStyle=h.c;ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(0,-12,8,3,0,0,7);ctx.stroke();break;
+case'horns':f(h.c);ctx.beginPath();ctx.moveTo(-8,-6);ctx.lineTo(-6,-16);ctx.lineTo(-2,-7);ctx.closePath();ctx.moveTo(8,-6);ctx.lineTo(6,-16);ctx.lineTo(2,-7);ctx.closePath();ctx.fill();break;
+}
+ctx.restore()}
+function drawHedge(h){ctx.fillStyle='#141c10';ctx.fillRect(h.x,h.y+4,h.w,h.h);ctx.fillStyle='#2c3a22';ctx.fillRect(h.x,h.y,h.w,h.h);ctx.fillStyle='#3d5230';for(let x=h.x+5;x<h.x+h.w;x+=15){ctx.beginPath();ctx.arc(x,h.y+5,5,0,7);ctx.fill()}ctx.fillStyle='#4c6a38';ctx.fillRect(h.x,h.y,h.w,2);ctx.fillStyle='#0a0706';ctx.fillRect(h.x,h.y+h.h-3,h.w,3)}
+function drawLocust(b){const boss=b.boss,r=b.r;ring(b.x,b.y,r,b.aggro?'#c73a5c':'#8f2742','#1d1613',boss?6:4);ctx.fillStyle=b.aggro?'#c73a5c':'#8f8470';ctx.beginPath();ctx.arc(b.x,b.y,boss?7:4,0,7);ctx.fill();
+ctx.strokeStyle='#d9c9a3';ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(b.x-3,b.y-r);ctx.lineTo(b.x-7,b.y-r-6);ctx.moveTo(b.x+3,b.y-r);ctx.lineTo(b.x+7,b.y-r-6);ctx.stroke();
+if(boss){ctx.fillStyle='#e0b54a';ctx.beginPath();ctx.moveTo(b.x-10,b.y-r-1);ctx.lineTo(b.x-10,b.y-r-9);ctx.lineTo(b.x-5,b.y-r-4);ctx.lineTo(b.x,b.y-r-11);ctx.lineTo(b.x+5,b.y-r-4);ctx.lineTo(b.x+10,b.y-r-9);ctx.lineTo(b.x+10,b.y-r-1);ctx.closePath();ctx.fill()}
+const by=b.y-r-(boss?18:12);ctx.fillStyle='#0a0706';ctx.fillRect(b.x-r,by,r*2,5);ctx.fillStyle='#c73a5c';ctx.fillRect(b.x-r,by,r*2*Math.max(0,b.hp/b.max),5);
+if(!b.aggro){ctx.font='bold 11px ui-monospace,Menlo,monospace';ctx.textAlign='center';ctx.fillStyle='#8f8470';ctx.fillText('z z',b.x,by-3)}
+if(boss){ctx.font='bold 11px ui-monospace,Menlo,monospace';ctx.textAlign='center';ctx.fillStyle='#e0b54a';ctx.fillText('BOSS',b.x,by-3)}}
+function draw(){ctx.clearRect(0,0,W,H);ctx.fillStyle='#1d1613';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#261d19';ctx.lineWidth=1;for(let x=10;x<W;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x-15,H);ctx.stroke()}
+hedges.forEach(drawHedge);
+g.leaves.forEach(l=>{ctx.fillStyle='#0a0706';ctx.beginPath();ctx.moveTo(l.x,l.y-8);ctx.lineTo(l.x+7,l.y+1);ctx.lineTo(l.x,l.y+9);ctx.lineTo(l.x-7,l.y+1);ctx.closePath();ctx.fill();ctx.fillStyle='#3f8580';ctx.beginPath();ctx.moveTo(l.x,l.y-8);ctx.lineTo(l.x+6,l.y-1);ctx.lineTo(l.x,l.y+7);ctx.lineTo(l.x-6,l.y-1);ctx.closePath();ctx.fill();ctx.fillStyle='#d9c9a3';ctx.fillRect(l.x-1,l.y-4,2,8)});
+if(showSight)g.bugs.forEach(b=>{ctx.beginPath();ctx.arc(b.x,b.y,b.sight,0,Math.PI*2);ctx.fillStyle=b.aggro?'#c73a5c1c':'#8f84700e';ctx.fill();ctx.strokeStyle=b.aggro?'#c73a5caa':'#8f847055';ctx.lineWidth=1;ctx.setLineDash([5,5]);ctx.stroke();ctx.setLineDash([])});
+g.bullets.forEach(b=>{ctx.fillStyle='#e0b54a';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.fillStyle='#d9c9a3';ctx.beginPath();ctx.arc(b.x,b.y,b.r-2,0,Math.PI*2);ctx.fill()});
+g.enemy.forEach(b=>{ctx.fillStyle='#0a0706';ctx.beginPath();ctx.arc(b.x,b.y,b.r+1.5,0,Math.PI*2);ctx.fill();ctx.fillStyle='#c73a5c';ctx.beginPath();ctx.arc(b.x,b.y,b.r-1,0,Math.PI*2);ctx.fill()});
+g.bugs.forEach(drawLocust);
+const p=g.p,t=g.bugs.slice().sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0],a=aimA!==null?aimA:t?Math.atan2(t.y-p.y,t.x-p.x):-Math.PI/2;
+ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);ctx.fillStyle='#0a0706';ctx.fillRect(8,-2,15,7);ctx.fillStyle='#8f8470';ctx.fillRect(7,-3,15,6);ctx.restore();
+ring(p.x,p.y,p.r+1,'#3f8580','#d9c9a3',4);ctx.fillStyle='#2c6460';ctx.beginPath();ctx.arc(p.x,p.y,3,0,7);ctx.fill();
+drawHat(equippedHat,p.x,p.y-p.r+3)}
+function loop(now){const dt=Math.min(40,now-(last||now));last=now;try{padPoll(dt)}catch(e){}update(dt,now);draw();requestAnimationFrame(loop)}
+
+/* ---- controller ---- */
+const PADAB=(()=>{try{return localStorage.getItem('bloodline_padab')==='1'}catch(e){return false}})(),PADXY=(()=>{try{return localStorage.getItem('bloodline_padxy')==='1'}catch(e){return false}})();
+function pbtn(gp,k){k=PADAB&&(k===0||k===1)?1-k:PADXY&&(k===2||k===3)?5-k:k;const b=gp.buttons[k];return !!(b&&(b.pressed||b.value>.4))}
+function activePad(){const l=navigator.getGamepads?navigator.getGamepads():[];let best=null;for(const gp of l){if(!gp||gp.connected===false)continue;if(!best||(gp.mapping==='standard'&&best.mapping!=='standard')||(gp.timestamp||0)>(best.timestamp||0))best=gp}return best}
+function panelOpen(){return !$('panel').classList.contains('hidden')}
+function padCands(){return [...$('panel').querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null)}
+function padSet(e){if(padEl)padEl.classList.remove('pad-focus');padEl=e||null;if(e){e.classList.add('pad-focus');padIdx=Math.max(0,padCands().indexOf(e));try{e.scrollIntoView({block:'nearest',inline:'nearest'})}catch(x){}}}
+function padMove(dx,dy){
+  const c=padCands();if(!c.length){padSet(null);return}
+  if(!padEl||!c.includes(padEl)){padSet(c[Math.min(padIdx,c.length-1)]);return}
+  const r=padEl.getBoundingClientRect(),vert=dy!==0,dir=vert?dy:dx,rc=vert?r.top+r.height/2:r.left+r.width/2,box=e=>e.getBoundingClientRect();
+  const gap=q=>Math.max(0,vert?(dy>0?q.top-r.bottom:r.top-q.bottom):(dx>0?q.left-r.right:r.left-q.right));
+  let pool=c.filter(e=>{if(e===padEl)return false;const q=box(e),m=vert?q.top+q.height/2:q.left+q.width/2;return(m-rc)*dir>2});
+  if(!vert)pool=pool.filter(e=>{const q=box(e);return q.bottom>r.top+2&&q.top<r.bottom-2});
+  if(!pool.length)return;
+  const g0=Math.min(...pool.map(e=>gap(box(e)))),row=pool.filter(e=>gap(box(e))<=g0+10);
+  const off=e=>{const q=box(e);return Math.abs(vert?(q.left+q.width/2)-(r.left+r.width/2):(q.top+q.height/2)-(r.top+r.height/2))};
+  row.sort((a,b)=>{const d=off(a)-off(b);return Math.abs(d)>12?d:(box(a).left-box(b).left)||(box(a).top-box(b).top)});
+  padSet(row[0]);
+}
+function rumble(gp,ms,strong,weak){try{const v=gp.vibrationActuator;if(v&&v.playEffect)v.playEffect('dual-rumble',{duration:ms,strongMagnitude:strong,weakMagnitude:weak})}catch(e){}}
+function padPoll(dt){
+  const gp=activePad();padJoy={x:0,y:0};padFire=false;aimA=null;
+  if(!gp){padPrev={};padHeld=false;if(padEl)padSet(null);leaveHold=0;return}
+  if(!padHeld){padHeld=true;say('Controller connected.')}
+  const E={};for(const k of [0,1,2,3,4,5,8,9]){const n=pbtn(gp,k),w=!!padPrev[k];padPrev[k]=n;E[k]=n&&!w}
+  const open=panelOpen(),ax=gp.axes[0]||0,ay=gp.axes[1]||0;
+  let mx=ax,my=ay;if(pbtn(gp,14))mx=-1;if(pbtn(gp,15))mx=1;if(pbtn(gp,12))my=-1;if(pbtn(gp,13))my=1;
+  const mm=Math.hypot(mx,my);
+  // leave: hold the Back button
+  if(pbtn(gp,8)){leaveHold+=dt;if(leaveHold>=700){leaveHold=-1e9;leave();return}else if(leaveHold>150)say('Keep holding Back to leave...')}else leaveHold=0;
+  if(open){
+    const now=performance.now();
+    if(!padEl||!document.contains(padEl)){const c=padCands();if(c.length)padSet(c[Math.min(padIdx,c.length-1)])}
+    if(mm>.5){const dir=Math.abs(mx)>Math.abs(my)?[mx>0?1:-1,0]:[0,my>0?1:-1];if(!padDirHeld||now>=padNext){padNext=now+(padDirHeld?140:380);padMove(dir[0],dir[1])}padDirHeld=true}else padDirHeld=false;
+    if(E[0]&&padEl)padEl.click();
+    if(E[1]||E[9]){ // B or Start: close the shop, go on to the next level, or retry
+      if(g.dead){const b=$('items').querySelector('.item');if(b)b.click()}
+      else if(g.done){const b=$('items').querySelector('.next');if(b)b.click()}
+      else{shopOpen=false;$('panel').classList.add('hidden');run=true;padSet(null)}
+    }
+    if((E[4]||E[5])&&!g.dead){openPanel(shopMode==='hats'?'weapons':'hats');const c=padCands();if(c.length)padSet(c[0])}
+  }else{
+    padDirHeld=false;
+    const m=mm>.2?Math.min(1,(mm-.2)/.8)/mm:0;padJoy={x:mx*m,y:my*m};
+    if(Math.hypot(gp.axes[2]||0,gp.axes[3]||0)>.4)aimA=Math.atan2(gp.axes[3],gp.axes[2]);
+    padFire=pbtn(gp,7)||pbtn(gp,5)||pbtn(gp,0)||(gp.buttons[6]&&gp.buttons[6].value>.4);
+    if(E[2])$('heal').click();
+    if(E[3]){openPanel('hats');const c=padCands();if(c.length)padSet(c[0])}
+    if(E[9]){if(g.dead)say('Retry the level, or start a new run.');else{openPanel('weapons');const c=padCands();if(c.length)padSet(c[0])}}
+  }
+  if(padLastHp!==null&&g.hp<padLastHp-.5)rumble(gp,120,.5,.25);
+  padLastHp=g.hp;
+}
+let padDirHeld=false;
+window.addEventListener('pointerdown',()=>{if(padEl)padSet(null)},true);
+window.addEventListener('gamepadconnected',()=>say('Controller connected.'));
+window.addEventListener('gamepaddisconnected',()=>{padHeld=false;say('Controller disconnected.')});
+
+/* ---- controls ---- */
+$('start').onclick=()=>{if(g.dead){say('Retry the level, or start a new run.');return}if(g.done){g.level++;levelSetup();save();return}if(shopOpen){$('panel').classList.add('hidden');shopOpen=false}run=true;say('Your ant looks sharp.')};
+$('restart').onclick=()=>{if(confirm('Start a new run? This resets level, coin, upgrades and hats saved on this device.')){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(OLD_KEY)}catch(e){}newRun();say('New run started.')}};
+$('shopBtn').onclick=()=>openPanel('weapons');$('hatBtn').onclick=()=>openPanel('hats');
+$('closePanel').onclick=()=>{if(g.done||g.dead)return;shopOpen=false;$('panel').classList.add('hidden');run=true};
+$('heal').onclick=()=>{if(g.dead)return;if(g.money<20){say('Not enough coin.');return}if(g.hp>=g.max){say('Health already full.');return}g.money-=20;g.hp=Math.min(g.max,g.hp+35);sync();save();say('Healed.')};
+$('sightBtn').onclick=()=>{showSight=!showSight;$('sightBtn').textContent='Sight rings: '+(showSight?'on':'off')};
+$('fullscreen').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.().catch(()=>say('Fullscreen unavailable.'));else document.exitFullscreen?.()};
+const WW_HOME_FALLBACK = 'bloodline.html'; /* the web and Windows builds rewrite this to their own start page */
+function leave(){try{save()}catch(e){}let home=WW_HOME_FALLBACK;try{home=sessionStorage.getItem('bloodline_home')||home;sessionStorage.setItem('bloodline_from','weedwarrior')}catch(e){}location.replace(home)}
+$('leave').onclick=leave;
+$('fire').addEventListener('pointerdown',e=>{e.preventDefault();firing=true;shoot();$('fire').setPointerCapture(e.pointerId)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>$('fire').addEventListener(ev,()=>firing=false));
+const je=$('joy'),nub=$('nub');function setJoy(e){const r=je.getBoundingClientRect();let dx=(e.clientX-r.left-r.width/2)/(r.width*.35),dy=(e.clientY-r.top-r.height/2)/(r.height*.35),m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}joy={x:dx,y:dy};nub.style.transform=`translate(${dx*29}px,${dy*29}px)`}
+je.addEventListener('pointerdown',e=>{e.preventDefault();je.setPointerCapture(e.pointerId);setJoy(e)});je.addEventListener('pointermove',e=>{if(e.buttons||e.pressure)setJoy(e)});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>je.addEventListener(ev,()=>{joy={x:0,y:0};nub.style.transform='translate(0,0)'}));
+window.addEventListener('keydown',e=>{keys[e.key]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault()});window.addEventListener('keyup',e=>keys[e.key]=false);window.addEventListener('beforeunload',()=>{try{save()}catch(e){}});document.addEventListener('visibilitychange',()=>{if(document.hidden)save()});
+/* load the saved run first; only a missing save starts fresh (and then writes) */
+g=freshState();if(load()){levelSetup();say('Welcome back. Progress loaded.');sync();renderShop()}else{newRun()}
+requestAnimationFrame(loop);
+})();
+</script></body></html>
