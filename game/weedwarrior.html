@@ -8,65 +8,75 @@
 :root{color-scheme:dark;--bg:#15100f;--bg2:#1d1613;--island:#2b201c;--river:#182428;--plank:#3a2d22;--crimson:#8f2742;--crimson-lt:#c73a5c;--teal:#2c6460;--teal-lt:#3f8580;--bone:#d9c9a3;--bone-dim:#8f8470;--line:#3a2c27;--gold:#e0b54a;--deep:#0a0706;
   --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 *{box-sizing:border-box}
-html,body{margin:0}
-body{background:radial-gradient(120% 80% at 50% 0%,var(--bg2) 0%,var(--bg) 60%,var(--deep) 100%) fixed;color:var(--bone);font:16px/1.4 var(--serif);
-  padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
-main{max-width:980px;margin:auto}
-header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap;border-bottom:2px solid var(--line);padding-bottom:8px;margin-bottom:10px}
-h1{font-size:clamp(22px,4.2vw,32px);margin:0;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--bone);text-shadow:2px 2px 0 var(--deep)}
-.sub{font-size:13px;color:var(--bone-dim);font-style:italic;margin-top:2px}
-.hbtns{display:flex;gap:7px;flex-wrap:wrap}
-button{font-family:var(--serif);background:var(--plank);color:var(--bone);border:1px solid var(--line);border-bottom:3px solid var(--deep);border-radius:4px;padding:9px 12px;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.03em;touch-action:manipulation}
+html,body{height:100%;margin:0}
+body{height:100vh;height:100dvh;overflow:hidden;display:flex;flex-direction:column;background:radial-gradient(120% 80% at 50% 0%,var(--bg2) 0%,var(--bg) 60%,var(--deep) 100%) fixed;color:var(--bone);font:16px/1.4 var(--serif);
+  padding:max(8px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+main{flex:1;min-height:0;display:flex;flex-direction:column;width:100%;max-width:1500px;margin:0 auto}
+header{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:2px solid var(--line);padding-bottom:6px;margin-bottom:6px}
+h1{font-size:clamp(18px,3.2vw,28px);margin:0;letter-spacing:.14em;text-transform:uppercase;font-weight:700;color:var(--bone);text-shadow:2px 2px 0 var(--deep);line-height:1.1}
+.sub{font-size:12px;color:var(--bone-dim);font-style:italic}
+.hbtns{display:flex;gap:6px;flex-wrap:wrap}
+button{font-family:var(--serif);background:var(--plank);color:var(--bone);border:1px solid var(--line);border-bottom:3px solid var(--deep);border-radius:4px;padding:8px 12px;font-weight:700;font-size:14px;cursor:pointer;letter-spacing:.03em;touch-action:manipulation}
 button:hover:not(:disabled){border-color:var(--bone-dim);background:#46362a}
 button:active:not(:disabled){transform:translateY(2px);border-bottom-width:1px}
 button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 button:disabled{opacity:.42;cursor:not-allowed}
-.hud{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:6px;margin:0 0 8px}
-.stat,.panel{border:1px solid var(--line);border-radius:4px;background:var(--island);padding:6px 9px;box-shadow:inset 0 2px 0 #00000055}
+.hud{flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-bottom:6px}
+.stat,.box{border:1px solid var(--line);border-radius:4px;background:var(--island);box-shadow:inset 0 2px 0 #00000055}
+.stat{padding:4px 8px}
 .stat small{display:block;font:10px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--bone-dim)}
 .stat b{font:700 15px var(--mono);color:var(--bone)}
-.bar{height:7px;background:var(--deep);position:relative;margin-top:4px}
+.bar{height:6px;background:var(--deep);position:relative;margin-top:3px}
 .bar i{display:block;height:100%;width:0;background:var(--crimson-lt)}
 .bar.t i{background:var(--teal-lt)}
 .bar::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),var(--deep) calc(10% - 2px) 10%)}
-.gear{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;font:13px var(--mono)}
+.gear{flex:none;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;font:13px var(--mono)}
 .gear b{color:var(--gold);letter-spacing:.06em;text-transform:uppercase}
 #status{color:var(--bone-dim);font-family:var(--serif);font-style:italic;font-size:14px}
-canvas{display:block;width:100%;aspect-ratio:5/3;max-height:65vh;border:2px solid var(--line);border-radius:4px;background:var(--bg2);touch-action:none;box-shadow:0 0 0 1px var(--deep),0 6px 0 var(--deep)}
-.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px}
-.buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-.buttons button{min-width:96px;padding:12px 14px;line-height:1.15}
+.stage{flex:1;min-height:0;position:relative;display:flex;align-items:center;justify-content:center}
+canvas{display:block;border:2px solid var(--line);border-radius:4px;background:var(--bg2);touch-action:none;box-shadow:0 0 0 1px var(--deep),0 6px 0 var(--deep)}
+.touch{position:absolute;left:0;right:0;bottom:0;display:none;justify-content:space-between;align-items:flex-end;padding:6px 10px;pointer-events:none}
+body.istouch .touch{display:flex}
+.touch>*{pointer-events:auto}
+.buttons{display:flex;gap:8px}
+.buttons button{min-width:88px;padding:12px 12px;line-height:1.15;opacity:.92}
 .buttons button span{display:block;font:10px var(--mono);letter-spacing:.1em;text-transform:uppercase;opacity:.75;margin-top:3px}
 #fire{background:var(--crimson);border-color:var(--crimson-lt)}
 #fire:hover:not(:disabled){background:var(--crimson-lt)}
 #heal{background:var(--teal);border-color:var(--teal-lt)}
 #heal:hover:not(:disabled){background:var(--teal-lt)}
-#joy{width:112px;height:112px;border-radius:50%;border:2px solid var(--bone-dim);background:#0a070688;position:relative;touch-action:none;flex-shrink:0;box-shadow:inset 0 0 0 6px var(--island)}
+#joy{width:112px;height:112px;border-radius:50%;border:2px solid var(--bone-dim);background:#0a070699;position:relative;touch-action:none;flex-shrink:0;box-shadow:inset 0 0 0 6px var(--island)}
 #nub{position:absolute;width:42px;height:42px;left:31px;top:31px;border-radius:50%;background:var(--teal-lt);border:2px solid var(--bone);pointer-events:none}
-nav{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
-.panel{margin-top:10px;padding:12px}
-.panel h2{margin:0 0 2px;font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(10,7,6,.93);display:flex;align-items:center;justify-content:center;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))}
+.box{width:min(1000px,100%);max-height:100%;display:flex;flex-direction:column;gap:8px;padding:12px}
+.box h2{margin:0;font-size:18px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.box p{margin:0}
 .muted{color:var(--bone-dim);font-size:13px}
-.items{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:7px;margin:10px 0}
-.item{text-align:left;font-size:12px;font-weight:400;min-height:84px;background:var(--bg2)}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:7px;overflow:auto;flex:1 1 auto;min-height:0;padding:2px}
+.menuitems{grid-template-columns:repeat(auto-fit,minmax(210px,1fr));flex:none}
+.item{text-align:left;font-size:12px;font-weight:400;min-height:74px;background:var(--bg2)}
 .item b{display:block;font-size:14px;margin-bottom:3px;color:var(--bone)}
 .item .st{font:10px var(--mono);color:var(--teal-lt);letter-spacing:.06em;margin-top:2px}
 .item .ft{margin-top:6px;font:700 12px var(--mono);color:var(--gold)}
 .item.on{border-color:var(--teal-lt)}
 .item.on .ft{color:var(--teal-lt)}
+.item.off{opacity:.45}
+.menuitems button{min-height:46px;font-size:15px}
 .tabs{grid-column:1/-1;display:flex;gap:7px;flex-wrap:wrap}
 .tabs button.cur{border-color:var(--gold);color:var(--gold)}
 .hidden{display:none!important}
 .pad-focus{outline:3px solid var(--gold)!important;outline-offset:2px;box-shadow:0 0 10px #e0b54a99!important}
-.foot{margin-top:12px;border-top:2px solid var(--line);padding-top:8px}
-@media(max-width:480px){body{padding-left:8px;padding-right:8px}.controls{gap:8px}#joy{width:96px;height:96px}#nub{left:25px;top:25px}.buttons button{padding:10px;min-width:82px}.hud{grid-template-columns:repeat(3,1fr)}}
+.help{overflow:auto;font-size:14px;line-height:1.5}
+.help h3{margin:10px 0 2px;font:700 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--teal-lt)}
+@media(max-width:640px){.hud{grid-template-columns:repeat(3,minmax(0,1fr))}.buttons button{min-width:78px;padding:10px}#joy{width:96px;height:96px}#nub{left:25px;top:25px}}
+@media(max-height:520px){.sub{display:none}header{margin-bottom:4px;padding-bottom:4px}.hud{grid-template-columns:repeat(5,minmax(0,1fr))}.stat small{display:none}.stat b{font-size:13px}.stat{padding:3px 6px}.gear{margin-bottom:4px;font-size:12px}button{padding:6px 10px}.item{min-height:60px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 </head>
 <body><main id="app">
 <header>
   <div><h1>Weed Warrior</h1><div class="sub">Gather the weeds. Dodge the locusts. Dress your ant.</div></div>
-  <div class="hbtns"><button id="fullscreen">Fullscreen</button><button id="leave">Back to Bloodline</button></div>
+  <div class="hbtns"><button id="shopBtn">Shop</button><button id="hatBtn">Hats</button><button id="menuBtn">Menu</button></div>
 </header>
 <div class="hud">
   <div class="stat"><small>Weeds</small><b id="leaves">0/8</b><div class="bar t"><i id="leafBar"></i></div></div>
@@ -76,21 +86,43 @@ nav{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
   <div class="stat"><small>Save</small><b id="saveStatus">Autosave</b></div>
 </div>
 <div class="gear"><b id="weapon">Glock 19</b><span id="ammo">12/12</span><span id="status">Locusts patrol until they spot you.</span></div>
-<canvas id="field" width="700" height="420" aria-label="Weed Warrior game field"></canvas>
-<div class="controls">
-  <div id="joy" aria-label="Movement joystick"><div id="nub"></div></div>
-  <div class="buttons"><button id="fire">FIRE<span>hold to shoot</span></button><button id="heal">HEAL<span>20 coin</span></button></div>
+<div class="stage" id="stage">
+  <canvas id="field" width="700" height="420" aria-label="Weed Warrior game field"></canvas>
+  <div class="touch">
+    <div id="joy" aria-label="Movement joystick"><div id="nub"></div></div>
+    <div class="buttons"><button id="heal">HEAL<span>20 coin</span></button><button id="fire">FIRE<span>hold to shoot</span></button></div>
+  </div>
 </div>
-<nav><button id="start">Start / next level</button><button id="shopBtn">Weapons &amp; upgrades</button><button id="hatBtn">Hat collection</button><button id="sightBtn">Sight rings: on</button><button id="restart">New run</button></nav>
-<section id="panel" class="panel hidden">
+</main>
+<div id="panel" class="modal hidden"><div class="box">
   <h2 id="panelTitle">Shop</h2><p id="panelDesc" class="muted">Spend coin on gear.</p>
   <div id="items" class="items"></div>
   <p class="muted">Hats are only for show. Your progress saves on this device.</p>
   <button id="closePanel">Close</button>
-</section>
-<p class="muted foot">Drag the joystick to move and hold FIRE to shoot. WASD or the arrow keys and space work too. Hedges block movement and locust sight. Every 20th level has a boss.</p>
-<p class="muted">Controller: left stick or d-pad moves, right stick aims (otherwise it aims at the nearest locust), A or a trigger fires, X heals, Y opens hats, Start opens the shop and pauses. In a menu: d-pad to choose, A to buy, B or Start to close, bumpers to switch tabs. Hold Back to return to Bloodline.</p>
-</main>
+</div></div>
+<div id="menu" class="modal hidden"><div class="box">
+  <h2>Paused</h2>
+  <div class="items menuitems">
+    <button id="menuResume">Resume</button>
+    <button id="mShop">Weapons &amp; upgrades</button>
+    <button id="mHats">Hat collection</button>
+    <button id="sightBtn">Sight rings: on</button>
+    <button id="fullscreen">Fullscreen</button>
+    <button id="helpBtn">Controls</button>
+    <button id="restart">New run</button>
+    <button id="leave">Back to Bloodline</button>
+  </div>
+</div></div>
+<div id="help" class="modal hidden"><div class="box">
+  <h2>Controls</h2>
+  <div class="help">
+    <h3>Goal</h3>Gather every weed on the lawn while locusts patrol it. Hedges block movement and a locust's sight. Every 20th level has a boss.
+    <h3>Controller</h3>Left stick or d-pad: move. Right stick: aim (otherwise it aims at the nearest locust). A or a trigger: fire. X: heal. Y: hat collection. Start: pause menu. In menus: d-pad to choose, A to select, B to go back, bumpers to switch tabs. Hold Back to return to Bloodline.
+    <h3>Keyboard</h3>WASD or arrows: move. Space: fire. Esc: pause menu.
+    <h3>Touch</h3>Drag the joystick to move and hold FIRE to shoot.
+  </div>
+  <button id="helpClose">Close</button>
+</div></div>
 <script>
 (()=>{
 'use strict';
@@ -148,20 +180,20 @@ function move(e,dx,dy){let x=Math.max(e.r,Math.min(W-e.r,e.x+dx));if(!blocked(x,
 function visible(a,b){let dx=b.x-a.x,dy=b.y-a.y,n=Math.ceil(Math.hypot(dx,dy)/5);for(let i=1;i<n;i++)if(blocked(a.x+dx*i/n,a.y+dy*i/n,1))return false;return true}
 function place(r=10){for(let i=0;i<300;i++){let x=20+Math.random()*660,y=20+Math.random()*380;if(!blocked(x,y,r)&&Math.hypot(x-g.p.x,y-g.p.y)>65)return{x,y}}return{x:35,y:35}}
 function newBug(boss=false){let p=place(boss?22:11),hp=boss?Math.min(240,65+g.level*4):Math.min(18,4+Math.floor(g.level/6));return{...p,r:boss?22:11,boss,hp,max:hp,speed:(boss?.7:.65+Math.random()*.42)*(1+g.level*.008),sight:boss?290:155,aggro:false,lastSeen:0,tx:p.x,ty:p.y,wanderAt:0,hitPlayer:0,shootAt:0}}
-function levelSetup(){g.leaves=[];g.bugs=[];g.bullets=[];g.enemy=[];g.count=0;g.quota=Math.min(8+Math.floor(g.level*1.4),35);g.p={x:350,y:375,r:11};for(let i=0;i<g.quota;i++)g.leaves.push({...place(8),r:8});for(let i=0;i<Math.min(3+Math.floor(g.level/2),12);i++)g.bugs.push(newBug());if(g.level%20===0)g.bugs.push(newBug(true));g.done=false;g.dead=false;run=true;shopOpen=false;$('panel').classList.add('hidden');say(g.level%20===0?'A boss locust is out there.':'Locusts are patrolling.');sync()}
+function levelSetup(){g.leaves=[];g.bugs=[];g.bullets=[];g.enemy=[];g.count=0;g.quota=Math.min(8+Math.floor(g.level*1.4),35);g.p={x:350,y:375,r:11};for(let i=0;i<g.quota;i++)g.leaves.push({...place(8),r:8});for(let i=0;i<Math.min(3+Math.floor(g.level/2),12);i++)g.bugs.push(newBug());if(g.level%20===0)g.bugs.push(newBug(true));g.done=false;g.dead=false;run=true;shopOpen=false;$('panel').classList.add('hidden');$('menu').classList.add('hidden');$('help').classList.add('hidden');say(g.level%20===0?'A boss locust is out there.':'Locusts are patrolling.');sync()}
 function newRun(){g=freshState();ownedHats=new Set(['none']);equippedHat='none';levelSetup();save();renderShop()}
 function sync(){$('leaves').textContent=g.count+'/'+g.quota;$('leafBar').style.width=(100*Math.min(1,g.count/g.quota))+'%';$('money').textContent=g.money;$('hp').textContent=Math.ceil(g.hp)+'/'+g.max;$('hpBar').style.width=(100*Math.max(0,g.hp/g.max))+'%';$('level').textContent=g.level;$('weapon').textContent=g.weapon.name;$('ammo').textContent=g.reloadAt?'Reload '+Math.max(0,Math.ceil((g.reloadAt-performance.now())/1000))+'s':'Ammo '+g.ammo+'/'+capacity()}
 function finish(){if(g.done||g.dead)return;g.done=true;run=false;g.money+=15+g.level*2;openPanel('hats');$('panelTitle').textContent='Level '+g.level+' cleared';$('panelDesc').textContent='Level bonus earned. Buy upgrades or hats, then go on to the next level.';say('Level cleared. Bonus coin earned.');save()}
 function damageBug(b,d){if(Math.random()<g.crit){d*=3;say('Critical hit.')}b.hp-=d;if(b.hp<=0){g.money+=b.boss?100:8;if(b.boss)say('Boss defeated. +100 coin.');g.bugs=g.bugs.filter(x=>x!==b);if(g.count>=g.quota&&!g.bugs.some(x=>x.boss))finish()}}
 function shoot(){let now=performance.now();if(!run||shopOpen||g.done||g.dead)return;if(g.reloadAt){if(now<g.reloadAt)return;g.reloadAt=0;g.ammo=capacity();say('Reloaded.')}if(g.ammo<=0){g.reloadAt=now+g.reload;say('Empty. Reloading.');return}if(now-g.lastShot<g.weapon.rate)return;g.lastShot=now;g.ammo--;let p=g.p,t=g.bugs.slice().sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0],a=aimA!==null?aimA:t?Math.atan2(t.y-p.y,t.x-p.x):-Math.PI/2,n=1+g.double,spread=g.weapon.spread||1;for(let k=0;k<n;k++)for(let j=0;j<spread;j++){let ang=a+(k-(n-1)/2)*.07+(j-(spread-1)/2)*.13;g.bullets.push({x:p.x+Math.cos(ang)*14,y:p.y+Math.sin(ang)*14,vx:Math.cos(ang)*g.weapon.speed,vy:Math.sin(ang)*g.weapon.speed,r:4,d:g.weapon.d+g.bonus,pierce:g.weapon.pierce||0,splash:g.weapon.splash||0,life:100})}if(!g.ammo){g.reloadAt=now+g.reload;say('Empty. Reloading.')}sync()}
-function openPanel(mode){shopMode=mode;shopOpen=true;run=false;$('panel').classList.remove('hidden');if(!g.done){$('panelTitle').textContent=mode==='hats'?'Hat collection':'Weapons & upgrades';$('panelDesc').textContent=mode==='hats'?'Buy hats with coin, then wear your favourite.':'Spend coin on weapons and upgrades.'}renderShop()}
+function openPanel(mode){shopMode=mode;shopOpen=true;run=false;$('menu').classList.add('hidden');$('help').classList.add('hidden');$('panel').classList.remove('hidden');$('closePanel').classList.toggle('hidden',!!(g.done||g.dead));if(!g.done){$('panelTitle').textContent=mode==='hats'?'Hat collection':'Weapons & upgrades';$('panelDesc').textContent=mode==='hats'?'Buy hats with coin, then wear your favourite.':'Spend coin on weapons and upgrades.'}renderShop()}
 function renderShop(){const box=$('items');box.innerHTML='';
-const add=(title,desc,stat,disabled,action,foot,on)=>{const b=document.createElement('button');b.className='item'+(on?' on':'');b.disabled=disabled;b.innerHTML='<b></b>'+desc+(stat?'<div class="st"></div>':'')+'<div class="ft"></div>';b.querySelector('b').textContent=title;if(stat)b.querySelector('.st').textContent=stat;b.querySelector('.ft').textContent=foot;b.onclick=action;box.appendChild(b)};
+const add=(title,desc,stat,disabled,action,foot,on)=>{const b=document.createElement('button');b.className='item'+(on?' on':'');if(disabled)b.classList.add('off');b.innerHTML='<b></b>'+desc+(stat?'<div class="st"></div>':'')+'<div class="ft"></div>';b.querySelector('b').textContent=title;if(stat)b.querySelector('.st').textContent=stat;b.querySelector('.ft').textContent=foot;b.onclick=()=>{if(disabled){if(!/^(EQUIPPED|WORN)/.test(foot))say('Not enough coin.');return}action()};box.appendChild(b)};
 if(shopMode==='hats'){hats.forEach(h=>{let has=ownedHats.has(h.id);add(h.name,h.desc,'',(!has&&g.money<h.cost)||equippedHat===h.id,()=>{if(!ownedHats.has(h.id)){g.money-=h.cost;ownedHats.add(h.id)}equippedHat=h.id;sync();renderShop();save();say(h.name+' on. Pure style.')},equippedHat===h.id?'WORN':has?'OWNED, WEAR':h.cost===0?'FREE':h.cost+' COIN',equippedHat===h.id)})}
 else{Object.entries(weapons).forEach(([id,w])=>add(w.name,w.desc,'DMG '+w.d+'  MAG '+w.mag,g.money<w.cost||g.wid===id,()=>{g.money-=w.cost;g.weapon=w;g.wid=id;g.ammo=capacity();g.reloadAt=0;sync();renderShop();save();say(w.name+' equipped.')},g.wid===id?'EQUIPPED':w.cost+' COIN',g.wid===id));upgrades.forEach(u=>add(u.name,u.desc,'',g.money<u.cost,()=>{g.money-=u.cost;u.apply(g);sync();renderShop();save();say(u.name+' gained.')},u.cost+' COIN'))}
 const tabs=document.createElement('div');tabs.className='tabs';[['weapons','Weapons & upgrades'],['hats','Hat collection']].forEach(([mode,label])=>{const b=document.createElement('button');b.textContent=label;if(mode===shopMode)b.className='cur';b.onclick=()=>openPanel(mode);tabs.appendChild(b)});box.prepend(tabs);
 const next=document.createElement('button');next.className='next';next.style.gridColumn='1/-1';next.textContent=g.done?'NEXT LEVEL':'Close shop';next.onclick=()=>{if(g.done){g.level++;levelSetup();save()}else{$('panel').classList.add('hidden');shopOpen=false;run=true}};box.appendChild(next)}
-function gameover(){g.dead=true;run=false;$('panelTitle').textContent='Ant defeated';$('panelDesc').textContent='You reached level '+g.level+'. Your coin, upgrades and hats are kept. Retry this level, or start a new run to reset everything.';const box=$('items');box.innerHTML='';const r=document.createElement('button');r.className='item';r.innerHTML='<b>Retry level '+g.level+'</b>Back on your feet with full health.';r.onclick=()=>{g.hp=g.max;g.ammo=capacity();g.reloadAt=0;levelSetup();save()};box.appendChild(r);$('panel').classList.remove('hidden');save()}
+function gameover(){g.dead=true;run=false;$('panelTitle').textContent='Ant defeated';$('panelDesc').textContent='You reached level '+g.level+'. Your coin, upgrades and hats are kept. Retry this level, or start a new run to reset everything.';const box=$('items');box.innerHTML='';const r=document.createElement('button');r.className='item';r.innerHTML='<b>Retry level '+g.level+'</b>Back on your feet with full health.';r.onclick=()=>{g.hp=g.max;g.ammo=capacity();g.reloadAt=0;levelSetup();save()};box.appendChild(r);const nr=document.createElement('button');nr.className='item';nr.innerHTML='<b>New run</b>Reset level, coin, upgrades and hats.';nr.onclick=()=>restartRun(nr);box.appendChild(nr);$('menu').classList.add('hidden');$('closePanel').classList.add('hidden');$('panel').classList.remove('hidden');save()}
 function update(dt,now){if(!run||shopOpen||g.done||g.dead)return;let dx=(keys.ArrowRight||keys.d?1:0)-(keys.ArrowLeft||keys.a?1:0)+joy.x+padJoy.x,dy=(keys.ArrowDown||keys.s?1:0)-(keys.ArrowUp||keys.w?1:0)+joy.y+padJoy.y,m=Math.hypot(dx,dy);if(m>1){dx/=m;dy/=m}move(g.p,dx*g.speed*dt/16.7,dy*g.speed*dt/16.7);if(firing||padFire||keys[' '])shoot();if(g.reloadAt&&now>=g.reloadAt){g.reloadAt=0;g.ammo=capacity();say('Magazine refilled.')}g.hp=Math.min(g.max,g.hp+g.regen*dt/16.7);
 g.leaves=g.leaves.filter(l=>{if(Math.hypot(l.x-g.p.x,l.y-g.p.y)<14+g.magnet){g.count++;g.money+=3;if(g.count>=g.quota&&!g.bugs.some(b=>b.boss))finish();return false}return true});
 for(const b of g.bugs.slice()){let d=Math.hypot(g.p.x-b.x,g.p.y-b.y),canSee=d<=b.sight&&visible(b,g.p);if(canSee){b.aggro=true;b.lastSeen=now;b.tx=g.p.x;b.ty=g.p.y}else if(b.aggro&&now-b.lastSeen>2200)b.aggro=false;if(b.aggro){let tx=canSee?g.p.x:b.tx,ty=canSee?g.p.y:b.ty,a=Math.atan2(ty-b.y,tx-b.x);if(Math.hypot(tx-b.x,ty-b.y)>b.r+g.p.r+4)move(b,Math.cos(a)*b.speed*dt/16.7,Math.sin(a)*b.speed*dt/16.7)}else{if(now>b.wanderAt||Math.hypot(b.tx-b.x,b.ty-b.y)<12){let p=place(b.r);b.tx=p.x;b.ty=p.y;b.wanderAt=now+1300+Math.random()*2400}let a=Math.atan2(b.ty-b.y,b.tx-b.x);move(b,Math.cos(a)*b.speed*.6*dt/16.7,Math.sin(a)*b.speed*.6*dt/16.7)}let close=Math.hypot(g.p.x-b.x,g.p.y-b.y);if(canSee&&close<b.r+g.p.r+3&&now-(b.hitPlayer||0)>700){g.hp=Math.max(0,g.hp-(b.boss?12:6)*(1-g.armor));b.hitPlayer=now;if(!g.hp){gameover();return}}if(b.boss&&canSee&&now>b.shootAt){b.shootAt=now+1900;let a=Math.atan2(g.p.y-b.y,g.p.x-b.x);for(let k=-1;k<=1;k++){let aa=a+k*.3;g.enemy.push({x:b.x,y:b.y,vx:Math.cos(aa)*2.2,vy:Math.sin(aa)*2.2,r:5,life:150})}}}
@@ -209,13 +241,15 @@ function loop(now){const dt=Math.min(40,now-(last||now));last=now;try{padPoll(dt
 
 /* ---- controller ---- */
 /* Edge (on Xbox especially) can turn the controller into a mouse cursor or keyboard keys for each page it loads, which makes a controller feel dead or odd. Hand it over to the page as a gamepad, and ask again whenever the page wakes or a pad appears, because loading another page resets it. */
-function padEmu(){ try{ if('gamepadInputEmulation' in navigator && navigator.gamepadInputEmulation !== 'gamepad') navigator.gamepadInputEmulation = 'gamepad'; }catch(e){} }
-padEmu(); window.addEventListener('focus', padEmu); window.addEventListener('gamepadconnected', padEmu); document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) padEmu(); });
+function padEmu(){try{if('gamepadInputEmulation' in navigator&&navigator.gamepadInputEmulation!=='gamepad')navigator.gamepadInputEmulation='gamepad'}catch(e){}}
+padEmu();window.addEventListener('focus',padEmu);window.addEventListener('gamepadconnected',padEmu);document.addEventListener('visibilitychange',()=>{if(!document.hidden)padEmu()});
 const PADAB=(()=>{try{return localStorage.getItem('bloodline_padab')==='1'}catch(e){return false}})(),PADXY=(()=>{try{return localStorage.getItem('bloodline_padxy')==='1'}catch(e){return false}})();
 function pbtn(gp,k){k=PADAB&&(k===0||k===1)?1-k:PADXY&&(k===2||k===3)?5-k:k;const b=gp.buttons[k];return !!(b&&(b.pressed||b.value>.4))}
 function activePad(){const l=navigator.getGamepads?navigator.getGamepads():[];let best=null;for(const gp of l){if(!gp||gp.connected===false)continue;if(!best||(gp.mapping==='standard'&&best.mapping!=='standard')||(gp.timestamp||0)>(best.timestamp||0))best=gp}return best}
-function panelOpen(){return !$('panel').classList.contains('hidden')}
-function padCands(){return [...$('panel').querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null)}
+/* three pop-ups, topmost first: the controls page, the pause menu, the shop (or the level-cleared and defeat screens) */
+const MODALS=['help','menu','panel'];
+function topModal(){for(const id of MODALS)if(!$(id).classList.contains('hidden'))return id;return null}
+function padCands(){const t=topModal();return t?[...$(t).querySelectorAll('button')].filter(b=>b.offsetParent!==null):[]}
 function padSet(e){if(padEl)padEl.classList.remove('pad-focus');padEl=e||null;if(e){e.classList.add('pad-focus');padIdx=Math.max(0,padCands().indexOf(e));try{e.scrollIntoView({block:'nearest',inline:'nearest'})}catch(x){}}}
 function padMove(dx,dy){
   const c=padCands();if(!c.length){padSet(null);return}
@@ -231,53 +265,79 @@ function padMove(dx,dy){
   padSet(row[0]);
 }
 function rumble(gp,ms,strong,weak){try{const v=gp.vibrationActuator;if(v&&v.playEffect)v.playEffect('dual-rumble',{duration:ms,strongMagnitude:strong,weakMagnitude:weak})}catch(e){}}
+function resumePlay(){if(g.done||g.dead)return;shopOpen=false;run=true}
+function openMenu(){shopOpen=true;run=false;$('panel').classList.add('hidden');$('help').classList.add('hidden');$('menu').classList.remove('hidden')}
+function closeTop(){ // B, or Resume: one step back
+  const t=topModal();
+  if(t==='help')$('help').classList.add('hidden');
+  else if(t==='menu'){$('menu').classList.add('hidden');if(g.done||g.dead)$('panel').classList.remove('hidden');else resumePlay()}
+  else if(t==='panel'&&!g.done&&!g.dead){$('panel').classList.add('hidden');resumePlay()}
+}
+function startKey(){ // Start, Esc or the phone's Back
+  const t=topModal();
+  if(t==='help'||t==='menu')closeTop();
+  else if(t==='panel'){if(g.dead){const b=$('items').querySelector('.item');if(b)b.click()}else if(g.done){const b=$('items').querySelector('.next');if(b)b.click()}else closeTop()}
+  else openMenu();
+}
+let rsArm=-1e9;
+function restartRun(btn){ // a second press within four seconds confirms; no browser dialog, so a controller can do it
+  const now=performance.now();
+  if(now-rsArm>4000){rsArm=now;const old=btn.innerHTML;btn.innerHTML='<b>Sure? Press again</b>';setTimeout(()=>{if(btn.isConnected)btn.innerHTML=old},4000);return}
+  rsArm=-1e9;try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(OLD_KEY)}catch(e){}newRun();say('New run started.');
+}
 function padPoll(dt){
   const gp=activePad();padJoy={x:0,y:0};padFire=false;aimA=null;
-  if(!gp){padPrev={};padHeld=false;if(padEl)padSet(null);leaveHold=0;return}
-  if(!padHeld){padHeld=true;say('Controller connected.')}
+  if(!gp){padPrev={};if(padOn){padOn=false;say('Controller disconnected.')}if(padEl)padSet(null);lastTop=undefined;leaveHold=0;return}
+  if(!padOn){padOn=true;say('Controller connected.')}
   const E={};for(const k of [0,1,2,3,4,5,8,9]){const n=pbtn(gp,k),w=!!padPrev[k];padPrev[k]=n;E[k]=n&&!w}
-  const open=panelOpen(),ax=gp.axes[0]||0,ay=gp.axes[1]||0;
+  const ax=gp.axes[0]||0,ay=gp.axes[1]||0;
   let mx=ax,my=ay;if(pbtn(gp,14))mx=-1;if(pbtn(gp,15))mx=1;if(pbtn(gp,12))my=-1;if(pbtn(gp,13))my=1;
   const mm=Math.hypot(mx,my);
   // leave: hold the Back button
   if(pbtn(gp,8)){leaveHold+=dt;if(leaveHold>=700){leaveHold=-1e9;leave();return}else if(leaveHold>150)say('Keep holding Back to leave...')}else leaveHold=0;
-  if(open){
-    const now=performance.now();
-    if(!padEl||!document.contains(padEl)){const c=padCands();if(c.length)padSet(c[Math.min(padIdx,c.length-1)])}
+  const t=topModal(),now=performance.now();
+  if(t!==lastTop){lastTop=t;padSet(null);padIdx=0;if(t){const c=padCands(),nx=t==='panel'&&g.done?$('items').querySelector('.next'):null;if(nx)padSet(nx);else if(c.length)padSet(c[0])}}
+  if(t){
+    if(!padEl||!document.contains(padEl)||padEl.offsetParent===null){const c=padCands();if(c.length)padSet(c[Math.min(padIdx,c.length-1)])}
     if(mm>.5){const dir=Math.abs(mx)>Math.abs(my)?[mx>0?1:-1,0]:[0,my>0?1:-1];if(!padDirHeld||now>=padNext){padNext=now+(padDirHeld?140:380);padMove(dir[0],dir[1])}padDirHeld=true}else padDirHeld=false;
     if(E[0]&&padEl)padEl.click();
-    if(E[1]||E[9]){ // B or Start: close the shop, go on to the next level, or retry
-      if(g.dead){const b=$('items').querySelector('.item');if(b)b.click()}
-      else if(g.done){const b=$('items').querySelector('.next');if(b)b.click()}
-      else{shopOpen=false;$('panel').classList.add('hidden');run=true;padSet(null)}
-    }
-    if((E[4]||E[5])&&!g.dead){openPanel(shopMode==='hats'?'weapons':'hats');const c=padCands();if(c.length)padSet(c[0])}
+    if(E[1])closeTop();
+    if(E[9])startKey();
+    if((E[4]||E[5])&&t==='panel'&&!g.dead){openPanel(shopMode==='hats'?'weapons':'hats');const c=padCands();if(c.length)padSet(c[0])}
   }else{
     padDirHeld=false;
     const m=mm>.2?Math.min(1,(mm-.2)/.8)/mm:0;padJoy={x:mx*m,y:my*m};
     if(Math.hypot(gp.axes[2]||0,gp.axes[3]||0)>.4)aimA=Math.atan2(gp.axes[3],gp.axes[2]);
     padFire=pbtn(gp,7)||pbtn(gp,5)||pbtn(gp,0)||(gp.buttons[6]&&gp.buttons[6].value>.4);
     if(E[2])$('heal').click();
-    if(E[3]){openPanel('hats');const c=padCands();if(c.length)padSet(c[0])}
-    if(E[9]){if(g.dead)say('Retry the level, or start a new run.');else{openPanel('weapons');const c=padCands();if(c.length)padSet(c[0])}}
+    if(E[3])openPanel('hats');
+    if(E[9])openMenu();
   }
   if(padLastHp!==null&&g.hp<padLastHp-.5)rumble(gp,120,.5,.25);
   padLastHp=g.hp;
 }
-let padDirHeld=false;
+let padDirHeld=false,padOn=false,lastTop;
 window.addEventListener('pointerdown',()=>{if(padEl)padSet(null)},true);
-function escAct(){if(!g)return;if(panelOpen()){if(!g.done&&!g.dead){shopOpen=false;$('panel').classList.add('hidden');run=true;padSet(null)}}else if(!g.dead&&!g.done){openPanel('weapons')}}
-window.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();if(!e.repeat)escAct()}});
+window.addEventListener('gamepadconnected',()=>say('Controller connected.'));
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();if(!e.repeat)startKey()}});
 function dropInput(){keys={};firing=false;joy={x:0,y:0};try{nub.style.transform='translate(0,0)'}catch(e){}}
 window.addEventListener('blur',dropInput);
-try{history.pushState({bloodline:1},'');window.addEventListener('popstate',()=>{history.pushState({bloodline:1},'');if(!(activePad()&&[0,1,8,9].some(k=>{const b=activePad().buttons[k];return b&&b.pressed})))escAct()})}catch(e){}
-window.addEventListener('gamepadconnected',()=>say('Controller connected.'));
-window.addEventListener('gamepaddisconnected',()=>{padHeld=false;say('Controller disconnected.')});
+// Edge and phones turn a controller's B or the Back gesture into history Back: keep one step of history so it pauses instead of leaving
+try{history.pushState({bloodline:1},'');window.addEventListener('popstate',()=>{history.pushState({bloodline:1},'');const gp=activePad();if(!(gp&&[0,1,8,9].some(k=>gp.buttons[k]&&gp.buttons[k].pressed)))startKey()})}catch(e){}
+
+/* ---- fit the field to the screen, touch controls only where there is touch ---- */
+const stage=$('stage');
+function fit(){const r=stage.getBoundingClientRect();if(r.width<10||r.height<10)return;const k=Math.min(r.width/W,r.height/H);canvas.style.width=Math.floor(W*k)+'px';canvas.style.height=Math.floor(H*k)+'px'}
+window.addEventListener('resize',fit);window.addEventListener('orientationchange',()=>setTimeout(fit,200));document.addEventListener('fullscreenchange',()=>setTimeout(fit,100));
+if(window.ResizeObserver)new ResizeObserver(fit).observe(stage);
+function touchOn(){document.body.classList.add('istouch');fit()}
+try{if(matchMedia('(pointer:coarse)').matches)touchOn()}catch(e){}
+window.addEventListener('pointerdown',e=>{if(e.pointerType==='touch')touchOn()},true);
+fit();
 
 /* ---- controls ---- */
-$('start').onclick=()=>{if(g.dead){say('Retry the level, or start a new run.');return}if(g.done){g.level++;levelSetup();save();return}if(shopOpen){$('panel').classList.add('hidden');shopOpen=false}run=true;say('Your ant looks sharp.')};
-$('restart').onclick=()=>{if(confirm('Start a new run? This resets level, coin, upgrades and hats saved on this device.')){try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(OLD_KEY)}catch(e){}newRun();say('New run started.')}};
-$('shopBtn').onclick=()=>openPanel('weapons');$('hatBtn').onclick=()=>openPanel('hats');
+$('restart').onclick=()=>restartRun($('restart'));
+$('shopBtn').onclick=()=>openPanel('weapons');$('hatBtn').onclick=()=>openPanel('hats');$('mShop').onclick=()=>openPanel('weapons');$('mHats').onclick=()=>openPanel('hats');$('menuBtn').onclick=()=>{if(topModal()==='menu')closeTop();else openMenu()};$('menuResume').onclick=closeTop;$('helpBtn').onclick=()=>$('help').classList.remove('hidden');$('helpClose').onclick=()=>$('help').classList.add('hidden');
 $('closePanel').onclick=()=>{if(g.done||g.dead)return;shopOpen=false;$('panel').classList.add('hidden');run=true};
 $('heal').onclick=()=>{if(g.dead)return;if(g.money<20){say('Not enough coin.');return}if(g.hp>=g.max){say('Health already full.');return}g.money-=20;g.hp=Math.min(g.max,g.hp+35);sync();save();say('Healed.')};
 $('sightBtn').onclick=()=>{showSight=!showSight;$('sightBtn').textContent='Sight rings: '+(showSight?'on':'off')};
