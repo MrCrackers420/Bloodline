@@ -8431,7 +8431,9 @@ let fitMade = []; try{ const v = JSON.parse(localStorage.getItem('bloodline_fitM
     return best; }
   const padAnyPressed = () => { const g = activePad(); return !!g && g.buttons.some(b=>b && b.pressed); };
   const ON_XBOX = /xbox/i.test(navigator.userAgent||'');
-  try{ if('gamepadInputEmulation' in navigator) navigator.gamepadInputEmulation = 'gamepad'; }catch(e){} /* older Edge on Xbox: hand the controller to the page */
+  /* Edge (on Xbox especially) can turn the controller into a mouse cursor or keyboard keys for each page it loads, which makes a controller feel dead or odd. Hand it over to the page as a gamepad, and ask again whenever the page wakes or a pad appears, because loading another page resets it. */
+  function padEmu(){ try{ if('gamepadInputEmulation' in navigator && navigator.gamepadInputEmulation !== 'gamepad') navigator.gamepadInputEmulation = 'gamepad'; }catch(e){} }
+  padEmu(); window.addEventListener('focus', padEmu); window.addEventListener('gamepadconnected', padEmu); document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) padEmu(); });
   function padWakeAudio(){ try{ if(audioCtx && audioCtx.state==='suspended') audioCtx.resume(); }catch(e){} }
   for(const ev of ['keydown','pointerdown']) window.addEventListener(ev, padWakeAudio, true);
   function padPoll(){ if(vs && vsShown()){ try{ vsTick(); }catch(e){ noteError(e); } fpSync(activePad()); requestAnimationFrame(padPoll); return; } /* the Versus lobby: every controller at once */

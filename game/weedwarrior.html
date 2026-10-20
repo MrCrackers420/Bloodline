@@ -208,6 +208,9 @@ drawHat(equippedHat,p.x,p.y-p.r+3)}
 function loop(now){const dt=Math.min(40,now-(last||now));last=now;try{padPoll(dt)}catch(e){}update(dt,now);draw();requestAnimationFrame(loop)}
 
 /* ---- controller ---- */
+/* Edge (on Xbox especially) can turn the controller into a mouse cursor or keyboard keys for each page it loads, which makes a controller feel dead or odd. Hand it over to the page as a gamepad, and ask again whenever the page wakes or a pad appears, because loading another page resets it. */
+function padEmu(){ try{ if('gamepadInputEmulation' in navigator && navigator.gamepadInputEmulation !== 'gamepad') navigator.gamepadInputEmulation = 'gamepad'; }catch(e){} }
+padEmu(); window.addEventListener('focus', padEmu); window.addEventListener('gamepadconnected', padEmu); document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) padEmu(); });
 const PADAB=(()=>{try{return localStorage.getItem('bloodline_padab')==='1'}catch(e){return false}})(),PADXY=(()=>{try{return localStorage.getItem('bloodline_padxy')==='1'}catch(e){return false}})();
 function pbtn(gp,k){k=PADAB&&(k===0||k===1)?1-k:PADXY&&(k===2||k===3)?5-k:k;const b=gp.buttons[k];return !!(b&&(b.pressed||b.value>.4))}
 function activePad(){const l=navigator.getGamepads?navigator.getGamepads():[];let best=null;for(const gp of l){if(!gp||gp.connected===false)continue;if(!best||(gp.mapping==='standard'&&best.mapping!=='standard')||(gp.timestamp||0)>(best.timestamp||0))best=gp}return best}
@@ -263,6 +266,11 @@ function padPoll(dt){
 }
 let padDirHeld=false;
 window.addEventListener('pointerdown',()=>{if(padEl)padSet(null)},true);
+function escAct(){if(!g)return;if(panelOpen()){if(!g.done&&!g.dead){shopOpen=false;$('panel').classList.add('hidden');run=true;padSet(null)}}else if(!g.dead&&!g.done){openPanel('weapons')}}
+window.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();if(!e.repeat)escAct()}});
+function dropInput(){keys={};firing=false;joy={x:0,y:0};try{nub.style.transform='translate(0,0)'}catch(e){}}
+window.addEventListener('blur',dropInput);
+try{history.pushState({bloodline:1},'');window.addEventListener('popstate',()=>{history.pushState({bloodline:1},'');if(!(activePad()&&[0,1,8,9].some(k=>{const b=activePad().buttons[k];return b&&b.pressed})))escAct()})}catch(e){}
 window.addEventListener('gamepadconnected',()=>say('Controller connected.'));
 window.addEventListener('gamepaddisconnected',()=>{padHeld=false;say('Controller disconnected.')});
 
