@@ -88,9 +88,42 @@
   #wdClassList .cs-perks li::before{ content:'\25C6'; position:absolute; left:0; top:.2em; font-size:.7em; color:#e0b54a; }
   #wdClassList .cs-desc{ font-size:.66em; line-height:1.35; color:var(--bone-dim); max-height:4.5em; overflow-y:auto; border-top:1px solid var(--line); padding-top:.4em; }
   .overlay #wdClassList .cs-go{ position:sticky; bottom:0; z-index:2; align-self:stretch; justify-content:center; text-align:center; margin-top:.2em; padding:.6em .8em; box-shadow:0 -.5em .6em var(--bg); letter-spacing:.18em; text-transform:uppercase; border-color:#e0b54a; color:#f3e6c4; background:linear-gradient(180deg,#8c2540,#5e1a2c); }
+  #wdClassList .cs-tok{ position:relative; }
+  .overlay #wdClassList .cs-tok.look{ border-color:#8f8470; }
+  .overlay #wdClassList .cs-tok.you{ border-color:#e0b54a; color:#e0b54a; background:#2c2019; box-shadow:0 0 0 1px #e0b54a, 0 0 .9em rgba(224,181,74,.28); }
+  .overlay #wdClassList .cs-tok.pal{ border-color:#3f8580; color:#7fc4bd; background:#1a2624; box-shadow:0 0 0 1px #3f8580, 0 0 .9em rgba(63,133,128,.3); }
+  #wdClassList .cs-tok[data-tag]::after{ content:attr(data-tag); position:absolute; top:-.55em; left:50%; transform:translateX(-50%); padding:0 .5em; font-size:.55em; letter-spacing:.14em; text-transform:uppercase; background:var(--bg); border:1px solid currentColor; border-radius:3px; white-space:nowrap; }
+  #wdClassList .cs-slots{ display:flex; gap:.6em; }
+  .overlay #wdClassList .cs-slot{ flex:1 1 0; display:flex; align-items:center; justify-content:flex-start; gap:.6em; padding:.35em .7em; text-align:left; background:var(--field); }
+  #wdClassList .cs-slot canvas{ width:2.8em; height:2.8em; flex:none; border-radius:50%; background:rgba(0,0,0,.3); }
+  #wdClassList .cs-slot span{ display:flex; flex-direction:column; line-height:1.15; }
+  #wdClassList .cs-slot small{ font-size:.6em; letter-spacing:.18em; text-transform:uppercase; color:var(--bone-dim); }
+  #wdClassList .cs-slot b{ font-weight:normal; font-size:.95em; letter-spacing:.06em; }
+  .overlay #wdClassList .cs-slot:not(.full) b{ color:var(--bone-dim); font-style:italic; }
+  .overlay #wdClassList .cs-slot[data-slot=c].full{ border-color:#e0b54a; } .overlay #wdClassList .cs-slot[data-slot=p].full{ border-color:#3f8580; }
+  .overlay #wdClassList .cs-slot.act{ box-shadow:0 0 0 2px var(--bone-dim); }
   .overlay #wdClassList .cs-go small{ display:block; font-size:.6em; letter-spacing:.1em; color:#d9c9a3; text-transform:none; }
   @media (max-width:520px){ #wdClassList .cs-stage{ grid-template-columns:minmax(0,7.5em) minmax(0,1fr); gap:.6em; padding:.5em; } #wdClassList .cs-art{ width:100%; } #wdClassList .cs-desc{ display:none; } #wdClassList .cs-name{ font-size:1.25em; letter-spacing:.14em; } #wdClassList .cs-perks{ font-size:.72em; } .overlay #wdClassList .cs-tok{ width:3.4em; } #wdClassList .cs-tok canvas{ width:2.7em; height:2.7em; } #wdClassList .cs-tok b{ font-size:.5em; letter-spacing:.04em; } }
   @media (max-height:900px){ #wdClassList .cs-desc{ display:none; } }
+  #wdClassList .cs-art.empty::after{ content:'?'; display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-size:5em; color:rgba(217,201,163,.18); }
+  /* the animal select takes the whole screen */
+  #wdBag.cs-full:not(.vp){ padding:.8vmin; justify-content:flex-start; gap:.3em; font-size:clamp(12px, min(1.8vw, 2.5vh), 24px) !important; }
+  #wdBag.cs-full:not(.vp) #wdInventoryLayout{ max-width:none; width:100%; flex:1 1 auto; align-items:stretch; }
+  #wdBag.cs-full:not(.vp) #wdInventoryLayout.equipment-hidden #wdInventoryMain{ flex:1 1 auto !important; width:100% !important; max-width:none !important; min-width:0 !important; }
+  #wdBag.cs-full:not(.vp) #wdClassInfo{ max-width:none; min-height:0; }
+  #wdBag.cs-full:not(.vp) #wdClassList.cs{ max-width:none; width:100%; flex:1 1 auto; max-height:none; justify-content:safe center; gap:.7em; }
+  #wdBag.cs-full:not(.vp) .cs-roster{ gap:.6em; flex-wrap:nowrap; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-tok{ width:6.4em; padding:.4em .3em .45em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-tok canvas{ width:4.8em; height:4.8em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-tok b{ font-size:.72em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-stage{ flex:1 1 auto; grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:2em; padding:1em 2em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-art{ width:min(100%, max(9em, calc(100vh - 35em))); }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-name{ font-size:2em; letter-spacing:.14em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-quote{ font-size:1.05em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-perks{ font-size:.95em; gap:.35em; }
+  #wdBag.cs-full:not(.vp) #wdClassList .cs-go{ font-size:1.25em; padding:.6em .8em; }
+  @media (max-width:520px){ #wdBag.cs-full:not(.vp){ font-size:15px !important; } #wdBag.cs-full:not(.vp) .cs-roster{ gap:.3em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-stage{ grid-template-columns:1fr; gap:.6em; padding:.7em; align-content:center; } #wdBag.cs-full:not(.vp) #wdClassList .cs-art{ width:min(62%,28vh); } #wdBag.cs-full:not(.vp) #wdClassList .cs-name, #wdBag.cs-full:not(.vp) #wdClassList .cs-quote{ text-align:center; } #wdBag.cs-full:not(.vp) #wdClassList .cs-name{ font-size:1.5em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-perks{ font-size:.85em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-tok{ width:3.4em; padding:.25em .2em .3em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-tok canvas{ width:2.7em; height:2.7em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-tok b{ font-size:.5em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-go{ font-size:1em; } }
+  @media (max-height:520px) and (min-width:521px){ #wdBag.cs-full:not(.vp) #wdClassList .cs-tok{ width:5em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-tok canvas{ width:3.4em; height:3.4em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-stage{ grid-template-columns:minmax(0,9em) minmax(0,1fr); gap:1em; padding:.5em 1em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-art{ width:100%; } #wdBag.cs-full:not(.vp) #wdClassList .cs-name{ font-size:1.4em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-perks{ font-size:.8em; } #wdBag.cs-full:not(.vp) #wdClassList .cs-go{ font-size:1.05em; padding:.4em .8em; } }
   .vp #wdClassList .cs-stage{ grid-template-columns:minmax(0,7.5em) minmax(0,1fr); } .vp #wdClassList .cs-art{ width:100%; } .vp #wdClassList .cs-desc{ display:none; }
   @keyframes wd-blink{ 50%{ opacity:.45; } }
   .wd-clock{ display:flex; flex-direction:column; align-items:center; gap:.25em; }
@@ -217,6 +250,8 @@
   .overlay .wd-craft button small em{ font-style:normal; color:#e0b54a; }
   .wd-dur{ position:absolute; left:12%; right:12%; bottom:8%; height:3px; background:rgba(0,0,0,.6); pointer-events:none; }
   .wd-dur u{ display:block; height:100%; background:#8fd06b; }
+  .wd-fr{ position:absolute; left:12%; right:12%; top:7%; height:3px; background:rgba(0,0,0,.6); pointer-events:none; }
+  .wd-fr u{ display:block; height:100%; }
   .wd-acts{ display:flex; gap:.5em; flex-wrap:wrap; justify-content:center; }
   .overlay .wd-acts button{ min-width:6em; }
   .uf-meta{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:.55em; background:rgba(10,7,6,.95); z-index:4; overflow-y:auto; padding:5vmin 4vmin; font-size:clamp(14px, 2.2vmin, 24px); text-align:center; color:var(--bone); }
@@ -1065,7 +1100,7 @@
   const CLASSES = {
     monkey:{name:'Monkey', desc:'Monkeys have hands, not feet: you are immune to Toe Foot (and so to Knee Leg), and crafting is 25% quicker.'},
     beaver:{name:'Beaver', desc:'Trees fall in half the hits, and the hatchet lasts twice as long. Water is your road: no slowdown wading or swimming, fishing 40% quicker, and webbed feet that never get Toe Foot. Swimming, you take up no height: you slip under walls and anything else standing in the water, into pools nobody else can reach. Heavy: 3 more health and 20% more damage, but no roll. Space or A is a tail slap that thumps everything round you and splashes.'},
-    mole:{name:'Mole', desc:'Boulders and crystals break in half the hits, the pickaxe lasts twice as long, and the skill tree can make ore veins and boulders pay more. Instead of rolling, the Mole burrows (Space or A): a dash under walls, rocks and even hills, however thick, that nothing can hit or notice. The den is the Mole\'s own project (any animal may plan and raise it): a bunker under the hill, reached by a ladder from a hatch, planned at the planning table.'},
+    mole:{name:'Mole', desc:'Boulders and crystals break in half the hits, the pickaxe lasts twice as long, and the skill tree can make ore veins and boulders pay more. Instead of rolling, the Mole burrows (Space or A): a dash under walls and rocks, however thick, that nothing can hit or notice. It keeps the height it started at: ramps work, but a cliff stops it (until the skill tree teaches it to dig up and down any hill). The den is the Mole\'s own project (any animal may plan and raise it): a bunker under the hill, reached by a ladder from a hatch, planned at the planning table.'},
     bear:{name:'Bear', desc:'Hunger and thirst drain 30% slower, and the cold bites 25% less. Heavy: 5 more health and 30% more damage, but no roll. Space or A is a swipe that throws things back and scares the herds. You are too wide for a one-cell doorway: build a two-cell gap (it lets other animals in too).'},
     raccoon:{name:'Raccoon', desc:'Food fills 30% more, quenches 50% more and heals 1 extra. At any water he washes food for anyone, cooks a quarter quicker, and a stew or soup he cooks feeds everyone round the fire. His den room is the kitchen, where only he can cook the refined dishes. Raw food hardly fills anyone: he makes it count.'},
     fox:{name:'Fox', desc:'Wild animals let you come 30% closer before they bolt.'},
@@ -1146,7 +1181,8 @@
     ['sb1','Burrower','Sb','I','Swift Burrow I','Soil parts for you: you move 5% faster while burrowed. Your pack still slows you, as on the surface.',[],0,0],
     ['sb2','Burrower','Sb','II','Swift Burrow II','10% faster while burrowed.',['sb1'],0,1],
     ['sb3','Burrower','Sb','III','Swift Burrow III','15% faster while burrowed.',['sb2'],0,2],
-    ['still','Burrower','Dm','','Deep Stillness','Needs all three Swift Burrow skills. Let go of the stick and you stay put under the ground instead of driving on, and the burrow clock waits while you do. Press Space or A to come up.',['sb3'],0,3.4],
+    ['still','Burrower','Dm','','Deep Stillness','Needs all three Swift Burrow and all three Quick Return skills. Let go of the stick and you stay put under the ground instead of driving on, and the burrow clock waits while you do. Press Space or A to come up.',['sb3','cd3'],0.5,3.4],
+    ['any','Burrower','Ba','','Burrow Anywhere','Needs Deep Stillness and Lode Maker. Terrain no longer stops your burrow: it climbs under cliffs and hills and runs down drops and holes, and you can come up on any level where the ground is open.',['still','lode'],1.75,4.8],
     ['cd1','Burrower','Cd','I','Quick Return I','You can burrow again sooner: the wait between burrows is 10% shorter.',[],1,0],
     ['cd2','Burrower','Cd','II','Quick Return II','The wait between burrows is 15% shorter.',['cd1'],1,1],
     ['cd3','Burrower','Cd','III','Quick Return III','The wait between burrows is 20% shorter.',['cd2'],1,2],
@@ -1156,12 +1192,36 @@
     ['or1','Prospector','Or','I','Ore Sense I','Ore veins give 25% more ore.',[],1,0],
     ['or2','Prospector','Or','II','Ore Sense II','Ore veins give 50% more ore.',['or1'],1,1],
     ['or3','Prospector','Or','III','Ore Sense III','Ore veins give 75% more ore.',['or2'],1,2],
-    ['lode','Prospector','Ld','','Lode Maker','Needs Rock Breaker III and Ore Sense III. Press the stone in your hotbar (use: Q or RT) with 20 or more stone in your pack: you grind 20 stone down into 2 ore (iron most often, then copper, zinc and silver).',['rk3','or3'],0.5,3.4],
+    ['lode','Prospector','Ld','','Lode Maker','Needs Rock Breaker III and Ore Sense III. Press the stone in your hotbar (use: Q or RT) with 20 or more stone in your pack: you grind 20 stone down into 4 ore of three different kinds (iron most often, then copper, zinc and silver) and 2 charcoal.',['rk3','or3'],0.5,3.4],
     ['sp','Prospector','Sp','','Stone Porter','Stone, flint, rock salt, shards, quicklime, ore and ore concentrate weigh half as much in your pack.',[],2,0],
     ['sp2','Prospector','Sp','II','Deep Porter','Needs Stone Porter. All of those weigh a quarter of their usual weight, and so do dirt, mud and bones.',['sp'],2,1]];
     for(const t of T) SKILLS.push({id:'mo_' + t[0], who:'mole', br:t[1], g:t[2], tier:t[3], name:t[4], desc:t[5], req:t[6].map(x=>'mo_' + x), col:t[7], row:t[8], rn:0, tot:0, ex:null, soon:false});
  })();
-  const WT_TREES = {monkey:WT_BR, mole:WT_BR_MO};
+  /* The Raccoon's tree: Haul (three Deep Pockets that each add a bag slot, three Light Load steps that lighten basic ingredients by 25, 50 and 75%, and Pantry Pack where they meet) and Larder (three Cool Larder steps that make food and ingredients keep 50, 100 and 150% longer). */
+  const WT_BR_RC = [{n:'Haul', x:0, w:2}, {n:'Larder', x:2.5, w:1}];
+  (()=>{ const T = [
+    ['sl1','Haul','Dp','I','Deep Pockets I','Sewn into your fur: one more slot in your bag.',[],0,0],
+    ['sl2','Haul','Dp','II','Deep Pockets II','Another bag slot (2 extra).',['sl1'],0,1],
+    ['sl3','Haul','Dp','III','Deep Pockets III','A third bag slot (3 extra).',['sl2'],0,2],
+    ['lw1','Haul','Lw','I','Light Load I','Basic ingredients (raw meat and fish, berries, herbs, carrots, wheat, mushrooms and the like) weigh 25% less in your pack.',[],1,0],
+    ['lw2','Haul','Lw','II','Light Load II','Basic ingredients weigh 50% less.',['lw1'],1,1],
+    ['lw3','Haul','Lw','III','Light Load III','Basic ingredients weigh 75% less.',['lw2'],1,2],
+    ['pk','Haul','Pp','','Pantry Pack','Needs all three Deep Pockets and all three Light Load skills. Every food and ingredient, cooked dishes too, weighs half as much again, and you gain a fourth extra bag slot.',['sl3','lw3'],0.5,3.4],
+    ['sp1','Larder','Lr','I','Cool Larder I','Food and ingredients keep 50% longer before they spoil, in your bag, on the ground and in chests.',[],0,0],
+    ['sp2','Larder','Lr','II','Cool Larder II','Food and ingredients keep 100% longer (twice as long).',['sp1'],0,1],
+    ['sp3','Larder','Lr','III','Cool Larder III','Food and ingredients keep 150% longer (two and a half times as long).',['sp2'],0,2]];
+    for(const t of T) SKILLS.push({id:'rc_' + t[0], who:'raccoon', br:t[1], g:t[2], tier:t[3], name:t[4], desc:t[5], req:t[6].map(x=>'rc_' + x), col:t[7], row:t[8], rn:0, tot:0, ex:null, soon:false});
+  })();
+  const WT_TREES = {monkey:WT_BR, mole:WT_BR_MO, raccoon:WT_BR_RC};
+  const rcT = pre => skHas('rc_' + pre + '3') ? 3 : skHas('rc_' + pre + '2') ? 2 : skHas('rc_' + pre + '1') ? 1 : 0; /* the tier of a three-step Raccoon skill */
+  const rcSlots = () => clsHas('raccoon') ? rcT('sl') + (skHas('rc_pk') ? 1 : 0) : 0; /* the extra bag slots his skills give */
+  const RC_BASIC = new Set(['meat', 'fish', 'berry', 'herb', 'carrot', 'wheat', 'mushroom', 'glowcap', 'moonpetal', 'cactusflesh', 'garlic', 'grub', 'wmeat', 'wfish', 'wberry', 'wherb', 'wcarrot', 'wmushroom', 'pulp', 'carrotseed', 'wheatseed']); /* what Light Load lightens */
+  const invLen = (raw, pack) => { const b = WD.slots + packSlots(pack); return Array.isArray(raw) ? Math.max(b, Math.min(b + 4, raw.length)) : b; }; /* a saved bag may hold up to four pocket slots beyond the ten and the pack's */
+  function invFit(){ /* the pocket slots sit right after the hotbar; they grow as skills are learned, and empty ones are given back when the animal is not a Raccoon with those skills */
+    if(!wd || !Array.isArray(wd.inv)) return; const want = rcSlots(); let have = wd.inv.length - WD.slots - packSlots(wd.pack); if(have < 0) return;
+    while(have < want){ wd.inv.splice(WD.slots, 0, null); have++; }
+    for(let i = WD.slots + have - 1; i >= WD.slots && have > want; i--) if(!wd.inv[i]){ wd.inv.splice(i, 1); have--; }
+    if(wd.sel >= wd.inv.length) wd.sel = 0; }
   const moT = pre => skHas('mo_' + pre + '3') ? 3 : skHas('mo_' + pre + '2') ? 2 : skHas('mo_' + pre + '1') ? 1 : 0; /* the tier of a three-step Mole skill */
   const STONEWT = new Set(['stone', 'flint', 'salt', 'shard', 'quicklime', 'ironore', 'copperore', 'silverore', 'zincore', 'ironconcentrate', 'copperconcentrate', 'silverconcentrate', 'zincconcentrate']); /* what Stone Porter lightens */
   const TERRAINWT = new Set(['dirt', 'mud', 'bone']); /* what Deep Porter lightens besides STONEWT */
@@ -1259,7 +1319,7 @@
     if(wd.skl.includes(id)){ wdNote(k.name + ' is already learned'); return false; }
     { const why = skWhy(k); if(why){ wdNote(why); beep(200, 0.08, 'square', 0.02); return false; } }
     if(wd.skp < 1){ wdNote('No skill point yet: one comes every two days'); beep(200, 0.08, 'square', 0.02); return false; }
-    wd.skp--; wd.skl.push(id); wdNote(k.name + ' learned'); beep(520, 0.06, 'triangle', 0.04); beep(780, 0.1, 'triangle', 0.04, 0.07); wdSave(); hudLast = ''; return true;
+    wd.skp--; wd.skl.push(id); invFit(); wdNote(k.name + ' learned'); beep(520, 0.06, 'triangle', 0.04); beep(780, 0.1, 'triangle', 0.04, 0.07); wdSave(); hudLast = ''; return true;
   }
   ITEMS.wateringcan.dur = 6; ITEMS.wateringcan.desc = 'Fill it at the river bank (B), then water a growing plot once to shorten its growth by 25%. Six pours a fill. Rain waters crops for free; a dry spell means hauling water.';
   CROPS.carrot.seasons = [0, 2]; CROPS.wheat.seasons = [0, 1];
@@ -1468,7 +1528,7 @@
   const denBoxDist=(p,b)=>{ const x0=DEN_O.x+b[0]*GRID, y0=DEN_O.y+b[1]*GRID, x1=DEN_O.x+b[2]*GRID, y1=DEN_O.y+b[3]*GRID; return Math.hypot(Math.max(0,x0-p.x,p.x-x1), Math.max(0,y0-p.y,p.y-y1)); }; /* how far a body is from the edge of a box given in cells */
   const DEN_BASIN=[.3,17.2,1.5,20.4], DEN_BOARD=[2.2,6.6,3.8,7.3], DEN_HEARTH={x:DEN_O.x+8*GRID, y:DEN_O.y+17.5*GRID, fuel:1e9, hearth:1}; /* the kitchen's wash basin, the roll-call board in the resident hall, and the range: a fire that is always lit while the kitchen stands dry */
   const DEN_STORE=[{k:'denbin',t:'ORE BIN',say:'ore bin',room:'store',n:20,box:[26.3,6.7,28.7,8.2]},{k:'denbin',t:'ORE BIN',say:'ore bin',room:'store',n:20,box:[29.1,6.7,31.5,8.2]},{k:'dencart',t:'ORE CART',say:'ore cart',room:'store',n:20,box:[26.4,11.0,29.2,12.8]},{k:'denpantry',t:'PANTRY',say:'pantry',room:'kitchen',n:12,box:[8.2,19.9,10.6,21.0]},{k:'denrack',t:'BAR RACK',say:'bar rack',room:'refinery',n:12,box:[21.5,19.5,24.3,20.7]}]; /* the den's own storage: the ore store's bins and cart, and the kitchen's pantry. Their slots live in the den's record (d.bins), so they save with the world */
-  const denBinsClean=a=>DEN_STORE.map((st,i)=>{ const src=Array.isArray(a) && Array.isArray(a[i]) ? a[i] : []; return Array.from({length:st.n},(_,j)=>{ const q=src[j]; return q && typeof q==='object' && ITEMS[q.id] && q.n>=1 ? Object.assign({id:q.id, n:Math.min(ITEMS[q.id].stack || WD.stack, Math.floor(q.n))}, ITEMS[q.id].dur && q.d!=null ? {d:q.d} : {}) : null; }); });
+  const denBinsClean=a=>DEN_STORE.map((st,i)=>{ const src=Array.isArray(a) && Array.isArray(a[i]) ? a[i] : []; return Array.from({length:st.n},(_,j)=>{ const q=src[j]; return q && typeof q==='object' && ITEMS[q.id] && q.n>=1 ? Object.assign({id:q.id, n:Math.min(ITEMS[q.id].stack || WD.stack, Math.floor(q.n))}, (ITEMS[q.id].dur || ITEMS[q.id].shelf) && q.d!=null ? {d:q.d} : {}) : null; }); });
   let DEN_STC=null;
   function denStores(){ /* the same objects every call, so two players at one bin share one view of it; each has .slots like a chest */
     const d=wd && wd.cu && wd.cu.den; if(!d || d.leg) return []; if(!Array.isArray(d.bins) || d.bins.length!==DEN_STORE.length) d.bins=denBinsClean(d.bins);
@@ -2421,14 +2481,14 @@
   const finite = (v, d) => typeof v==='number' && isFinite(v) ? v : d;
   function wdClean(o){
     if(!o || typeof o!=='object' || o.v!==1 || typeof o.seed!=='string') return null;
-    const slot = s => { if(s && s.id==='platform')s={id:'plank',n:s.n}; if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d,I.dur) : Math.floor(finite(s.d, I.dur)), fl ? 0.001 : 1, I.dur); return o; };
-    const pack0 = slot(o.pack), pack = pack0 && ITEMS[pack0.id].pack ? pack0 : null, NS = WD.slots + packSlots(pack); const inv = Array.isArray(o.inv) ? o.inv.slice(0, NS).map(slot) : []; while(inv.length < NS) inv.push(null);
+    const slot = s => { if(s && s.id==='platform')s={id:'plank',n:s.n}; if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d,I.dur) : Math.floor(finite(s.d, I.dur)), fl ? 0.001 : 1, I.dur); else if(I.shelf && s.d != null){ const f = clamp(finite(s.d, 1), 0.001, 1); if(f < .999) o.d = Math.round(f*1000)/1000; } return o; };
+    const pack0 = slot(o.pack), pack = pack0 && ITEMS[pack0.id].pack ? pack0 : null, NS = invLen(o.inv, pack); const inv = Array.isArray(o.inv) ? o.inv.slice(0, NS).map(slot) : []; while(inv.length < NS) inv.push(null);
     const pt = q => q && typeof q==='object' && isFinite(q.x) && isFinite(q.y) ? {x:+q.x, y:+q.y} : null;
     const drops = (Array.isArray(o.drops) ? o.drops : []).map(d=>{ const at = pt(d); if(!at) return null; at.z = clamp(finite(d.z, 0), 0, MAXL*LH);
       if(Array.isArray(d.bag)){ const bag = d.bag.map(q=>{ const o = slot(q); if(o && q && typeof q.at==='string' && /^(inv:\d{1,2}|ag:\d|armor|base|mid|helmet|accessory|pack)$/.test(q.at)) o.at = q.at; return o; }).filter(Boolean); return bag.length ? Object.assign(at, d.who >= 0 && d.who < 4 ? {bag, who:d.who | 0} : {bag}) : null; }
       const s = slot(d); return s ? Object.assign(at, s) : null; }).filter(Boolean).slice(0, 400);
     const p = o.p || {}, armor=slot(o.armor), helmet=slot(o.helmet);
-    const crew = (Array.isArray(o.crew) ? o.crew : []).slice(0, 3).map(c=>{ if(!c || typeof c!=='object') return null; const q = c.p || {}, a = slot(c.armor), h = slot(c.helmet), cp0 = slot(c.pack), cpk = cp0 && ITEMS[cp0.id].pack ? cp0 : null, cNS = WD.slots + packSlots(cpk), ci = Array.isArray(c.inv) ? c.inv.slice(0, cNS).map(slot) : []; while(ci.length < cNS) ci.push(null);
+    const crew = (Array.isArray(o.crew) ? o.crew : []).slice(0, 3).map(c=>{ if(!c || typeof c!=='object') return null; const q = c.p || {}, a = slot(c.armor), h = slot(c.helmet), cp0 = slot(c.pack), cpk = cp0 && ITEMS[cp0.id].pack ? cp0 : null, cNS = invLen(c.inv, cpk), ci = Array.isArray(c.inv) ? c.inv.slice(0, cNS).map(slot) : []; while(ci.length < cNS) ci.push(null);
       return {inv:ci, pack:cpk, hand:slot(c.hand), armor:a && isArm(ITEMS[a.id]) ? a : null, helmet:h && isHelm(ITEMS[h.id]) ? h : null, accessory:ITEMS[c.accessory] && ITEMS[c.accessory].accessory ? c.accessory : null, rat:c.rat && typeof c.rat==='object' ? ratSave(mkRat(c.rat)) : null, rat2:c.rat2 && typeof c.rat2==='object' ? ratSave(mkRat(c.rat2)) : null,
         cp:c.cp && typeof c.cp==='object' ? c.cp : null, p:{hp:clamp(finite(q.hp, WD.hp), 1, WD.hp + 5), hunger:clamp(finite(q.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(q.thirst, WD.thirst), 0, WD.thirst), torch:clamp(finite(q.torch, 0), 0, WD.torch)}}; });
     return {upperWalls:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='wall' && finite(b[5],0)>0).length, retired:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='platform').length, seed:o.seed.slice(0, 12), t:Math.max(0, finite(o.t, 15)),
@@ -2802,10 +2862,12 @@
       c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = .9; c.beginPath(); c.moveTo(-6.6, 2.6); c.quadraticCurveTo(-6.8, -5, 0.4, -6.2); c.lineTo(7.2, -4.9); c.stroke();
       c.fillStyle = '#3d4750'; c.beginPath(); c.arc(-4.6, -1.6, 1.1, 0, 6.2832); c.fill(); c.restore(); } }
   /* the two made-up herbs */
-  function moSift(i){ /* Lode Maker: 20 stone ground down into 2 ore */
+  function moSift(i){ /* Lode Maker: 20 stone ground down into 4 ore of three different kinds (one kind twice) and 2 charcoal */
     const s = wd.inv[i]; if(!s || s.id!=='stone') return false; if(invCount('stone') < 20){ wdNote('Needs 20 stone to grind'); return false; }
     return wdAction('Grind', 1800, ()=>wd.inv[i]===s && invCount('stone') >= 20, ()=>{ if(invCount('stone') < 20 || !wdLive()) return; invTake('stone', 20); const p = wd.p;
-      for(let k = 0; k < 2; k++){ const r = Math.random(); give(r < .45 ? 'ironore' : r < .8 ? 'copperore' : r < .92 ? 'zincore' : 'silverore', 1, p); }
+      const pool = [['ironore', 45], ['copperore', 35], ['zincore', 12], ['silverore', 8]], got = [];
+      for(let k = 0; k < 3; k++){ let r = Math.random()*pool.reduce((a, q)=>a + q[1], 0), j = 0; for(; j < pool.length - 1; j++){ r -= pool[j][1]; if(r < 0) break; } got.push(pool.splice(j, 1)[0][0]); } /* three different kinds, the likelier ones first */
+      give(got[0], 2, p); give(got[1], 1, p); give(got[2], 1, p); give('charcoal', 2, p);
       for(let k = 0; k < 6; k++) wdFx({kind:'chip', x:p.x + (Math.random() - .5)*14, y:p.y - 4, vx:(Math.random() - .5)*70, vy:-20 - Math.random()*40, col:k % 2 ? '#8a847a' : '#c9a15a', t:420}); sfxRockBreak(); hudLast = ''; }); }
   function wdDrug(i){ if(!wd) return false; const item = wd.inv[i]; if(!item) return false; return wdAction('Use', 700, ()=>wd.inv[i]===item && !!ITEMS[item.id].drug, ()=>{ const s = wd.inv[i], p = wd.p; if(!s || !wdLive()) return; const k = ITEMS[s.id].drug; s.n--; if(!s.n) wd.inv[i] = null; sfxEat();
     if(k==='haze'){ p.hazy = 90; wdFx({kind:'num', x:p.x, y:p.y - 18, text:'Hazy · calm, slower, hungers less', col:'#b9d9a0', t:1500}); } else { const r = Math.random(); p.dream = 60; p.dreamK = r < .3 ? 'clear' : r < .6 ? 'bad' : 'plain'; p.hallu = []; p.hT = 4 + Math.random()*3; wdFx({kind:'num', x:p.x, y:p.y - 18, text:p.dreamK==='clear' ? 'Dreaming · everything is sharp and clear' : 'Dreaming · the woods swirl', col:p.dreamK==='clear' ? '#a9f0d0' : '#c9b7ff', t:1500}); } hudLast = ''; wdSave(); }); }
@@ -3286,7 +3348,7 @@
   const cuSavePlayer = s => ({warm:+s.warm.toFixed(2), wet:+s.wet.toFixed(3), base:sl1(s.base), mid:sl1(s.mid), socks:sl1(s.socks), shoes:sl1(s.shoes), jr:s.jr, ag:s.ag.map(x=>x ? {id:x.id, n:x.n} : null), sk:s.sk, inj:s.inj, cls:s.cls || [], cla:s.clsAsked ? 1 : 0, skl:s.skl || [], skp:s.skp || 0, skW:s.skW == null ? -1 : s.skW, dz:dzSave(s.dz), partner:partnerSave(s.partner), rs:(s.reserve || []).map(partnerSave), ppa:s.palAsked ? 1 : 0, gold:s.gold | 0});
   function cuMake(sv){
     sv = sv && typeof sv==='object' ? sv : {};
-    const slots = a => Array.from({length:CU.cartSlots}, (_, i)=>{ const s = Array.isArray(a) ? a[i] : null; return s && ITEMS[s.id] && s.n >= 1 ? {id:s.id, n:Math.min(ITEMS[s.id].stack || WD.stack, Math.floor(s.n)), ...(ITEMS[s.id].dur && s.d != null ? {d:s.d} : {})} : null; });
+    const slots = a => Array.from({length:CU.cartSlots}, (_, i)=>{ const s = Array.isArray(a) ? a[i] : null; return s && ITEMS[s.id] && s.n >= 1 ? {id:s.id, n:Math.min(ITEMS[s.id].stack || WD.stack, Math.floor(s.n)), ...((ITEMS[s.id].dur || ITEMS[s.id].shelf) && s.d != null ? {d:s.d} : {})} : null; });
     let plan = sv.plan && typeof sv.plan==='object' ? sv.plan : {};
     { const mv = (o, a, b)=>(o && typeof o==='object' && o[a] != null && o[b] == null) ? Object.assign({}, o, {[b]:o[a]}) : o; /* the Bunk room is now the Resident hall: its finished mark, progress and parts carry across */
       sv = Object.assign({}, sv, {done:mv(sv.done, 'denbunk', 'denresident')});
@@ -3483,7 +3545,10 @@
     });
   }
   /* ---- the pack: weight, and what it does to your legs ---- */
-  const wOf = id => { const w = WEIGHT[id] || 1; if(skHas('mo_sp2') && (STONEWT.has(id) || TERRAINWT.has(id))) return w*.25; return STONEWT.has(id) && skHas('mo_sp') ? w*.5 : w; }; /* Stone Porter: stone things weigh half; Deep Porter: a quarter, and dirt, mud and bones too */
+  const wOf = id => { let w = WEIGHT[id] || 1;
+    if(skHas('mo_sp2') && (STONEWT.has(id) || TERRAINWT.has(id))) w *= .25; else if(STONEWT.has(id) && skHas('mo_sp')) w *= .5; /* Stone Porter: stone things weigh half; Deep Porter: a quarter, and dirt, mud and bones too */
+    if(clsHas('raccoon')){ const basic = RC_BASIC.has(id); if(basic) w *= 1 - .25*rcT('lw'); if(skHas('rc_pk') && (basic || (ITEMS[id] && ITEMS[id].food))) w *= .5; } /* Light Load: basic ingredients 25, 50, 75% lighter; Pantry Pack: all food and ingredients half again */
+    return w; };
   function cuLoad(inv){ let w = 0; for(const s of inv) if(s) w += wOf(s.id)*s.n; return w; }
   function cuCap(inv){ let c = CU.cap; const pk = wd && wd.pack && ITEMS[wd.pack.id] && ITEMS[wd.pack.id].pack; if(pk) c += pk.carry; if(wd && clsHas('monkey')) c *= 1 + .15*mkT('ac'); return c; } /* Pack Mule (saved as ac): +15% per step for a Monkey */
   const hasAgro = () => invCount('agrobag') > 0 || !!(wd && wd.pack && wd.pack.id==='agrobag');
@@ -4172,7 +4237,7 @@
      At any water (a river bank, a pond, the den's cistern or the kitchen basin) a Raccoon washes the food stack in his hand, or, from a chest's panel, every washable stack in it, so the camp's stores can be rinsed for anyone. Washed food is its own item (so a washed and a plain stack never merge). A stew or soup he cooks at a fire is also served to the others standing round it. */
   const washable = x => !!x && !!WASH_OF[x.id];
   const washCount = slots => { let n = 0; for(const x of slots) if(washable(x)) n += x.n; return n; };
-  function washMerge(slots){ for(let i = 0; i < slots.length; i++){ const a = slots[i]; if(!a || !WASH_BASE[a.id]) continue; const st = ITEMS[a.id].stack || WD.stack; for(let j = i + 1; j < slots.length && a.n < st; j++){ const b = slots[j]; if(b && b.id===a.id){ const k = Math.min(b.n, st - a.n); a.n += k; b.n -= k; if(!b.n) slots[j] = null; } } } }
+  function washMerge(slots){ for(let i = 0; i < slots.length; i++){ const a = slots[i]; if(!a || !WASH_BASE[a.id]) continue; const st = ITEMS[a.id].stack || WD.stack; for(let j = i + 1; j < slots.length && a.n < st; j++){ const b = slots[j]; if(b && b.id===a.id){ const k = Math.min(b.n, st - a.n); frMix(a, b, k); a.n += k; b.n -= k; if(!b.n) slots[j] = null; } } } }
   function washSlots(slots){ let n = 0; for(const x of slots) if(washable(x)){ n += x.n; x.id = WASH_OF[x.id]; } washMerge(slots); return n; }
   function washFx(n){ const p = wd.p; sfxSplash(false); for(let i = 0; i < 6; i++) wdFx({kind:'chip', x:p.x + (Math.random() - .5)*12, y:p.y - 10, vx:(Math.random() - .5)*60, vy:-30 - Math.random()*40, col:'rgba(150,205,240,.85)', t:700}); wdFx({kind:'num', x:p.x, y:p.y - 22, text:'washed ' + n, col:'#9fd0f0', t:1000});
     if(!wd.jr.e.some(e=>e.k==='les:wash')) jrAdd('les:wash', 'lesson', 'A Raccoon washes food at any water, for anyone: raw meat stops hurting, herbs and mushrooms lose their bite, and a washed stack keeps longer in a crate.', {tags:[]}); }
@@ -4391,7 +4456,8 @@
   function cuBookCount(tab){ return tab===0 ? wd.jr.e.filter(jrPageKind).length : tab===1 ? CU.agSlots + wd.inv.length : tab===2 ? cuWearRows().length : tab===3 ? cuPlanRows().length : tab===5 ? bookAnimals().length : skRows().length; }
   function cuPutIn(arr, s){ /* merge a stack into arr; returns what did not fit */
     const st = ITEMS[s.id].stack || WD.stack; let n = s.n;
-    if(st > 1 && s.d == null) for(const q of arr) if(q && q.id===s.id && q.d == null && q.n < st){ const k = Math.min(n, st - q.n); q.n += k; n -= k; if(!n) return 0; }
+    const sh = !!ITEMS[s.id].shelf; /* food of different freshness mixes into one stack at the average */
+    if(st > 1 && (s.d == null || sh)) for(const q of arr) if(q && q.id===s.id && (q.d == null || sh) && q.n < st){ const k = Math.min(n, st - q.n); if(sh) frMix(q, s, k); q.n += k; n -= k; if(!n) return 0; }
     for(let i = 0; i < arr.length && n; i++) if(!arr[i]){ const k = Math.min(n, st); arr[i] = {...s, n:k}; n -= k; }
     return n;
   }
@@ -4885,10 +4951,11 @@
   }
   function cuSlotBox(c, s, x, y, z, sel, dim, wl){
     c.fillStyle = dim ? 'rgba(90,74,48,.12)' : 'rgba(90,74,48,.25)'; c.fillRect(x, y, z, z); c.strokeStyle = sel ? '#2a1c10' : '#7a6a48'; c.lineWidth = sel ? 3 : 1; c.strokeRect(x, y, z, z);
-    if(s){ c.globalAlpha = dim ? .5 : 1; c.drawImage(itemIcon(s.id), x + z*.12, y + z*.12, z*.76, z*.76); c.globalAlpha = 1; if(s.n > 1){ c.font = `bold ${Math.max(8, z*.3)}px ui-monospace,Menlo,Consolas,monospace`; c.textAlign = 'right'; c.fillStyle = '#2a1c10'; c.fillText(String(s.n), x + z - 2, y + z - z*.15); c.textAlign = 'left'; }
+    if(s){ c.globalAlpha = dim ? .5 : 1; c.drawImage(itemIcon(s.id), x + z*.12, y + z*.12, z*.76, z*.76); c.globalAlpha = 1;
+      if(ITEMS[s.id].shelf){ const v = frOf(s); c.fillStyle = 'rgba(0,0,0,.55)'; c.fillRect(x + z*.12, y + z - Math.max(3, z*.08) - 1, z*.76, Math.max(3, z*.08)); c.fillStyle = frCol(v); c.fillRect(x + z*.12, y + z - Math.max(3, z*.08) - 1, Math.max(2, z*.76*v), Math.max(3, z*.08)); } if(s.n > 1){ c.font = `bold ${Math.max(8, z*.3)}px ui-monospace,Menlo,Consolas,monospace`; c.textAlign = 'right'; c.fillStyle = '#2a1c10'; c.fillText(String(s.n), x + z - 2, y + z - z*.15); c.textAlign = 'left'; }
       if(wl){ c.font = `${Math.max(7, z*.24)}px ui-monospace,Menlo,Consolas,monospace`; c.fillStyle = '#5a4a30'; c.textAlign = 'left'; c.fillText(wl, x + 2, y + z*.14); } }
   }
-  const wFmt = v => String(Math.round(v*10)/10);
+  const wFmt = v => String(v > 0 && v < 1 ? Math.round(v*100)/100 : Math.round(v*10)/10);
   function bookAnimals(){ /* every animal of yours and what it carries: you first, then the partner, then any reserves */
     const out = [{pr:null, name:'You \u00b7 ' + (wd.cls[0] && CLASSES[wd.cls[0]] ? CLASSES[wd.cls[0]].name : 'animal'), inv:wd.inv, gear:[wd.armor, wd.helmet, wd.pack]}];
     for(const pr of [wd.partner, ...(wd.reserve || [])]) if(pr && pr.kit) out.push({pr, name:(pr===wd.partner ? 'Partner' : 'Reserve') + ' \u00b7 ' + palName(pr), inv:pr.kit.inv, gear:[pr.kit.armor, pr.kit.helmet, pr.kit.pack]});
@@ -4928,6 +4995,7 @@
       c.font = `bold ${fs*1.05}px ${BOOK_SERIF}`; c.fillText(I.name, x, yy); yy += fs*1.3; c.font = `${fs*.95}px ${BOOK_SERIF}`;
       c.fillStyle = '#2a1c10'; c.fillText(inBag ? 'Weight ' + wFmt(u) + ' each · ' + s.n + ' in the bag · it does not weigh on your legs' : 'Weight ' + wFmt(u) + ' each × ' + s.n + ' = ' + wFmt(tot) + (load > 0 ? ' · ' + Math.round(tot/load*100) + '% of what you carry' : ''), x, yy); yy += fs*1.25;
       c.fillStyle = '#5a4a30'; c.fillText('Stacks to ' + (I.stack || WD.stack) + (I.dur && s.d != null ? ' · ' + Math.round(s.d/I.dur*100) + '% left' : '') + (!inBag && u*(I.stack || WD.stack) > 0 ? ' · a full stack weighs ' + wFmt(u*(I.stack || WD.stack)) : ''), x, yy); yy += fs*1.3;
+      if(I.shelf){ c.fillStyle = frOf(s) < .5 ? '#9a3a1a' : '#3d6a3f'; c.fillText(cuFit(c, frInfo(s, false), w), x, yy); yy += fs*1.3; c.fillStyle = '#5a4a30'; }
       c.fillStyle = '#2a1c10'; const room = Math.max(1, Math.min(3, Math.floor((bot - yy - fs*5)/(fs*1.2))));
       for(const l of cuWrap(c, I.desc || '', w).slice(0, room)){ c.fillText(l, x, yy); yy += fs*1.2; } }
     else { c.font = `${fs}px ${BOOK_SERIF}`; c.fillStyle = '#5a4a30'; c.fillText(cuFit(c, has ? 'Seeds, soil samples and planting tools keep here, and do not weigh on your legs.' : 'Carry an agronomy bag to use the six slots.', w), x, yy); yy += fs*1.4; }
@@ -4973,7 +5041,7 @@
     c.textAlign = 'left'; c.font = `bold ${fs*1.05}px ${BOOK_SERIF}`; c.fillStyle = '#2a1c10'; c.fillText('Skill points: ' + wd.skp, x, y + fs*.7);
     c.font = `italic ${fs*.9}px ${BOOK_SERIF}`; c.fillStyle = '#5a4a30'; c.fillText(cuFit(c, 'Next point in ' + days + (days===1 ? ' day' : ' days'), w - fs*10), x + fs*10, y + fs*.7);
     c.textAlign = cmp ? 'left' : 'right'; c.font = `italic ${fs*.8}px ${BOOK_SERIF}`; c.fillStyle = '#7a3b2a'; c.fillText(rows.some(r=>r.soon) ? (cmp ? 'red dot: no effect yet' : 'red dot: no effect in the Wilds yet') : '', cmp ? x : x + w, cmp ? y + h - fs*.2 : y + fs*.7); c.textAlign = 'left';
-    const cell = Math.max(10, Math.min(tw0/W, (h - topH - boxH - (cmp ? fs*2.4 : 0))/4.9)), ns = cell*.8, ns0 = ns, ox = tx0 + (tw0 - W*cell)/2 + cell/2, oy = y + topH + cell*.5;
+    const cell = Math.max(10, Math.min(tw0/W, (h - topH - boxH - (cmp ? fs*2.4 : 0))/(Math.max(3.4, ...rows.map((r, i)=>r.col != null ? U[i].y : 0)) + 1.5))), ns = cell*.8, ns0 = ns, ox = tx0 + (tw0 - W*cell)/2 + cell/2, oy = y + topH + cell*.5;
     const P = i=>({x:ox + U[i].x*cell, y:oy + U[i].y*cell}), at = id=>rows.findIndex(r=>r.id===id);
     c.font = `bold ${Math.min(fs*.9, Math.max(7, cell*.5))}px ${BOOK_SERIF}`; c.textAlign = 'center'; c.fillStyle = '#5a3d12';
     { const f0 = Math.min(fs*.9, Math.max(7, cell*.5)); /* each heading shrinks until it fits over its own branch, so neighbours never run into each other */
@@ -5420,8 +5488,8 @@
   // ---- the bag ----
   function invAdd(id, n, d){ /* d: a tool's uses left */
     const inv = wd.inv, I = ITEMS[id], st = I.stack || WD.stack;
-    if(st > 1) for(const s of inv) if(s && s.id===id && s.n < st){ const k = Math.min(n, st - s.n); s.n += k; n -= k; if(!n) return 0; }
-    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, st); inv[i] = {id, n:k}; if(I.dur) inv[i].d = d || I.dur; n -= k; }
+    if(st > 1) for(const s of inv) if(s && s.id===id && s.n < st){ const k = Math.min(n, st - s.n); if(I.shelf) frMix(s, {d}, k); s.n += k; n -= k; if(!n) return 0; }
+    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, st); inv[i] = {id, n:k}; if(I.dur) inv[i].d = d || I.dur; else if(I.shelf && d != null && d < .999) inv[i].d = d; n -= k; }
     return n;
   }
   const invFind = id => wd.inv.findIndex(s=>s && s.id===id);
@@ -5536,8 +5604,8 @@
   function wdAttack(){ if(!wdLive() || wd.book) return; if(wd.build){ buildTake(); return; } const p = wd.p; if(busy()) return; { const bi = wd.inv[wd.sel]; if(bi && ITEMS[bi.id].boom){ boomThrow(wd.sel); return; } } if(p.swingT > 0){ p.queued = true; return; } wdSwing(); }
   /* The Mole's Burrow (Space or A, in place of the roll): a burst under the ground, about three and a half seconds. It passes under walls of any thickness: a wall (or a whole
      block of them), a fence post, a boulder, a cave partition, with no limit on how much solid it crosses in a row. The 3.6 s clock runs only on open ground: time under solid ground
-     does not count against it, and has its own budget for each stretch (BUR.under, 12 s, about 860 units), so a wall, a hill or a whole landmass can be crossed. It stays at the depth it started at: it digs under ground that rises above that (a hill, a ledge, a landmass: any height), but it cannot come up
-     on higher ground, and lower ground (a drop, a pit, a dug hole) stops it, as do stairs and raised floors at ground level. It never removes or changes the ground. It must come up on open ground: if the end is under something or
+     does not count against it, and has its own budget for each stretch (BUR.under, 12 s, about 860 units), so a wall or a whole block of them can be crossed. It keeps the height it started at: ramps carry it up and down, but a cliff, a drop, a pit or a dug hole stops it outright (terrain is a wall), as do stairs and raised floors at ground level.
+     The skill Burrow Anywhere (mo_any, needs Deep Stillness and Lode Maker) lifts that: the tunnel follows the ground at any height, under cliffs and down drops, and the Mole comes up wherever the ground is open. It never removes or changes the ground. It must come up on open ground: if the end is under something or
      out of bounds even after that, the Mole is put back where it started. Under the ground nothing can hit the Mole or notice it (animals lose the trail), but it cannot act, and soaked
      ground (rain, banks, ponds) wets it. */
   const BUR = {ms:3600, spd:72, cd:7000, under:12000, step:2};
@@ -5546,8 +5614,9 @@
     /* 0 open ground, 1 inside something thin enough to pass, 2 blocked outright */
     const q = clampWorld(x, y, o.r); if(Math.abs(q.x - x) > .01 || Math.abs(q.y - y) > .01) return 2;
     const t = {x, y, z:0, h:12, r:o.r, air:false}; if(!onMain(t)) return 2;
-    if(wd.tr){ const dh = trH(x, y) - (o.burH != null ? o.burH : trH(ox, oy));
-      if(dh > 2.5) return 1; /* a ledge or cliff higher than the tunnel (a plateau, a whole landmass): the tunnel runs under it, solid but passable. Slopes never get here: the tunnel follows them (burStep), up and down, and lower ground (a drop) is followed down too */
+    if(wd.tr){ const g = trH(x, y), dh = g - (o.burH != null ? o.burH : trH(ox, oy));
+      if(skHas('mo_any')){ if(trSup(x, y, o.r) - g > 2.5) return 1; } /* Burrow Anywhere: the tunnel goes up and down any height (burStep follows the ground); within a body's width of a cliff face it is still solid, so it comes up clear of the edge */
+      else if(Math.abs(dh) > 2.5 || trSup(x, y, o.r) - (o.burH != null ? o.burH : trH(ox, oy)) > 2.5) return 2; /* terrain is a wall: the tunnel keeps its own level, and the whole body (not just its centre) must stay clear of higher ground, or coming up at a cliff's foot would push the Mole onto the top. Ramps rise and fall gently (burStep follows them), so they work; a cliff, a drop or a hole stops the Mole outright */
       if(trWetHere(t)) return 2; }
     if(surfaceAt(x, y, 0) > .01) return 2; /* a stair or a raised piece at ground level would lift it */
     { const sb = wd.builds.get(gkey(Math.floor(x/GRID), Math.floor(y/GRID), 0)); if(sb && sb.k==='stairs') return 2; }
@@ -5578,7 +5647,7 @@
     p.swingT = 0; p.queued = false; p.combo = 0; p.comboT = 0; p.fishT = 0; burFx(p, 9, true); thud(.22, .12, 200);
   }
   function burStep(p, I, dt, s){ /* one step of a burrow: the stick steers, with no stick it keeps its heading */
-    const ml = hyp(I.mx, I.my); if(ml > .2){ p.dx = I.mx/ml; p.dy = I.my/ml; p.fx = p.dx; p.fy = p.dy; }
+    const ml = hyp(I.mx, I.my), any = skHas('mo_any'); if(ml > .2){ p.dx = I.mx/ml; p.dy = I.my/ml; p.fx = p.dx; p.fy = p.dy; }
     const still = ml <= .2 && !p.burOut && skHas('mo_still'); /* Deep Stillness: with no stick the Mole stays put, and the clock waits */
     if(still){ /* nothing runs down */ }
     else if(burTest(p, p.x, p.y, p.x, p.y) === 1) p.burX += dt; else { p.bur -= dt; p.burX = 0; } /* the clock runs on open ground only; each stretch under solid ground (a wall, a hill, a landmass) has its own budget, BUR.under, which starts afresh whenever the Mole is on open ground */
@@ -5587,7 +5656,7 @@
     for(let i = 0; i < n; i++){
       let ok = false;
       for(const [mx, my] of [[sx, sy], [sx, 0], [0, sy]]){ if(!mx && !my) continue; const x = p.x + mx, y = p.y + my, r = burTest(p, x, y, p.x, p.y);
-        if(r === 2) continue; p.x = x; p.y = y; ok = true; if(wd.tr && p.burH != null){ const g = trH(x, y); if(g - p.burH <= 2.5) p.burH = g; } /* the tunnel follows a slope up or down */ break; }
+        if(r === 2) continue; p.x = x; p.y = y; ok = true; if(wd.tr && p.burH != null){ const g = trH(x, y); if(any || Math.abs(g - p.burH) <= 2.5) p.burH = g; } /* the tunnel follows a ramp up or down (with Burrow Anywhere, any change of height) */ break; }
       if(!ok) break; }
     for(const q of p.burTr) q.a -= dt/900; p.burTr = p.burTr.filter(q => q.a > 0);
     { const L = p.burTr[p.burTr.length - 1]; if(!L || hyp(L.x - p.x, L.y - p.y) > 5) p.burTr.push({x:p.x, y:p.y, a:1}); if(p.burTr.length > 30) p.burTr.shift(); }
@@ -6361,9 +6430,9 @@
   const pHp = c => WD.hp + (HEAVY[c] ? HEAVY[c].hp : 0);
   /* ---- every animal has its own bag (partner animals plan): the bag and its pack, the hotbar choice, worn armour and helmet, the accessory, the clothing layers and the tool slots. The partner's lives in pr.kit and is saved with it; a swap trades them with yours (KIT_KEYS). The partner uses ITS OWN bag for its weapon, hatchet, pickaxe and food, and wears the armour and helmet in it. ---- */
   const KIT_KEYS = ['inv', 'sel', 'hand', 'armor', 'pack', 'helmet', 'accessory', 'base', 'mid', 'ag'];
-  function pkSlot(s){ if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d, I.dur) : Math.floor(finite(s.d, I.dur)), fl ? .001 : 1, I.dur); return o; }
+  function pkSlot(s){ if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d, I.dur) : Math.floor(finite(s.d, I.dur)), fl ? .001 : 1, I.dur); else if(I.shelf && s.d != null){ const f = clamp(finite(s.d, 1), 0.001, 1); if(f < .999) o.d = Math.round(f*1000)/1000; } return o; }
   function pkNew(sv){ sv = sv && typeof sv==='object' ? sv : {};
-    const pk0 = pkSlot(sv.pack), pack = pk0 && ITEMS[pk0.id].pack ? pk0 : null, NS = WD.slots + packSlots(pack);
+    const pk0 = pkSlot(sv.pack), pack = pk0 && ITEMS[pk0.id].pack ? pk0 : null, NS = invLen(sv.inv, pack);
     const inv = Array.isArray(sv.inv) ? sv.inv.slice(0, NS).map(pkSlot) : []; while(inv.length < NS) inv.push(null);
     const ar = pkSlot(sv.armor), he = pkSlot(sv.helmet);
     return {inv, sel:0, hand:null, pack, armor:ar && isArm(ITEMS[ar.id]) ? ar : null, helmet:he && isHelm(ITEMS[he.id]) ? he : null, accessory:ITEMS[sv.accessory] && ITEMS[sv.accessory].accessory ? sv.accessory : null,
@@ -7812,7 +7881,7 @@
     if(nodeShk.size) for(const n of nodeShk){ if(n.shk > 0) n.shk -= dt; if(!(n.shk > 0)) nodeShk.delete(n); } /* only nodes that were just hit (was every node, every frame) */
     const act = activeIdx();
     for(const i of act) withPlayer(i, ()=>wdPlayerStep(dt, Is[i] || {mx:0, my:0}, s));
-    withPlayer(0, ()=>wdMachines()); wdFoes(dt, s); wdPets(dt, s); wdPartners(dt, s); mineStep(dt, s); wdDefenses(dt); wdRaidCheck(); wdBloodStep(s); wdWorldSim(s);
+    withPlayer(0, ()=>wdMachines()); wdFoes(dt, s); wdPets(dt, s); wdPartners(dt, s); mineStep(dt, s); wdDefenses(dt); wdRaidCheck(); wdBloodStep(s); wdWorldSim(s); withPlayer(0, spoilStep);
     for(const i of act) withPlayer(i, ()=>{ if(!(wd.dead > 0)) wdPickups(dt); });
     wd.saveT -= s; if(wd.saveT <= 0) wdSave();
   }
@@ -7903,7 +7972,7 @@
     // the belly (Don't Starve: empty means you lose health until you eat)
     p.hunger = wd.creative ? WD.hunger : snailCalm(p) ? p.hunger : Math.max(0, p.hunger - WD.hungerRate*s*mkDrain()*(p.hazy > 0 ? .65 : 1)*(wd.accessory ? ITEMS[wd.accessory].hunger || 1 : 1)*(clsHas('bear') ? (skHas('br1') ? .55 : .7) : 1));
     if(p.hunger <= 0){ wd.starveT += s; if(wd.starveT >= WD.starveEvery){ wd.starveT = 0; p.inv = 0; wdHurtP(1, 'Starved'); } } else wd.starveT = 0;
-    wdThirstTick(s); skTick();
+    wdThirstTick(s); skTick(); invFit();
     if(!wd.clsAsked && wd.cls.length < 1 && !wd.book && !wd.build && bagOk() && !/[?&]wdtest\b/.test(location.search)){ p.clsT = (p.clsT || 0) + s; if(p.clsT > 1.5){ wd.clsAsked = true; wd.palAsked = true; bagOpen('class'); } } /* a first visit opens the class menu */
     if(!wd.partner && !wd.palAsked && wd.clsAsked && !wd.book && !wd.build && bagOk() && (!/[?&]wdtest\b/.test(location.search) || window.__wdAsk)){ p.palT = (p.palT || 0) + s; if(p.palT > 1.5){ wd.palAsked = true; bagOpen('class'); } } /* an old save has no partner: it opens the animals tab once, to pick one (and your own animal, if you never did) */
     // the dark (Don't Starve's Charlie)
@@ -7924,6 +7993,42 @@
     bloodkey:{name:'Crimson key',stack:1,desc:'A key of dark red iron that is never quite cold. It opens the gate to the Sanguine Forest, at the far east end of the Enchanted Forest.'},
     vampfang:{name:'Vampire fang',desc:'A long, yellowed fang, sharp enough to scratch steel.'},
     bloodvial:{name:'Blood vial',heal:6,medical:true,desc:'A stoppered vial of thick dark blood. Drunk, it mends 6 HP.'}});
+  /* ---- spoilage: every food and ingredient has a shelf life in days. A stack carries how fresh it is (d, 1 = just made, 0 = gone); it falls while the food sits in a bag, on the ground or in a chest (half as fast), a Raccoon's Cool Larder skills slow it, and a stack that runs out becomes Spoiled food. Cooking, drying and curing start a new, fresh item. ---- */
+  const SHELF = {meat:3, fish:3, wmeat:3, wfish:3, grub:3, berry:4, wberry:4, herb:6, wherb:6, carrot:8, wcarrot:8, mushroom:4, wmushroom:4, glowcap:5, moonpetal:4, cactusflesh:5, garlic:12, wheat:24,
+    cmeat:6, cfish:6, kabob:6, meatballs:6, fishsticks:6, roastcarrot:8, cmushroom:6, rberry:6, cglowcap:7, roastcactus:6, moonbrew:6, bread:9, mushroomsoup:6, broth:6, clearbroth:8, stew:7, veggiestew:7, fishchowder:6, roastdinner:7, fishpie:7, mushpie:8, berrytart:8, feast:7, hominy:14,
+    smokedmeat:40, berryjam:50, lutefisk:50, trailmix:40, cordial:40, tonic:40}; /* days; smoked, jammed, cured and distilled food keeps for weeks */
+  ITEMS.rotten = {name:'Spoiled food', stack:99, desc:'Slimy, grey and foul. Nobody will eat this: drop it. Cook or smoke food, or keep it in a chest, before it comes to this.'};
+  for(const id of Object.keys(ITEMS)) if(id !== 'rotten' && (SHELF[id] || (ITEMS[id].food && !ITEMS[id].medical))) ITEMS[id].shelf = SHELF[id] || 8;
+  const SP = {w:null, last:0};
+  const frOf = s => s.d == null ? 1 : s.d;
+  function frMix(t, s, k){ /* t takes k more from s: the stack ends up the average of both */
+    if(!t || !ITEMS[t.id] || !ITEMS[t.id].shelf) return; const a = frOf(t), b = s && s.d != null ? s.d : 1, v = (a*t.n + b*k)/(t.n + k); if(v >= .999) delete t.d; else t.d = v; }
+  const frWord = v => v >= .75 ? 'Fresh' : v >= .5 ? 'Good' : v >= .25 ? 'Turning' : 'Going off';
+  const frCol = v => v >= .75 ? '#8fd06b' : v >= .5 ? '#d3cf5a' : v >= .25 ? '#e39a3a' : '#d9503f';
+  const spoilMult = () => 1 + .5*rcT('sp'); /* Cool Larder: 1.5, 2 or 2.5 times the shelf life */
+  const coolStore = b => !!b && b.k !== 'cart'; /* chests and the den's bins keep food cool */
+  const frHead = s => frWord(frOf(s)) + ' ' + Math.round(frOf(s)*100) + '%'; /* "Turning 45%" */
+  function frLeft(s, cool){ const I = ITEMS[s.id], m = spoilMult()*(cool ? 2 : 1), dl = frOf(s)*I.shelf*m; /* "about 6.1 days left" at the speed it is spoiling now */
+    return 'about ' + (dl >= 10 ? Math.round(dl) : dl.toFixed(1)) + (Math.abs(dl - 1) < .05 ? ' day' : ' days') + ' left' + (cool ? ' · kept cool' : '') + (spoilMult() > 1 ? ' · larder skills +' + Math.round((spoilMult() - 1)*100) + '%' : ''); }
+  const frInfo = (s, cool) => frHead(s) + ' · ' + frLeft(s, cool);
+  function spoilOne(s, f){ if(!s) return s; const I = ITEMS[s.id]; if(!I || !I.shelf) return s; const v = frOf(s) - f/I.shelf; if(v <= 0) return {id:'rotten', n:s.n}; s.d = v; return s; }
+  function spoilArr(a, f){ let lost = 0; if(!Array.isArray(a)) return 0; for(let i = 0; i < a.length; i++){ const s = a[i]; if(!s) continue; const r = spoilOne(s, f); if(r !== s){ a[i] = r; lost += r.n; } } return lost; }
+  function spoilStep(){ /* every couple of game-seconds: age the food in every bag, on the ground and in storage */
+    if(wd.creative){ SP.w = wd; SP.last = wd.t; return; }
+    if(SP.w !== wd || SP.last > wd.t){ SP.w = wd; SP.last = wd.t; return; }
+    let dtw = wd.t - SP.last; if(dtw < 2) return; SP.last = wd.t; dtw = Math.min(dtw, WD.day*1.2);
+    const f = dtw/WD.day/spoilMult(), fc = f*.5; let mine = 0, other = 0;
+    const bags = new Set(), hands = new Set(); bags.add(wd.inv); if(wd.hand) hands.add(wd);
+    if(wd.crew) for(const c of wd.crew) if(c && c.kit){ if(c.kit.inv) bags.add(c.kit.inv); if(c.kit.hand) hands.add(c.kit); }
+    for(const pr of [wd.partner, ...(wd.reserve || [])]) if(pr && pr.kit){ if(pr.kit.inv) bags.add(pr.kit.inv); if(pr.kit.hand) hands.add(pr.kit); }
+    for(const a of bags) mine += spoilArr(a, f);
+    for(const h of hands){ const r = spoilOne(h.hand, f); if(r !== h.hand){ h.hand = r; mine += r.n; } }
+    for(const d of wd.drops){ if(d.bag){ other += spoilArr(d.bag, f); continue; } const I = ITEMS[d.id]; if(!I || !I.shelf) continue; const v = (d.d == null ? 1 : d.d) - f/I.shelf; if(v <= 0){ d.id = 'rotten'; delete d.d; } else d.d = v; }
+    for(const kk of ['chest', 'supplychest']) for(const b of kindOf(kk)) other += spoilArr(b.slots, fc);
+    for(const st of denStores()) other += spoilArr(st.slots, fc);
+    if(wd.cu && Array.isArray(wd.cu.carts)) for(const c of wd.cu.carts) other += spoilArr(c.slots, f);
+    if(mine > 0){ wdNote(mine > 1 ? 'Some of your food has spoiled' : 'A piece of food has spoiled'); beep(150, 0.18, 'sawtooth', 0.03); hudLast = ''; if(wd.bag && wd.tab==='bag') bagRender(); }
+    else if(other > 0 && wd.bag && wd.tab==='bag') bagRender(); }
   const vgLocked = () => !!(WD.vgen && wd && wd.vg && !wd.vg.open);
   const vgCaged = () => !!(WD.vgen && wd && wd.vg && !wd.vg.open && wd.vg.cage);
   const vgCageNear = r => { const q = vgCaged() ? wd.vg.cage : null, p = wd.p; if(!q || !p || !onMain(p) || !inMead(p) || p.z >= 12) return null; return hyp(q.x - p.x, q.y - p.y) < (r || 52) ? q : null; };
@@ -8254,6 +8359,7 @@
     if(cuIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
     if(shopIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
     if(sgIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
+    if(id==='rotten'){ blob(()=>{ c.moveTo(4, 16); c.bezierCurveTo(3, 9, 9, 6, 13, 8); c.bezierCurveTo(19, 7, 22, 12, 20, 17); c.bezierCurveTo(18, 21, 7, 21, 4, 16); c.closePath(); }, '#6f7a4a', 1.8); blob(()=>{ c.ellipse(10, 13, 2.4, 1.8, .3, 0, 6.2832); }, '#4e5a32', 1); blob(()=>{ c.ellipse(16, 15, 1.9, 1.5, -.3, 0, 6.2832); }, '#8d8f55', 1); line([[8, 5], [7, 3], [9, 1.5]], '#8fb85a', 1); line([[14, 5], [15, 3], [13, 1.5]], '#8fb85a', 1); c.fillStyle = '#120c09'; for(const [x, y] of [[19, 5], [21, 8]]){ c.beginPath(); c.arc(x, y, .9, 0, 6.2832); c.fill(); } return iconCache[id] = cv; }
     if(id==='grub'){ blob(()=>{ c.ellipse(15.5, 15.5, 4.8, 3.9, 0, 0, Math.PI*2); }, '#e9dca8', 1.8); blob(()=>{ c.ellipse(10.6, 12.6, 4.6, 3.8, 0.5, 0, Math.PI*2); }, '#f1e6b8', 1.8); blob(()=>{ c.ellipse(6.4, 8.8, 4.2, 3.5, 0.9, 0, Math.PI*2); }, '#f5ecc4', 1.8); blob(()=>{ c.arc(4, 6, 3.1, 0, Math.PI*2); }, '#9a6a3a', 1.8); line([[12.5, 11], [12.9, 14.6]], 'rgba(120,90,50,.5)', .8); line([[15.5, 12.4], [15.8, 15.8]], 'rgba(120,90,50,.5)', .8); hi(8, 7.5, 1.6, 1); iconCache[id] = cv; return cv; }
     if(KDISH[id]){ blob(()=>{ c.ellipse(12, 14, 10, 6.5, 0, 0, Math.PI*2); }, '#e8e4da', 1.8); blob(()=>{ c.ellipse(12, 13, 7.2, 4.4, 0, 0, Math.PI*2); }, KDISH[id][3], 1.2); for(const [x, y] of [[9, 12], [13, 14], [15, 11.5]]){ c.fillStyle = 'rgba(255,245,220,.4)'; c.beginPath(); c.arc(x, y, 1.3, 0, Math.PI*2); c.fill(); } line([[9, 7], [10, 4]], 'rgba(255,255,255,.7)', .9); line([[14, 7], [15, 4]], 'rgba(255,255,255,.7)', .9); hi(8, 11, 2, 1.1); return iconCache[id] = cv; }
     if(WASH_BASE[id]){ c.drawImage(itemIcon(WASH_BASE[id]), 0, 0, S, S); c.fillStyle = 'rgba(150,205,240,.92)'; for(const [x, y, r] of [[18.5, 5, 1.7], [21, 9.5, 1.3], [15.5, 8, 1.1]]){ c.beginPath(); c.moveTo(x, y - r*1.7); c.quadraticCurveTo(x + r*1.3, y, x, y + r); c.quadraticCurveTo(x - r*1.3, y, x, y - r*1.7); c.fill(); } return iconCache[id] = cv; }
@@ -10309,7 +10415,7 @@
     $('wdOverlay').classList.toggle('wd-booking', !!wd.book); /* the book takes the whole screen: the status text steps aside */
     const p = wd.p, hint = hintFor(!!activePad());
     const region=(wd.cur>0 || wd.split ? 'P'+(wd.cur+1)+' · ' : '')+regionOf(p);
-    const key = [region,Math.ceil(p.hp), Math.ceil(p.hunger), Math.ceil(p.thirst), Math.floor(wd.t/WD.day), cuSeasonLabel(), wd.raidDone, wd.rainOn ? 1 : 0, wd.rat ? ratTxt() : '-', wd.partner ? Math.ceil(wd.partner.hp) + ':' + (wd.partner.down > 0 ? 1 : 0) + wd.partner.req + ':' + Math.ceil(wd.partner.belly) + ':' + Math.ceil(wd.partner.thirst) : '-', wd.sel, wd.inv.map(s=>s ? s.id + s.n + (s.d || '') : '').join(','), hint].join('|');
+    const key = [region,Math.ceil(p.hp), Math.ceil(p.hunger), Math.ceil(p.thirst), Math.floor(wd.t/WD.day), cuSeasonLabel(), wd.raidDone, wd.rainOn ? 1 : 0, wd.rat ? ratTxt() : '-', wd.partner ? Math.ceil(wd.partner.hp) + ':' + (wd.partner.down > 0 ? 1 : 0) + wd.partner.req + ':' + Math.ceil(wd.partner.belly) + ':' + Math.ceil(wd.partner.thirst) : '-', wd.sel, wd.inv.map(s=>s ? s.id + s.n + (s.d ? (ITEMS[s.id].shelf ? Math.round(s.d*40) : s.d) : '') : '').join(','), hint].join('|');
     if(key!==hudLast){ hudLast = key; $('wdRegion').textContent=region; $('wdRegionP1').textContent=region;
       $('wdHp').innerHTML = Math.max(0, Math.ceil(p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small>`;
       $('wdBelly').innerHTML = Math.ceil(p.hunger) + `<small style="font-size:.5em;color:var(--bone-dim)">/${WD.hunger}</small>`;
@@ -10329,7 +10435,7 @@
   }
   function hotbarInfo(i){ /* the same facts hotbarRender shows for Player 1, worked out for player i */
     return withPlayer(i, ()=>{ const item = wd.inv[wd.sel], I = item && ITEMS[item.id], ready = wdLive() && !wd.p.action && !wd.build, fire = nearFire(WD.fireNear), farm = nearFarm();
-      return {label:item ? I.name + (item.n > 1 ? ' ×' + item.n : '') + (I.dur ? ' · ' + item.d + ' uses' : '') : 'Empty slot',
+      return {label:item ? I.name + (item.n > 1 ? ' ×' + item.n : '') + (I.dur ? ' · ' + item.d + ' uses' : '') + (I.shelf ? ' · ' + frWord(frOf(item)).toLowerCase() : '') : 'Empty slot',
         use:'RT · ' + hotbarLabel(I), useOff:!(ready && I && (I.seed && farm && !farm.crop || I.water && farm?.crop && !farm.watered && wd.t < farm.ready || I.cu || I.layer || I.drink || I.armor || I.accessory || I.helmet || I.rat || I.pack || I.dig || I.fill || I.build || I.light || I.repel || I.food || I.medical && (wd.p.hp < wd.p.maxHp || dzNeedsSalve()) || I.fuel && fire && fire.fuel < WD.fireMax)),
         cookOff:!(ready && I && I.cook && nearFire(WD.fireNear, true)), dropOff:!(ready && item), bagOff:!wdLive(), rat:wd.rat ? ratTxt() : null, ratLow:!!wd.rat && ratLowQ(), pal:wd.partner ? (wd.partner.down > 0 ? 'down' : wd.partner.sleep ? 'asleep \u00b7 ' + sleepDaysLeft(wd.t) + ' d' : Math.ceil(wd.partner.hp) + ' · ' + PREQ_INFO[wd.partner.req].short) : null, palName:wd.partner ? palName(wd.partner).toUpperCase() : '', palLow:!!wd.partner && (wd.partner.down > 0 || wd.partner.hp < wd.partner.maxHp*.35), palN:wd.partner ? Math.ceil(wd.partner.belly) + ' · ' + Math.ceil(wd.partner.thirst) + palSickText(wd.partner) : null, palNLow:!!wd.partner && (wd.partner.belly < 8 || wd.partner.thirst < 8)}; });
   }
@@ -10358,7 +10464,7 @@
     const parts = vps.filter(vp=>vp.i > 0 && !ctxGet(vp.i, 'bag') && !ctxGet(vp.i, 'book')).map(vp=>{ const i = vp.i, q = bodyOf(i), inv = ctxGet(i, 'inv'), sel = ctxGet(i, 'sel'), hb = hotbarInfo(i), n = Math.floor(wd.t/WD.day) + 1;
       return {vp, i, hp:Math.max(0, Math.ceil(q.hp)), maxHp:q.maxHp, belly:Math.ceil(q.hunger), thirst:Math.ceil(q.thirst == null ? WD.thirst : q.thirst), dead:ctxGet(i, 'dead') > 0, meter:meterOf(i), region:'P' + (i + 1) + ' · ' + regionOf(q), hint:withPlayer(i, ()=>hintFor(true)), sel, hb,
         day:`Day <b>${n}</b> · ${cuSeasonLabel()}`,
-        slots:inv.map(s=>s ? s.id + s.n + (s.d || '') : '').join(','), inv}; });
+        slots:inv.map(s=>s ? s.id + s.n + (s.d ? (ITEMS[s.id].shelf ? Math.round(s.d*40) : s.d) : '') : '').join(','), inv}; });
     const key = parts.map(o=>{ const c = o.vp.cell, hd = o.vp.hud, hb = o.hb; return [c.x, c.y, c.w, c.h, hd.fS, hd.fB, hd.fH, hd.sw, hd.bh, hd.bx, hd.bw, o.i, o.hp, o.maxHp, o.belly, o.thirst, hb.rat, hb.pal, hb.palN, meterKey(o.meter), o.dead ? 1 : 0, o.region, o.hint, o.sel, o.slots, hb.label, hb.use, hb.useOff ? 1 : 0, hb.cookOff ? 1 : 0, hb.dropOff ? 1 : 0, hb.bagOff ? 1 : 0, o.day].join('|'); }).join('||');
     if(key===root._key) return; root._key = key;
     root.innerHTML = parts.map(o=>{ const c = o.vp.cell, hd = o.vp.hud, col = PCOL[o.i], hb = o.hb, small = t=>`<small style="font-size:.5em;color:var(--bone-dim)">${t}</small>`, btn = (t, off)=>`<button${off ? ' disabled' : ''}>${t}</button>`;
@@ -10377,7 +10483,8 @@
     dialCopy();
   }
   function slotHtml(s){ if(!s) return ''; const I = ITEMS[s.id];
-    return `<img alt="${I.name}" src="${iconSrc(s.id)}">` + (I.dur ? `<span class="wd-dur"><u style="width:${Math.round(100*s.d/I.dur)}%"></u></span>` : s.n > 1 ? `<i>${s.n}</i>` : ''); }
+    const fr = I.shelf ? `<span class="wd-fr"><u style="width:${Math.max(4, Math.round(100*frOf(s)))}%;background:${frCol(frOf(s))}"></u></span>` : '';
+    return `<img alt="${I.name}" src="${iconSrc(s.id)}">` + fr + (I.dur ? `<span class="wd-dur"><u style="width:${Math.round(100*s.d/I.dur)}%"></u></span>` : s.n > 1 ? `<i>${s.n}</i>` : ''); }
   function dialCopy(){ /* every view shows the same clock: copy the live dial into theirs */
     const cv = $('wdDial'); if(!cv || !cv.width) return;
     for(const d of document.querySelectorAll('#wdVps .wd-dial2')){ if(d.width!==cv.width){ d.width = cv.width; d.height = cv.height; } const g = d.getContext('2d'); g.clearRect(0, 0, d.width, d.height); g.drawImage(cv, 0, 0); }
@@ -10441,7 +10548,7 @@
   function hotbarRender(){
     const item=wd.inv[wd.sel],I=item && ITEMS[item.id],pad=!!activePad(),ready=wdLive() && !wd.p.action && !wd.build;
     { const st=$('wdHotbar').style, d=wd.bag || wd.pauseMenu || wd.dead>0 ? 'none' : 'flex'; if(st.display!==d) st.display=d; }
-    hbSet('wdHotbarItem','textContent',item ? ITEMS[item.id].name+(item.n>1 ? ' ×'+item.n : '')+(I.dur ? ' · '+item.d+' uses' : '') : 'Empty slot');
+    hbSet('wdHotbarItem','textContent',item ? ITEMS[item.id].name+(item.n>1 ? ' ×'+item.n : '')+(I.dur ? ' · '+item.d+' uses' : '')+(I.shelf ? ' · '+frWord(frOf(item)).toLowerCase() : '') : 'Empty slot');
     const fire=nearFire(WD.fireNear), farm=nearFarm();
     hbSet('wdHotbarUse','textContent',(pad ? 'RT · ' : touchOn() ? '' : 'Q · ')+hotbarLabel(I));
     hbSet('wdHotbarUse','disabled',!(ready && I && (I.seed && farm && !farm.crop || I.water && farm?.crop && !farm.watered && wd.t<farm.ready || I.cu || I.layer || I.drink || I.armor || I.accessory || I.helmet || I.rat || I.pack || I.dig || I.fill || I.build || I.light || I.repel || I.food || I.medical && (wd.p.hp < wd.p.maxHp || dzNeedsSalve()) || I.fuel && fire && fire.fuel<WD.fireMax)));
@@ -10462,9 +10569,9 @@
   function bagSelect(side,i){wd.bagSide=side;if(side==='chest')wd.chestSel=i;else wd.sel=i;}
   function bagSlot(side,i){bagSelect(side,i);if(wd.hand)bagPlaceHand(false);else bagRender();}
   function bagReturnHand(){ if(!wd || !wd.hand)return;const h=wd.hand;const left=invAdd(h.id,h.n,h.d);if(left)dropItem(h.id,left,wd.p.x,wd.p.y,wd.p,true,h.d);wd.hand=null; }
-  function bagTakeOne(){if(!wd || !wd.bag || wd.tab!=='bag')return;const src=bagSource(),i=bagIndex(),s=src[i];if(!s)return;const h=wd.hand,limit=ITEMS[s.id].stack || WD.stack;if(h && (h.id!==s.id || ITEMS[s.id].dur || h.n>=limit))return;if(h)h.n++;else wd.hand=Object.assign({},s,{n:1});if(--s.n===0)src[i]=null;wdSave();bagRender();bagRefreshOthers();}
-  function bagPlaceHand(one){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.hand)return;const dst=bagSource(),i=bagIndex(),h=wd.hand,s=dst[i],limit=ITEMS[h.id].stack || WD.stack;if(s && (s.id!==h.id || ITEMS[h.id].dur))return;const n=Math.min(one ? 1 : h.n,limit-(s ? s.n : 0));if(!n)return;if(s)s.n+=n;else dst[i]=Object.assign({},h,{n});h.n-=n;if(!h.n)wd.hand=null;wdSave();bagRender();bagRefreshOthers();}
-  function storageAdd(dst,s,n){const limit=ITEMS[s.id].stack || WD.stack;if(limit>1)for(const t of dst)if(t && t.id===s.id){const k=Math.min(n,limit-t.n);t.n+=k;n-=k;if(!n)return 0;}for(let i=0;i<dst.length && n;i++)if(!dst[i]){const k=Math.min(n,limit);dst[i]=Object.assign({},s,{n:k});n-=k;}return n;}
+  function bagTakeOne(){if(!wd || !wd.bag || wd.tab!=='bag')return;const src=bagSource(),i=bagIndex(),s=src[i];if(!s)return;const h=wd.hand,limit=ITEMS[s.id].stack || WD.stack;if(h && (h.id!==s.id || ITEMS[s.id].dur || h.n>=limit))return;if(h){ frMix(h, s, 1); h.n++; }else wd.hand=Object.assign({},s,{n:1});if(--s.n===0)src[i]=null;wdSave();bagRender();bagRefreshOthers();}
+  function bagPlaceHand(one){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.hand)return;const dst=bagSource(),i=bagIndex(),h=wd.hand,s=dst[i],limit=ITEMS[h.id].stack || WD.stack;if(s && (s.id!==h.id || ITEMS[h.id].dur))return;const n=Math.min(one ? 1 : h.n,limit-(s ? s.n : 0));if(!n)return;if(s){ frMix(s, h, n); s.n+=n; }else dst[i]=Object.assign({},h,{n});h.n-=n;if(!h.n)wd.hand=null;wdSave();bagRender();bagRefreshOthers();}
+  function storageAdd(dst,s,n){const limit=ITEMS[s.id].stack || WD.stack;if(limit>1)for(const t of dst)if(t && t.id===s.id){const k=Math.min(n,limit-t.n);frMix(t,s,k);t.n+=k;n-=k;if(!n)return 0;}for(let i=0;i<dst.length && n;i++)if(!dst[i]){const k=Math.min(n,limit);dst[i]=Object.assign({},s,{n:k});n-=k;}return n;}
   function bagTransfer(one){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.chest || wd.hand)return;const src=bagSource(),i=bagIndex(),s=src[i];if(!s)return;const dst=wd.bagSide==='chest' ? wd.inv : wd.chest.slots,n=one ? 1 : s.n,left=storageAdd(dst,s,n);s.n-=n-left;if(!s.n)src[i]=null;wdSave();bagRender();bagRefreshOthers();}
   function bagQuickStack(){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.chest || wd.hand)return;const dst=wd.chest.slots,ids=new Set(dst.filter(Boolean).map(s=>s.id));for(let i=0;i<wd.inv.length;i++){const s=wd.inv[i];if(s && ids.has(s.id)){const left=storageAdd(dst,s,s.n);s.n=left;if(!left)wd.inv[i]=null;}}wdSave();bagRender();bagRefreshOthers();}
   function bagStorageRender(){
@@ -10522,7 +10629,7 @@
     if(!wd || wd.dead>0 || wd.menu || wd.hand || wd.p.action) return false;
     const old = wd.pack, inv = wd.inv.slice();
     if(from != null) inv[from] = null;
-    const N = WD.slots + packSlots(np), spill = inv.splice(N); while(inv.length < N) inv.push(null);
+    const N = WD.slots + packSlots(np) + Math.max(0, wd.inv.length - WD.slots - packSlots(old)), spill = inv.splice(N); while(inv.length < N) inv.push(null);
     const out = spill.filter(Boolean);
     if(old){ if(from != null && from < N && !inv[from]) inv[from] = {...old}; else out.push({...old}); }
     for(const q of out){ const j = inv.indexOf(null); if(j < 0){ const m = spill.some(Boolean) ? 'Empty the pack\'s extra slots into the main bag first.' : 'Free a bag slot first.'; $('wdAccessoryPage').dataset.msg = m; wdNote(m); return false; } inv[j] = q; }
@@ -10662,12 +10769,12 @@
     if(I.weapon || I.tool || I.dig || I.water || I.rune || CHEAT_TOOLISH.has(id)) return 'gear';
     if(CHEAT_GEAR_FLAGS.some(k=>I[k])) return 'oth';
     return 'mat'; }
-  function bagOpen(tab,chest){ craftArm = -1; if(wd && wd.book) cuBookClose(); if(!bagOk()) return; wdCancelAction(); if(wd.build) buildEnd(); wd.chest=chest || ((!tab || tab==='bag') && (nearChest() || cuNearCart(48))) || null; /* a chest within reach sits right under the bag: press down to reach it */ wd.bagSide='bag'; wd.chestSel=0; wd.bag = true; syncPaused(); wd.tab = tab==='accessory' ? 'bag' : tab || 'bag'; bagPlace(undefined, false); $('wdBag').classList.add('on'); padSyncSeat(); bagRender(true); if(tab==='accessory')equipmentFocus(); hudLast = ''; sfxBag(true); }
+  function bagOpen(tab,chest){ if(clsLocked() && tab!=='class') return; craftArm = -1; if(wd && wd.book) cuBookClose(); if(!bagOk()) return; wdCancelAction(); if(wd.build) buildEnd(); wd.chest=chest || ((!tab || tab==='bag') && (nearChest() || cuNearCart(48))) || null; /* a chest within reach sits right under the bag: press down to reach it */ wd.bagSide='bag'; wd.chestSel=0; wd.bag = true; syncPaused(); wd.tab = tab==='accessory' ? 'bag' : tab || 'bag'; bagPlace(undefined, false); $('wdBag').classList.add('on'); padSyncSeat(); bagRender(true); if(tab==='accessory')equipmentFocus(); hudLast = ''; sfxBag(true); }
   function bagClose(){ if(wd){ bagReturnHand(); if(wd.sel >= WD.slots) wd.sel = 0; wd.chest=null; wd.bagSide='bag'; wdSave(); } $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; syncPaused(); wdIn.resync = true; } hudLast = ''; sfxBag(false); }
   function padSyncSeat(){ const g = seatPad(wd.cur); if(g){ for(const k of [0,1,2,3,4,5,6,7,8,9]) padHeld[k] = !!(padBtn(g, k) && padBtn(g, k).pressed); padHeld.dir = true; } padNext = 0; } /* the button that opened the bag must not also press something in it */
   /* another player's view of the same chest should not go stale */
   function bagRefreshOthers(){ if(!wd || !wd.crew || !wd.chest) return; const ch = wd.chest, cur = wd.cur; for(const i of activeIdx()){ if(i===cur || !ctxGet(i, 'bag') || ctxGet(i, 'chest')!==ch) continue; withPlayer(i, ()=>bagRender()); } }
-  function bagTab(tab){ if(!wd || !wd.bag) return; if(tab==='accessory'){bagTab('bag');equipmentFocus();return;} if(wd.tab===tab) return; bagReturnHand(); wd.bagSide='bag'; wd.tab = tab; bagRender(true); beep(560, 0.04, 'triangle', 0.025); }
+  function bagTab(tab){ if(!wd || !wd.bag) return; if(clsLocked() && tab!=='class') return; if(tab==='accessory'){bagTab('bag');equipmentFocus();return;} if(wd.tab===tab) return; bagReturnHand(); wd.bagSide='bag'; wd.tab = tab; bagRender(true); beep(560, 0.04, 'triangle', 0.025); }
   function bagStep(d){ if(!wd || !wd.bag) return; const TL = TABS.filter(t=>t!=='trade' || tradeKind()); bagTab(TL[(TL.indexOf(wd.tab) + d + TL.length) % TL.length]); }
   function bagRender(focus){
     if(wd.tab==='accessory')wd.tab='bag'; // Older callers use the equipment shortcut.
@@ -10685,17 +10792,19 @@
     $('wdTabHint').textContent = activePad() ? 'D-pad / stick selects · LB / RB tabs · B closes' : 'Arrows / WASD select · Enter acts · Tab closes · C crafts · V cooks · O equipment';
     $('wdBagClose').textContent = activePad() ? 'B · Close' : 'Close';
     if(tab==='cheat'){cheatRender(focus);return;}
+    if(tab!=='class'){ $('wdTabClass').parentNode.style.display = ''; $('wdBagClose').style.display = ''; $('wdBag').classList.remove('cs-full'); }
     if(tab==='class'){classRender(focus);return;}
     if(tab==='trade'){tradeRender(focus);return;}
     if(list){ $('wdTabHint').textContent += activePad() ? ' · A crafts · X crafts again' : ' · R crafts again'; craftRender(focus); return; }
     const g = $('wdBagGrid'), had = padEl && g.contains(padEl) ? [...g.children].indexOf(padEl) : -1;
-    g.innerHTML = wd.inv.map((s, i)=>{ const nm = s ? ITEMS[s.id].name + (s.n > 1 ? ' x' + s.n : '') : 'Empty slot'; return `<button data-i="${i}" title="${i >= WD.slots ? 'Pack slot · ' : ''}${nm}" aria-label="${i >= WD.slots ? 'Pack slot' : 'Bag slot'} ${i+1}: ${nm}" class="${wd.bagSide==='bag' && i===wd.sel ? 'sel' : ''}${i >= WD.slots ? ' pk' : ''}">${slotHtml(s)}</button>`; }).join('');
+    const pkt = Math.max(0, wd.inv.length - WD.slots - packSlots(wd.pack)); /* pocket slots first, then the pack's */
+    g.innerHTML = wd.inv.map((s, i)=>{ const nm = s ? ITEMS[s.id].name + (s.n > 1 ? ' x' + s.n : '') : 'Empty slot'; return `<button data-i="${i}" title="${i >= WD.slots ? (i < WD.slots + pkt ? 'Pocket slot · ' : 'Pack slot · ') : ''}${nm}" aria-label="${i >= WD.slots ? (i < WD.slots + pkt ? 'Pocket slot' : 'Pack slot') : 'Bag slot'} ${i+1}: ${nm}" class="${wd.bagSide==='bag' && i===wd.sel ? 'sel' : ''}${i >= WD.slots ? ' pk' : ''}">${slotHtml(s)}</button>`; }).join('');
     for(const b of g.children){ b.onclick=()=>bagSlot('bag',+b.dataset.i); b.oncontextmenu=e=>{e.preventDefault();bagSelect('bag',+b.dataset.i);bagTakeOne();}; }
     if(had >= 0) padSet(g.children[had]); else if(focus && (activePad() || kbNav)) padSet(g.children[wd.sel]);
     bagStorageRender();
     accessoryRender(false);
     const s = bagSelected(), I = s && ITEMS[s.id], fire = !!nearFire(WD.fireNear, true);
-    const info = !s ? 'Empty' : I.name + (I.dur ? ` (${s.d} of ${I.dur} uses left)\n${I.desc}` : ' ×' + s.n) + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.quench ? `, quenches ${I.quench}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a lit fire') : '') + (I.light ? `\nLight it to see for ${WD.torch} seconds` : '') + (I.desc && !I.dur ? '\n' + I.desc : '') + (I.fuel ? '\nFuel: +' + I.fuel + ' seconds' : '');
+    const info = !s ? 'Empty' : I.name + (I.dur ? ` (${s.d} of ${I.dur} uses left)\n${I.desc}` : ' ×' + s.n) + (I.shelf ? ' · ' + frHead(s) : '') + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.quench ? `, quenches ${I.quench}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.shelf ? (I.food ? ' · ' : '\n') + frLeft(s, wd.bagSide==='chest' && coolStore(wd.chest)) : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a lit fire') : '') + (I.light ? `\nLight it to see for ${WD.torch} seconds` : '') + (I.desc && !I.dur ? '\n' + I.desc : '') + (I.fuel ? '\nFuel: +' + I.fuel + ' seconds' : '');
     $('wdBagInfo').textContent = (wd.bagSide==='chest' ? 'Chest: ' : 'Bag: ') + info;
     $('wdEat').disabled = !(I && (I.food || (I.medical && (I.root ? dzNeedsSalve() : (wd.p.hp < wd.p.maxHp || dzNeedsSalve())))));
     $('wdEat').textContent = (activePad() ? 'A · ' : '') + (I && I.medical ? 'Heal' : 'Eat');
@@ -10780,15 +10889,15 @@
   function classToggle(id){
     const c = wd.cls;
     if(c.length){ wdNote('You are a ' + CLASSES[c[0]].name.toLowerCase() + ' for good. Only the cheats menu can change it'); beep(200, 0.08, 'square', 0.02); return; } /* chosen once */
-    wd.cls = [id]; wd.clsAsked = true; beep(760, 0.05, 'triangle', 0.03); wdNote('You are a ' + CLASSES[id].name.toLowerCase()); wdSave(); hudLast = ''; classRender();
+    wd.cls = [id]; wd.clsAsked = true; $('wdClassList').dataset.prev = ''; beep(760, 0.05, 'triangle', 0.03); wdNote('You are a ' + CLASSES[id].name.toLowerCase()); wdSave(); hudLast = ''; classRender();
   }
   /* ---- the animal select: a live portrait of the animal you are looking at (drawn by the game's own drawMonkey), a roster of tokens, its perks and one Choose button. Looking is free; Choose is for good. ---- */
   const CS_LORE = {
-    monkey:{q:'Clever hands, quick work.', p:['Immune to Toe Foot and Knee Leg', 'Crafting is 25% quicker', 'The animal you are unless you choose']},
+    monkey:{q:'Clever hands, quick work.', p:['Immune to Toe Foot and Knee Leg', 'Crafting is 25% quicker']},
     beaver:{q:'Where there is water, there is a road.', p:['Trees fall in half the hits; the hatchet lasts twice as long', 'Wades and swims freely; fishing 40% quicker', 'Swims under walls and into pools nobody else can reach', 'Heavy: +3 health, +20% damage, no roll; tail slap']},
-    mole:{q:'What is worth having is underground.', p:['Boulders and crystals break in half the hits; the pickaxe lasts twice as long', 'Burrows under walls, rocks and hills instead of rolling', 'The den under the hill is the Mole\'s own project']},
+    mole:{q:'What is worth having is underground.', p:['Boulders and crystals break in half the hits; the pickaxe lasts twice as long', 'Burrows under walls and rocks instead of rolling; ramps work, cliffs stop it', 'The den under the hill is the Mole\'s own project']},
     bear:{q:'Slow to anger. Slower to fall.', p:['Hunger and thirst drain 30% slower; the cold bites 25% less', 'Heavy: +5 health, +30% damage, no roll; the swipe throws things back', 'Too wide for a one-cell doorway']},
-    raccoon:{q:'Nothing is wasted at his table.', p:['Food fills 30% more, quenches 50% more, heals 1 extra', 'Washes food at any water; cooks a quarter quicker', 'His stew feeds everyone round the fire; the den kitchen is his']},
+    raccoon:{q:'Nothing is wasted at his table.', p:['Food fills 30% more, quenches 50% more, heals 1 extra', 'Washes food at any water; cooks a quarter quicker', 'His stew feeds everyone round the fire; the den kitchen is his', 'Skills: extra bag slots, lighter ingredients, food that keeps longer']},
     fox:{q:'Soft paws, sharp ears.', p:['Wild animals let you come 30% closer before they bolt']}};
   const CS_PC = {ring:'#e0b54a', core:'#c73a5c', tag:'#c73a5c'};
   const csReduce = () => { try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } };
@@ -10811,29 +10920,61 @@
   }
   function csKick(){ if(!csRun && !csReduce()){ csRun = true; requestAnimationFrame(csLoop); } }
   function csHtml(ids, kind){
-    return `<div class="cs-roster" role="group" aria-label="Animals">${ids.map(id=>`<button class="cs-tok" data-v="${id}" aria-label="${CLASSES[id].name}"><canvas width="96" height="96"></canvas><b>${CLASSES[id].name}</b></button>`).join('')}</div><div class="cs-stage" data-kind="${kind}"><div class="cs-art"><canvas width="360" height="360"></canvas></div><div class="cs-info"><div class="cs-name"></div><div class="cs-quote"></div><ul class="cs-perks"></ul><div class="cs-desc"></div></div></div><button class="cs-go"></button>`;
+    return `<div class="cs-roster" role="group" aria-label="Animals">${ids.map(id=>`<button class="cs-tok" data-v="${id}" aria-label="${CLASSES[id].name}"><canvas width="96" height="96"></canvas><b>${CLASSES[id].name}</b></button>`).join('')}</div><div class="cs-stage" data-kind="${kind}"><div class="cs-art"><canvas width="360" height="360"></canvas></div><div class="cs-info"><div class="cs-name"></div><div class="cs-quote"></div><ul class="cs-perks"></ul><div class="cs-desc"></div></div></div>${kind==='cp' ? `<div class="cs-slots">${[['c', 'You'], ['p', 'Partner']].map(([k, n])=>`<button class="cs-slot" data-slot="${k}"><canvas width="64" height="64"></canvas><span><small>${n}</small><b></b></span></button>`).join('')}</div>` : ''}<button class="cs-go"></button>`;
   }
+  const clsLocked = () => !!wd && wd.bag && wd.tab==='class' && !wd.cls.length; /* the first pick cannot be left until an animal is chosen */
   function csPreview(root, id){
-    if(!root || !CLASSES[id]) return; const st = root.querySelector('.cs-stage'); if(!st) return;
-    const C = CLASSES[id], lore = CS_LORE[id] || {q:'', p:[]}, kind = st.dataset.kind, cv = st.querySelector('canvas'), go = root.querySelector('.cs-go');
-    root.dataset.prev = id; cv.dataset.live = id;
-    st.querySelector('.cs-name').textContent = C.name; st.querySelector('.cs-quote').textContent = lore.q ? '“' + lore.q + '”' : '';
-    const ul = st.querySelector('.cs-perks'); ul.textContent = ''; for(const t of lore.p){ const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); }
-    st.querySelector('.cs-desc').textContent = C.desc;
-    go.removeAttribute('data-c'); go.removeAttribute('data-p'); go.setAttribute('data-' + kind, id);
-    go.innerHTML = (kind==='p' ? 'Take the ' + C.name + ' as partner' : 'Choose the ' + C.name) + '<small>once, for good</small>';
-    for(const b of root.querySelectorAll('.cs-tok')){ const on = b.dataset.v===id; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', String(on)); }
-    if(csReduce()) csPaint(cv, id, 1, true);
+    if(!root) return; const st = root.querySelector('.cs-stage'); if(!st) return;
+    const kind = st.dataset.kind, cv = st.querySelector('canvas'), go = root.querySelector('.cs-go'), art = st.querySelector('.cs-art'), ul = st.querySelector('.cs-perks'); ul.textContent = '';
+    if(!id || !CLASSES[id]){ /* nothing is chosen by default: an empty stage until the player looks at an animal */
+      root.dataset.prev = ''; delete cv.dataset.live; art.classList.add('empty'); const c = cv.getContext('2d'); if(c){ c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height); }
+      st.querySelector('.cs-name').textContent = kind==='p' ? 'Choose a partner' : 'Choose your animal'; st.querySelector('.cs-quote').textContent = kind==='cp' ? 'Then a partner to come with you.' : 'Look at each one, then choose.'; st.querySelector('.cs-desc').textContent = '';
+      if(kind!=='cp'){ go.removeAttribute('data-c'); go.removeAttribute('data-p'); go.disabled = true; go.textContent = 'Choose an animal'; }
+      for(const b of root.querySelectorAll('.cs-tok')){ b.classList.remove('sel', 'look'); b.setAttribute('aria-pressed', 'false'); }
+    } else {
+      const C = CLASSES[id], lore = CS_LORE[id] || {q:'', p:[]};
+      root.dataset.prev = id; cv.dataset.live = id; art.classList.remove('empty');
+      st.querySelector('.cs-name').textContent = C.name; st.querySelector('.cs-quote').textContent = lore.q ? '“' + lore.q + '”' : '';
+      for(const t of lore.p){ const li = document.createElement('li'); li.textContent = t; ul.appendChild(li); }
+      st.querySelector('.cs-desc').textContent = C.desc;
+      if(kind!=='cp'){ go.removeAttribute('data-c'); go.removeAttribute('data-p'); go.setAttribute('data-' + kind, id); go.disabled = false; go.innerHTML = (kind==='p' ? 'Take the ' + C.name + ' as partner' : 'Choose the ' + C.name) + '<small>once, for good</small>'; }
+      for(const b of root.querySelectorAll('.cs-tok')){ const on = b.dataset.v===id; b.classList.toggle(kind==='cp' ? 'look' : 'sel', on); if(kind==='cp') b.classList.remove('sel'); b.setAttribute('aria-pressed', String(on)); }
+      if(csReduce()) csPaint(cv, id, 1, true);
+    }
+    if(kind==='cp') csRefresh(root);
+  }
+  /* the two-animal pick: tapping an animal fills the active slot (You first, then Partner); one Begin button confirms both */
+  function csRefresh(root){
+    const c = root.dataset.sc || '', p = root.dataset.sp || '', slot = root.dataset.slot || 'c', go = root.querySelector('.cs-go');
+    for(const b of root.querySelectorAll('.cs-tok')){ const v = b.dataset.v; b.classList.toggle('you', v===c); b.classList.toggle('pal', v===p); if(v===c) b.dataset.tag = 'You'; else if(v===p) b.dataset.tag = 'Partner'; else delete b.dataset.tag; }
+    for(const b of root.querySelectorAll('.cs-slot')){ const k = b.dataset.slot, id = k==='c' ? c : p, cv = b.querySelector('canvas'); b.classList.toggle('act', k===slot); b.classList.toggle('full', !!id);
+      b.querySelector('b').textContent = id ? CLASSES[id].name : k==='c' ? 'Choose your animal' : 'Choose a partner';
+      if(id){ csPaint(cv, id, 1, true); } else { const g = cv.getContext('2d'); if(g){ g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, cv.width, cv.height); } } }
+    go.removeAttribute('data-c'); go.removeAttribute('data-p'); go.setAttribute('data-cp', '1'); go.disabled = !(c && p);
+    go.innerHTML = c && p ? 'Begin: ' + CLASSES[c].name + ' and ' + CLASSES[p].name + '<small>once, for good</small>' : !c ? 'Choose your animal' : 'Now choose a partner';
+  }
+  function csAssign(root, id){
+    let c = root.dataset.sc || '', p = root.dataset.sp || '', slot = root.dataset.slot || 'c';
+    if(slot==='c' ? id===c : id===p){ if(slot==='c') c = ''; else p = ''; } /* tapping the animal already in the slot clears it */
+    else if(slot==='c'){ if(id===p) p = c; c = id; } /* an animal in the other slot swaps places */
+    else { if(id===c) c = p; p = id; }
+    root.dataset.sc = c; root.dataset.sp = p; root.dataset.slot = !c ? 'c' : !p ? 'p' : slot;
+  }
+  function csConfirm(root){
+    const c = root.dataset.sc, p = root.dataset.sp; if(!c || !p || c===p || wd.cls.length) return;
+    root.dataset.sc = root.dataset.sp = root.dataset.slot = root.dataset.prev = '';
+    classToggle(c); partnerPick(p); classRender();
   }
   function classRender(focus){
     wd.clsAsked = true;
+    const onTab = wd.tab==='class'; $('wdTabClass').parentNode.style.display = onTab && !wd.cls.length ? 'none' : ''; $('wdBagClose').style.display = clsLocked() ? 'none' : ''; /* the first pick has the whole screen: no tab row and no Close until an animal is chosen */
     $('wdTabHint').textContent = activePad() ? 'D-pad selects \u00b7 A picks \u00b7 LB / RB tabs \u00b7 B closes' : 'Click or Enter to pick (once) \u00b7 Tab closes \u00b7 L opens animals';
     const pr = wd.partner, mine = wd.cls.length, L = $('wdClassList'), had = padEl && L.contains(padEl) ? [...L.querySelectorAll('button')].indexOf(padEl) : -1; let sel = null;
     if(mine && !pr) wd.palAsked = true; /* seen the partner pick: no more prompts */
     let info, html;
     if(!mine){
-      info = (wd.hc ? 'SURVIVAL: pick two animals. If the one in your hands falls you play the other and must treat the fallen one with salves and tonics; if both fall at once the world starts over. ' : '') + 'You are a monkey unless you choose otherwise. Pick an animal once, for good, or pick the monkey to keep it. Then you can pick a partner.';
-      sel = {ids:CLASS_PICK.slice(), kind:'c'}; html = csHtml(sel.ids, 'c');
+      info = (wd.hc ? 'SURVIVAL: pick two animals. If the one in your hands falls you play the other and must treat the fallen one with salves and tonics; if both fall at once the world starts over. ' : '') + 'Pick your animal and a partner to come with you, then press Begin. Both are for good.';
+      sel = {ids:CLASS_PICK.slice(), kind:'cp'}; html = csHtml(sel.ids, 'cp');
     } else if(!pr){
       info = (wd.hc ? 'SURVIVAL: two animals, you and a partner. If the one in your hands falls the other takes over and you must treat the fallen one with salves and tonics; if both fall at once the world starts over. ' : '') + 'You are a ' + CLASSES[wd.cls[0]].name.toLowerCase() + ', for good (only the cheats menu can change it). Now pick a partner, once, for good (an animal is the same whichever one you pick first): a second animal that comes with you and fights, chops, forages or mines at your side. T, the Duo button on touch, or on a pad (D-pad on Functions) hold D-pad left or right and aim with the right stick send it out.';
       sel = {ids:CLASS_PICK.filter(id=>!clsHas(id) && ![pr, ...(wd.reserve || [])].some(q=>q && q.pcls===id)), kind:'p'}; html = sel.ids.length ? csHtml(sel.ids, 'p') : ''; if(!sel.ids.length) sel = null;
@@ -10844,13 +10985,15 @@
     if(mine && (wd.rk | 0) >= 2){ const i = wd.cur | 0, f = kingFind();
       if(kingHeld()) html = `<button data-k2="leave"><span><b>Let go of the Rat King (H)</b><small>${clsIn(wd.cls, 'ratking') ? 'You are him' : 'He stands beside you'} for ${Math.max(0, Math.ceil(wd.rkU[i] - wd.t))} more seconds, then he throws you off. Letting go early still costs you the cooldown.</small></span></button>` + html;
       else if(f && !kingOf(i)) html = `<button data-k2="take"><span><b>Take over the Rat King (H)</b><small>${wd.rkC && wd.rkC[i] > wd.t ? 'He will not have you for ' + Math.ceil(wd.rkC[i] - wd.t) + ' more seconds.' : 'He waits in his rat hole, north of the Beaver meadow. You take control of him and your animal waits there; after a day he throws you off. His two royal rats come with him.'}</small></span></button>` + html; }
-    $('wdClassInfo').textContent = info; L.className = 'wd-craft' + (sel ? ' cs' : ''); L.innerHTML = html;
-    if(sel) $('wdTabHint').textContent = activePad() ? 'D-pad looks \u00b7 A on Choose picks, once \u00b7 LB / RB tabs \u00b7 B closes' : 'Click an animal to look, then Choose (once, for good) \u00b7 Tab closes \u00b7 L opens animals';
+    $('wdClassInfo').textContent = info; L.className = 'wd-craft' + (sel ? ' cs' : ''); $('wdBag').classList.toggle('cs-full', !!sel && onTab); L.innerHTML = html;
+    if(sel) $('wdTabHint').textContent = activePad() ? (sel.kind==='cp' ? 'D-pad looks \u00b7 A picks \u00b7 pick two, then Begin' : 'D-pad looks \u00b7 A picks \u00b7 B closes') : (sel.kind==='cp' ? 'Pick your animal, then a partner, then Begin' : 'Pick an animal, then Choose \u00b7 Tab closes');
     const BT = [...L.querySelectorAll('button')];
     if(sel){ for(const tk of L.querySelectorAll('.cs-tok')){ csPaint(tk.querySelector('canvas'), tk.dataset.v, 1, true); tk.onpointerenter = e=>{ if(e.pointerType==='mouse') csPreview(L, tk.dataset.v); }; tk.onfocus = ()=>csPreview(L, tk.dataset.v); }
-      csPreview(L, sel.ids.includes(L.dataset.prev) ? L.dataset.prev : sel.ids[0]); csKick(); }
-    for(const b of BT) b.onclick = ()=>{ if(b.dataset.v){ csPreview(L, b.dataset.v); beep(560, 0.03, 'triangle', 0.02); if(activePad() || kbNav) padSet(L.querySelector('.cs-go')); } else if(b.dataset.k2){ if(b.dataset.k2==='take') kingTake(true); else kingLeave(false); classRender(); } else if(b.dataset.c) classToggle(b.dataset.c); else if(b.dataset.p) partnerPick(b.dataset.p); else if(b.dataset.s==='pack') palPackTab(); else if(b.dataset.s){ palSwap(true); classRender(); } else if(b.dataset.k !== undefined){ palCall(+b.dataset.k); classRender(); } else { partnerRequest(b.dataset.r); classRender(); } };
-    if(had >= 0 && BT[had]) padSet(BT[had]); else if(focus && (activePad() || kbNav)) padSet(sel ? L.querySelector('.cs-tok.sel') : BT[0]);
+      csPreview(L, sel.ids.includes(L.dataset.prev) ? L.dataset.prev : null); csKick(); }
+    for(const b of BT) b.onclick = ()=>{ if(b.dataset.cp){ csConfirm(L); }
+      else if(b.dataset.slot){ L.dataset.slot = b.dataset.slot; const id = b.dataset.slot==='c' ? L.dataset.sc : L.dataset.sp; beep(560, 0.03, 'triangle', 0.02); csPreview(L, id || L.dataset.prev || null); }
+      else if(b.dataset.v){ const two = !!L.querySelector('.cs-slots'); if(two) csAssign(L, b.dataset.v); csPreview(L, b.dataset.v); beep(560, 0.03, 'triangle', 0.02); if(two ? (L.dataset.sc && L.dataset.sp && (activePad() || kbNav)) : (activePad() || kbNav)) padSet(L.querySelector('.cs-go')); } else if(b.dataset.k2){ if(b.dataset.k2==='take') kingTake(true); else kingLeave(false); classRender(); } else if(b.dataset.c) classToggle(b.dataset.c); else if(b.dataset.p) partnerPick(b.dataset.p); else if(b.dataset.s==='pack') palPackTab(); else if(b.dataset.s){ palSwap(true); classRender(); } else if(b.dataset.k !== undefined){ palCall(+b.dataset.k); classRender(); } else { partnerRequest(b.dataset.r); classRender(); } };
+    if(had >= 0 && BT[had]) padSet(BT[had]); else if(focus && (activePad() || kbNav)) padSet(sel ? (L.querySelector('.cs-tok.sel') || L.querySelector('.cs-tok')) : BT[0]);
   }
   function cheatSpawn(id,n){
     if(!wd || !wd.bag)return;
@@ -10872,7 +11015,7 @@
   $('wdTabCheat').onclick=()=>bagTab('cheat');
   $('wdTabClass').onclick=()=>bagTab('class');
   $('wdTabTrade').onclick=()=>bagTab('trade');
-  $('wdCheatClass').onclick=()=>{wd.cls=[];wd.partner=null;wd.clsAsked=true;wdSave();hudLast='';bagTab('class');wdNote('Pick your animal again');};
+  $('wdCheatClass').onclick=()=>{wd.cls=[];wd.partner=null;wd.clsAsked=true;{const L0=$('wdClassList');L0.dataset.sc=L0.dataset.sp=L0.dataset.slot=L0.dataset.prev='';}wdSave();hudLast='';bagTab('class');wdNote('Pick your animal again');};
   $('wdCheatSkill').onclick=()=>{wd.skp++;wdSave();hudLast='';wdNote('+1 skill point');};
   $('wdCheatMore').onclick=()=>{cheatMore=!cheatMore;cheatRender();};
   $('wdCheatToggle').onclick=()=>{wd.creative=!wd.creative;wdSave();cheatRender();};
@@ -10915,7 +11058,7 @@
   $('wdCook').onclick = bagLive(()=>wdCook(wd.sel));
   $('wdDrop').onclick = bagLive(()=>{ const s = wd.inv[wd.sel]; if(!s) return; wd.inv[wd.sel] = null; dropItem(s.id, s.n, wd.p.x, wd.p.y, wd.p, true, s.d); thud(0.08, 0.06, 900); });
   $('wdLight').onclick = ()=>{ if(!wd) return; const s = wd.inv[wd.sel]; if(s && ITEMS[s.id].cu){ bagClose(); wdUse(wd.sel); return; } if(s && ITEMS[s.id].layer){ layerEquip(wd.sel); bagRender(); return; } if(s && (ITEMS[s.id].seed || ITEMS[s.id].water || ITEMS[s.id].drink)){bagLive(()=>wdUse(wd.sel))();return;} if(s && ITEMS[s.id].armor){armorEquip(wd.sel);bagRender();return;} if(s && ITEMS[s.id].helmet){helmetEquip(wd.sel);bagRender();return;} if(s && ITEMS[s.id].pack){packEquip(wd.sel);bagRender();return;} if(s && ITEMS[s.id].accessory){accessoryEquip(wd.sel);bagRender();return;} if(s && ITEMS[s.id].rat){wdUse(wd.sel);bagRender();return;} if(s && ITEMS[s.id].build){ bagClose(); buildStart(s.id); return; } bagLive(()=>wdLightTorch(wd.sel))(); };
-  $('wdBagClose').onclick = bagClose;
+  $('wdBagClose').onclick = ()=>{ if(!clsLocked()) bagClose(); };
 
   // ---- pause, menu, leaving ----
   function wdPanel(msg){ const pn = $('wdPanel'); if(msg==null){ pn.classList.remove('on'); return; } $('wdMsg').textContent = msg; pn.classList.add('on'); if(activePad() || kbNav) padSet($('wdResume')); }
@@ -11034,7 +11177,7 @@
       ['Craft and Cook:', 'C and V, or LB and RB tabs in the bag'],
       ['Roll:', 'Space or A. A quick dodge with a moment where nothing can hurt you. The heavier your pack, the longer it takes to roll again.'],
       ['Den (Mole):', 'Finish the Mole den at the planning table and raise its kit on open ground (one den per world). Press B at the hatch to open or shut it: a Mole opens it from outside, anyone inside can open it, and once it is open anyone can come in. It will not shut with someone or something inside or in the doorway. The den never rots, but it seeps and floods: repair the walls with a lot of stone (120): at the table\'s Upkeep page inside, or holding stone and pressing B at the hatch from outside. It keeps the den dry for about six days and drains it. A flooded den pushes everyone out and the hatch swells shut until it has drained.'],
-      ['Burrow (Mole):', 'Space or A, in place of the roll. Dig under walls, fences and rocks, however thick, for about three and a half seconds (the clock stops while you are under solid ground, up to about twelve seconds in one stretch); the stick steers, and pressing again comes up early. You tunnel at the depth you started: hills, ledges and whole landmasses can be dug under, but you come up only on ground level with where you began, and drops, holes and stairs stop you. Nothing can hit you or notice you underground, but you cannot act, and wet ground soaks you. It cannot cross water or a drop, and if you cannot come up on open ground you are put back where you started.'],
+      ['Burrow (Mole):', 'Space or A, in place of the roll. Dig under walls, fences and rocks, however thick, for about three and a half seconds (the clock stops while you are under solid ground, up to about twelve seconds in one stretch); the stick steers, and pressing again comes up early. You tunnel at the height you started: ramps carry you up and down, but a cliff, a drop, a hole or stairs stops you outright (the skill Burrow Anywhere lets you dig up and down any height and come up there). Nothing can hit you or notice you underground, but you cannot act, and wet ground soaks you. It cannot cross water or a drop, and if you cannot come up on open ground you are put back where you started.'],
       ['Building:', 'A or Space places, X or J takes back, LB and RB change piece, B or E when done'],
       ['Building up:', 'Z and X, the mouse wheel, or LT and RT change the level you build on. R or Y turns stairs.'],
       ['Touch:', 'Drag anywhere on the world for a stick. Attack (hold to keep swinging), Act and Roll sit at the right; the hotbar, Bag and Pause are buttons. In the journal a pad of buttons appears. When building, tap a square, then Plan here. In Craft, tap a recipe once to read it and again to make it. A keyboard, mouse or controller takes over when you use it.'],
@@ -11215,7 +11358,7 @@
     wdIn.keys[e.code] = true;
     if(!wd || wd.menu) return;
     if(wd.book && wdLive() && cuBookKey(e)) return;
-    if(wd.bag){ if(e.code==='KeyO'){bagTab('accessory');return;} if(e.code==='KeyK'){bagTab('cheat');return;} if(e.code==='KeyL'){bagTab('class');return;} if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } else if(e.code==='KeyC') bagTab(wd.tab==='craft' ? 'bag' : 'craft'); else if(e.code==='KeyV') bagTab(wd.tab==='cook' ? 'bag' : 'cook'); else if(e.code==='KeyR' && wd.tab==='bag'){ if(wd.hand) bagPlaceHand(true); else bagTakeOne(); } else if(e.code==='KeyR' && (wd.tab==='craft' || wd.tab==='cook')) bagRecraft(); else if(e.code==='KeyG' && wd.tab==='bag') bagTransfer(e.shiftKey); else if(e.code==='KeyT' && wd.tab==='bag') bagQuickStack(); else if(e.code==='KeyQ' || e.code==='KeyE') bagTab('bag'); return; }
+    if(wd.bag){ if(clsLocked()){ if(e.code==='Tab') e.preventDefault(); return; } if(e.code==='KeyO'){bagTab('accessory');return;} if(e.code==='KeyK'){bagTab('cheat');return;} if(e.code==='KeyL'){bagTab('class');return;} if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } else if(e.code==='KeyC') bagTab(wd.tab==='craft' ? 'bag' : 'craft'); else if(e.code==='KeyV') bagTab(wd.tab==='cook' ? 'bag' : 'cook'); else if(e.code==='KeyR' && wd.tab==='bag'){ if(wd.hand) bagPlaceHand(true); else bagTakeOne(); } else if(e.code==='KeyR' && (wd.tab==='craft' || wd.tab==='cook')) bagRecraft(); else if(e.code==='KeyG' && wd.tab==='bag') bagTransfer(e.shiftKey); else if(e.code==='KeyT' && wd.tab==='bag') bagQuickStack(); else if(e.code==='KeyQ' || e.code==='KeyE') bagTab('bag'); return; }
     if(!wdLive()){ /* another player's bag has the world paused: Player 1 may still open their own */
       if(!bagOk() || !['Tab','KeyI','KeyC','KeyV','KeyO','KeyK'].includes(e.code)) return; initAudio();
       if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagOpen(); } else if(e.code==='KeyC') bagOpen('craft'); else if(e.code==='KeyV') bagOpen('cook'); else if(e.code==='KeyO') bagOpen('accessory'); else bagOpen('cheat');
@@ -11847,7 +11990,7 @@
   function goBack(){
     if($('wdMeta').classList.contains('on')){ if(menuMode==='help') wdMenu(); else wdLeave(); return true; }
     if(wd && wd.pauseMenu){ if(pausePage!=='main'){ pauseView(); return true; } if(!(wd.dead > 0)) wdTogglePause(); return true; }
-    if(wd && wd.bag){ bagClose(); return true; }
+    if(wd && wd.bag){ if(!clsLocked()) bagClose(); return true; }
     if(wd && wd.book){ cuBookClose(); return true; }
     if(wd && wd.build && !wd.paused){ buildEnd(); return true; }
     if(wd && !(wd.dead > 0)) wdTogglePause();
@@ -11909,7 +12052,7 @@
   window.addEventListener('gamepaddisconnected', ()=>{ padHeld={}; if(wd && wd.crew && anyBag()){ for(const i of activeIdx()) if(ctxGet(i, 'bag')) withPlayer(i, ()=>bagRender()); } });
   requestAnimationFrame(padPoll);
   try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
-  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, vgLocked, vgSite, vgBuild, vgBegin, vgDeath, vgenTick, vgStep, vgCaged, cheatDenEnsure, denHatch, denTravel, denInside, DEN_LAD, UNDER, ENCH, BAD, MINE, DENR, MEAD, inUnder, inEnch, inBad, inMine, inDen, inMead, MEAD_OUT, PORTALS, portalStep, portalHint, PT, damSite, WD, phase, darkAt, isNight, wdSpawnWraith, wdRaidWraiths, wdWraithNight, partnerPick, mkPartner, palSwap, palRegion, PREQ, RATR, RATH, MSHAFT, MWALL, RAT_IN, RAT_EXIT, RAT_CHEESE, RAT_BOX, inRat, ratTravel, ratRoomAct, rrCheese, rrTake, kingKey, ratKingHome, wdBlocked, kingHeld, partnerWheel, PWHEEL, spec, nearMine, ratBite, petTarget, rkAct, rkFree, kingTake, kingLeave, kingFind, kingTick, kingWhy, bodyTrade, kingMake, KING, ratNeed, ratNear, ratTame, ratFeed, ratPut, ratSlotFree, kingOf, ratTxt,  putBuild, bagOpen, wdCraftNow, canCraft, RECIPES, padMove, nearChest, chestsNear, dropItem, partnerDress, mkReach, partnerWarm, wdDie, buildOk, planAdd, planConfirm, buildStart, damSite, damOpen, nearDam, nearDamExit, wdDamTravel, damWalk, traderInit, traderCamp, traderStep, traderNear, tradeDo, dtraderArrive, dtraderStep, dtraderNear, wdSipTonic, holdKM, boomThrow, boomSim, cheatDenEnsure, cuRaiseWatch, wdRespawn, respawnAt, campSurface, denCampOn, partnerDuty, fireTarget, watchCheck, watchFresh, cuPlanRows, projStatus, cuActivate, cuContribute, cuCollect, partnerPath, watchPost, partnerFire, partnerWatch, watchKept, hallTick, dreamClear, wdDrug, drugTick, ballistaOn, ballistaPos, ballistaLoad, foxReload, foxFire, BAL, denStoneNeed, winterNow, DEN_CAMP, foldCoins, invWithBooms, boomStep, wdDrug, MEAD, inMead, worldRects, snailLoan, snailCalm, wdThirstTick, wdThrowSalt, saltStep, saltLand, wdSalt, wear, bossFightOn, wdUse, bossQuake, bossAtmos, padRumble, sfxBoss, snailCharge, bossAhead, bossPast, arenaKeepOut, bossRocks, partnerThreat, partnerSkip, partnerBite, mineOpen, mineCacheAct, carryAdd, partnerHave, partnerBags, bookAnimals, craftHave, dgAct, dgStep, dgChest, cheatMineGo, mineInit, wdMusicStart, grDrum, snailWake, snailPhase2, snailReset, snailTick, bossCtx, webSlow, wdMusicTick, MUSIC, DEN_O, DEN_STORE, DEN_BASIN, GRID, denBoxDist, washAct, wdAct2, wdAltAct, wdWhatAct, hintFor, padOpt, padLbl, pauseView, pauseSetting, setTabGo, setTabStep, wdPad, touchSync, trDepthAt, trDepthArr, trSpeed, ANIMALS, cheatDz, cheatSpawnEntity, cheatClearNear, cheatCatOf, ITEMS, cheatRender, get cheatCat(){return cheatCat;}, JP, jrAdd, projPage, jrPageKind, cuBookOpen, cuBookDo, cuActivate, cuContribute, projStatus, cuCollect, cuUse, PROJECTS, cuRaiseDen, denToggle, denStep, denAct, denRec, denHatch, denInside, denNear, denOthers, DEN, hatchOpen, denFresh, PROJECTS, denLay, denKey, denRoomOn, denDeskNear, DEN_DESK, cuBookOpen, cuBookDo, cuPlanRows, beaverUnder, trDepthAt, putBuild, cuSlow, clsHp, clsDmg, wdHeavyBlow, HEAVY, BLOW, rainDry, cuChestCount, wdSlowSim, rockGrow, DENR, DEN_O, DEN_LAD, DEN_CRANK, inDen, denTravel, denClimb, denMove, denMigrate, denLost, wdBurrow, burTest, BUR, putBuild, planConfirm, planClear, planTotals, roomPieces, buildPlace, planOk, benchNear, buildOk, bodyR, BODYR, spCast, spDo, spWards, RUNES, WF, wfIgnite, wfDry, wfM, wfAct, wfNear, wfOut, wdFire, wfFuel, HD, hdTame, hdShear, hdFeed, hdTreat, hdAct, hdSicken, wdHerd, hdFlockN, hdFeared, hdFearAdd, hdSave, hdRestore, hdMax, mkAnimal, wdEcology, dzInfect, dzNames, dzEat, dzSalve, dzSlug, dzStep, rotOf, rotNear, rotStep, rotRepairNow, cuStarterCabin, cuCabinWelcome, CABIN, BLD, bldScan, bldList, inBuilding, bldRot, bldIndoor, rotComp, rotJoin, rotUnify, rotLoad, rotCost, rotGroup, ROT_SPAN, ROT_KINDS, trPlain, buildOk, putBuild, floorAdd, wdPlace, trFootOk, trHb, trOccAt, trPeek, trCover, trH, UNDER, ENCH, UBAND, EBAND, bandIx, wdTravel, wdRingTravel, underRepopulate, enchRepopulate, inUnder, inEnch, sceneOf, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trH, trSup, trSettle, trOk, trWalkOk, trFlat, trCornersI, trRow, TH, DD, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}, deathSpot, corpseStep, corpseNear, corpseStage, corpseRemove, CORPSE, drawMonkey, fcStart, fcToggle, fcMove, nearBuildBench, packFrame, planAdd, buildEnd, buildBarRender, invCount, give, structOf, PIECE_COST, wdLive, waterNear, canCraft, trDigNow, trWetUpdate, trDigCheck, cuBookOpen, touchSt, touchOn, touchSync, wdBlocked, rainAt, WD, MUSIC, mv, denMusicCtx, wdMusicTick, setAudio:(c, a)=>{ audioCtx = c; amb = a; }, denNeedsRepair, denRepair, denRepairOut, denStoneNeed, cuBookDo, cuDrawUpkeep, cuContribute, cuActivate, projStatus, cuTick, cuSlow, denFurnaceObj, denFurnaceHot, cuFurnaceAct, denUp, denBeltOn, denAutoOn, denSmelter, DEN_SMS, denAutoPick, denBeltCount, beltFor, denAutoText, denStationList, denStationsOn, KDISH, COOK, denKitchenHere, denStores, DEN_STORE, denHearthLit, denRoomAct, denBasinNear, denBoardNear, denStoreNear, washAct, washSlots, washCount, chefPot, bagWash, WASH_OF, POT_DISHES, DEN_HEARTH, nearFire, canPay, recHave, wdCraftNow, cuChests, cuMake, wdPartners, mineSteer, mineGen, mineInit, mineHit, mineStep, mineRepopulate, mineOpen, mineCacheAct, nearMine, nearMineExit, wdMineTravel, mnCellAt, mnBlocks, MN, MINE, MINE_SECRET, GATE_OF, inMine, palCall, hcFall, hcEnd, hcLose, hcBagDrop, SLEEPS, dormantNow, dormantSoon, palDrowsy, palDrowsyFor, palHibernate, palSleep, palWake, sleepDaysLeft, cheatSeason, palRegion, partnerGate, partnerTrek, partnerWarp, KIT_KEYS, pkNew, pkSave, pkWith, partnerGear, palPackOpen, palPackAct, palNear, partnerCare, palSwap, palSwapWhy, palSwapHold, weaponIdx, SWAP, DZ_SUG, DZ, dzNew, dzSave, pdzNew, pdzInfect, pdzStep, pdzEat, pdzSalve, pdzRoot, pdzNames, pdzK, pdzSave, cheatPdz, partnerRequest, partnerCycle, partnerPick, mkPartner, partnerSave, partnerHurt, PARTNER, PREQ, segWalk, partnerPath, partnerSteer, palFeed, palGive, palFeedAct, palAlt, partnerNeeds, partnerCare, palWheelOpen, palWheelClose, palWheelToggle, partnerWheel, classRender, ctxStore, ctxLoad, wdChop, nodesNear, nearStation, stationOk, canCraft, wdCraft, RECIPES, PROJECTS, denRoomOn, denStationList, denRec, DEN_O};
+  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, wOf, frInfo, spoilStep, invFit, cuLoad, SP, vgLocked, vgSite, vgBuild, vgBegin, vgDeath, vgenTick, vgStep, vgCaged, cheatDenEnsure, denHatch, denTravel, denInside, DEN_LAD, UNDER, ENCH, BAD, MINE, DENR, MEAD, inUnder, inEnch, inBad, inMine, inDen, inMead, MEAD_OUT, PORTALS, portalStep, portalHint, PT, damSite, WD, phase, darkAt, isNight, wdSpawnWraith, wdRaidWraiths, wdWraithNight, partnerPick, mkPartner, palSwap, palRegion, PREQ, RATR, RATH, MSHAFT, MWALL, RAT_IN, RAT_EXIT, RAT_CHEESE, RAT_BOX, inRat, ratTravel, ratRoomAct, rrCheese, rrTake, kingKey, ratKingHome, wdBlocked, kingHeld, partnerWheel, PWHEEL, spec, nearMine, ratBite, petTarget, rkAct, rkFree, kingTake, kingLeave, kingFind, kingTick, kingWhy, bodyTrade, kingMake, KING, ratNeed, ratNear, ratTame, ratFeed, ratPut, ratSlotFree, kingOf, ratTxt,  putBuild, bagOpen, wdCraftNow, canCraft, RECIPES, padMove, nearChest, chestsNear, dropItem, partnerDress, mkReach, partnerWarm, wdDie, buildOk, planAdd, planConfirm, buildStart, damSite, damOpen, nearDam, nearDamExit, wdDamTravel, damWalk, traderInit, traderCamp, traderStep, traderNear, tradeDo, dtraderArrive, dtraderStep, dtraderNear, wdSipTonic, holdKM, boomThrow, boomSim, cheatDenEnsure, cuRaiseWatch, wdRespawn, respawnAt, campSurface, denCampOn, partnerDuty, fireTarget, watchCheck, watchFresh, cuPlanRows, projStatus, cuActivate, cuContribute, cuCollect, partnerPath, watchPost, partnerFire, partnerWatch, watchKept, hallTick, dreamClear, wdDrug, drugTick, ballistaOn, ballistaPos, ballistaLoad, foxReload, foxFire, BAL, denStoneNeed, winterNow, DEN_CAMP, foldCoins, invWithBooms, boomStep, wdDrug, MEAD, inMead, worldRects, snailLoan, snailCalm, wdThirstTick, wdThrowSalt, saltStep, saltLand, wdSalt, wear, bossFightOn, wdUse, bossQuake, bossAtmos, padRumble, sfxBoss, snailCharge, bossAhead, bossPast, arenaKeepOut, bossRocks, partnerThreat, partnerSkip, partnerBite, mineOpen, mineCacheAct, carryAdd, partnerHave, partnerBags, bookAnimals, craftHave, dgAct, dgStep, dgChest, cheatMineGo, mineInit, wdMusicStart, grDrum, snailWake, snailPhase2, snailReset, snailTick, bossCtx, webSlow, wdMusicTick, MUSIC, DEN_O, DEN_STORE, DEN_BASIN, GRID, denBoxDist, washAct, wdAct2, wdAltAct, wdWhatAct, hintFor, padOpt, padLbl, pauseView, pauseSetting, setTabGo, setTabStep, wdPad, touchSync, trDepthAt, trDepthArr, trSpeed, ANIMALS, cheatDz, cheatSpawnEntity, cheatClearNear, cheatCatOf, ITEMS, cheatRender, get cheatCat(){return cheatCat;}, JP, jrAdd, projPage, jrPageKind, cuBookOpen, cuBookDo, cuActivate, cuContribute, projStatus, cuCollect, cuUse, PROJECTS, cuRaiseDen, denToggle, denStep, denAct, denRec, denHatch, denInside, denNear, denOthers, DEN, hatchOpen, denFresh, PROJECTS, denLay, denKey, denRoomOn, denDeskNear, DEN_DESK, cuBookOpen, cuBookDo, cuPlanRows, beaverUnder, trDepthAt, putBuild, cuSlow, clsHp, clsDmg, wdHeavyBlow, HEAVY, BLOW, rainDry, cuChestCount, wdSlowSim, rockGrow, DENR, DEN_O, DEN_LAD, DEN_CRANK, inDen, denTravel, denClimb, denMove, denMigrate, denLost, wdBurrow, burTest, BUR, putBuild, planConfirm, planClear, planTotals, roomPieces, buildPlace, planOk, benchNear, buildOk, bodyR, BODYR, spCast, spDo, spWards, RUNES, WF, wfIgnite, wfDry, wfM, wfAct, wfNear, wfOut, wdFire, wfFuel, HD, hdTame, hdShear, hdFeed, hdTreat, hdAct, hdSicken, wdHerd, hdFlockN, hdFeared, hdFearAdd, hdSave, hdRestore, hdMax, mkAnimal, wdEcology, dzInfect, dzNames, dzEat, dzSalve, dzSlug, dzStep, rotOf, rotNear, rotStep, rotRepairNow, cuStarterCabin, cuCabinWelcome, CABIN, BLD, bldScan, bldList, inBuilding, bldRot, bldIndoor, rotComp, rotJoin, rotUnify, rotLoad, rotCost, rotGroup, ROT_SPAN, ROT_KINDS, trPlain, buildOk, putBuild, floorAdd, wdPlace, trFootOk, trHb, trOccAt, trPeek, trCover, trH, UNDER, ENCH, UBAND, EBAND, bandIx, wdTravel, wdRingTravel, underRepopulate, enchRepopulate, inUnder, inEnch, sceneOf, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trH, trSup, trSettle, trOk, trWalkOk, trFlat, trCornersI, trRow, TH, DD, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}, deathSpot, corpseStep, corpseNear, corpseStage, corpseRemove, CORPSE, drawMonkey, fcStart, fcToggle, fcMove, nearBuildBench, packFrame, planAdd, buildEnd, buildBarRender, invCount, give, structOf, PIECE_COST, wdLive, waterNear, canCraft, trDigNow, trWetUpdate, trDigCheck, cuBookOpen, touchSt, touchOn, touchSync, wdBlocked, rainAt, WD, MUSIC, mv, denMusicCtx, wdMusicTick, setAudio:(c, a)=>{ audioCtx = c; amb = a; }, denNeedsRepair, denRepair, denRepairOut, denStoneNeed, cuBookDo, cuDrawUpkeep, cuContribute, cuActivate, projStatus, cuTick, cuSlow, denFurnaceObj, denFurnaceHot, cuFurnaceAct, denUp, denBeltOn, denAutoOn, denSmelter, DEN_SMS, denAutoPick, denBeltCount, beltFor, denAutoText, denStationList, denStationsOn, KDISH, COOK, denKitchenHere, denStores, DEN_STORE, denHearthLit, denRoomAct, denBasinNear, denBoardNear, denStoreNear, washAct, washSlots, washCount, chefPot, bagWash, WASH_OF, POT_DISHES, DEN_HEARTH, nearFire, canPay, recHave, wdCraftNow, cuChests, cuMake, wdPartners, mineSteer, mineGen, mineInit, mineHit, mineStep, mineRepopulate, mineOpen, mineCacheAct, nearMine, nearMineExit, wdMineTravel, mnCellAt, mnBlocks, MN, MINE, MINE_SECRET, GATE_OF, inMine, palCall, hcFall, hcEnd, hcLose, hcBagDrop, SLEEPS, dormantNow, dormantSoon, palDrowsy, palDrowsyFor, palHibernate, palSleep, palWake, sleepDaysLeft, cheatSeason, palRegion, partnerGate, partnerTrek, partnerWarp, KIT_KEYS, pkNew, pkSave, pkWith, partnerGear, palPackOpen, palPackAct, palNear, partnerCare, palSwap, palSwapWhy, palSwapHold, weaponIdx, SWAP, DZ_SUG, DZ, dzNew, dzSave, pdzNew, pdzInfect, pdzStep, pdzEat, pdzSalve, pdzRoot, pdzNames, pdzK, pdzSave, cheatPdz, partnerRequest, partnerCycle, partnerPick, mkPartner, partnerSave, partnerHurt, PARTNER, PREQ, segWalk, partnerPath, partnerSteer, palFeed, palGive, palFeedAct, palAlt, partnerNeeds, partnerCare, palWheelOpen, palWheelClose, palWheelToggle, partnerWheel, classRender, ctxStore, ctxLoad, wdChop, nodesNear, nearStation, stationOk, canCraft, wdCraft, RECIPES, PROJECTS, denRoomOn, denStationList, denRec, DEN_O};
   (function makeBagPanels(){
     const orig = document.getElementById('wdBag');
     bagIds = new Set(['wdBag', ...[...orig.querySelectorAll('[id]')].map(e=>e.id)]);
