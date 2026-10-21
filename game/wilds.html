@@ -241,6 +241,31 @@
   .overlay .wd-tabs button.on{ border-color:#e0b54a; color:#e0b54a; }
   .wd-tabhint{ font-size:.65em; color:var(--bone-dim); }
   .wd-craft{ display:grid; grid-template-columns:repeat(2, minmax(0, 15em)); gap:.4em; max-width:94vw; max-height:50vh; overflow-y:auto; padding:.2em; }
+  .wd-qty{ position:fixed; inset:0; z-index:80; display:flex; align-items:center; justify-content:center; background:rgba(8,5,4,.62); }
+  .wd-qty .q-box{ width:min(22em,92vw); box-sizing:border-box; padding:1em 1.1em 1.1em; border:1px solid #5a4636; border-radius:8px; background:linear-gradient(#241b16,#171110); box-shadow:0 .6em 2em rgba(0,0,0,.6); text-align:center; display:flex; flex-direction:column; gap:.5em; font-size:max(14px, min(1.9vw, 2.6vh, 22px)); }
+  .wd-qty .q-head{ display:flex; align-items:center; justify-content:center; gap:.5em; font-size:1.15em; letter-spacing:.1em; text-transform:uppercase; color:#e0b54a; }
+  .wd-qty .q-head img{ width:2.2em; height:2.2em; }
+  .wd-qty .q-sub{ font-size:.8em; color:var(--bone-dim); }
+  .wd-qty .q-row{ display:flex; align-items:center; justify-content:center; gap:.5em; }
+  .wd-qty .q-range{ flex:1 1 auto; min-width:0; accent-color:#e0b54a; height:1.6em; }
+  .wd-qty .q-big{ font-size:2.2em; line-height:1; color:var(--bone); } .wd-qty .q-big small{ font-size:.34em; color:var(--bone-dim); }
+  .wd-qty .q-cost{ font-size:.82em; color:#c9b994; } .wd-qty .q-cost b{ color:#ee5a75; font-weight:normal; }
+  .wd-qty .q-time{ font-size:.72em; color:var(--bone-dim); }
+  .overlay .wd-qty button{ min-width:2.4em; padding:.45em .9em; font-size:.9em; }
+  .overlay .wd-qty button:disabled{ opacity:.35; cursor:default; }
+  .wd-qty .q-acts{ margin-top:.3em; } .wd-qty .q-acts button{ flex:1 1 0; } .overlay .wd-qty .q-go{ border-color:#e0b54a; color:#e0b54a; background:#2c2019; }
+  #wdCraftBar{ display:flex; flex-direction:column; gap:.2em; align-items:center; max-width:94vw; }
+  #wdCraftBar .cf-row{ display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:.3em; }
+  #wdCraftBar .cf-l{ font-size:.68em; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); margin-right:.1em; } #wdCraftBar .cf-gap{ width:.9em; }
+  .overlay #wdCraftBar .cf-b{ display:inline-flex; align-items:center; white-space:nowrap; padding:.2em .6em; font-size:.72em; border-radius:999px; background:transparent; color:var(--bone-dim); }
+  .overlay #wdCraftBar .cf-b.on{ border-color:#e0b54a; color:#e0b54a; background:#2c2019; }
+  #wdCraftBar .cf-b small{ display:inline; margin-left:.45em; font-size:.85em; color:#e0b54a; opacity:.85; }
+  .overlay #wdCraftBar .cf-tabs .cf-b{ border-radius:4px 4px 0 0; }
+  .wd-craft.icons{ grid-template-columns:repeat(auto-fill, minmax(3.7em, 1fr)); width:min(46em, 94vw); max-width:94vw; }
+  .vp .wd-craft.icons{ grid-template-columns:repeat(auto-fill, minmax(3.4em, 1fr)); }
+  .overlay .wd-craft.icons button.ic{ position:relative; justify-content:center; padding:.3em; aspect-ratio:1 / 1; }
+  .overlay .wd-craft.icons button.ic img{ width:2.5em; height:2.5em; }
+  .wd-craft.icons button.ic i{ position:absolute; right:.2em; bottom:0; font-style:normal; font-size:.62em; color:var(--bone); text-shadow:0 0 3px #000; }
   .wd-grp{ grid-column:1 / -1; font-size:.7em; letter-spacing:.14em; text-transform:uppercase; color:var(--bone-dim); margin-top:.3em; text-align:left; }
   .overlay .wd-craft button{ display:flex; align-items:center; gap:.5em; text-align:left; padding:.35em .6em; min-width:0; }
   .overlay .wd-craft button img{ width:2.2em; height:2.2em; flex:none; pointer-events:none; }
@@ -252,6 +277,12 @@
   .wd-dur u{ display:block; height:100%; background:#8fd06b; }
   .wd-fr{ position:absolute; left:12%; right:12%; top:7%; height:3px; background:rgba(0,0,0,.6); pointer-events:none; }
   .wd-fr u{ display:block; height:100%; }
+  .wd-ghost{ position:fixed; z-index:9999; pointer-events:none; display:none; box-sizing:border-box; border:2px solid #e0b54a; border-radius:5px; background:rgba(24,17,12,.9); box-shadow:0 3px 10px rgba(0,0,0,.65); transform:rotate(-4deg); font-size:14px; color:#f2e6c8; }
+  .wd-ghost img{ position:absolute; left:10%; top:10%; width:80%; height:80%; pointer-events:none; } .wd-ghost i{ position:absolute; right:.2em; bottom:.05em; font-style:normal; font-size:.8em; text-shadow:0 0 3px #000; }
+  .wd-bn{ position:absolute; left:12%; right:12%; bottom:8%; height:4px; background:rgba(0,0,0,.65); pointer-events:none; } .wd-bn u{ display:block; height:100%; }
+  #wdBundle{ font-size:.72em; flex-direction:column; align-items:center; gap:.25em; } .wd-bnhead{ color:#c9d0ff; } .wd-bngrid{ display:flex; flex-wrap:wrap; gap:.25em; justify-content:center; max-width:24em; }
+  .wd-bngrid span{ position:relative; width:2.4em; height:2.4em; box-sizing:border-box; border:1px solid #5a4a38; background:rgba(255,255,255,.04); display:flex; align-items:center; justify-content:center; cursor:pointer; } .wd-bngrid span.on{ border-color:#e0b54a; box-shadow:0 0 0 1px #e0b54a; }
+  .wd-bngrid span img{ width:80%; height:80%; pointer-events:none; } .wd-bngrid span i{ position:absolute; right:.12em; bottom:0; font-style:normal; font-size:.7em; }
   .wd-acts{ display:flex; gap:.5em; flex-wrap:wrap; justify-content:center; }
   .overlay .wd-acts button{ min-width:6em; }
   .uf-meta{ position:absolute; inset:0; display:none; flex-direction:column; align-items:center; justify-content:safe center; gap:.55em; background:rgba(10,7,6,.95); z-index:4; overflow-y:auto; padding:5vmin 4vmin; font-size:clamp(14px, 2.2vmin, 24px); text-align:center; color:var(--bone); }
@@ -393,12 +424,14 @@
       <div id="wdBagPage" style="display:contents">
         <div class="wd-grid" id="wdBagGrid"></div>
         <div id="wdChestArea"><div id="wdChestTitle">CHEST · 10 slots</div><div class="wd-grid" id="wdChestGrid"></div></div>
-        <div id="wdHand"></div><div id="wdBagInfo" role="status" aria-live="polite"></div>
+        <div id="wdHand"></div><div id="wdBagInfo" role="status" aria-live="polite"></div><div id="wdBundle" style="display:none"></div>
+        <div class="wd-acts" id="wdBnActs" style="display:none"><button id="wdBnOut">Take out</button><button id="wdBnNext">Next item</button><button id="wdBnSpill">Spill all</button><button id="wdBnPut">Put in bundle</button></div>
         <div class="wd-acts"><button id="wdTakeOne">Pick up 1</button><button id="wdPlaceOne">Place 1</button><button id="wdTransfer">Move stack</button><button id="wdTransferOne">Move 1</button><button id="wdQuickStack">Quick stack</button><button id="wdWash" style="display:none">Wash food</button></div>
         <div class="wd-acts"><button id="wdEat">Eat</button><button id="wdCook">Cook</button><button id="wdLight">Light</button><button id="wdFuel">Refuel</button><button id="wdDrop">Drop</button></div>
       </div>
       <div id="wdCraftPage" style="display:contents">
         <div class="wd-acts"><button id="wdRecraft">Craft again</button></div>
+        <div id="wdCraftBar" role="toolbar" aria-label="Crafting views and filters"></div>
         <div class="wd-craft" id="wdCraftList"></div>
         <div id="wdCraftInfo" style="font-size:.8em; color:#c9b994; min-height:1.4em"></div>
       </div>
@@ -1444,6 +1477,8 @@
     if(id==='galvplate'){ blob(()=>{c.moveTo(3,9);c.lineTo(19,6);c.lineTo(22,15);c.lineTo(6,19);c.closePath();}, '#a9bcc6', 1.5); for(const [x,y] of [[8,11],[13,10],[17,12],[10,15],[15,15]]){ c.strokeStyle='rgba(20,30,40,.45)'; c.lineWidth=.6; c.beginPath(); for(let i=0;i<6;i++){ const a=i*Math.PI/3; c.lineTo(x+Math.cos(a)*2, y+Math.sin(a)*1.7); } c.closePath(); c.stroke(); } line([[4,10],[18,7.4]], '#f2fbff', .9); return true; }
     if(id==='quicklime'){ for(const [x,y,w] of [[7,15,7],[14,11,8],[15,17,6]]) blob(()=>{c.moveTo(x-w*.5,y+w*.4);c.lineTo(x-w*.3,y-w*.4);c.lineTo(x+w*.4,y-w*.5);c.lineTo(x+w*.6,y+w*.3);c.closePath();}, '#f1eee2', 1.4); hi(12,10,2.2,1.2); c.fillStyle='rgba(255,255,255,.8)'; for(const [x,y] of [[5,19],[9,20],[18,20],[20,15]]) c.fillRect(x,y,1.3,1.3); return true; }
     return false; }
+  RECIPES.push({id:'snailhelm', at:'bench', cost:{snailshard:5, reed:2}}, {id:'snailaxe', at:'bench', cost:{snailshard:6, plank:2, reed:2}}, {id:'snailmail', at:'bench', cost:{snailshard:9, curedhide:2, reed:3}},
+    {id:'snailpack', at:'bench', cost:{snailshard:7, curedhide:3, reed:4}}, {id:'snailcharm', at:'bench', cost:{snailshard:3, silk:2}}, {id:'bundle', at:'hand', cost:{curedhide:1, silk:1}}); /* shell gear from the giant snail's shards; the bundle from a scrap of leather and a thread of silk */
   { const ORD = {build:-1, hand:0, bench:1, def:2, fire:3, furnace:4, anvil:5, refiner:6, kiln:6.3, crucible:6.6, still:7, vat:8}; RECIPES.sort((a, b)=>(ORD[a.at] ?? 9) - (ORD[b.at] ?? 9)); }
   /* Every player can have their own bag panel open at once: seat 0 owns the page's #wdBag, the others get copies (same ids) made at start-up.
      $() hands back the element inside the CURRENT seat's panel for anything that lives in a bag, so all the bag code works unchanged per seat. */
@@ -2481,7 +2516,7 @@
   const finite = (v, d) => typeof v==='number' && isFinite(v) ? v : d;
   function wdClean(o){
     if(!o || typeof o!=='object' || o.v!==1 || typeof o.seed!=='string') return null;
-    const slot = s => { if(s && s.id==='platform')s={id:'plank',n:s.n}; if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d,I.dur) : Math.floor(finite(s.d, I.dur)), fl ? 0.001 : 1, I.dur); else if(I.shelf && s.d != null){ const f = clamp(finite(s.d, 1), 0.001, 1); if(f < .999) o.d = Math.round(f*1000)/1000; } return o; };
+    const slot = s => { if(s && s.id==='platform')s={id:'plank',n:s.n}; if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d,I.dur) : Math.floor(finite(s.d, I.dur)), fl ? 0.001 : 1, I.dur); else if(I.shelf && s.d != null){ const f = clamp(finite(s.d, 1), 0.001, 1); if(f < .999) o.d = Math.round(f*1000)/1000; } else if(I.bundle) o.d = bnClean(s.d); return o; };
     const pack0 = slot(o.pack), pack = pack0 && ITEMS[pack0.id].pack ? pack0 : null, NS = invLen(o.inv, pack); const inv = Array.isArray(o.inv) ? o.inv.slice(0, NS).map(slot) : []; while(inv.length < NS) inv.push(null);
     const pt = q => q && typeof q==='object' && isFinite(q.x) && isFinite(q.y) ? {x:+q.x, y:+q.y} : null;
     const drops = (Array.isArray(o.drops) ? o.drops : []).map(d=>{ const at = pt(d); if(!at) return null; at.z = clamp(finite(d.z, 0), 0, MAXL*LH);
@@ -2493,7 +2528,7 @@
         cp:c.cp && typeof c.cp==='object' ? c.cp : null, p:{hp:clamp(finite(q.hp, WD.hp), 1, WD.hp + 5), hunger:clamp(finite(q.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(q.thirst, WD.thirst), 0, WD.thirst), torch:clamp(finite(q.torch, 0), 0, WD.torch)}}; });
     return {upperWalls:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='wall' && finite(b[5],0)>0).length, retired:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='platform').length, seed:o.seed.slice(0, 12), t:Math.max(0, finite(o.t, 15)),
       p:{x:finite(p.x, spawnPt.x), y:finite(p.y, spawnPt.y), z:clamp(finite(p.z, 0), 0, MAXL*LH), hp:clamp(finite(p.hp, WD.hp), 1, WD.hp + 5), hunger:clamp(finite(p.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(p.thirst, WD.thirst), 0, WD.thirst)},
-      pack, armor:armor && ITEMS[armor.id].armor ? armor : null, helmet:helmet && ITEMS[helmet.id].helmet ? helmet : null, accessory:ITEMS[o.accessory] && ITEMS[o.accessory].accessory ? o.accessory : null, creative:!!o.creative, hc:o.sv===1, hg:o.hg ? 1 : 0, mine:o.mine && typeof o.mine==='object' ? {d:(Array.isArray(o.mine.d) ? o.mine.d.slice(0, 12) : []), tk:(Array.isArray(o.mine.tk) ? o.mine.tk.slice(0, 12) : []), sn:o.mine.sn ? 1 : 0, dg:o.mine.dg && typeof o.mine.dg==='object' ? (q=>({c:q(o.mine.dg.c), ch:q(o.mine.dg.ch), sh:o.mine.dg.sh ? 1 : 0, key:o.mine.dg.key ? 1 : 0, seen:o.mine.dg.seen ? 1 : 0}))(a=>Array.isArray(a) ? a.slice(0, 24).map(v=>v ? 1 : 0) : []) : null} : null, hand:slot(o.hand), inv, gone:Array.isArray(o.gone) ? o.gone.filter(n=>Number.isInteger(n)) : [], regrow:o.regrow && typeof o.regrow==='object' ? o.regrow : {},
+      pack, armor:armor && ITEMS[armor.id].armor ? armor : null, helmet:helmet && ITEMS[helmet.id].helmet ? helmet : null, accessory:ITEMS[o.accessory] && ITEMS[o.accessory].accessory ? o.accessory : null, creative:!!o.creative, hc:o.sv===1, hg:o.hg ? 1 : 0, mine:o.mine && typeof o.mine==='object' ? {d:(Array.isArray(o.mine.d) ? o.mine.d.slice(0, 12) : []), tk:(Array.isArray(o.mine.tk) ? o.mine.tk.slice(0, 12) : []), sn:o.mine.sn ? 1 : 0, ss:o.mine.ss ? 1 : 0, dg:o.mine.dg && typeof o.mine.dg==='object' ? (q=>({c:q(o.mine.dg.c), ch:q(o.mine.dg.ch), sh:o.mine.dg.sh ? 1 : 0, key:o.mine.dg.key ? 1 : 0, seen:o.mine.dg.seen ? 1 : 0}))(a=>Array.isArray(a) ? a.slice(0, 24).map(v=>v ? 1 : 0) : []) : null} : null, hand:slot(o.hand), inv, gone:Array.isArray(o.gone) ? o.gone.filter(n=>Number.isInteger(n)) : [], regrow:o.regrow && typeof o.regrow==='object' ? o.regrow : {},
       fires:(Array.isArray(o.fires) ? o.fires : []).map(f=>{ const at = pt(f); return at ? Object.assign(at, {fuel:clamp(finite(f.fuel, 0), 0, WD.fireMax), pit:!!f.pit}) : null; }).filter(Boolean).slice(0, 60),
       benches:(Array.isArray(o.benches) ? o.benches : []).map(b=>{ const at = pt(b); return at ? Object.assign(at, {k:b.k==='def' || b.k==='build' ? b.k : 'work'}) : null; }).filter(Boolean).slice(0, 30),
       floors:(Array.isArray(o.floors) ? o.floors : []).filter(k=>typeof k==='string' && /^-?\d+,-?\d+(,[1-3])?$/.test(k)).slice(0, 4000),
@@ -2517,7 +2552,7 @@
     const h = wd.home || spawnPt, p = wd.dead > 0 ? Object.assign(safeSpot(h.x, h.y + 20), Object.assign({z:0}, wakeVals(wd.p, wd.p.maxHp))) : wd.p, regrow = {}; /* saved mid-death: you wake as you would have */
     for(const n of wd.nodes) if(n.ready > wd.t) regrow[n.id] = Math.round(n.ready);
     const o = {v:1, seed:wd.seed, t:+wd.t.toFixed(2), p:{x:+p.x.toFixed(4), y:+p.y.toFixed(4), z:+(p.z || 0).toFixed(2), hp:p.hp, hunger:+p.hunger.toFixed(3), thirst:+(p.thirst == null ? WD.thirst : p.thirst).toFixed(3), torch:+(wd.dead > 0 ? 0 : wd.p.torch || 0).toFixed(1)},
-      pack:wd.pack || null, armor:wd.armor || null, helmet:wd.helmet || null, accessory:wd.accessory || null, creative:!!wd.creative, sv:wd.hc ? 1 : 0, hg:wd.hcGot ? 1 : 0, mine:wd.mine ? {d:wd.mine.disc, tk:wd.mine.taken, sn:wd.mine.snail ? 1 : 0, dg:wd.mine.dg} : null, hand:wd.hand || null, inv:invWithBooms(wd.inv, 0), gone:wd.nodes.filter(n=>n.gone).map(n=>n.id), regrow,
+      pack:wd.pack || null, armor:wd.armor || null, helmet:wd.helmet || null, accessory:wd.accessory || null, creative:!!wd.creative, sv:wd.hc ? 1 : 0, hg:wd.hcGot ? 1 : 0, mine:wd.mine ? {d:wd.mine.disc, tk:wd.mine.taken, sn:wd.mine.snail ? 1 : 0, ss:wd.mine.ss ? 1 : 0, dg:wd.mine.dg} : null, hand:wd.hand || null, inv:invWithBooms(wd.inv, 0), gone:wd.nodes.filter(n=>n.gone).map(n=>n.id), regrow,
       fires:wd.fires.map(f=>Object.assign({x:Math.round(f.x), y:Math.round(f.y), fuel:+f.fuel.toFixed(1)}, f.pit ? {pit:1} : {})),
       benches:wd.benches.map(b=>({x:Math.round(b.x), y:Math.round(b.y), k:b.k})),
       floors:[...wd.floors], builds:[...wd.builds.values()].map(b=>[b.gx, b.gy, b.k, b.u==null ? null : b.u, isStorage(b.k) ? b.slots : null,0,b.ready || 0,b.k==='farmplot' ? {crop:b.crop,watered:b.watered} : b.k==='trailsign' ? {label:b.label} : null,b.l||0,b.dir||0]), raidDone:wd.raidDone,
@@ -3549,7 +3584,7 @@
     if(skHas('mo_sp2') && (STONEWT.has(id) || TERRAINWT.has(id))) w *= .25; else if(STONEWT.has(id) && skHas('mo_sp')) w *= .5; /* Stone Porter: stone things weigh half; Deep Porter: a quarter, and dirt, mud and bones too */
     if(clsHas('raccoon')){ const basic = RC_BASIC.has(id); if(basic) w *= 1 - .25*rcT('lw'); if(skHas('rc_pk') && (basic || (ITEMS[id] && ITEMS[id].food))) w *= .5; } /* Light Load: basic ingredients 25, 50, 75% lighter; Pantry Pack: all food and ingredients half again */
     return w; };
-  function cuLoad(inv){ let w = 0; for(const s of inv) if(s) w += wOf(s.id)*s.n; return w; }
+  function cuLoad(inv){ let w = 0; for(const s of inv) if(s){ w += wOf(s.id)*s.n; if(s.id==='bundle' && Array.isArray(s.d)) for(const e of s.d) if(e && ITEMS[e.id]) w += wOf(e.id)*e.n; } return w; }
   function cuCap(inv){ let c = CU.cap; const pk = wd && wd.pack && ITEMS[wd.pack.id] && ITEMS[wd.pack.id].pack; if(pk) c += pk.carry; if(wd && clsHas('monkey')) c *= 1 + .15*mkT('ac'); return c; } /* Pack Mule (saved as ac): +15% per step for a Monkey */
   const hasAgro = () => invCount('agrobag') > 0 || !!(wd && wd.pack && wd.pack.id==='agrobag');
   function cuInjured(){ return wd.inj.until > wd.t; }
@@ -3759,7 +3794,7 @@
     const v = r <= BLD.fadeFrom ? 1 : clamp((1 - r)/(1 - BLD.fadeFrom), 0, 1); return denInside(p) ? v*(1 - denWater()) : v; } /* a flooded den helps no one */
 
   /* ---- illness: a cold, scurvy, Toe Foot (which climbs into Knee Leg) and SlugPox. Every player carries their own in wd.dz ---- */
-  const DZ = {vitDays:6, toeDays:5, kneeDose:6, poxDays:4, coldDays:3, dampS:50, dryS:110, toeCd:1.7, kneeCd:2.4}; /* Toe Foot lingers (110 s of drying, five days before it climbs) and slows your roll or burrow; Knee Leg takes six salves or a reed-lily root */
+  const DZ = {vitDays:6, toeDays:5, kneeDose:6, poxDays:4, coldDays:3, dampS:50, dryS:120, fireS:120, toeCd:1.7, kneeCd:2.4}; /* Two minutes (fireS) beside a lit fire clear a cold or SlugPox; Toe Foot lingers (120 s of drying, five days before it climbs) and slows your roll or burrow; Knee Leg takes six salves or a reed-lily root */
   /* the vitamin a fresh food puts back (it runs down over about six days; meat and bread give none) */
   const DZ_VIT = {berry:.3, rberry:.2, herb:.2, carrot:.25, roastcarrot:.2, berryjam:.25, mushroom:.1, cmushroom:.1, mushroomsoup:.2, trailmix:.2, broth:.15, veggiestew:.5, glowcap:.25, cglowcap:.2, moonpetal:.2, moonbrew:.15, cordial:.5, tonic:.4};
   const DZ_COLD = {tonic:1, cordial:1, moonbrew:1, broth:.5, clearbroth:.75};
@@ -3778,9 +3813,9 @@
   const dzSay = (text, col) => wdFx({kind:'num', x:wd.p.x, y:wd.p.y - 24, text, col:col || '#c9d98a', t:1500});
   function dzInfect(kind){ /* true if it took */
     const d = wd.dz, T = wd.t; if(!d || wd.creative || wd.dead > 0) return false;
-    if(kind==='cold'){ if(d.cold > T || d.imm > T) return false; d.cold = T + WD.day*DZ.coldDays; d.nextSneeze = 8; dzSay('Achoo! A cold', '#9fc4e8'); jrAdd('les:dz:cold', 'warning', 'Caught a cold. It runs its course in three days, sooner beside a fire. Tonic, cordial or tea cut it short. It passes to anyone who stays close.', {tags:['illness']}); return true; }
+    if(kind==='cold'){ if(d.cold > T || d.imm > T) return false; d.cold = T + WD.day*DZ.coldDays; d.nextSneeze = 8; dzSay('Achoo! A cold', '#9fc4e8'); jrAdd('les:dz:cold', 'warning', 'Caught a cold. It runs its course in three days, but two minutes beside a fire clears it. Tonic, cordial or tea cut it short. It passes to anyone who stays close.', {tags:['illness']}); return true; }
     if(kind==='toe'){ if(clsHas('monkey')){ jrAdd('les:dz:toemk', 'lesson', 'Wet feet rot the skin between the toes, but you are a monkey: you have hands, not feet, so Toe Foot (and Knee Leg after it) can never take hold of you.', {tags:['illness']}); return false; } if(d.toe > 0 || d.knee > 0) return false; d.toe = T; d.dry = 0; dzSay('Toe Foot: itchy toes', '#d9b878'); jrAdd('les:dz:toe', 'warning', 'Toe Foot: wet feet have rotted the skin between the toes. It lingers: dry them for a good while beside a fire, or use a salve or a reed-lily root, before it climbs into the knee. Until then your roll or burrow is slow to come back.', {tags:['illness']}); return true; }
-    if(kind==='pox'){ if(d.pox > T) return false; d.pox = T + WD.day*DZ.poxDays; d.slugT = 25 + Math.random()*20; dzSay('SlugPox!', '#c58be0'); jrAdd('les:dz:pox', 'warning', 'SlugPox: you leak small slugs every minute or so, and their bites pass it on. A herbal tonic cures it; if not, it burns out in four days. Keep clear of friends.', {tags:['illness']}); return true; }
+    if(kind==='pox'){ if(d.pox > T) return false; d.pox = T + WD.day*DZ.poxDays; d.slugT = 25 + Math.random()*20; dzSay('SlugPox!', '#c58be0'); jrAdd('les:dz:pox', 'warning', 'SlugPox: you leak small slugs every minute or so, and their bites pass it on. Two minutes beside a fire or a herbal tonic cures it; if not, it burns out in four days. Keep clear of friends.', {tags:['illness']}); return true; }
     return false; }
   function dzEat(id){ const d = wd.dz; if(!d) return; const v = DZ_VIT[id]; if(v) d.vit = Math.min(1, d.vit + v); const g = DZ_SUG[id]; if(g){ d.sug = Math.min(6, d.sug + g); if(d.dia) d.diaOk = 0; }
     if(DZ_COLD[id] && d.cold > wd.t){ d.cold = Math.max(wd.t + 1, d.cold - WD.day*DZ_COLD[id]); dzSay('The cold eases', '#9fc4e8'); }
@@ -3817,6 +3852,8 @@
     d.sug = Math.max(0, d.sug - dt*DZ.sugDecay);
     if(!d.dia && d.sug >= DZ.diaAt*(clsHas('bear') ? DZ.diaBear : 1)){ d.dia = 1; d.diaOk = 0; dzSay('Diabetes: too many sweets', '#e9c07a'); jrAdd('les:dz:dia', 'warning', 'Diabetes: you have eaten too many sweets too fast (jam, cordial, trail mix, berries). You thirst half again as fast, walk a little slower and your roll is slow to return. It does not pass by itself: keep sugar low for two days, with meat, bread, vegetables and stews, and it comes under control. Bears do not get it, normally.', {tags:['illness']}); }
     else if(d.dia){ if(d.sug < DZ.diaLow) d.diaOk += dt; else d.diaOk = 0; if(d.diaOk >= WD.day*DZ.diaDays){ d.dia = 0; d.diaOk = 0; d.sug = 0; dzSay('Diabetes under control', '#8fd06b'); } }
+    { const sick = d.cold > T || d.pox > T; /* two minutes beside a lit fire (half that in a sound building) sweat out a cold or SlugPox */
+      if(sick && fire){ d.fireT = (d.fireT || 0) + s*(1 + inn); if(d.fireT >= DZ.fireS){ d.fireT = 0; if(d.cold > T) d.cold = T; if(d.pox > T) d.pox = T; } } else if(!sick) d.fireT = 0; }
     /* a cold: caught from the wet and the cold, and from the sick beside you */
     if(d.cold <= T && d.imm <= T){ const ex = (wd.wet > .5 ? .6 : 0) + (wd.warm < 12 ? .8 : 0) + (wd.warm < 4 ? .8 : 0); if(ex > 0 && Math.random() < .0011*ex*s*(clsHas('bear') ? .7 : 1)) dzInfect('cold'); }
     if(d.cold > T){ const fx = fire ? .7 + .3*inn : .5*inn; if(fx) d.cold -= s*fx;
@@ -5489,7 +5526,7 @@
   function invAdd(id, n, d){ /* d: a tool's uses left */
     const inv = wd.inv, I = ITEMS[id], st = I.stack || WD.stack;
     if(st > 1) for(const s of inv) if(s && s.id===id && s.n < st){ const k = Math.min(n, st - s.n); if(I.shelf) frMix(s, {d}, k); s.n += k; n -= k; if(!n) return 0; }
-    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, st); inv[i] = {id, n:k}; if(I.dur) inv[i].d = d || I.dur; else if(I.shelf && d != null && d < .999) inv[i].d = d; n -= k; }
+    for(let i=0;i<inv.length && n;i++) if(!inv[i]){ const k = Math.min(n, st); inv[i] = {id, n:k}; if(I.bundle) inv[i].d = Array.isArray(d) ? d : []; else if(I.dur) inv[i].d = d || I.dur; else if(I.shelf && d != null && d < .999) inv[i].d = d; n -= k; }
     return n;
   }
   const invFind = id => wd.inv.findIndex(s=>s && s.id===id);
@@ -5581,12 +5618,12 @@
     if(target){ const need=toolFor(target.k==='tree'?'chop':'mine'); if(need>=0) ti=need; else if(biteCan(target.k)) bite=true; }
     if(!bite && ti<0) ti=wd.inv.findIndex(s=>s && (ITEMS[s.id].weapon || ['chop','mine'].includes(ITEMS[s.id].tool)));
     if(bite || ti<0){ wdBite(dir); return; }
-    const item=wd.inv[ti], id=item.id, C=ITEMS[id], reach=id==='spear' || C.art==='spear'?48:id==='scythe'?46:WD_SW.r, arcW=id==='scythe'?2.9:WD_SW.arc;
+    const item=wd.inv[ti], id=item.id, C=ITEMS[id], reach=id==='spear' || C.art==='spear'?48:id==='scythe'?46:C.art==='battleaxe'?43:WD_SW.r, arcW=id==='scythe'?2.9:C.art==='battleaxe'?2.7:WD_SW.arc;
     p.fx=dir.x; p.fy=dir.y; wd.swingTool=id;
     const before=item.d; wd.chopHit=false; wdHitArc(dir,reach,arcW,clsDmg((C.damage || 2)+(wd.accessory ? ITEMS[wd.accessory].attack || 0 : 0)),80);
     if(!wd.chopHit && wd.inv[ti]===item && item.d===before) wear(ti);
-    p.sword={a:Math.atan2(dir.y,dir.x),arc:arcW,side:1,t:0,dur:id==='scythe'?210:170,tool:C.art || id,id};
-    p.combo=0; p.comboT=0; p.swingT=id==='club'?470:330; p.queued=false; p.fishT=0;
+    p.sword={a:Math.atan2(dir.y,dir.x),arc:arcW,side:1,t:0,dur:id==='scythe'?210:C.art==='battleaxe'?240:170,tool:C.art || id,id};
+    p.combo=0; p.comboT=0; p.swingT=id==='club'?470:C.art==='battleaxe'?480:330; p.queued=false; p.fishT=0;
     sfxSwing(id);
   }
   /* Bare teeth (or fists): with no weapon or tool to swing, every animal bites. The Bear's is the strongest (a flint spear's 3 plus the class bonus), the Monkey punches instead, the Beaver's teeth fell a tree like a hatchet and the Mole's break rock like a pickaxe, without wearing anything out. */
@@ -5955,7 +5992,10 @@
       return true; }
     wdNote(steep ? 'Too steep or rocky to set that here' : 'No room here'); return false;
   }
-  function wdCraft(r){ if(!wd) return false; if(r.auto){ if(!canCraft(r)){ wdNote('Stand at the refinery furnace'); return false; } denAutoPick(r); return false; } if(r.build){ if(!wdLive()) return false; if(!stationOk(r)){ wdNote("Stand by a builder's bench"); return false; } buildStart(r.build); if(wd.build && nearBuildBench()) fcStart(null, true); wd.lastCraft = r; return true; }  const ok = wdAction(recName(r),(r.ms || 1200)*(clsHas('monkey') ? (skHas('mk1') ? .6 : .75) : 1)*((r.at==='fire' || r.at==='kitchen') && clsHas('raccoon') ? .75 : 1),()=>canCraft(r),()=>wdCraftNow(r)); if(ok) wd.lastCraft = r; return ok; }
+  function wdCraft(r, left0, tot0){ if(!wd) return false; if(r.auto){ if(!canCraft(r)){ wdNote('Stand at the refinery furnace'); return false; } denAutoPick(r); return false; } if(r.build){ if(!wdLive()) return false; if(!stationOk(r)){ wdNote("Stand by a builder's bench"); return false; } buildStart(r.build); if(wd.build && nearBuildBench()) fcStart(null, true); wd.lastCraft = r; return true; }  const left = Math.max(1, left0 | 0), tot = Math.max(left, tot0 | 0), ok = wdAction(recName(r) + (tot > 1 ? ' ' + (tot - left + 1) + '/' + tot : ''), craftMs(r), ()=>canCraft(r), ()=>{ if(wdCraftNow(r) && left > 1 && canCraft(r)) wdCraft(r, left - 1, tot); }); if(ok) wd.lastCraft = r; return ok; } /* left of tot: a batch makes them one after another, and moving away stops it */
+  const craftMs = r => (r.ms || 1200)*(clsHas('monkey') ? (skHas('mk1') ? .6 : .75) : 1)*((r.at==='fire' || r.at==='kitchen') && clsHas('raccoon') ? .75 : 1);
+  const craftQty = r => !r.auto && !r.build && !r.place; /* what can be made in a batch: not building pieces, not furnace choices */
+  function craftMax(r){ if(!canCraft(r)) return 0; if(!craftQty(r)) return 1; let m = 99; for(const k in r.cost) m = Math.min(m, Math.floor(recHave(r, k)/r.cost[k])); return Math.max(0, m); }
   function wdCraftNow(r){
     if(!wd || !canCraft(r)) return false;
     if(r.place && !wdPlace(r.place)) return false;
@@ -6139,6 +6179,18 @@
   const snailSwing = (f, J, p2)=>({R:f.r + 9 + J.reach + 6, arc:p2 ? 1.65 : 1.35}); /* the giant's swing: ONE shape, drawn as the red cone and used for the hit, so what is red is what hurts */
   const snailMaxHp = n=>Math.round(ANIMALS.gsnail.hp*(1 + ANIMALS.gsnail.hpPer*(Math.max(1, n) - 1)));
   Object.assign(ITEMS,{snailhelm:{name:'Snail-shell helm',helmet:true,prot:.55,dur:130,stack:1,desc:'Helmet. A cap cut from a giant snail shell. Absorbs 55% of animal and Shardling damage. 130 durability.'}});
+  /* the giant snail's shell: it always drops shards, and five things are made from them at a workbench (30 shards for all five; it drops 32, and 8 more for each extra player) */
+  Object.assign(ITEMS,{
+    snailshard:{name:'Snail-shell shard', desc:'A curved plate of the giant snail\'s shell, hard as horn and light as bone. The giant snail always drops them. Shell gear is made from them at a workbench.'},
+    snailaxe:{name:'Snail-shell battle axe', weapon:true, art:'battleaxe', dur:110, stack:1, damage:6, desc:'Select to wield. A heavy axe with a shell-plate head: 6 damage in a wide, slow sweep, 110 strikes. Made from snail-shell shards at a workbench.'},
+    snailmail:{name:'Snail-shell carapace', armor:true, layer:'outer', warm:.06, prot:.5, dur:150, stack:1, desc:'Outer layer. Overlapping shell plates absorb 50% of animal damage. 150 durability. It does not rust and does not clatter. Made from snail-shell shards at a workbench.'},
+    snailpack:{name:'Snail-shell pack', stack:1, pack:{slots:7, carry:55}, desc:'Backpack. A shell-plate frame on cured hide. Worn in the PACK slot it adds 7 bag slots and +55 carrying. Made from snail-shell shards at a workbench.'},
+    bundle:{name:'Bundle', stack:1, bundle:true, desc:'Holds a mix of items, one stack in all. Right-click it with an item in hand to put the item in; with an empty hand to take the selected one out. No bundles inside bundles.'},
+    snailcharm:{name:'Shell Ward Charm', accessory:true, ward:.15, stack:1, desc:'Takes 15% off all animal damage while equipped. One accessory slot. Made from snail-shell shards at a workbench.'}
+  });
+  ITEMS.snailhelm.desc = 'Helmet. A cap cut from giant snail shell. Absorbs 55% of animal and Shardling damage. 130 durability. Made from snail-shell shards at a workbench.';
+  HELM_COL.snailhelm = '#e2d3ab';
+  function snCatchup(){ const m = wd.mine; if(!m || !m.snail || m.ss || !wd.p) return; m.ss = 1; give('snailshard', 32, wd.p); wdBanner('Snail-shell shards', 'Pieces of the giant snail\'s shell have turned up in your bag', 6000); wdSave(); } /* a world where the snail already fell: the shards it now drops are given once */
   const FLESHLESS = {matriarch:1, spider:1, brood:1, saltcrawler:1, shardling:1, slug:1, sangwraith:1, thornling:1, wisp:1, warden:1};
   const yearN = t => Math.floor(t/WD.day/(CU.seasonDays*4)); /* 0 in the first year */
   function bloodAdd(x, y, sc, k, r, a, rot){ if(!wd || !bloodOn() || !isFinite(x) || !isFinite(y)) return null; const L = wd.blood || (wd.blood = []);
@@ -6289,7 +6341,7 @@
       if(kind==='wisp')dropItem('wispglass',1+(Math.random()<0.35?1:0),f.x,f.y,f);
       if(kind==='thornling'){ if(Math.random()<0.5)dropItem('twig',1,f.x,f.y,f); if(Math.random()<0.15)dropItem('moonpetal',1,f.x,f.y,f); }
       if(kind==='warden'){ dropItem('heartwood',4,f.x,f.y,f); dropItem('wispglass',3,f.x,f.y,f); dropItem('salve',2,f.x,f.y,f); }
-      if(kind==='gsnail'){ if(wd.mine) wd.mine.snail = 1; wd.foes = wd.foes.filter(o=>o.kind!=='brood'); wd.deb = []; wd.dec = []; for(const [id, n] of [['snailhelm',1], ['ironore',16], ['silverore',12], ['zincore',8], ['shard',12], ['salve',4]]) if(ITEMS[id]) dropItem(id, n, f.x, f.y, f); wdBanner('The giant snail is slain', 'Its shell and the mine\'s ore lie where it fell', 4200); wdSave(); }
+      if(kind==='gsnail'){ if(wd.mine){ wd.mine.snail = 1; wd.mine.ss = 1; } wd.foes = wd.foes.filter(o=>o.kind!=='brood'); wd.deb = []; wd.dec = []; for(const [id, n] of [['snailshard', 32 + 8*(coopCount() - 1)], ['ironore',16], ['silverore',12], ['zincore',8], ['shard',12], ['salve',4]]) if(ITEMS[id]) dropItem(id, n, f.x, f.y, f); wdBanner('The giant snail is slain', 'Its shell and the mine\'s ore lie where it fell', 4200); wdSave(); }
       if(kind==='vgen') vgDeath(f);
       if(kind==='jackal' && Math.random()<0.3)dropItem('bone',1,f.x,f.y,f);
       const charm=kind==='jackal'?'jackalfang':kind==='rabbit'?'rabbitfoot':null;
@@ -6430,7 +6482,7 @@
   const pHp = c => WD.hp + (HEAVY[c] ? HEAVY[c].hp : 0);
   /* ---- every animal has its own bag (partner animals plan): the bag and its pack, the hotbar choice, worn armour and helmet, the accessory, the clothing layers and the tool slots. The partner's lives in pr.kit and is saved with it; a swap trades them with yours (KIT_KEYS). The partner uses ITS OWN bag for its weapon, hatchet, pickaxe and food, and wears the armour and helmet in it. ---- */
   const KIT_KEYS = ['inv', 'sel', 'hand', 'armor', 'pack', 'helmet', 'accessory', 'base', 'mid', 'ag'];
-  function pkSlot(s){ if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d, I.dur) : Math.floor(finite(s.d, I.dur)), fl ? .001 : 1, I.dur); else if(I.shelf && s.d != null){ const f = clamp(finite(s.d, 1), 0.001, 1); if(f < .999) o.d = Math.round(f*1000)/1000; } return o; }
+  function pkSlot(s){ if(!s || typeof s!=='object' || !ITEMS[s.id] || !(s.n >= 1)) return null; const I = ITEMS[s.id], o = {id:s.id, n:Math.min(I.stack || WD.stack, Math.floor(s.n))}, fl = I.armor || I.helmet || I.rat; if(I.dur) o.d = clamp(fl ? finite(s.d, I.dur) : Math.floor(finite(s.d, I.dur)), fl ? .001 : 1, I.dur); else if(I.shelf && s.d != null){ const f = clamp(finite(s.d, 1), 0.001, 1); if(f < .999) o.d = Math.round(f*1000)/1000; } else if(I.bundle) o.d = bnClean(s.d); return o; }
   function pkNew(sv){ sv = sv && typeof sv==='object' ? sv : {};
     const pk0 = pkSlot(sv.pack), pack = pk0 && ITEMS[pk0.id].pack ? pk0 : null, NS = invLen(sv.inv, pack);
     const inv = Array.isArray(sv.inv) ? sv.inv.slice(0, NS).map(pkSlot) : []; while(inv.length < NS) inv.push(null);
@@ -6545,7 +6597,7 @@
   function pdzInfect(i, pr, kind){ /* true if it took */
     const d = pr.dz, T = wd.t; if(!d || wd.creative || pr.down > 0) return false;
     if(kind==='cold'){ if(d.cold > T || d.imm > T) return false; d.cold = T + WD.day*DZ.coldDays; d.nextSneeze = 8; pdzSay(pr, 'Achoo! A cold', '#9fc4e8');
-      pdzNote(i, pr, ' has caught a cold', 'les:pdz:cold', 'Your partner can fall ill like you do. A cold runs its course in three days, sooner by a fire or under a sound roof, and tonic, cordial or tea cut it short. It passes to anyone who stays close, and it makes your partner hungrier. Hold the tonic beside it and press B.'); return true; }
+      pdzNote(i, pr, ' has caught a cold', 'les:pdz:cold', 'Your partner can fall ill like you do. A cold runs its course in three days, but two minutes beside a fire clears it (a sound roof helps too), and tonic, cordial or tea cut it short. It passes to anyone who stays close, and it makes your partner hungrier. Hold the tonic beside it and press B.'); return true; }
     if(kind==='toe'){ if(pr.pcls==='monkey' || d.toe > 0 || d.knee > 0) return false; d.toe = T; d.dry = 0; pdzSay(pr, 'Toe Foot: itchy toes', '#d9b878');
       pdzNote(i, pr, ' has Toe Foot', 'les:pdz:toe', 'Toe Foot: wet feet have rotted the skin between your partner\'s toes. It lingers and slows it down. Dry it beside a fire, or hold a salve or a reed-lily root beside it and press B, before it climbs into the knee.'); return true; }
     return false; }
@@ -6582,6 +6634,7 @@
       if(pr.req!=='home' && sceneOf(pr)===sceneOf(o) && hyp(pr.x - o.x, pr.y - o.y) <= 56){ const od = ctxGet(i, 'dz');
         if(od && od.cold > T && d.cold <= T && Math.random() < .02*s) pdzInfect(i, pr, 'cold');
         if(d.cold > T && Math.random() < .02*s) withPlayer(i, ()=>dzInfect('cold')); } }
+    { const sick = d.cold > T || d.pox > T; if(sick && fire){ d.fireT = (d.fireT || 0) + s*(1 + inn); if(d.fireT >= DZ.fireS){ d.fireT = 0; if(d.cold > T) d.cold = T; if(d.pox > T) d.pox = 0; } } else if(!sick) d.fireT = 0; } /* two minutes beside a lit fire clear a cold or SlugPox */
     if(d.cold > T){ const fx = fire ? .7 + .3*inn : .5*inn; if(fx) d.cold -= s*fx;
       d.nextSneeze -= s; if(d.nextSneeze <= 0){ d.nextSneeze = 18 + Math.random()*26; pdzSay(pr, 'Achoo!', '#9fc4e8'); }
       pr.belly = Math.max(0, pr.belly - WD.hungerRate*s*.15); }
@@ -7031,7 +7084,7 @@
   function mineInit(G, sv){ const n = G.secrets.length, ar = k=>Array.from({length:n}, (_, i)=>sv && Array.isArray(sv[k]) && sv[k][i] ? 1 : 0), sd = sv && sv.dg || {}, dar = (k, len)=>Array.from({length:len}, (_, i)=>Array.isArray(sd[k]) && sd[k][i] ? 1 : 0);
     const dg = {c:dar('c', G.dg.rooms.length), ch:dar('ch', G.dg.chests.length), sh:sd.sh ? 1 : 0, key:sd.key ? 1 : 0, seen:sd.seen ? 1 : 0}, st = G.dg.rooms.map(()=>({st:'idle', alone:0}));
     for(const r of G.dg.rooms) for(const d of r.doors){ const v = d.kind === 'key' ? (dg.key ? 1 : 21) : d.kind === 'exit' ? (dg.c[G.dg.bossI] ? 1 : 20) : 1; for(const i of d.cells) G.cells[i] = v; } /* the generated world is shared, so every gate is set from the save each time */
-    return {G, disc:ar('d'), taken:ar('tk'), snail:sv && sv.sn ? 1 : 0, nextRep:0, dg, dgR:st}; }
+    return {G, disc:ar('d'), taken:ar('tk'), snail:sv && sv.sn ? 1 : 0, ss:sv && sv.ss ? 1 : 0, nextRep:0, dg, dgR:st}; }
   const mnCellAt = (x, y)=>{ const g = wd && wd.mine && wd.mine.G; if(!g) return 0; const cx = Math.floor((x - MN.x0)/MN.cs), cy = Math.floor((y - MN.y0)/MN.cs); return cx >= 0 && cy >= 0 && cx < g.W && cy < g.H ? g.cells[cy*g.W + cx] : 0; };
   const mnBlocks = (v, who, burrow)=>v === 1 || v === 2 ? false : v === 0 ? true : !(GATE_CLS[v] === who && (v !== 10 || burrow)); /* rock stops everyone; a gate only its own animal (the soft rock only a burrowing Mole) */
   const mineWho = o=>o.pcls || (o.kind ? '' : (wd.cls && wd.cls[0]) || '');
@@ -7657,6 +7710,7 @@
     const p = wd.p; if(wd.creative || wd.dead > 0 || p.inv > 0 || p.bur > 0) return;
     if(animalAttack && wd.armor){const blocked=Math.min(wd.armor.d,dmg*(ITEMS[wd.armor.id].prot || 0.4));dmg-=blocked;if(!snailCalm(wd.p))wd.armor.d-=blocked;if(wd.armor.d<=0){wd.armor=null;thud(0.15, 0.12, 1800); beep(240, 0.2, 'square', 0.03);}hudLast='';}
     if(animalAttack && wd.helmet){const hm=ITEMS[wd.helmet.id],blocked=Math.min(wd.helmet.d,dmg*hm.prot);dmg-=blocked;if(!snailCalm(wd.p))wd.helmet.d-=blocked;if(wd.helmet.d<=0){wd.helmet=null;thud(0.15, 0.12, 1800); beep(240, 0.2, 'square', 0.03);}hudLast='';}
+    { const wa = animalAttack && wd.accessory && ITEMS[wd.accessory] ? ITEMS[wd.accessory].ward : 0; if(wa) dmg = Math.round(dmg*(1 - wa)*10)/10; } /* the Shell Ward Charm */
     wdCancelAction(); if(wd.fc){ wd.fc = null; hudLast = ''; wdNote('Free camera off: you were hit'); } p.hp -= dmg; p.inv = 500; p.fishT = 0; wd.shake = 160; sfxHurtP(); haptic([30, 30, 30]);
     wdFx({kind:'num', x:p.x, y:p.y - 14, text:'-' + dmg, col:'#ee5a75', t:700}); mkShriek(p); bloodHurtP(p, dmg, false);
     if(animalAttack && p.hp > 0 && Math.random() < .22) cuInjure('wound');
@@ -8011,7 +8065,7 @@
   function frLeft(s, cool){ const I = ITEMS[s.id], m = spoilMult()*(cool ? 2 : 1), dl = frOf(s)*I.shelf*m; /* "about 6.1 days left" at the speed it is spoiling now */
     return 'about ' + (dl >= 10 ? Math.round(dl) : dl.toFixed(1)) + (Math.abs(dl - 1) < .05 ? ' day' : ' days') + ' left' + (cool ? ' · kept cool' : '') + (spoilMult() > 1 ? ' · larder skills +' + Math.round((spoilMult() - 1)*100) + '%' : ''); }
   const frInfo = (s, cool) => frHead(s) + ' · ' + frLeft(s, cool);
-  function spoilOne(s, f){ if(!s) return s; const I = ITEMS[s.id]; if(!I || !I.shelf) return s; const v = frOf(s) - f/I.shelf; if(v <= 0) return {id:'rotten', n:s.n}; s.d = v; return s; }
+  function spoilOne(s, f){ if(!s) return s; const I = ITEMS[s.id]; if(I && I.bundle){ const L = Array.isArray(s.d) ? s.d : []; for(let k = 0; k < L.length; k++){ const r = spoilOne(L[k], f); if(r !== L[k]) L[k] = r; } return s; } if(!I || !I.shelf) return s; const v = frOf(s) - f/I.shelf; if(v <= 0) return {id:'rotten', n:s.n}; s.d = v; return s; }
   function spoilArr(a, f){ let lost = 0; if(!Array.isArray(a)) return 0; for(let i = 0; i < a.length; i++){ const s = a[i]; if(!s) continue; const r = spoilOne(s, f); if(r !== s){ a[i] = r; lost += r.n; } } return lost; }
   function spoilStep(){ /* every couple of game-seconds: age the food in every bag, on the ground and in storage */
     if(wd.creative){ SP.w = wd; SP.last = wd.t; return; }
@@ -8061,29 +8115,63 @@
   function vgCageTalk(){ wdBanner('"Please, get me out of here!"', 'The Vampire General has the only key. His keep is in the south-east corner of the meadow.', 6000); }
   function vgSummon(f, n){ const bats = wd.foes.filter(o=>o.kind==='vbat' && !o.dead).length; n = Math.min(n, 9 - bats); for(let i = 0; i < n; i++){ const a = Math.random()*6.2832, b = mkAnimal('vbat', f.x + Math.cos(a)*26, f.y + Math.sin(a)*26, 'keep'); b.raid = true; b.ag = true; b.life = 50000; b.hx = f.x; b.hy = f.y; wd.foes.push(b); wdFx({kind:'ring', x:b.x, y:b.y, r:10, t:300, col:'120,30,60'}); } if(n > 0) sfxAnimal('vbat', 'alert', f); }
   function vgGo(f, ux, uy, st){ const ox = f.x, oy = f.y; moveBy(f, ux*st, uy*st); if(hyp(f.x - ox, f.y - oy) < st*.3){ moveBy(f, -uy*st, ux*st); if(hyp(f.x - ox, f.y - oy) < st*.3) moveBy(f, uy*st, -ux*st); } f.moving = hyp(f.x - ox, f.y - oy) > .05; if(f.moving) f.facing = Math.atan2(f.y - oy, f.x - ox); }
-  function vgenTick(f, LV, dt0){ /* the whole general, run here: patrol, chase, a drinking bite, a lunge, and bats when he is hurt */
+  const VG = {claw:3, novaR:110, novaW:1500, castW:850, mistOut:380, mistIn:260, roarW:850, sp:[1, 1.06, 1.12], ivs:[1500, 1400, 1300], lgs:[4200, 3800, 3400], nova:6, bolt:3}; /* he is the FIRST boss, met before the giant snail (which hits for 14): so his damage stays low and every move is telegraphed */ /* the general's moveset by phase: 1 above 66% health, 2 above 33%, 3 below */
+  const vgPhase = f => f.hp/f.maxHp <= .33 ? 3 : f.hp/f.maxHp <= .66 ? 2 : 1;
+  function vgCone(f, LV, fu, reach, arcCos, dmg, cause, heal){ /* a swing hurts everyone standing in front of him, inside his reach */
+    let n = 0; for(const e of LV){ if(e.u !== fu || e.p.z >= 12) continue; const dx = e.p.x - f.x, dy = e.p.y - f.y, d = hyp(dx, dy); if(d > f.r + e.br + reach) continue; if(d > 6 && Math.cos(Math.atan2(dy, dx) - (f.facing || 0)) < arcCos) continue; withPlayer(e.i, ()=>wdHurtP(dmg, cause, true)); n++; }
+    if(n && heal > 0){ f.hp = Math.min(f.maxHp, f.hp + heal); wdFx({kind:'num', x:f.x, y:f.y - 30, text:'+' + heal, col:'#e0687a', t:700}); } return n; }
+  function vgFire(f, n, spread){ /* blood bolts fanned out along the way he faces: slow enough to sidestep or roll */
+    f.orbs = f.orbs || []; const a0 = f.facing || 0; for(let k = 0; k < n; k++){ const a = a0 + (n > 1 ? (k/(n - 1) - .5)*spread : 0); f.orbs.push({x:f.x + Math.cos(a)*14, y:f.y + Math.sin(a)*14, vx:Math.cos(a)*130, vy:Math.sin(a)*130, life:1900}); }
+    beep(520, .12, 'square', .03); beep(380, .16, 'sawtooth', .025, .04); wdFx({kind:'ring', x:f.x, y:f.y - 8, r:16, t:260, col:'235,50,80'}); }
+  function vgenTick(f, LV, dt0){ /* the whole general, run here. Phase 1: circles you, claws and a drinking bite. Phase 2 (66%): bats, blood bolts and a mist-step behind you. Phase 3 (33%): faster, a longer combo, chained lunges and a blood nova */
     const J = ANIMALS.vgen, s = dt0/1000;
-    if(f.hit > 0) f.hit -= dt0; if(f.flash > 0) f.flash -= dt0; if(f.cd > 0) f.cd -= dt0; if(f.lgCd > 0) f.lgCd -= dt0; if(f.rec > 0) f.rec -= dt0;
+    if(f.hit > 0) f.hit -= dt0; if(f.flash > 0) f.flash -= dt0; if(f.cd > 0) f.cd -= dt0; if(f.lgCd > 0) f.lgCd -= dt0; if(f.rec > 0) f.rec -= dt0; if(f.btCd > 0) f.btCd -= dt0; if(f.msCd > 0) f.msCd -= dt0; if(f.nvCd > 0) f.nvCd -= dt0; if(f.swT > 0) f.swT -= dt0;
     moveBy(f, f.kx*s, f.ky*s); { const dk = Math.exp(-9*s); f.kx *= dk; f.ky *= dk; }
+    f.moving = false; if(f.st !== 'mist') f.al = 1;
     const fu = sceneOf(f); let T = null, td = 1e9; for(const e of LV){ if(e.u !== fu) continue; const d = hyp(e.p.x - f.x, e.p.y - f.y); if(d < td){ td = d; T = e; } }
     const hx = f.hx, hy = f.hy, near = !!T && hyp(T.p.x - hx, T.p.y - hy) < J.territory && hyp(f.x - hx, f.y - hy) < J.leash;
-    if(f.st !== 'patrol' && !near && f.st !== 'wind' && f.st !== 'lunge' && f.st !== 'lwind') f.st = 'patrol';
-    const hpF = f.hp/f.maxHp; if(near && ((f.sm | 0) < 1 && hpF <= .66 || (f.sm | 0) < 2 && hpF <= .33)){ f.sm = (f.sm | 0) + 1; vgSummon(f, 3); wdFx({kind:'num', x:f.x, y:f.y - 34, text:'bats rise', col:'#e0687a', t:1100}); f.flash = 400; }
-    if(f.st === 'wind'){ f.wind -= dt0; if(T){ f.facing = Math.atan2(T.p.y - f.y, T.p.x - f.x); }
-      if(f.wind <= 0){ f.st = 'fight'; f.cd = J.iv; f.rec = WD_SW.window; if(T && td < f.r + T.br + J.reach + 14 && T.p.z < 12){ withPlayer(T.i, ()=>wdHurtP(J.dmg, 'Drained by the Vampire General', true)); f.hp = Math.min(f.maxHp, f.hp + 7); wdFx({kind:'num', x:f.x, y:f.y - 30, text:'+7', col:'#e0687a', t:700}); }
-        wdFx({kind:'slash', x:f.x, y:f.y, ax:Math.cos(f.facing || 0), ay:Math.sin(f.facing || 0), r:f.r + J.reach, arc:1.4, t:160, foe:true}); } }
-    else if(f.st === 'lwind'){ f.lw -= dt0; if(T) f.facing = Math.atan2(T.p.y - f.y, T.p.x - f.x); if(f.lw <= 0){ f.st = 'lunge'; f.lg = 380; f.lgHit = 0; f.ldx = Math.cos(f.facing || 0); f.ldy = Math.sin(f.facing || 0); } }
+    if(f.st === 'fight' && !near) f.st = 'patrol';
+    if(f.orbs && f.orbs.length){ for(const o of f.orbs){ o.x += o.vx*s; o.y += o.vy*s; o.life -= dt0;
+        for(const e of LV){ if(e.u !== fu || e.p.z >= 12) continue; if(hyp(e.p.x - o.x, e.p.y - o.y) < e.br + 5){ withPlayer(e.i, ()=>wdHurtP(VG.bolt, 'Struck by blood magic', true)); o.life = 0; for(let q = 0; q < 6; q++) wdFx({kind:'chip', x:o.x, y:o.y - 8, vx:(Math.random() - .5)*90, vy:-10 - Math.random()*50, col:'#c4455a', t:400}); break; } } }
+      f.orbs = f.orbs.filter(o=>o.life > 0); }
+    const ph = vgPhase(f), spd = J.spd*VG.sp[ph - 1]*s, aim = ()=>{ if(T) f.facing = Math.atan2(T.p.y - f.y, T.p.x - f.x); };
+    const swing = cl=>{ f.st = 'wind'; f.cl = cl; f.wmax = f.wind = cl ? 420 : J.wind - 40*(ph - 1); f.flash = f.wind; };
+    if(f.st === 'wind'){ f.wind -= dt0; if(f.wind > 170) aim(); /* the aim is locked for the last moment: a sidestep or a roll beats it */
+      if(f.wind <= 0){ const ux = Math.cos(f.facing || 0), uy = Math.sin(f.facing || 0), reach = J.reach + 14;
+        if(f.cl){ vgCone(f, LV, fu, reach, .35, VG.claw, 'Clawed by the Vampire General', 0); wdFx({kind:'slash', x:f.x, y:f.y, ax:ux, ay:uy, r:f.r + reach, arc:2.4, t:170, foe:true, col:'255,110,90'}); f.swT = 220; if(T){ const gap = Math.max(0, td - f.r - T.br - 6), im = Math.min(210, gap*9); f.kx += ux*im; f.ky += uy*im; } f.cmb--; swing(f.cmb > 0); }
+        else { vgCone(f, LV, fu, reach, .35, J.dmg, 'Drained by the Vampire General', 7); wdFx({kind:'slash', x:f.x, y:f.y, ax:ux, ay:uy, r:f.r + reach, arc:2.4, t:240, foe:true, col:'235,40,70'}); f.swT = 280; f.st = 'fight'; f.cd = VG.ivs[ph - 1]; f.rec = WD_SW.window; } } }
+    else if(f.st === 'lwind'){ f.lw -= dt0; if(f.lw > 120) aim(); if(f.lw <= 0){ f.st = 'lunge'; f.lg = 380; f.lgHit = 0; f.ldx = Math.cos(f.facing || 0); f.ldy = Math.sin(f.facing || 0); } }
     else if(f.st === 'lunge'){ f.lg -= dt0; vgGo(f, f.ldx, f.ldy, 330*s);
-      if(!f.lgHit && T && hyp(T.p.x - f.x, T.p.y - f.y) < f.r + T.br + 8 && T.p.z < 12){ f.lgHit = 1; withPlayer(T.i, ()=>wdHurtP(J.dmg - 2, 'Run through by the Vampire General', true)); f.hp = Math.min(f.maxHp, f.hp + 4); }
-      if(f.lg <= 0){ f.st = 'fight'; f.lgCd = 4200; f.cd = Math.max(f.cd, 700); f.rec = WD_SW.window; } }
+      if(!f.lgHit) for(const e of LV){ if(e.u !== fu || e.p.z >= 12) continue; if(hyp(e.p.x - f.x, e.p.y - f.y) < f.r + e.br + 8){ f.lgHit = 1; withPlayer(e.i, ()=>wdHurtP(J.dmg - 2, 'Run through by the Vampire General', true)); f.hp = Math.min(f.maxHp, f.hp + 4); f.swT = 260; break; } }
+      if(f.lg <= 0){ if(ph === 3 && !f.lgChain && T && td < 280 && Math.random() < .3){ f.lgChain = 1; f.st = 'lwind'; f.lw = 300; f.flash = 300; } else { f.lgChain = 0; f.st = 'fight'; f.lgCd = VG.lgs[ph - 1]; f.cd = Math.max(f.cd, 700); f.rec = WD_SW.window; } } }
+    else if(f.st === 'cast'){ f.cs -= dt0; if(f.cs > 220) aim(); if(f.cs <= 0){ vgFire(f, ph === 3 ? 4 : 3, ph === 3 ? .95 : .75); f.st = 'fight'; f.btCd = ph === 3 ? 6500 : 8000; f.cd = Math.max(f.cd, 800); } }
+    else if(f.st === 'nova'){ f.nv -= dt0; if(f.nv <= 0){ let n = 0; for(const e of LV){ if(e.u !== fu || e.p.z >= 12) continue; if(hyp(e.p.x - f.x, e.p.y - f.y) < VG.novaR + e.br){ withPlayer(e.i, ()=>wdHurtP(VG.nova, 'Caught in the Vampire General’s blood nova', true)); n++; } }
+        if(n) f.hp = Math.min(f.maxHp, f.hp + 6*n);
+        wdFx({kind:'ring', x:f.x, y:f.y, r:VG.novaR*1.1, t:520, col:'235,50,80'}); wdFx({kind:'ring', x:f.x, y:f.y, r:VG.novaR*.6, t:380, col:'255,150,150'}); for(let q = 0; q < 20; q++){ const a = q/20*6.2832; wdFx({kind:'chip', x:f.x, y:f.y - 6, vx:Math.cos(a)*(90 + Math.random()*60), vy:Math.sin(a)*40 - 20, col:q % 2 ? '#c4455a' : '#4a1a28', t:500}); }
+        bossQuake(380); thud(.2, .14, 500); f.st = 'fight'; f.nvCd = 14000; f.cd = Math.max(f.cd, 1000); f.rec = WD_SW.window; } }
+    else if(f.st === 'mist'){ f.ms -= dt0;
+      if(f.mph === 0){ f.al = Math.max(.1, f.ms/VG.mistOut); if(f.ms <= 0){ if(!T){ f.st = 'patrol'; f.al = 1; } else { const q = safeSpot(T.p.x - (T.p.fx || 0)*58, T.p.y - (T.p.fy || 1)*58); wdFx({kind:'ring', x:f.x, y:f.y, r:20, t:380, col:'120,30,60'}); f.x = q.x; f.y = q.y; f.kx = f.ky = 0; wdFx({kind:'ring', x:f.x, y:f.y, r:20, t:380, col:'120,30,60'}); f.mph = 1; f.ms = VG.mistIn; } } }
+      else { f.al = Math.min(1, 1 - f.ms/VG.mistIn + .1); aim(); if(f.ms <= 0){ f.al = 1; f.cmb = 1; swing(true); f.wind = f.wmax = 420; f.flash = 420; } } }
+    else if(f.st === 'roar'){ f.rr -= dt0; aim(); if(f.rr <= 0) f.st = 'fight'; }
     else if(f.st === 'fight'){
-      const dx = T.p.x - f.x, dy = T.p.y - f.y, d = hyp(dx, dy) || 1, reach = f.r + T.br + J.reach;
-      if(d < reach + 28 && f.cd <= 0){ f.st = 'wind'; f.wind = J.wind; f.flash = J.wind; sfxAnimal('vgen', 'alert', f); }
+      const dx = T.p.x - f.x, dy = T.p.y - f.y, d = hyp(dx, dy) || 1, reach = f.r + T.br + J.reach, ux = dx/d, uy = dy/d;
+      if(ph > (f.ph || 1)){ f.ph = (f.ph || 1) + 1; f.st = 'roar'; f.rr = VG.roarW; f.flash = VG.roarW; f.sm = f.ph - 1; vgSummon(f, f.ph === 2 ? 3 : 4); f.cd = Math.max(f.cd, 500);
+        if(f.ph === 2) f.btCd = 2500; else { f.nvCd = 2400; f.btCd = 3200; }
+        wdFx({kind:'num', x:f.x, y:f.y - 34, text:f.ph === 2 ? 'bats rise' : 'ENRAGED', col:f.ph === 2 ? '#e0687a' : '#ff4a64', t:1300}); wdFx({kind:'ring', x:f.x, y:f.y, r:90, t:800, col:'235,50,80'}); bossQuake(450); sfxAnimal('vgen', 'alert', f); }
+      else if(ph === 3 && !(f.nvCd > 0) && d < VG.novaR + 40){ f.st = 'nova'; f.nv = VG.novaW; f.flash = VG.novaW; sfxAnimal('vgen', 'alert', f); beep(90, .9, 'sawtooth', .05); }
+      else if(ph >= 2 && !(f.msCd > 0) && f.cd <= 0 && d > 110 && d < 330){ f.st = 'mist'; f.mph = 0; f.ms = VG.mistOut; f.msCd = ph === 3 ? 9500 : 12000; wdFx({kind:'ring', x:f.x, y:f.y, r:22, t:380, col:'120,30,60'}); }
+      else if(ph >= 2 && !(f.btCd > 0) && f.cd <= 0 && d > 120 && d < 320){ f.st = 'cast'; f.cs = VG.castW; f.flash = VG.castW; sfxAnimal('vgen', 'alert', f); }
+      else if(d < reach + 28 && f.cd <= 0){ f.cmb = ph >= 2 ? 1 : 0; swing(f.cmb > 0); sfxAnimal('vgen', 'alert', f); }
       else if(d > 100 && d < 270 && !(f.lgCd > 0) && f.cd <= 0){ f.st = 'lwind'; f.lw = 380; f.flash = 380; }
-      else if(d > reach - 2) vgGo(f, dx/d, dy/d, J.spd*s*(f.rec > 0 ? WD_SW.move : 1)); }
+      else { /* not lazy: he closes in fast, and while an attack is cooling down he circles you rather than standing and waiting */
+        f.stT = (f.stT || 0) - dt0; if(f.stT <= 0){ f.stD = Math.random() < .5 ? 1 : -1; f.stT = 1100 + Math.random()*1400; }
+        const k = f.rec > 0 ? WD_SW.move : 1;
+        if(d < reach - 6) vgGo(f, -ux, -uy, spd*k*.6); /* never stands inside you */
+        else if(d > 130 || (f.cd <= 0 && d > reach - 2)) vgGo(f, ux, uy, spd*k);
+        else { const close = d > reach + 6 ? .55 : (d < reach - 4 ? -.3 : 0), sd = f.stD || 1; vgGo(f, ux*close - uy*sd*.8, uy*close + ux*sd*.8, spd*k*.85); } } }
     else { /* patrol */
       if(near){ f.st = 'fight'; sfxAnimal('vgen', 'alert', f); }
-      else { f.hp = Math.min(f.maxHp, f.hp + f.maxHp*.03*s); f.wt = (f.wt || 0) - dt0;
+      else { f.hp = Math.min(f.maxHp, f.hp + f.maxHp*.03*s); f.ph = vgPhase(f); f.wt = (f.wt || 0) - dt0;
         if(f.wt <= 0 || hyp((f.tx || 0) - f.x, (f.ty || 0) - f.y) < 6){ const a = Math.random()*6.2832, d = 70 + Math.random()*70; f.tx = hx + Math.cos(a)*d; f.ty = hy + Math.sin(a)*d*.7; f.wt = 2500 + Math.random()*3000; }
         const dx = f.tx - f.x, dy = f.ty - f.y, d = hyp(dx, dy); if(d > 5) vgGo(f, dx/d, dy/d, J.spd*.45*s); else f.moving = false; } }
     wdSolid(f); return true; }
@@ -8094,6 +8182,21 @@
     for(let q = 0; q < 18; q++) wdFx({kind:'chip', x:f.x, y:f.y - 8, vx:(Math.random() - .5)*110, vy:-20 - Math.random()*70, col:q % 3 ? '#4a1a28' : '#c4455a', t:600 + Math.random()*500});
     wdBanner('The Vampire General falls', 'The mineshaft and the rat hole are unsealed · the merchant is free', 5600);
     jrAdd('vg:dead', 'lesson', 'I killed the Vampire General at his keep in the south-east of the meadow. He dropped a Crimson key. The mine and the rat hole are open again and the merchant is free.'); wdSave(); }
+  function snIcon(c, id, H){ /* shell shards and what is made of them, the bundle, and the few items that had no picture */
+    const blob = H.blob, hi = H.hi, line = H.line, OL = '#120c09', SH = '#e6d6ad', SD = '#a98a55';
+    const spiral = (x, y, r, col)=>{ c.strokeStyle = col || SD; c.lineWidth = 1; c.beginPath(); for(let a = 0; a < 11.5; a += .35){ const rr = r*a/11.5; if(a === 0) c.moveTo(x, y); else c.lineTo(x + Math.cos(a)*rr, y + Math.sin(a)*rr); } c.stroke(); };
+    if(id==='snailshard'){ blob(()=>{ c.moveTo(4, 17); c.quadraticCurveTo(3, 6, 13, 4); c.quadraticCurveTo(21, 5, 20, 13); c.quadraticCurveTo(19, 19, 11, 21); c.quadraticCurveTo(7, 21, 4, 17); c.closePath(); }, SH, 1.8); spiral(12.5, 12.5, 6); line([[6, 15], [11, 19]], '#c9b27a', .9); hi(9, 8, 2.2, 1.2); return true; }
+    if(id==='snailaxe'){ line([[4, 21], [16, 8]], OL, 3.8); line([[4, 21], [16, 8]], '#8a6440', 2.1); c.save(); c.translate(14.5, 10); c.rotate(-.82);
+      blob(()=>{ c.moveTo(-1.5, -1); c.quadraticCurveTo(-3, -7.5, 3, -8); c.quadraticCurveTo(1.2, -4, 3, -1); c.closePath(); }, SH, 1.5); blob(()=>{ c.moveTo(-1.5, 1); c.quadraticCurveTo(-3, 7.5, 3, 8); c.quadraticCurveTo(1.2, 4, 3, 1); c.closePath(); }, SH, 1.5); line([[0, -2.5], [1.8, -5.5]], SD, .8); line([[0, 2.5], [1.8, 5.5]], SD, .8); c.restore(); hi(14, 6, 1.4, 2.2); return true; }
+    if(id==='snailmail'){ blob(()=>{ c.moveTo(7, 3); c.lineTo(3, 9); c.lineTo(6, 12); c.lineTo(6, 20); c.lineTo(18, 20); c.lineTo(18, 12); c.lineTo(21, 9); c.lineTo(17, 3); c.lineTo(14, 5); c.lineTo(10, 5); c.closePath(); }, SH, 1.8); c.strokeStyle = SD; c.lineWidth = .9; for(const [x, y] of [[8, 9], [12, 9], [16, 9], [9.5, 13], [14.5, 13], [8, 17], [12, 17], [16, 17]]){ c.beginPath(); c.arc(x, y, 2.2, Math.PI, 0); c.stroke(); } spiral(12, 13.5, 2.6, '#7a5c34'); hi(9, 7, 2.2, 1.2); return true; }
+    if(id==='snailpack'){ blob(()=>{ c.moveTo(5, 9); c.quadraticCurveTo(4, 20, 7, 21); c.lineTo(17, 21); c.quadraticCurveTo(20, 20, 19, 9); c.closePath(); }, '#b88a52', 1.8); blob(()=>{ c.moveTo(5, 10); c.quadraticCurveTo(12, 2, 19, 10); c.lineTo(19, 13); c.quadraticCurveTo(12, 8.5, 5, 13); c.closePath(); }, SH, 1.6); blob(()=>{ c.arc(12, 16.5, 3.4, 0, 6.2832); }, SH, 1.2); spiral(12, 16.5, 2.8); line([[8, 12], [8, 20]], '#7a5632', .8); line([[16, 12], [16, 20]], '#7a5632', .8); hi(8, 7, 2, 1); return true; }
+    if(id==='snailcharm'){ c.strokeStyle = '#caa04e'; c.lineWidth = 1.4; c.beginPath(); c.arc(12, 6, 4.5, Math.PI, 0); c.stroke(); blob(()=>{ c.arc(12, 14, 6, 0, 6.2832); }, SH, 1.8); spiral(12, 14, 4.6); hi(9.5, 11, 1.6, 1.1); return true; }
+    if(id==='bundle'){ blob(()=>{ c.moveTo(7, 9); c.quadraticCurveTo(2, 15, 5.5, 19.5); c.quadraticCurveTo(12, 22.5, 18.5, 19.5); c.quadraticCurveTo(22, 15, 17, 9); c.closePath(); }, '#a8743c', 1.8); blob(()=>{ c.moveTo(8, 9.5); c.lineTo(8.6, 5); c.quadraticCurveTo(12, 3.6, 15.4, 5); c.lineTo(16, 9.5); c.closePath(); }, '#8d5e2f', 1.6); line([[7.4, 8.4], [16.6, 8.4]], '#efe3c2', 1.8); line([[12, 8.4], [10.2, 11.6]], '#efe3c2', 1.1); line([[12, 8.4], [14.2, 11.8]], '#efe3c2', 1.1); line([[8.5, 15], [10.5, 18.5]], 'rgba(90,55,25,.55)', .9); hi(8.5, 14, 1.5, 3); return true; }
+    if(id==='silk'){ blob(()=>{ c.ellipse(12, 12.5, 8, 6, -.4, 0, 6.2832); }, '#f1f3f7', 1.8); c.strokeStyle = '#b9c0cd'; c.lineWidth = .8; for(let k = 0; k < 4; k++){ c.beginPath(); c.ellipse(12, 12.5, 7.2 - k*1.2, 5.2 - k*.9, -.4, .4, 5.8); c.stroke(); } line([[18, 9], [21.5, 5], [22, 3.5]], '#dfe3ea', 1); hi(8.5, 10, 2, 1.1); return true; }
+    if(id==='minekey'){ blob(()=>{ c.arc(8, 8, 4.6, 0, 6.2832); }, '#9a6a44', 2); c.fillStyle = OL; c.beginPath(); c.arc(8, 8, 1.7, 0, 6.2832); c.fill(); blob(()=>{ c.rect(11.5, 6.8, 10, 2.6); }, '#8a5a38', 1.8); blob(()=>{ c.rect(16.5, 9.4, 2.2, 4); c.rect(19.8, 9.4, 2, 3); }, '#8a5a38', 1.5); for(const [x, y] of [[6.5, 6], [14, 8], [18, 12]]){ c.fillStyle = '#c4672f'; c.beginPath(); c.arc(x, y, .9, 0, 6.2832); c.fill(); } hi(6.5, 6.2, 1.6, 1); return true; }
+    if(id==='kiln'){ blob(()=>{ c.rect(15, 3, 3.6, 7); }, '#8a5a3a', 1.6); blob(()=>{ c.moveTo(3, 20); c.lineTo(3, 12); c.quadraticCurveTo(12, 0, 21, 12); c.lineTo(21, 20); c.closePath(); }, '#b9764f', 1.8); blob(()=>{ c.moveTo(8, 20); c.lineTo(8, 15); c.quadraticCurveTo(12, 10, 16, 15); c.lineTo(16, 20); c.closePath(); }, '#2a1f1a', 1.2); c.fillStyle = 'rgba(255,150,60,.95)'; c.beginPath(); c.ellipse(12, 18, 2.6, 2, 0, 0, 6.2832); c.fill(); line([[5, 14], [8, 12]], '#8a5336', .8); line([[16, 12], [19, 14]], '#8a5336', .8); hi(8, 9, 2, 1.2); return true; }
+    if(id==='crucible'){ blob(()=>{ c.moveTo(5, 8); c.lineTo(19, 8); c.lineTo(17, 20); c.lineTo(7, 20); c.closePath(); }, '#6b625c', 1.8); blob(()=>{ c.ellipse(12, 8.5, 7, 2.4, 0, 0, 6.2832); }, '#ff9a3a', 1.4); c.fillStyle = 'rgba(255,230,150,.8)'; c.beginPath(); c.ellipse(10.5, 8.2, 2.4, .8, 0, 0, 6.2832); c.fill(); line([[5, 9.5], [2.5, 11]], OL, 2); line([[19, 9.5], [21.5, 11]], OL, 2); line([[9, 12], [10, 18]], '#8a8179', 1); hi(8, 13, 1.2, 3); return true; }
+    return false; }
   function sgIcon(c, id, H){ const blob = H.blob, hi = H.hi;
     if(id==='bloodkey'){ blob(()=>{ c.arc(8, 8, 4.6, 0, 6.2832); }, '#a3182c', 2); c.fillStyle = '#120c09'; c.beginPath(); c.arc(8, 8, 1.7, 0, 6.2832); c.fill(); blob(()=>{ c.rect(11.5, 6.8, 10, 2.6); }, '#8c1626', 1.8); blob(()=>{ c.rect(16.5, 9.4, 2.2, 4); c.rect(19.8, 9.4, 2, 3); }, '#8c1626', 1.5); hi(6.5, 6.2, 1.6, 1); return true; }
     if(id==='vampfang'){ blob(()=>{ c.moveTo(7, 4); c.quadraticCurveTo(16, 5, 15, 12); c.quadraticCurveTo(13.5, 19, 12, 21); c.quadraticCurveTo(10.5, 14, 7, 4); c.closePath(); }, '#f1ead6', 2); hi(10, 8, 1.4, 2.6); return true; }
@@ -8134,27 +8237,76 @@
       c.beginPath(); c.ellipse(0, 1, 3.6, 4.4, 0, 0, 6.2832); c.fillStyle = hit ? '#fff' : '#4a3144'; c.fill(); c.stroke();
       c.fillStyle = hit ? '#fff' : '#4a3144'; for(const sg of [-1, 1]){ c.beginPath(); c.moveTo(sg*1.2, -3); c.lineTo(sg*3, -7); c.lineTo(sg*3.4, -2.6); c.closePath(); c.fill(); c.stroke(); }
       c.fillStyle = '#ff4a64'; c.beginPath(); c.arc(-1.4, -1, .8, 0, 6.2832); c.arc(1.4, -1, .8, 0, 6.2832); c.fill(); c.restore(); return; }
-    const wind = f.st==='wind' || f.st==='lwind', bob = Math.sin(t*3 + f.hx)*.8, sw = Math.sin(t*2.2 + f.hx);
-    c.save(); c.translate(f.x, f.y + bob); c.lineJoin = 'round'; c.lineCap = 'round'; c.strokeStyle = OLN; c.lineWidth = 1.3;
-    if(f.flash > 0){ const g = c.createRadialGradient(0, -r*.6, 1, 0, -r*.6, r*2.4); g.addColorStop(0, 'rgba(235,40,70,.4)'); g.addColorStop(1, 'rgba(235,40,70,0)'); c.fillStyle = g; c.beginPath(); c.arc(0, -r*.6, r*2.4, 0, 6.2832); c.fill(); }
-    const cw = r*1.25, hem = r*.75 + (f.st==='lunge' ? 2 : 0);
-    c.beginPath(); c.moveTo(-r*.5, -r*1.1); c.lineTo(r*.5, -r*1.1); c.lineTo(cw, hem*.4); for(let q = 0; q <= 5; q++) c.lineTo(cw - cw*2*q/5, hem + (q & 1 ? 3 : 0) + Math.sin(t*3 + q*1.4)*1.2); c.lineTo(-cw, hem*.4); c.closePath();
-    const cg = c.createLinearGradient(0, -r*1.1, 0, hem + 3); cg.addColorStop(0, hit ? '#f0d4da' : '#4a0f1d'); cg.addColorStop(1, hit ? '#e2b8c2' : '#8a1830'); c.fillStyle = cg; c.fill(); c.stroke();
+    const J = ANIMALS.vgen, st = f.st, hpF = f.hp/f.maxHp, ph = hpF <= .33 ? 3 : hpF <= .66 ? 2 : 1, cast = st==='cast', nova = st==='nova', roar = st==='roar', mist = st==='mist';
+    const wind = st==='wind' || st==='lwind', bite = st==='wind' && !f.cl, tp0 = st==='wind' && f.wmax ? 1 - f.wind/f.wmax : st==='lwind' ? 1 - f.lw/380 : cast ? 1 - f.cs/VG.castW : nova ? 1 - f.nv/VG.novaW : 0, tp = Math.max(0, Math.min(1, tp0));
+    const bob = Math.sin(t*3 + f.hx)*.8, sw = Math.sin(t*2.2 + f.hx), moving = !!f.moving;
+    const mvx = moving ? Math.cos(f.facing || 0) : 0, mvy = moving ? Math.sin(f.facing || 0) : 0;
+    f.dvx = (f.dvx || 0) + (mvx - (f.dvx || 0))*.12; f.dvy = (f.dvy || 0) + (mvy - (f.dvy || 0))*.12; /* the cape lags behind the way he moves */
+    const wsT = (cast || nova || roar) ? 1 : (st==='lwind' || st==='lunge') ? .75 : moving ? .32 : .16;
+    { const w0 = f.wsp == null ? .16 : f.wsp; f.wsp = w0 + (wsT - w0)*.14; }
+    /* ground telegraphs: what is about to hit, and where */
+    c.save(); c.translate(f.x, f.y); c.lineJoin = 'round';
+    if(st==='wind'){ const R = f.r + 9 + J.reach + 14, h = Math.acos(.35), a = f.facing || 0; c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, R, a - h, a + h); c.closePath(); c.fillStyle = f.cl ? `rgba(255,120,60,${(.08 + .3*tp).toFixed(3)})` : `rgba(235,40,70,${(.1 + .34*tp).toFixed(3)})`; c.fill(); c.strokeStyle = `rgba(255,110,120,${(.35 + .5*tp).toFixed(3)})`; c.lineWidth = 1; c.stroke(); }
+    else if(st==='lwind'){ const a = f.facing || 0, L = 330*.38 + f.r, W = f.r + 8; c.rotate(a); c.beginPath(); c.rect(0, -W, L, W*2); c.fillStyle = `rgba(235,40,70,${(.07 + .3*tp).toFixed(3)})`; c.fill(); c.strokeStyle = `rgba(255,110,120,${(.3 + .5*tp).toFixed(3)})`; c.lineWidth = 1; c.stroke(); }
+    else if(nova){ const R = VG.novaR; c.beginPath(); c.arc(0, 0, R, 0, 6.2832); c.fillStyle = 'rgba(235,40,70,.08)'; c.fill(); c.setLineDash([5, 4]); c.strokeStyle = `rgba(255,110,120,${(.45 + .4*tp).toFixed(3)})`; c.lineWidth = 1.2; c.stroke(); c.setLineDash([]); c.beginPath(); c.arc(0, 0, R*tp, 0, 6.2832); c.fillStyle = `rgba(235,40,70,${(.12 + .26*tp).toFixed(3)})`; c.fill(); }
+    else if(cast){ const n = ph === 3 ? 4 : 3, sp = ph === 3 ? .95 : .75, a0 = f.facing || 0; c.setLineDash([3, 5]); c.strokeStyle = `rgba(255,110,120,${(.15 + .4*tp).toFixed(3)})`; c.lineWidth = 1; for(let k = 0; k < n; k++){ const a = a0 + (k/(n - 1) - .5)*sp; c.beginPath(); c.moveTo(Math.cos(a)*14, Math.sin(a)*14); c.lineTo(Math.cos(a)*230, Math.sin(a)*230); c.stroke(); } c.setLineDash([]); }
+    c.restore();
+    c.save(); c.translate(f.x, f.y + bob); c.scale(1.2, 1.2); c.lineJoin = 'round'; c.lineCap = 'round'; c.strokeStyle = OLN; c.lineWidth = 1.3; c.globalAlpha = f.al == null ? 1 : f.al;
+    c.fillStyle = 'rgba(0,0,0,.28)'; c.beginPath(); c.ellipse(0, r*.2 - bob, r*1.25, r*.38, 0, 0, 6.2832); c.fill();
+    if(ph === 3){ const pu = .5 + .5*Math.sin(t*5); c.strokeStyle = `rgba(235,50,70,${(.25 + .3*pu).toFixed(3)})`; c.lineWidth = 1.5; c.beginPath(); c.ellipse(0, r*.2 - bob, r*(1.5 + .2*pu), r*.5, 0, 0, 6.2832); c.stroke(); c.strokeStyle = OLN; c.lineWidth = 1.3; }
+    if(f.flash > 0){ const g = c.createRadialGradient(0, -r*.6, 1, 0, -r*.6, r*2.6); g.addColorStop(0, 'rgba(235,40,70,.4)'); g.addColorStop(1, 'rgba(235,40,70,0)'); c.fillStyle = g; c.beginPath(); c.arc(0, -r*.6, r*2.6, 0, 6.2832); c.fill(); }
+    /* wings: folded when he walks, spread wide when he casts, roars or lunges */
+    { const fl = Math.sin(t*((cast || nova || roar) ? 9 : 4) + f.hx)*.1*(.4 + f.wsp), w = f.wsp + fl;
+      for(const sg of [-1, 1]){ const L = (a, b)=>a + (b - a)*Math.max(0, Math.min(1.15, w)), sx = sg*r*.42, sy = -r*1.0, wx = sg*r*L(1.05, 2.5), wy = -r*L(2.0, 2.15), t1x = sg*r*L(1.55, 3.7), t1y = -r*L(1.3, 1.2), t2x = sg*r*L(1.4, 3.1), t2y = -r*L(.55, .1), t3x = sg*r*L(.95, 1.9), t3y = r*L(.05, .5);
+        c.beginPath(); c.moveTo(sx, sy); c.lineTo(wx, wy); c.lineTo(t1x, t1y); c.quadraticCurveTo((t1x + t2x)/2 - sg*r*.28, (t1y + t2y)/2 + r*.22, t2x, t2y); c.quadraticCurveTo((t2x + t3x)/2 - sg*r*.28, (t2y + t3y)/2 + r*.22, t3x, t3y); c.quadraticCurveTo(sg*r*.5, r*.5, sg*r*.3, r*.1); c.closePath();
+        c.fillStyle = hit ? '#e8c8d0' : ph === 3 ? '#5c1022' : '#3a0c1a'; c.fill(); c.stroke();
+        c.strokeStyle = hit ? '#fff' : '#1b0a10'; c.lineWidth = 1.2; c.beginPath(); c.moveTo(wx, wy); c.lineTo(t1x, t1y); c.moveTo(wx, wy); c.lineTo(t2x, t2y); c.moveTo(wx, wy); c.lineTo(t3x, t3y); c.stroke(); c.strokeStyle = OLN; c.lineWidth = 1.3; } }
+    /* boots: they step when he walks */
+    { const stride = moving ? Math.sin(t*10)*2.6 : 0; c.fillStyle = hit ? '#fff' : '#1b1015'; for(const sg of [-1, 1]){ c.beginPath(); c.ellipse(sg*r*.3 + mvx*stride*sg*.4, r*.78 + 3 + stride*sg, 3.4, 2.5, 0, 0, 6.2832); c.fill(); c.stroke(); } }
+    /* cape: sways with his movement, streams behind a lunge */
+    const lungeK = st==='lunge' ? 1 : 0, csx = -f.dvx*6 - Math.cos(f.facing || 0)*lungeK*10, csy = -f.dvy*3 - lungeK*3, cw = r*1.25 + (cast || nova || roar ? 3 : 0), hem = r*.75 + (st==='lunge' ? 2 : 0);
+    c.beginPath(); c.moveTo(-r*.5, -r*1.1); c.lineTo(r*.5, -r*1.1); c.lineTo(cw + csx*.5, hem*.4); for(let q = 0; q <= 5; q++) c.lineTo(cw - cw*2*q/5 + csx, hem + csy + (q & 1 ? 3 : 0) + Math.sin(t*3 + q*1.4)*1.4 + Math.sin(t*6 + q)*(moving ? 1.2 : 0)); c.lineTo(-cw + csx*.5, hem*.4); c.closePath();
+    const cg = c.createLinearGradient(0, -r*1.1, 0, hem + 3); cg.addColorStop(0, hit ? '#f0d4da' : '#4a0f1d'); cg.addColorStop(1, hit ? '#e2b8c2' : ph === 3 ? '#a81a34' : '#8a1830'); c.fillStyle = cg; c.fill(); c.stroke();
+    c.strokeStyle = hit ? '#fff' : 'rgba(18,12,9,.55)'; c.lineWidth = .8; c.beginPath(); for(let q = 1; q < 5; q++){ c.moveTo(-cw*.9 + cw*1.8*q/5, -r*.4); c.lineTo(-cw + cw*2*q/5 + csx, hem + csy); } c.stroke(); c.strokeStyle = OLN; c.lineWidth = 1.3;
+    /* coat, sash, gold */
     c.fillStyle = hit ? '#e8d6da' : '#2a1f2b'; c.beginPath(); c.moveTo(-r*.55, -r*1.05); c.lineTo(r*.55, -r*1.05); c.lineTo(r*.42, r*.45); c.lineTo(-r*.42, r*.45); c.closePath(); c.fill(); c.stroke();
-    c.fillStyle = '#d9b44a'; for(let q = 0; q < 3; q++){ c.beginPath(); c.arc(0, -r*.7 + q*r*.42, 1, 0, 6.2832); c.fill(); }
-    c.fillStyle = hit ? '#fff' : '#d9b44a'; for(const sg of [-1, 1]){ c.beginPath(); c.ellipse(sg*r*.6, -r*1.05, 3.4, 2, 0, 0, 6.2832); c.fill(); c.stroke(); }
+    c.strokeStyle = hit ? '#fff' : '#a3182c'; c.lineWidth = 2.6; c.beginPath(); c.moveTo(-r*.5, -r*1.0); c.lineTo(r*.38, r*.3); c.stroke(); c.strokeStyle = OLN; c.lineWidth = 1.3;
+    c.strokeStyle = hit ? '#fff' : '#d9b44a'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(-r*.44, r*.12); c.lineTo(r*.44, r*.12); c.stroke(); c.strokeStyle = OLN; c.lineWidth = 1.3;
+    c.fillStyle = '#d9b44a'; for(let q = 0; q < 3; q++){ c.beginPath(); c.arc(0, -r*.7 + q*r*.3, 1, 0, 6.2832); c.fill(); }
+    c.fillStyle = hit ? '#fff' : '#d9b44a'; for(const sg of [-1, 1]){ c.beginPath(); c.ellipse(sg*r*.6, -r*1.05, 3.8, 2.2, 0, 0, 6.2832); c.fill(); c.stroke(); c.beginPath(); c.moveTo(sg*r*.6 - 1.6, -r*1.1); c.lineTo(sg*r*.6, -r*1.1 - 5); c.lineTo(sg*r*.6 + 1.6, -r*1.1); c.closePath(); c.fill(); c.stroke(); }
+    /* tall collar and head */
     c.fillStyle = hit ? '#fff' : '#7a1328'; c.beginPath(); c.moveTo(-r*.62, -r*1.62); c.lineTo(-r*.2, -r*1.12); c.lineTo(-r*.6, -r*1.0); c.closePath(); c.moveTo(r*.62, -r*1.62); c.lineTo(r*.2, -r*1.12); c.lineTo(r*.6, -r*1.0); c.closePath(); c.fill(); c.stroke();
     c.fillStyle = hit ? '#fff' : '#e9dcd6'; c.beginPath(); c.arc(0, -r*1.4, r*.44, 0, 6.2832); c.fill(); c.stroke();
     c.fillStyle = '#17101a'; c.beginPath(); c.arc(0, -r*1.62, r*.44, Math.PI*1.02, Math.PI*1.98); c.lineTo(r*.2, -r*1.52); c.lineTo(-r*.2, -r*1.52); c.closePath(); c.fill();
-    for(const ex of [-r*.17, r*.17]){ c.fillStyle = 'rgba(255,70,100,.5)'; c.beginPath(); c.arc(ex + dir*.8, -r*1.42, 2.2, 0, 6.2832); c.fill(); c.fillStyle = '#ff4a64'; c.beginPath(); c.arc(ex + dir*.8, -r*1.42, 1, 0, 6.2832); c.fill(); }
-    c.fillStyle = '#fff'; for(const fx of [-.12, .12]){ c.beginPath(); c.moveTo(fx*r - .7 + dir*.6, -r*1.22); c.lineTo(fx*r + .7 + dir*.6, -r*1.22); c.lineTo(fx*r + dir*.6, -r*1.0); c.closePath(); c.fill(); }
-    const ax = dir*r*.95, ay = wind ? -r*1.3 : -r*.1 + sw*1; c.strokeStyle = OLN; c.lineWidth = 3.2; c.beginPath(); c.moveTo(dir*r*.5, -r*.9); c.lineTo(ax, ay); c.stroke(); c.strokeStyle = hit ? '#fff' : '#2a1f2b'; c.lineWidth = 1.8; c.stroke();
-    c.strokeStyle = OLN; c.lineWidth = 2.6; c.beginPath(); c.moveTo(ax, ay); c.lineTo(ax + dir*(wind ? 4 : 12), ay + (wind ? -13 : 9)); c.stroke(); c.strokeStyle = wind ? '#ffd5d9' : '#c9ccd4'; c.lineWidth = 1.2; c.stroke();
+    c.fillStyle = hit ? '#fff' : '#d9b44a'; c.beginPath(); c.moveTo(-5.5, -r*2.0); c.lineTo(-4, -r*2.0 - 4.5); c.lineTo(-2, -r*2.0); c.lineTo(0, -r*2.0 - 6.5); c.lineTo(2, -r*2.0); c.lineTo(4, -r*2.0 - 4.5); c.lineTo(5.5, -r*2.0); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#e0364e'; c.beginPath(); c.arc(0, -r*2.0 - 2, 1, 0, 6.2832); c.fill();
+    if(bite){ c.fillStyle = '#3a0a12'; c.beginPath(); c.ellipse(dir*.6, -r*1.16, 2.8, 1.4 + 3.4*tp, 0, 0, 6.2832); c.fill(); }
+    const eg = (wind || cast || nova || roar || ph === 3) ? 1.45 : 1;
+    for(const ex of [-r*.17, r*.17]){ c.fillStyle = `rgba(255,70,100,${(.5*eg).toFixed(2)})`; c.beginPath(); c.arc(ex + dir*.8, -r*1.42, 2.2*eg, 0, 6.2832); c.fill(); c.fillStyle = '#ff4a64'; c.beginPath(); c.arc(ex + dir*.8, -r*1.42, 1*eg, 0, 6.2832); c.fill(); }
+    if(ph >= 2 || wind){ c.strokeStyle = '#17101a'; c.lineWidth = 1.1; c.beginPath(); c.moveTo(-r*.3 + dir*.8, -r*1.58); c.lineTo(-r*.06 + dir*.8, -r*1.5); c.moveTo(r*.3 + dir*.8, -r*1.58); c.lineTo(r*.06 + dir*.8, -r*1.5); c.stroke(); c.strokeStyle = OLN; c.lineWidth = 1.3; }
+    c.fillStyle = '#fff'; for(const fx of [-.12, .12]){ c.beginPath(); c.moveTo(fx*r - .8 + dir*.6, -r*1.22); c.lineTo(fx*r + .8 + dir*.6, -r*1.22); c.lineTo(fx*r + dir*.6, -r*(bite ? .92 : 1.0)); c.closePath(); c.fill(); }
+    /* arms: the sword arm raises to strike, swings, points on a lunge; the other hand lifts to cast */
+    const swung = f.swT > 0, lung = st==='lwind' || st==='lunge', up = cast || nova || roar;
+    let ax = dir*r*.95, ay = -r*.1 + sw*1, tx = ax + dir*12, ty = ay + 9;
+    if(wind && st==='wind'){ ay = -r*1.3 - tp*2; tx = ax + dir*4; ty = ay - 13; } else if(lung){ ax = dir*r*.7; ay = -r*.6; tx = ax + dir*22; ty = ay + 1; } else if(swung){ ax = dir*r*1.0; ay = -r*.6; tx = ax + dir*22; ty = ay + 4; } else if(up){ ax = dir*r*1.0; ay = -r*1.6; tx = ax + dir*3; ty = ay - 14; }
+    if(swung){ c.strokeStyle = `rgba(255,120,140,${(f.swT/280).toFixed(2)})`; c.lineWidth = 2.5; c.beginPath(); c.arc(0, -r*.6, 24, dir > 0 ? -1.0 : Math.PI - 1.0, dir > 0 ? 1.0 : Math.PI + 1.0); c.stroke(); c.strokeStyle = OLN; }
+    if(lung && st==='lunge'){ c.strokeStyle = 'rgba(255,130,150,.5)'; c.lineWidth = 1; for(let q = 0; q < 3; q++){ c.beginPath(); c.moveTo(-dir*r*(1.2 + q*.5), -r*(1.3 - q*.5)); c.lineTo(-dir*r*(2.4 + q*.5), -r*(1.3 - q*.5)); c.stroke(); } c.strokeStyle = OLN; }
+    c.strokeStyle = OLN; c.lineWidth = 3.2; c.beginPath(); c.moveTo(dir*r*.5, -r*.9); c.lineTo(ax, ay); c.stroke(); c.strokeStyle = hit ? '#fff' : '#2a1f2b'; c.lineWidth = 1.8; c.stroke();
+    c.strokeStyle = OLN; c.lineWidth = 2.6; c.beginPath(); c.moveTo(ax, ay); c.lineTo(tx, ty); c.stroke(); c.strokeStyle = (wind || swung || lung) ? '#ffd5d9' : '#c9ccd4'; c.lineWidth = 1.2; c.stroke();
+    c.fillStyle = '#d9b44a'; c.beginPath(); c.arc(ax, ay, 1.6, 0, 6.2832); c.fill();
+    { const hx2 = -dir*r*.95, hy2 = up ? -r*1.6 - tp*2 : -r*.15 - sw*1; c.strokeStyle = OLN; c.lineWidth = 3.2; c.beginPath(); c.moveTo(-dir*r*.5, -r*.9); c.lineTo(hx2, hy2); c.stroke(); c.strokeStyle = hit ? '#fff' : '#2a1f2b'; c.lineWidth = 1.8; c.stroke();
+      c.fillStyle = hit ? '#fff' : '#e9dcd6'; c.beginPath(); c.arc(hx2, hy2, 1.8, 0, 6.2832); c.fill(); c.strokeStyle = OLN; c.lineWidth = 1; c.stroke();
+      if(cast){ const R2 = 3 + 7*tp, g = c.createRadialGradient(hx2, hy2 - 7, 0, hx2, hy2 - 7, R2*2); g.addColorStop(0, 'rgba(255,200,205,.95)'); g.addColorStop(.4, 'rgba(235,50,80,.8)'); g.addColorStop(1, 'rgba(235,50,80,0)'); c.fillStyle = g; c.beginPath(); c.arc(hx2, hy2 - 7, R2*2, 0, 6.2832); c.fill(); } }
+    if(mist){ for(let q = 0; q < 6; q++){ const a = t*2 + q*1.05, rr = r*(.6 + .9*(1 - (f.al == null ? 1 : f.al))); c.fillStyle = 'rgba(70,20,40,.35)'; c.beginPath(); c.arc(Math.cos(a)*rr, -r*.6 + Math.sin(a)*rr*.8, 4 + (q % 3), 0, 6.2832); c.fill(); } }
+    if(ph === 3 && st !== 'patrol'){ c.fillStyle = 'rgba(255,90,100,.8)'; for(let q = 0; q < 6; q++){ const yy = -((t*26 + q*17) % 46), xx = Math.sin(t*1.3 + q*2.1)*r*1.3; c.globalAlpha = (f.al == null ? 1 : f.al)*Math.max(0, 1 + yy/46); c.fillRect(xx, yy - 4, 1.5, 1.5); } c.globalAlpha = f.al == null ? 1 : f.al; }
     c.restore();
-    const bw = 44, bx = f.x - bw/2, by2 = f.y - r*2.9; c.fillStyle = 'rgba(10,6,8,.8)'; c.fillRect(bx - 1, by2 - 1, bw + 2, 6); c.fillStyle = '#6a1424'; c.fillRect(bx, by2, bw, 4); c.fillStyle = '#e0364e'; c.fillRect(bx, by2, bw*Math.max(0, f.hp/f.maxHp), 4); }
+    for(const o of (f.orbs || [])){ const oy = o.y - 9, fade = Math.min(1, o.life/300), g = c.createRadialGradient(o.x, oy, 0, o.x, oy, 11); g.addColorStop(0, `rgba(255,210,215,${fade})`); g.addColorStop(.35, `rgba(235,50,80,${.85*fade})`); g.addColorStop(1, 'rgba(235,50,80,0)'); c.fillStyle = g; c.beginPath(); c.arc(o.x, oy, 11, 0, 6.2832); c.fill(); c.fillStyle = `rgba(255,235,235,${fade})`; c.beginPath(); c.arc(o.x, oy, 2.4, 0, 6.2832); c.fill();
+      c.fillStyle = `rgba(200,40,70,${.4*fade})`; for(let q = 1; q <= 3; q++){ c.beginPath(); c.arc(o.x - o.vx*.012*q, oy - o.vy*.012*q, 3.4 - q*.7, 0, 6.2832); c.fill(); } }
+    const bw = 52, bx = f.x - bw/2, by2 = f.y - r*3.95; c.fillStyle = 'rgba(10,6,8,.8)'; c.fillRect(bx - 1, by2 - 1, bw + 2, 6); c.fillStyle = '#6a1424'; c.fillRect(bx, by2, bw, 4); c.fillStyle = ph === 3 ? '#ff4a64' : '#e0364e'; c.fillRect(bx, by2, bw*Math.max(0, hpF), 4);
+    c.fillStyle = 'rgba(10,6,8,.9)'; c.fillRect(bx + bw*.33 - .5, by2 - 1, 1, 6); c.fillRect(bx + bw*.66 - .5, by2 - 1, 1, 6); }
   let foeGrid = null;
   function wdFoes(dt0, s0){
-    saltStep(dt0); vgStep(dt0);
+    saltStep(dt0); vgStep(dt0); snCatchup();
     const P0 = wd.p, LV = []; /* the living players, found once for the whole herd (nearestLive did it again for every animal) */
     for(const i of activeIdx()){ if(ctxGet(i, 'dead') > 0) continue; const q = bodyOf(i); if(q.bur > 0) continue; /* under the ground: not noticed, no trail */ LV.push({i, p:q, u:sceneOf(q), br:bodyR(i)}); }
     let SG = null; /* animals pushing each other apart: with a big herd, sort them into squares first (comparing every pair cost the most of the frame). The squares are redone ten times a second, or when the herd changes */
@@ -8359,6 +8511,7 @@
     if(cuIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
     if(shopIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
     if(sgIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
+    if(snIcon(c, id, {blob, hi, line, leaf})) return iconCache[id] = cv;
     if(id==='rotten'){ blob(()=>{ c.moveTo(4, 16); c.bezierCurveTo(3, 9, 9, 6, 13, 8); c.bezierCurveTo(19, 7, 22, 12, 20, 17); c.bezierCurveTo(18, 21, 7, 21, 4, 16); c.closePath(); }, '#6f7a4a', 1.8); blob(()=>{ c.ellipse(10, 13, 2.4, 1.8, .3, 0, 6.2832); }, '#4e5a32', 1); blob(()=>{ c.ellipse(16, 15, 1.9, 1.5, -.3, 0, 6.2832); }, '#8d8f55', 1); line([[8, 5], [7, 3], [9, 1.5]], '#8fb85a', 1); line([[14, 5], [15, 3], [13, 1.5]], '#8fb85a', 1); c.fillStyle = '#120c09'; for(const [x, y] of [[19, 5], [21, 8]]){ c.beginPath(); c.arc(x, y, .9, 0, 6.2832); c.fill(); } return iconCache[id] = cv; }
     if(id==='grub'){ blob(()=>{ c.ellipse(15.5, 15.5, 4.8, 3.9, 0, 0, Math.PI*2); }, '#e9dca8', 1.8); blob(()=>{ c.ellipse(10.6, 12.6, 4.6, 3.8, 0.5, 0, Math.PI*2); }, '#f1e6b8', 1.8); blob(()=>{ c.ellipse(6.4, 8.8, 4.2, 3.5, 0.9, 0, Math.PI*2); }, '#f5ecc4', 1.8); blob(()=>{ c.arc(4, 6, 3.1, 0, Math.PI*2); }, '#9a6a3a', 1.8); line([[12.5, 11], [12.9, 14.6]], 'rgba(120,90,50,.5)', .8); line([[15.5, 12.4], [15.8, 15.8]], 'rgba(120,90,50,.5)', .8); hi(8, 7.5, 1.6, 1); iconCache[id] = cv; return cv; }
     if(KDISH[id]){ blob(()=>{ c.ellipse(12, 14, 10, 6.5, 0, 0, Math.PI*2); }, '#e8e4da', 1.8); blob(()=>{ c.ellipse(12, 13, 7.2, 4.4, 0, 0, Math.PI*2); }, KDISH[id][3], 1.2); for(const [x, y] of [[9, 12], [13, 14], [15, 11.5]]){ c.fillStyle = 'rgba(255,245,220,.4)'; c.beginPath(); c.arc(x, y, 1.3, 0, Math.PI*2); c.fill(); } line([[9, 7], [10, 4]], 'rgba(255,255,255,.7)', .9); line([[14, 7], [15, 4]], 'rgba(255,255,255,.7)', .9); hi(8, 11, 2, 1.1); return iconCache[id] = cv; }
@@ -8561,6 +8714,7 @@
       if(id==='hidecap'){ c.setLineDash([1,1.6]); line([[6,12],[18,12]],'#e1bb86',.8); c.setLineDash([]); }
       if(id==='ironhelm'){ line([[12,3],[12,13]],'#6b7a82',1.3); line([[7,13],[17,13]],'#6b7a82',1.3); }
       if(id==='heartwoodhelm'){ for(const [x,y] of [[8,8],[16,8],[12,5.5]]) blob(()=>c.ellipse(x,y,1.6,2.6,x<12?-.6:.6,0,Math.PI*2),'#bff3e0',.9); }
+      if(id==='snailhelm'){ c.strokeStyle='#a98a55'; c.lineWidth=1; c.beginPath(); for(let a=0;a<11;a+=.35){ const rr=5.2*a/11; if(a===0) c.moveTo(12,9); else c.lineTo(12+Math.cos(a)*rr, 9+Math.sin(a)*rr); } c.stroke(); }
       if(id==='shardhelm'){ for(const [x,h] of [[8,5],[12,7],[16,5]]) blob(()=>{ c.moveTo(x-1.8,6); c.lineTo(x,6-h); c.lineTo(x+1.8,6); c.closePath(); },'#bff3ff',1); }
       return iconCache[id]=cv; }
     return iconCache[id] = cv;
@@ -9040,9 +9194,9 @@
     c.restore();
   }
   /* ---- the player is a monkey: it walks on all fours, its gait follows the ground it covers, and the selected item is held in its right hand ---- */
-  const MK = {fur:'#8b5a33', dark:'#5a361d', belly:'#c99d6e', face:'#e2be94', skin:'#46301f', wood:'#8a6440'}, MK_METAL = {steelblade:'#a9bfd0', steelpickaxe:'#a9bfd0', ironblade:'#cfd8de', brassblade:'#d4ae45', ironpickaxe:'#cfd8de', ironshovel:'#cfd8de'};
+  const MK = {fur:'#8b5a33', dark:'#5a361d', belly:'#c99d6e', face:'#e2be94', skin:'#46301f', wood:'#8a6440'}, MK_METAL = {steelblade:'#a9bfd0', steelpickaxe:'#a9bfd0', ironblade:'#cfd8de', brassblade:'#d4ae45', ironpickaxe:'#cfd8de', ironshovel:'#cfd8de', snailaxe:'#e6d6ad'};
   function heldKind(id){ const I = ITEMS[id]; if(!I) return null; const a = I.art || id;
-    if(a==='spear' || a==='club' || a==='scythe' || a==='hatchet' || a==='pickaxe' || a==='blade') return a;
+    if(a==='spear' || a==='club' || a==='scythe' || a==='hatchet' || a==='pickaxe' || a==='blade' || a==='battleaxe') return a;
     if(I.tool==='chop') return 'hatchet'; if(I.tool==='mine') return 'pickaxe'; if(I.tool==='fish') return 'rod'; if(I.dig) return 'shovel'; return null; } /* anything else is held up as its own icon, never as a spear */
   /* an item in the hand: drawn with the paw at the origin and the item pointing along +x (swing and carry both use it) */
   function drawHeld(c, id, kind){
@@ -9054,6 +9208,8 @@
       c.fillStyle = metal; c.beginPath(); c.moveTo(8, -2.3); c.lineTo(24, -2.1); c.lineTo(30, 0); c.lineTo(24, 2.1); c.lineTo(8, 2.3); c.closePath(); c.fill(); c.stroke();
       c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = .7; c.beginPath(); c.moveTo(10, -.2); c.lineTo(25, -.2); c.stroke();
       c.strokeStyle = OL; c.lineWidth = 3.6; c.beginPath(); c.moveTo(7.4, -5); c.lineTo(7.4, 5); c.stroke(); c.strokeStyle = '#8a6a34'; c.lineWidth = 2; c.stroke(); }
+    else if(kind==='battleaxe'){ shaft(-4, 21, 2.2); c.fillStyle = metal; c.beginPath(); c.moveTo(14, -1); c.quadraticCurveTo(13, -11, 23, -10); c.quadraticCurveTo(19, -5, 20, -1); c.closePath(); c.moveTo(14, 1); c.quadraticCurveTo(13, 11, 23, 10); c.quadraticCurveTo(19, 5, 20, 1); c.closePath(); c.fill(); c.stroke();
+      c.strokeStyle = 'rgba(120,90,50,.7)'; c.lineWidth = .7; c.beginPath(); c.moveTo(16, -3); c.quadraticCurveTo(19, -6, 21.5, -8); c.moveTo(16, 3); c.quadraticCurveTo(19, 6, 21.5, 8); c.stroke(); }
     else if(kind==='club'){ shaft(-4, 16, 2.2); c.fillStyle = '#e6dcc4'; c.beginPath(); c.ellipse(17, 0, 5.2, 3.4, 0, 0, 6.2832); c.fill(); c.stroke(); c.fillStyle = 'rgba(255,255,255,.4)'; c.beginPath(); c.ellipse(16, -1.2, 2, 1, 0, 0, 6.2832); c.fill(); }
     else if(kind==='scythe'){ shaft(-4, 18, 1.9); c.beginPath(); c.moveTo(19, 0); c.quadraticCurveTo(29, 12, 18, 21); c.quadraticCurveTo(23, 11, 15, 1); c.closePath(); c.fill(); c.stroke(); }
     else if(kind==='hatchet'){ shaft(-4, 18, 2); c.beginPath(); c.moveTo(11, 0); c.lineTo(10, 7); c.lineTo(17, 7); c.lineTo(16, 0); c.closePath(); c.fill(); c.stroke(); }
@@ -10288,7 +10444,7 @@
     for(const e of wd.fx){
       const k = Math.max(0, e.t/e.t0), fl = scn===0 && wd.tr ? trH(e.x, e.y, true) : 0; if(fl){ c.save(); c.translate(0, -fl); }
       if(e.kind==='slash'){ const a = Math.atan2(e.ay, e.ax), half = e.arc/2; c.beginPath(); c.moveTo(e.x, e.y); c.arc(e.x, e.y, e.r, a - half, a + half); c.closePath();
-        c.fillStyle = e.foe ? `rgba(63,133,128,${0.4*k})` : `rgba(217,201,163,${(e.big ? 0.3 : 0.16)*k})`; c.fill(); }
+        c.fillStyle = e.col ? `rgba(${e.col},${0.4*k})` : e.foe ? `rgba(63,133,128,${0.4*k})` : `rgba(217,201,163,${(e.big ? 0.3 : 0.16)*k})`; c.fill(); }
       else if(e.kind==='ring'){ c.beginPath(); c.arc(e.x, e.y, e.r*(0.35 + 0.65*(1 - k)), 0, Math.PI*2); c.strokeStyle = `rgba(${e.col},${k})`; c.lineWidth = 2; c.stroke(); }
       else if(e.kind==='chip'){ const age = (e.t0 - e.t)/1000; c.fillStyle = e.col; c.globalAlpha = k; c.fillRect(e.x + e.vx*age - 1.5, e.y + e.vy*age + 160*age*age - 1.5, 3, 3); c.globalAlpha = 1; }
       else if(e.kind==='num'){ c.globalAlpha = k; c.lineWidth = 2.5; c.strokeStyle = 'rgba(10,7,6,.8)'; c.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; c.textAlign = 'center'; c.strokeText(e.text, e.x, e.y - 14*(1 - k)); txt(e.text, e.x, e.y - 14*(1 - k), 8, e.col); c.globalAlpha = 1; }
@@ -10484,7 +10640,8 @@
   }
   function slotHtml(s){ if(!s) return ''; const I = ITEMS[s.id];
     const fr = I.shelf ? `<span class="wd-fr"><u style="width:${Math.max(4, Math.round(100*frOf(s)))}%;background:${frCol(frOf(s))}"></u></span>` : '';
-    return `<img alt="${I.name}" src="${iconSrc(s.id)}">` + fr + (I.dur ? `<span class="wd-dur"><u style="width:${Math.round(100*s.d/I.dur)}%"></u></span>` : s.n > 1 ? `<i>${s.n}</i>` : ''); }
+    const bn = I.bundle && Array.isArray(s.d) && s.d.length ? `<span class="wd-bn"><u style="width:${Math.max(6, Math.round(100*bnFill(s)))}%;background:${bnFill(s) > .999 ? '#ff5a5a' : '#6f7cff'}"></u></span>` : '';
+    return `<img alt="${I.name}" src="${iconSrc(s.id)}">` + fr + bn + (I.dur ? `<span class="wd-dur"><u style="width:${Math.round(100*s.d/I.dur)}%"></u></span>` : s.n > 1 ? `<i>${s.n}</i>` : ''); }
   function dialCopy(){ /* every view shows the same clock: copy the live dial into theirs */
     const cv = $('wdDial'); if(!cv || !cv.width) return;
     for(const d of document.querySelectorAll('#wdVps .wd-dial2')){ if(d.width!==cv.width){ d.width = cv.width; d.height = cv.height; } const g = d.getContext('2d'); g.clearRect(0, 0, d.width, d.height); g.drawImage(cv, 0, 0); }
@@ -10568,16 +10725,74 @@
   function bagSelected(){return bagSource()[bagIndex()];}
   function bagSelect(side,i){wd.bagSide=side;if(side==='chest')wd.chestSel=i;else wd.sel=i;}
   function bagSlot(side,i){bagSelect(side,i);if(wd.hand)bagPlaceHand(false);else bagRender();}
+  /* ---- the bundle, as in Minecraft: a pouch holding a mix of items worth one stack in all. An item takes 1/its stack size of the bundle (a tool, which does not stack, fills it). The contents ride in the stack's d, newest first; one is selected to come out; no bundles inside bundles. Right-click: item in hand -> into the bundle; empty hand -> the selected stack out; bundle in hand -> an item stack is scooped up, an empty slot receives the selected stack. */
+  function bnSt(id){ const I = ITEMS[id]; return Math.max(1, (I && I.stack) || WD.stack); }
+  function bnList(b){ return Array.isArray(b.d) ? b.d : (b.d = []); }
+  function bnFill(b){ let f = 0; for(const e of bnList(b)) f += e.n/bnSt(e.id); return f; }
+  function bnUnits(b){ return Math.min(64, Math.ceil(bnFill(b)*64 - 1e-9)); } /* shown as n/64 */
+  function bnRoom(b, id){ return Math.max(0, Math.floor((1 - bnFill(b))*bnSt(id) + 1e-9)); }
+  function bnSel(b){ const L = bnList(b); return L.length ? Math.min(Math.max(0, b.bs | 0), L.length - 1) : -1; }
+  function bnClean(a){ const out = []; if(!Array.isArray(a)) return out; let f = 0; for(const e of a.slice(0, 48)){ if(!e || typeof e!=='object' || !ITEMS[e.id] || e.id==='bundle' || !(e.n >= 1)) continue; const I = ITEMS[e.id], st = bnSt(e.id); let n = Math.min(st, Math.floor(e.n)); n = Math.min(n, Math.floor((1 - f)*st + 1e-9)); if(n < 1) continue; const q = {id:e.id, n}; if(I.dur) q.d = clamp(Math.floor(finite(e.d, I.dur)), 1, I.dur); else if(I.shelf && e.d != null){ const v = clamp(finite(e.d, 1), .001, 1); if(v < .999) q.d = Math.round(v*1000)/1000; } f += n/st; out.push(q); } return out; }
+  function bnAdd(b, src, n){ /* as many of src as fit go in; returns how many */
+    if(!b || b.id!=='bundle' || !src || src.id==='bundle' || !ITEMS[src.id] || !(n > 0)) return 0;
+    const I = ITEMS[src.id], st = bnSt(src.id), k = Math.min(n, bnRoom(b, src.id)); if(k <= 0) return 0;
+    const L = bnList(b); let add = k;
+    if(st > 1 && !I.dur){ const j = L.findIndex(q=>q.id===src.id && q.n < st); if(j >= 0){ const e = L.splice(j, 1)[0], m = Math.min(add, st - e.n); if(I.shelf) frMix(e, src, m); e.n += m; add -= m; L.unshift(e); } }
+    if(add > 0){ const q = {id:src.id, n:add}; if(I.dur) q.d = src.d || I.dur; else if(I.shelf && src.d != null && src.d < .999) q.d = src.d; L.unshift(q); }
+    b.bs = 0; return k; }
+  function bnTake(b){ const i = bnSel(b); if(i < 0) return null; const e = bnList(b).splice(i, 1)[0]; b.bs = 0; return e; }
+  function bnSpill(b){ let n = 0; for(const e of bnList(b).splice(0)){ dropItem(e.id, e.n, wd.p.x, wd.p.y, wd.p, true, e.d); n++; } b.bs = 0; return n; }
+  const bnNo = why => wdNote(why || 'It will not fit in the bundle');
+  function bnSecondary(dst, i){ /* the right-click; true if it was a bundle move */
+    const h = wd.hand, s = dst[i];
+    if(!h && s && s.id==='bundle'){ const e = bnTake(s); if(!e){ bnNo('The bundle is empty'); return true; } wd.hand = e; }
+    else if(h && h.id!=='bundle' && s && s.id==='bundle'){ const k = bnAdd(s, h, h.n); if(!k) bnNo(); h.n -= k; if(!h.n) wd.hand = null; }
+    else if(h && h.id==='bundle' && s && s.id!=='bundle'){ const k = bnAdd(h, s, s.n); if(!k) bnNo(); s.n -= k; if(!s.n) dst[i] = null; }
+    else if(h && h.id==='bundle' && !s){ const e = bnTake(h); if(!e){ bnNo('The bundle is empty'); return true; } dst[i] = e; }
+    else return false;
+    beep(520, .05, 'triangle', .03); wdSave(); bagRender(); bagRefreshOthers(); return true; }
+  function bnCycle(b, dir){ const L = bnList(b); if(L.length < 2) return; b.bs = (bnSel(b) + dir + L.length) % L.length; beep(700, .03, 'triangle', .02); bagRender(); }
+  function bnShown(){ if(wd.hand && wd.hand.id==='bundle') return wd.hand; const s = bagSelected(); return s && s.id==='bundle' ? s : null; }
+  function bnPutSel(){ const src = bagSource(), i = bagIndex(), s = src[i]; if(!s || s.id==='bundle' || wd.hand) return; const b = src.find(q=>q && q.id==='bundle' && bnRoom(q, s.id) > 0); if(!b){ bnNo(src.some(q=>q && q.id==='bundle') ? 'It will not fit in the bundle' : 'No bundle here'); return; } const k = bnAdd(b, s, s.n); s.n -= k; if(!s.n) src[i] = null; beep(520, .05, 'triangle', .03); wdSave(); bagRender(); bagRefreshOthers(); }
+  function bnRender(){ /* the contents of the bundle you point at (or hold), and the bundle buttons */
+    const box = $('wdBundle'), b = bnShown(), s = bagSelected(), src = bagSource(), h = wd.hand;
+    if(!b){ box.style.display = 'none'; box.innerHTML = ''; }
+    else { const L = bnList(b), sel = bnSel(b), u = bnUnits(b);
+      box.style.display = 'flex';
+      box.innerHTML = `<div class="wd-bnhead">${h && h.id==='bundle' ? 'Bundle in hand' : 'Bundle'} · Fullness ${u}/64${L.length ? ' · next out: ' + L[sel].n + ' × ' + ITEMS[L[sel].id].name : ' · empty'}</div>` + (L.length ? `<div class="wd-bngrid">${L.map((e, j)=>`<span data-j="${j}" class="${j===sel ? 'on' : ''}" title="${e.n} × ${ITEMS[e.id].name}"><img alt="" src="${iconSrc(e.id)}">${e.n > 1 ? '<i>' + e.n + '</i>' : ''}</span>`).join('')}</div>` : '');
+      for(const c of box.querySelectorAll('.wd-bngrid span')) c.onclick = ()=>{ b.bs = +c.dataset.j; bagRender(); }; }
+    const inB = !h && s && s.id==='bundle', holdB = h && h.id==='bundle', can = !h && s && s.id!=='bundle' && src.some(q=>q && q.id==='bundle' && bnRoom(q, s.id) > 0);
+    $('wdBnOut').style.display = inB ? '' : 'none'; $('wdBnOut').disabled = !(inB && bnList(s).length);
+    $('wdBnNext').style.display = (inB || holdB) ? '' : 'none'; $('wdBnNext').disabled = !(b && bnList(b).length > 1);
+    $('wdBnSpill').style.display = inB ? '' : 'none'; $('wdBnSpill').disabled = !(inB && bnList(s).length);
+    $('wdBnPut').style.display = can ? '' : 'none';
+    $('wdBnActs').style.display = (inB || holdB || can) ? '' : 'none'; }
+  /* ---- the stack you pick up is drawn in your hand: it follows the mouse, or rides on the selection box when you use the keyboard or a controller ---- */
+  const GH = {x:0, y:0, seen:false, vis:false};
+  window.addEventListener('pointermove', e=>{ if(e.pointerType==='mouse'){ if(kbNav && Math.hypot(e.clientX - GH.x, e.clientY - GH.y) > 6) kbNav = false; GH.x = e.clientX; GH.y = e.clientY; GH.seen = true; } }, true);
+  function ghostEl(seat){ let e = document.getElementById('wdGhost' + seat); if(!e){ e = document.createElement('div'); e.id = 'wdGhost' + seat; e.className = 'wd-ghost'; e.style.display = 'none'; document.body.appendChild(e); } return e; }
+  function ghostUpdate(){ /* in the current player's context */
+    const seat = wd.cur | 0, e = ghostEl(seat), h = wd.hand, root = bagRoots ? bagRoots[seat] : $('wdBag'), grid = root && root.querySelector('.wd-grid'), first = grid && grid.children[0];
+    if(!h || !wd.bag || wd.tab!=='bag' || !root || !root.classList.contains('on') || !first){ if(e.style.display !== 'none') e.style.display = 'none'; return; }
+    const fr = first.getBoundingClientRect(), sz = Math.max(30, Math.min(64, fr.width*.85)); let x, y;
+    if(seat === 0 && GH.seen && !activePad() && !kbNav){ x = GH.x + 4; y = GH.y + 4; }
+    else { const t = padEl && root.contains(padEl) && padEl.closest('.wd-grid') ? padEl : root.querySelector('.wd-grid button.sel'); if(!t){ e.style.display = 'none'; return; } const r = t.getBoundingClientRect(); x = r.right - sz*.55; y = r.top - sz*.4; }
+    x = Math.max(2, Math.min(innerWidth - sz - 2, x)); y = Math.max(2, Math.min(innerHeight - sz - 2, y));
+    const key = h.id + '|' + h.n + '|' + (Array.isArray(h.d) ? h.d.length + ':' + bnUnits(h) : typeof h.d==='number' ? h.d.toFixed(2) : '');
+    if(e._k !== key){ e.innerHTML = slotHtml(h); e._k = key; }
+    e.style.width = e.style.height = sz + 'px'; e.style.left = Math.round(x) + 'px'; e.style.top = Math.round(y) + 'px'; e.style.display = 'block'; GH.vis = true; }
+  (function ghostLoop(){ try{ if(typeof wd !== 'undefined' && wd && wd.crew && bagRoots && bagRoots.some(r=>r.classList.contains('on'))){ for(const i of activeIdx()) withPlayer(i, ghostUpdate); }
+      else if(GH.vis){ GH.vis = false; for(const g of document.querySelectorAll('.wd-ghost')) g.style.display = 'none'; } }catch(err){} requestAnimationFrame(ghostLoop); })();
   function bagReturnHand(){ if(!wd || !wd.hand)return;const h=wd.hand;const left=invAdd(h.id,h.n,h.d);if(left)dropItem(h.id,left,wd.p.x,wd.p.y,wd.p,true,h.d);wd.hand=null; }
   function bagTakeOne(){if(!wd || !wd.bag || wd.tab!=='bag')return;const src=bagSource(),i=bagIndex(),s=src[i];if(!s)return;const h=wd.hand,limit=ITEMS[s.id].stack || WD.stack;if(h && (h.id!==s.id || ITEMS[s.id].dur || h.n>=limit))return;if(h){ frMix(h, s, 1); h.n++; }else wd.hand=Object.assign({},s,{n:1});if(--s.n===0)src[i]=null;wdSave();bagRender();bagRefreshOthers();}
-  function bagPlaceHand(one){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.hand)return;const dst=bagSource(),i=bagIndex(),h=wd.hand,s=dst[i],limit=ITEMS[h.id].stack || WD.stack;if(s && (s.id!==h.id || ITEMS[h.id].dur))return;const n=Math.min(one ? 1 : h.n,limit-(s ? s.n : 0));if(!n)return;if(s){ frMix(s, h, n); s.n+=n; }else dst[i]=Object.assign({},h,{n});h.n-=n;if(!h.n)wd.hand=null;wdSave();bagRender();bagRefreshOthers();}
+  function bagPlaceHand(one){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.hand)return;if(one && bnSecondary(bagSource(), bagIndex()))return;const dst=bagSource(),i=bagIndex(),h=wd.hand,s=dst[i],limit=ITEMS[h.id].stack || WD.stack;if(s && (s.id!==h.id || ITEMS[h.id].dur))return;const n=Math.min(one ? 1 : h.n,limit-(s ? s.n : 0));if(!n)return;if(s){ frMix(s, h, n); s.n+=n; }else dst[i]=Object.assign({},h,{n});h.n-=n;if(!h.n)wd.hand=null;wdSave();bagRender();bagRefreshOthers();}
   function storageAdd(dst,s,n){const limit=ITEMS[s.id].stack || WD.stack;if(limit>1)for(const t of dst)if(t && t.id===s.id){const k=Math.min(n,limit-t.n);frMix(t,s,k);t.n+=k;n-=k;if(!n)return 0;}for(let i=0;i<dst.length && n;i++)if(!dst[i]){const k=Math.min(n,limit);dst[i]=Object.assign({},s,{n:k});n-=k;}return n;}
   function bagTransfer(one){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.chest || wd.hand)return;const src=bagSource(),i=bagIndex(),s=src[i];if(!s)return;const dst=wd.bagSide==='chest' ? wd.inv : wd.chest.slots,n=one ? 1 : s.n,left=storageAdd(dst,s,n);s.n-=n-left;if(!s.n)src[i]=null;wdSave();bagRender();bagRefreshOthers();}
   function bagQuickStack(){if(!wd || !wd.bag || wd.tab!=='bag' || !wd.chest || wd.hand)return;const dst=wd.chest.slots,ids=new Set(dst.filter(Boolean).map(s=>s.id));for(let i=0;i<wd.inv.length;i++){const s=wd.inv[i];if(s && ids.has(s.id)){const left=storageAdd(dst,s,s.n);s.n=left;if(!left)wd.inv[i]=null;}}wdSave();bagRender();bagRefreshOthers();}
   function bagStorageRender(){
     const open=!!wd.chest,g=$('wdChestGrid'),had=padEl && g.contains(padEl) ? +padEl.dataset.i : -1;
     $('wdChestArea').style.display=open ? 'contents' : 'none';
-    if(open){g.innerHTML=wd.chest.slots.map((s,i)=>`<button data-i="${i}" class="${wd.bagSide==='chest' && i===wd.chestSel ? 'sel' : ''}">${slotHtml(s)}</button>`).join('');for(const b of g.children){b.onclick=()=>bagSlot('chest',+b.dataset.i);b.oncontextmenu=e=>{e.preventDefault();bagSelect('chest',+b.dataset.i);bagTakeOne();};}if(had>=0)padSet(g.children[had]);$('wdChestTitle').textContent=(wd.chest.title || (wd.chest.k==='supplychest' ? 'CAMP SUPPLIES' : wd.chest.k==='cart' ? 'WHEEL CART' : 'CHEST'))+' · '+wd.chest.slots.filter(Boolean).length+'/'+wd.chest.slots.length+' slots';}
+    if(open){g.innerHTML=wd.chest.slots.map((s,i)=>`<button data-i="${i}" class="${wd.bagSide==='chest' && i===wd.chestSel ? 'sel' : ''}">${slotHtml(s)}</button>`).join('');for(const b of g.children){b.onclick=()=>bagSlot('chest',+b.dataset.i);b.oncontextmenu=e=>{e.preventDefault();bagSelect('chest',+b.dataset.i);if(!bnSecondary(wd.chest.slots,+b.dataset.i))bagTakeOne();};b.onwheel=e=>{ const q=wd.chest.slots[+b.dataset.i]; if(q && q.id==='bundle'){ e.preventDefault(); bagSelect('chest',+b.dataset.i); bnCycle(q, e.deltaY > 0 ? 1 : -1); } };}if(had>=0)padSet(g.children[had]);$('wdChestTitle').textContent=(wd.chest.title || (wd.chest.k==='supplychest' ? 'CAMP SUPPLIES' : wd.chest.k==='cart' ? 'WHEEL CART' : 'CHEST'))+' · '+wd.chest.slots.filter(Boolean).length+'/'+wd.chest.slots.length+' slots';}
     const h=wd.hand,s=bagSelected();$('wdHand').textContent=h ? 'Holding: '+ITEMS[h.id].name+' ×'+h.n+' · select a slot to place' : 'Pick up 1, then select a destination slot';
     $('wdTakeOne').disabled=!s || !!(h && (h.id!==s.id || ITEMS[s.id].dur || h.n>=(ITEMS[s.id].stack || WD.stack)));
     $('wdPlaceOne').disabled=!h || !!(s && (s.id!==h.id || ITEMS[h.id].dur || s.n>=(ITEMS[h.id].stack || WD.stack)));
@@ -10588,7 +10803,7 @@
     { const wb=$('wdWash'), can=open && clsHas('raccoon') && (waterNear(wd.p) || wd.chest.k==='denpantry'), nw=can ? washCount(wd.chest.slots) : 0; wb.style.display=can ? '' : 'none'; wb.disabled=!nw || !!wd.hand; wb.textContent=nw ? 'Wash food (' + nw + ')' : 'Wash food'; }
     $('wdTabHint').textContent+=activePad() ? ' · LT picks/places 1' : ' · R picks/places 1 · right-click picks 1'+(open ? ' · G moves · T stacks' : '');
   }
-  $('wdTakeOne').onclick=bagTakeOne;$('wdPlaceOne').onclick=()=>bagPlaceHand(true);$('wdTransfer').onclick=()=>bagTransfer(false);$('wdTransferOne').onclick=()=>bagTransfer(true);$('wdQuickStack').onclick=bagQuickStack;$('wdWash').onclick=bagWash;
+  $('wdBnOut').onclick=()=>{ if(!wd.hand) bnSecondary(bagSource(), bagIndex()); };$('wdBnNext').onclick=()=>{ const b = bnShown(); if(b) bnCycle(b, 1); };$('wdBnSpill').onclick=()=>{ const s = bagSelected(); if(!wd.hand && s && s.id==='bundle' && bnSpill(s)){ thud(0.08, 0.06, 900); wdSave(); bagRender(); bagRefreshOthers(); } };$('wdBnPut').onclick=bnPutSel;$('wdTakeOne').onclick=bagTakeOne;$('wdPlaceOne').onclick=()=>bagPlaceHand(true);$('wdTransfer').onclick=()=>bagTransfer(false);$('wdTransferOne').onclick=()=>bagTransfer(true);$('wdQuickStack').onclick=bagQuickStack;$('wdWash').onclick=bagWash;
   // One equipped item is stored outside the bag; swapping uses the source slot.
   function accessorySpeed(){return wd && wd.accessory ? ITEMS[wd.accessory].speed || 1 : 1;}
   function accessoryEquip(i){
@@ -10770,11 +10985,11 @@
     if(CHEAT_GEAR_FLAGS.some(k=>I[k])) return 'oth';
     return 'mat'; }
   function bagOpen(tab,chest){ if(clsLocked() && tab!=='class') return; craftArm = -1; if(wd && wd.book) cuBookClose(); if(!bagOk()) return; wdCancelAction(); if(wd.build) buildEnd(); wd.chest=chest || ((!tab || tab==='bag') && (nearChest() || cuNearCart(48))) || null; /* a chest within reach sits right under the bag: press down to reach it */ wd.bagSide='bag'; wd.chestSel=0; wd.bag = true; syncPaused(); wd.tab = tab==='accessory' ? 'bag' : tab || 'bag'; bagPlace(undefined, false); $('wdBag').classList.add('on'); padSyncSeat(); bagRender(true); if(tab==='accessory')equipmentFocus(); hudLast = ''; sfxBag(true); }
-  function bagClose(){ if(wd){ bagReturnHand(); if(wd.sel >= WD.slots) wd.sel = 0; wd.chest=null; wd.bagSide='bag'; wdSave(); } $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; syncPaused(); wdIn.resync = true; } hudLast = ''; sfxBag(false); }
+  function bagClose(){ qtyClose(); if(wd){ bagReturnHand(); if(wd.sel >= WD.slots) wd.sel = 0; wd.chest=null; wd.bagSide='bag'; wdSave(); } $('wdBag').classList.remove('on'); padSet(null); if(wd){ wd.bag = false; syncPaused(); wdIn.resync = true; } hudLast = ''; sfxBag(false); }
   function padSyncSeat(){ const g = seatPad(wd.cur); if(g){ for(const k of [0,1,2,3,4,5,6,7,8,9]) padHeld[k] = !!(padBtn(g, k) && padBtn(g, k).pressed); padHeld.dir = true; } padNext = 0; } /* the button that opened the bag must not also press something in it */
   /* another player's view of the same chest should not go stale */
   function bagRefreshOthers(){ if(!wd || !wd.crew || !wd.chest) return; const ch = wd.chest, cur = wd.cur; for(const i of activeIdx()){ if(i===cur || !ctxGet(i, 'bag') || ctxGet(i, 'chest')!==ch) continue; withPlayer(i, ()=>bagRender()); } }
-  function bagTab(tab){ if(!wd || !wd.bag) return; if(clsLocked() && tab!=='class') return; if(tab==='accessory'){bagTab('bag');equipmentFocus();return;} if(wd.tab===tab) return; bagReturnHand(); wd.bagSide='bag'; wd.tab = tab; bagRender(true); beep(560, 0.04, 'triangle', 0.025); }
+  function bagTab(tab){ qtyClose(); if(!wd || !wd.bag) return; if(clsLocked() && tab!=='class') return; if(tab==='accessory'){bagTab('bag');equipmentFocus();return;} if(wd.tab===tab) return; bagReturnHand(); wd.bagSide='bag'; wd.tab = tab; bagRender(true); beep(560, 0.04, 'triangle', 0.025); }
   function bagStep(d){ if(!wd || !wd.bag) return; const TL = TABS.filter(t=>t!=='trade' || tradeKind()); bagTab(TL[(TL.indexOf(wd.tab) + d + TL.length) % TL.length]); }
   function bagRender(focus){
     if(wd.tab==='accessory')wd.tab='bag'; // Older callers use the equipment shortcut.
@@ -10798,14 +11013,14 @@
     if(list){ $('wdTabHint').textContent += activePad() ? ' · A crafts · X crafts again' : ' · R crafts again'; craftRender(focus); return; }
     const g = $('wdBagGrid'), had = padEl && g.contains(padEl) ? [...g.children].indexOf(padEl) : -1;
     const pkt = Math.max(0, wd.inv.length - WD.slots - packSlots(wd.pack)); /* pocket slots first, then the pack's */
-    g.innerHTML = wd.inv.map((s, i)=>{ const nm = s ? ITEMS[s.id].name + (s.n > 1 ? ' x' + s.n : '') : 'Empty slot'; return `<button data-i="${i}" title="${i >= WD.slots ? (i < WD.slots + pkt ? 'Pocket slot · ' : 'Pack slot · ') : ''}${nm}" aria-label="${i >= WD.slots ? (i < WD.slots + pkt ? 'Pocket slot' : 'Pack slot') : 'Bag slot'} ${i+1}: ${nm}" class="${wd.bagSide==='bag' && i===wd.sel ? 'sel' : ''}${i >= WD.slots ? ' pk' : ''}">${slotHtml(s)}</button>`; }).join('');
-    for(const b of g.children){ b.onclick=()=>bagSlot('bag',+b.dataset.i); b.oncontextmenu=e=>{e.preventDefault();bagSelect('bag',+b.dataset.i);bagTakeOne();}; }
+    g.innerHTML = wd.inv.map((s, i)=>{ const nm = s ? ITEMS[s.id].name + (s.n > 1 ? ' x' + s.n : '') + (s.id==='bundle' ? ' · ' + bnUnits(s) + '/64' + (bnList(s).length ? ': ' + bnList(s).map(e=>e.n + ' ' + ITEMS[e.id].name).join(', ') : ' (empty)') : '') : 'Empty slot'; return `<button data-i="${i}" title="${i >= WD.slots ? (i < WD.slots + pkt ? 'Pocket slot · ' : 'Pack slot · ') : ''}${nm}" aria-label="${i >= WD.slots ? (i < WD.slots + pkt ? 'Pocket slot' : 'Pack slot') : 'Bag slot'} ${i+1}: ${nm}" class="${wd.bagSide==='bag' && i===wd.sel ? 'sel' : ''}${i >= WD.slots ? ' pk' : ''}">${slotHtml(s)}</button>`; }).join('');
+    for(const b of g.children){ b.onclick=()=>bagSlot('bag',+b.dataset.i); b.oncontextmenu=e=>{e.preventDefault();bagSelect('bag',+b.dataset.i);if(!bnSecondary(wd.inv,+b.dataset.i))bagTakeOne();}; b.onwheel=e=>{ const q=wd.inv[+b.dataset.i]; if(q && q.id==='bundle'){ e.preventDefault(); bagSelect('bag',+b.dataset.i); bnCycle(q, e.deltaY > 0 ? 1 : -1); } }; }
     if(had >= 0) padSet(g.children[had]); else if(focus && (activePad() || kbNav)) padSet(g.children[wd.sel]);
     bagStorageRender();
     accessoryRender(false);
     const s = bagSelected(), I = s && ITEMS[s.id], fire = !!nearFire(WD.fireNear, true);
     const info = !s ? 'Empty' : I.name + (I.dur ? ` (${s.d} of ${I.dur} uses left)\n${I.desc}` : ' ×' + s.n) + (I.shelf ? ' · ' + frHead(s) : '') + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.quench ? `, quenches ${I.quench}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.shelf ? (I.food ? ' · ' : '\n') + frLeft(s, wd.bagSide==='chest' && coolStore(wd.chest)) : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a lit fire') : '') + (I.light ? `\nLight it to see for ${WD.torch} seconds` : '') + (I.desc && !I.dur ? '\n' + I.desc : '') + (I.fuel ? '\nFuel: +' + I.fuel + ' seconds' : '');
-    $('wdBagInfo').textContent = (wd.bagSide==='chest' ? 'Chest: ' : 'Bag: ') + info;
+    $('wdBagInfo').textContent = (wd.bagSide==='chest' ? 'Chest: ' : 'Bag: ') + info; bnRender();
     $('wdEat').disabled = !(I && (I.food || (I.medical && (I.root ? dzNeedsSalve() : (wd.p.hp < wd.p.maxHp || dzNeedsSalve())))));
     $('wdEat').textContent = (activePad() ? 'A · ' : '') + (I && I.medical ? 'Heal' : 'Eat');
     $('wdCook').textContent = (activePad() ? 'Y · ' : '') + 'Cook';
@@ -10849,19 +11064,49 @@
   window.addEventListener('resize', ()=>{ if(bagRoots) for(const r of bagRoots) r._fk = ''; });
   const curList = () => wd.tab==='cook' ? COOK : RECIPES.filter(r=>(!r.auto || planDone(r.needPlan)) && (!r.skill || skHas(r.skill))); /* the furnace recipes appear once the autosmelter is built */
   const GROUPS = {build:"At a builder's bench", hand:'By hand', bench:'At a workbench', def:'At a defense bench', fire:'At a lit fire',vat:'At a tanning vat',furnace:'At a furnace',anvil:'At an anvil',refiner:'At a refiner',kiln:"At the den kiln",crucible:"At the den foundry",still:'At a still', kitchen:"At the den kitchen's range"};
+  /* ---- the craft menu's views: group by station or by type, filter with tabs, and show a list or just the pictures ---- */
+  const CF_TYPES = {bld:'Building', tool:'Tools & weapons', wear:'Wear & carry', food:'Food & medicine', mat:'Materials'}, CF_ORDER = Object.keys(CF_TYPES);
+  const CF_ST = {build:'Builder', hand:'Hand', bench:'Bench', def:'Defense', fire:'Fire', vat:'Vat', furnace:'Furnace', anvil:'Anvil', refiner:'Refiner', kiln:'Kiln', crucible:'Foundry', still:'Still', kitchen:'Kitchen'};
+  const CF = {by:'station', tab:'all', view:'list'};
+  try{ const v = JSON.parse(localStorage.getItem('bloodline_wilds_craftui') || 'null'); if(v){ if(v.by==='type') CF.by = 'type'; if(v.view==='icons') CF.view = 'icons'; } }catch(e){}
+  const cfSave = () => { try{ localStorage.setItem('bloodline_wilds_craftui', JSON.stringify({by:CF.by, view:CF.view})); }catch(e){} };
+  function recType(r){ const I = ITEMS[r.id] || {};
+    if(r.build || r.place || I.build) return 'bld';
+    if(I.weapon || I.tool || I.bundle || I.dig || I.fill || I.water || I.rune || I.light || I.boom || I.throwable || I.repel || I.drug) return 'tool';
+    if(I.armor || I.helmet || I.layer || I.accessory || I.pack || I.rat || I.ratHead || I.ratBody || I.ratWeapon || I.ratCharm) return 'wear';
+    if(I.food || I.heal || I.medical || I.drink || I.quench) return 'food';
+    return 'mat'; }
+  const cfKey = r => CF.by==='type' ? recType(r) : r.at;
+  function cfKeys(list){ const out = []; for(const r of list){ const k = cfKey(r); if(!out.includes(k)) out.push(k); } return CF.by==='type' ? CF_ORDER.filter(k=>out.includes(k)) : out; }
+  const recCostHtml = r => Object.keys(r.cost).map(k=>{ const ok = recHave(r, k) >= r.cost[k], t = r.cost[k] + ' ' + (r.cost[k]===1 && ITEMS[k].one ? ITEMS[k].one : ITEMS[k].name.toLowerCase()); return ok ? t : `<b>${t}</b>`; }).join(', ');
+  function cfBar(list, keys, tab){
+    const bar = $('wdCraftBar'); if(!bar) return; const keep = padEl && bar.contains(padEl) ? padEl.dataset.k : null;
+    const chip = (k, label, on, extra) => `<button type="button" class="cf-b${on ? ' on' : ''}" data-k="${k}" aria-pressed="${on ? 'true' : 'false'}">${label}${extra || ''}</button>`;
+    const n = {}; for(const r of list){ const k = cfKey(r); n[k] = (n[k] || 0) + (canCraft(r) ? 1 : 0); } const all = Object.values(n).reduce((a, b)=>a + b, 0);
+    bar.innerHTML = `<div class="cf-row"><span class="cf-l">Group</span>${chip('by:station', 'Station', CF.by==='station')}${chip('by:type', 'Type', CF.by==='type')}<span class="cf-gap"></span><span class="cf-l">View</span>${chip('view:list', 'List', CF.view==='list')}${chip('view:icons', 'Icons', CF.view==='icons')}</div>`
+      + `<div class="cf-row cf-tabs">${chip('tab:all', 'All', tab==='all', all ? `<small>${all}</small>` : '')}${keys.map(k=>chip('tab:' + k, CF.by==='type' ? CF_TYPES[k] : CF_ST[k] || k, tab===k, n[k] ? `<small>${n[k]}</small>` : '')).join('')}</div>`;
+    for(const b of bar.querySelectorAll('button')){ b.onclick = ()=>{ const [a, v] = b.dataset.k.split(':'); if(a==='by'){ CF.by = v; CF.tab = 'all'; } else if(a==='view') CF.view = v; else CF.tab = v; cfSave(); beep(560, 0.03, 'triangle', 0.02); craftRender(); const nb = $('wdCraftBar').querySelector('[data-k="' + b.dataset.k + '"]'); if(nb && (activePad() || kbNav)) padSet(nb); }; }
+    if(keep){ const nb = bar.querySelector('[data-k="' + keep + '"]'); if(nb) padSet(nb); } }
   let craftArm = -1;
   function craftRender(focus){
     const L = $('wdCraftList'), list = curList(), btns = () => [...L.querySelectorAll('button')];
     const had = padEl && L.contains(padEl) ? btns().indexOf(padEl) : -1;
+    const keys = cfKeys(list), tab = keys.includes(CF.tab) ? CF.tab : 'all', icons = CF.view==='icons';
+    let shown = list.map((r, i)=>[r, i]).filter(([r])=>tab==='all' || cfKey(r)===tab);
+    if(CF.by==='type') shown = shown.map((q, n)=>[q, n]).sort((x, y)=>(CF_ORDER.indexOf(recType(x[0][0])) - CF_ORDER.indexOf(recType(y[0][0]))) || (x[1] - y[1])).map(x=>x[0]); /* grouped by type, the recipe order kept inside each group */
     let html = '', last = null;
-    list.forEach((r, i)=>{ if(r.at!==last){ last = r.at; const ok = stationOk(r); html += `<div class="wd-grp">${GROUPS[r.at]}${r.at==='hand' ? '' : ok ? ' · <span style="color:#e0b54a">here</span>' : r.at==='still' && nearStation('still') ? ' · <span style="color:#ee5a75">cold: light a fire beside it</span>' : ' · none near'}</div>`; }
-      const cost = Object.keys(r.cost).map(k=>{ const ok = recHave(r, k) >= r.cost[k], t = r.cost[k] + ' ' + (r.cost[k]===1 && ITEMS[k].one ? ITEMS[k].one : ITEMS[k].name.toLowerCase()); return ok ? t : `<b>${t}</b>`; }).join(', ');
+    shown.forEach(([r, i])=>{ const gk = cfKey(r);
+      if(gk!==last){ last = gk; html += CF.by==='type' ? `<div class="wd-grp">${CF_TYPES[gk]}</div>` : (()=>{ const ok = stationOk(r); return `<div class="wd-grp">${GROUPS[r.at]}${r.at==='hand' ? '' : ok ? ' · <span style="color:#e0b54a">here</span>' : r.at==='still' && nearStation('still') ? ' · <span style="color:#ee5a75">cold: light a fire beside it</span>' : ' · none near'}</div>`; })(); }
+      if(icons){ html += `<button data-i="${i}" class="ic${canCraft(r) ? '' : ' off'}" title="${recName(r).replace(/"/g, '')}" aria-label="${recName(r).replace(/"/g, '')}"${canCraft(r) ? '' : ' aria-disabled="true"'}><img alt="" src="${iconSrc(r.id)}">${r.n > 1 ? `<i>×${r.n}</i>` : ''}</button>`; return; }
+      const cost = recCostHtml(r);
       const I = ITEMS[r.id], gain = I && I.food ? ` · <em>food ${I.food}${I.heal ? ', heals ' + I.heal : ''}</em>` : '';
       html += `<button data-i="${i}"${canCraft(r) ? '' : ' class="off" aria-disabled="true"'}><img alt="" src="${iconSrc(r.id)}"><span>${recName(r)}${r.auto && wd.cu.den && wd.cu.den.sr===r.auto ? ' · SELECTED' : ''}${r.n ? ' ×' + r.n : ''}<small>${cost}${gain}${r.at==='still' ? ' · <em>needs a lit fire beside it</em>' : ''}</small></span></button>`; });
+    L.classList.toggle('icons', icons); cfBar(list, keys, tab);
     L.innerHTML = html; recraftRender(); if(craftArm >= 0){ const ab = L.querySelector('button[data-i="' + craftArm + '"]'); if(ab) ab.classList.add('armed'); }
     for(const b of btns()){ const r = list[+b.dataset.i];
       b.onclick = ()=>{ if(touchOn() && craftArm !== +b.dataset.i){ craftArm = +b.dataset.i; wd.csel = craftArm; craftInfo(r); for(const q of btns()) q.classList.toggle('armed', q===b); return; } /* a finger: the first tap says what it is, the second makes it */
-        craftArm = -1; wd.paused = false; const ok = wdCraft(r); if(ok){ bagClose(); return; } syncPaused(); wd.csel = +b.dataset.i; if(b.classList.contains('off')) beep(140, 0.08, 'square', 0.02); craftRender(); };
+        craftArm = -1; if(craftQty(r) && !b.classList.contains('off')){ const mx = craftMax(r); if(mx >= 2){ wd.csel = +b.dataset.i; qtyAsk(r, mx); return; } } /* more than one possible: ask how many */
+        wd.paused = false; const ok = wdCraft(r); if(ok){ bagClose(); return; } syncPaused(); wd.csel = +b.dataset.i; if(b.classList.contains('off')) beep(140, 0.08, 'square', 0.02); craftRender(); };
       b.onpointerenter = ()=>craftInfo(r); }
     const all = btns(), live = all.filter(b=>!b.classList.contains('off'));
     if(had >= 0 && all[had]) padSet(all[had]);
@@ -10871,11 +11116,37 @@
     if(!live.length && wd.tab==='cook' && !nearFire(WD.fireNear, true)) $('wdCraftInfo').textContent = 'Stand by a lit fire to cook.';
     if(padEl && (padEl.disabled || padEl.offsetParent===null)) padSet(live[0] || $('wdBagClose'));
   }
+  /* ---- how many? (Palworld's way): pressing a recipe that can be made more than once asks for an amount first ---- */
+  let qtyEl = null;
+  const qtyOpen = () => !!qtyEl && qtyEl.isConnected;
+  function qtyClose(){ if(qtyEl){ if(padEl && qtyEl.contains(padEl)) padSet(null); qtyEl.remove(); qtyEl = null; } }
+  function qtyAdd(d){ if(qtyOpen() && qtyEl._set) qtyEl._set(qtyEl._n + d); }
+  function qtyAsk(r, max){
+    qtyClose(); const root = $('wdBag'), per = r.n || 1; let n = 1;
+    const el = document.createElement('div'); el.className = 'wd-qty'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'How many ' + recName(r) + ' to make');
+    el.innerHTML = `<div class="q-box"><div class="q-head"><img alt="" src="${iconSrc(r.id)}"><b>${recName(r)}</b></div><div class="q-sub">How many do you want to make?</div>
+      <div class="q-row"><button type="button" class="q-minus" aria-label="One fewer">\u2212</button><input type="range" class="q-range" min="1" max="${max}" value="1" aria-label="Amount"><button type="button" class="q-plus" aria-label="One more">+</button></div>
+      <div class="q-big"><span class="q-n">1</span> <small class="q-out"></small></div>
+      <div class="q-cost"></div><div class="q-time"></div>
+      <div class="q-row q-quick"><button type="button" class="q-one">1</button><button type="button" class="q-max">Max (${max})</button></div>
+      <div class="q-row q-acts"><button type="button" class="q-cancel">Cancel</button><button type="button" class="q-go">Make 1</button></div></div>`;
+    const q = c => el.querySelector(c), rg = q('.q-range');
+    const paint = () => { rg.value = n; q('.q-n').textContent = n; q('.q-out').textContent = per > 1 ? '\u00d7 ' + per + ' each = ' + n*per : '';
+      q('.q-cost').innerHTML = Object.keys(r.cost).map(k=>{ const need = r.cost[k]*n, have = recHave(r, k), t = need + ' ' + (need===1 && ITEMS[k].one ? ITEMS[k].one : ITEMS[k].name.toLowerCase()); return have >= need ? t : `<b>${t}</b>`; }).join(', ') || 'Nothing needed';
+      const sec = Math.ceil(n*craftMs(r)/1000); q('.q-time').textContent = 'About ' + (sec >= 90 ? Math.round(sec/60) + ' min' : sec + ' s') + ' in all';
+      q('.q-go').textContent = 'Make ' + n; q('.q-minus').disabled = n <= 1; q('.q-plus').disabled = n >= max; };
+    el._n = 1; el._set = v => { n = clamp(Math.round(v), 1, max); el._n = n; paint(); beep(520 + n*6, 0.02, 'triangle', 0.015); };
+    rg.oninput = () => el._set(+rg.value); q('.q-minus').onclick = () => el._set(n - 1); q('.q-plus').onclick = () => el._set(n + 1); q('.q-one').onclick = () => el._set(1); q('.q-max').onclick = () => el._set(max);
+    q('.q-cancel').onclick = qtyClose; el.addEventListener('pointerdown', e=>{ if(e.target===el) qtyClose(); });
+    q('.q-go').onclick = () => { const m = n; qtyClose(); wd.lastCraftN = m; wd.paused = false; if(wdCraft(r, m, m)){ bagClose(); return; } syncPaused(); craftRender(); };
+    root.appendChild(el); qtyEl = el; paint();
+    if(activePad() || kbNav) padSet(q('.q-go')); else { try{ q('.q-go').focus({preventScroll:true}); }catch(e){} }
+  }
   function recraftRender(){ /* the button that makes the last thing you crafted (or cooked) again */
     const b = $('wdRecraft'), r = wd.lastCraft;
     b.textContent = (activePad() ? 'X · ' : kbNav ? 'R · ' : '') + (r ? 'Craft again: ' + recName(r) : 'Craft again');
     b.disabled = !r || !canCraft(r); b.title = r ? (b.disabled ? 'Not now:' + craftWhy(r) : 'Make ' + recName(r) + ' again') : 'Nothing crafted yet'; }
-  function bagRecraft(){ const r = wd.lastCraft; if(!r) return false; wd.paused = false; const ok = wdCraft(r); if(ok){ bagClose(); return true; } syncPaused(); beep(140, 0.08, 'square', 0.02); recraftRender(); return false; }
+  function bagRecraft(){ const r = wd.lastCraft; if(!r) return false; wd.paused = false; const n = craftQty(r) ? clamp(wd.lastCraftN || 1, 1, Math.max(1, craftMax(r))) : 1, ok = wdCraft(r, n, n); if(ok){ bagClose(); return true; } syncPaused(); beep(140, 0.08, 'square', 0.02); recraftRender(); return false; }
   function craftWhy(r){ /* why a recipe is greyed out, in words */
     if(canCraft(r)) return '';
     if(r.who && !clsHas(r.who)) return ' Only a ' + CLASSES[r.who].name + ' can cook this.';
@@ -10885,7 +11156,7 @@
     if(r.at==='still' && nearStation('still')) return ' The still is cold: light a fire beside it.';
     return ' Needs ' + (GROUPS[r.at] || '').replace(/^At (an? )/, '$1').toLowerCase() + ' nearby.';
   }
-  function craftInfo(r){ if(!r) return; const I = ITEMS[r.id] || {}; $('wdCraftInfo').textContent = recName(r) + ': ' + (r.desc || I.desc || (I.light ? `Light it from the bag to see for ${WD.torch} seconds.` : I.food ? `Food ${I.food}` + (I.heal ? `, heals ${I.heal}.` : '.') : '')) + craftWhy(r); }
+  function craftInfo(r){ if(!r) return; const I = ITEMS[r.id] || {}; $('wdCraftInfo').textContent = recName(r) + (r.n > 1 ? ' \u00d7' + r.n : '') + (CF.view==='icons' ? ' (' + Object.keys(r.cost).map(k=>r.cost[k] + ' ' + (r.cost[k]===1 && ITEMS[k].one ? ITEMS[k].one : ITEMS[k].name.toLowerCase())).join(', ') + ')' : '') + ': ' + (r.desc || I.desc || (I.light ? `Light it from the bag to see for ${WD.torch} seconds.` : I.food ? `Food ${I.food}` + (I.heal ? `, heals ${I.heal}.` : '.') : '')) + craftWhy(r); }
   function classToggle(id){
     const c = wd.cls;
     if(c.length){ wdNote('You are a ' + CLASSES[c[0]].name.toLowerCase() + ' for good. Only the cheats menu can change it'); beep(200, 0.08, 'square', 0.02); return; } /* chosen once */
@@ -11358,7 +11629,7 @@
     wdIn.keys[e.code] = true;
     if(!wd || wd.menu) return;
     if(wd.book && wdLive() && cuBookKey(e)) return;
-    if(wd.bag){ if(clsLocked()){ if(e.code==='Tab') e.preventDefault(); return; } if(e.code==='KeyO'){bagTab('accessory');return;} if(e.code==='KeyK'){bagTab('cheat');return;} if(e.code==='KeyL'){bagTab('class');return;} if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } else if(e.code==='KeyC') bagTab(wd.tab==='craft' ? 'bag' : 'craft'); else if(e.code==='KeyV') bagTab(wd.tab==='cook' ? 'bag' : 'cook'); else if(e.code==='KeyR' && wd.tab==='bag'){ if(wd.hand) bagPlaceHand(true); else bagTakeOne(); } else if(e.code==='KeyR' && (wd.tab==='craft' || wd.tab==='cook')) bagRecraft(); else if(e.code==='KeyG' && wd.tab==='bag') bagTransfer(e.shiftKey); else if(e.code==='KeyT' && wd.tab==='bag') bagQuickStack(); else if(e.code==='KeyQ' || e.code==='KeyE') bagTab('bag'); return; }
+    if(wd.bag){ if(qtyOpen()) return; if(clsLocked()){ if(e.code==='Tab') e.preventDefault(); return; } if(e.code==='KeyO'){bagTab('accessory');return;} if(e.code==='KeyK'){bagTab('cheat');return;} if(e.code==='KeyL'){bagTab('class');return;} if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagClose(); } else if(e.code==='KeyC') bagTab(wd.tab==='craft' ? 'bag' : 'craft'); else if(e.code==='KeyV') bagTab(wd.tab==='cook' ? 'bag' : 'cook'); else if(e.code==='KeyR' && wd.tab==='bag'){ if(wd.hand) bagPlaceHand(true); else bagTakeOne(); } else if(e.code==='KeyR' && (wd.tab==='craft' || wd.tab==='cook')) bagRecraft(); else if(e.code==='KeyG' && wd.tab==='bag') bagTransfer(e.shiftKey); else if(e.code==='KeyT' && wd.tab==='bag') bagQuickStack(); else if(e.code==='KeyQ' || e.code==='KeyE') bagTab('bag'); return; }
     if(!wdLive()){ /* another player's bag has the world paused: Player 1 may still open their own */
       if(!bagOk() || !['Tab','KeyI','KeyC','KeyV','KeyO','KeyK'].includes(e.code)) return; initAudio();
       if(e.code==='Tab' || e.code==='KeyI'){ e.preventDefault(); bagOpen(); } else if(e.code==='KeyC') bagOpen('craft'); else if(e.code==='KeyV') bagOpen('cook'); else if(e.code==='KeyO') bagOpen('accessory'); else bagOpen('cheat');
@@ -11951,10 +12222,11 @@
   const PAD_SEL = 'button, input, select, textarea';
   function padTop(){ const open = [...document.querySelectorAll('.overlay.show')]; if(!open.length) return null; const z = e => parseInt(getComputedStyle(e).zIndex,10) || 0, all = [...document.querySelectorAll('.overlay')];
     return open.sort((a,b)=> (z(a)-z(b)) || (all.indexOf(a)-all.indexOf(b))).pop(); }
-  function padCands(){ const top = padTop(), seatRoot = wd && wd.crew && !wd.menu && !wd.pauseMenu && wd.bag && bagRoots ? bagRoots[wd.cur] : null, root = seatRoot || top || document; /* a player's bag only offers its own buttons */
+  function padCands(){ const top = padTop(), seatRoot = wd && wd.crew && !wd.menu && !wd.pauseMenu && wd.bag && bagRoots ? bagRoots[wd.cur] : null, root = qtyOpen() ? qtyEl : seatRoot || top || document; /* a player's bag only offers its own buttons; the amount popup, only its own */
     return [...root.querySelectorAll(PAD_SEL)].filter(e=>{ if(e.disabled || (!top && !seatRoot && e.closest('.overlay'))) return false; const r = e.getBoundingClientRect(); if(r.width<2 || r.height<2) return false;
       const cs = getComputedStyle(e); if(e.id==='wdPause' && wd && (wd.bag || wd.paused)) return false; return cs.visibility!=='hidden' && cs.pointerEvents!=='none' && e.offsetParent!==null; }); }
   function padMove(dx, dy){
+    if(dx!==0 && qtyOpen()){ qtyAdd(dx); return; } /* left and right set the amount */
     if(dy!==0 && wd && wd.paused && pausePage==='help'){ $('wdPanel').scrollBy({top:dy*140}); return; }
     const c = padCands(); if(!c.length){ padSet(null); return; }
     if(!padEl || !c.includes(padEl)){ padSet(c.find(e=>e.classList.contains('title-main')) || c[0]); return; }
@@ -11990,6 +12262,7 @@
   function goBack(){
     if($('wdMeta').classList.contains('on')){ if(menuMode==='help') wdMenu(); else wdLeave(); return true; }
     if(wd && wd.pauseMenu){ if(pausePage!=='main'){ pauseView(); return true; } if(!(wd.dead > 0)) wdTogglePause(); return true; }
+    if(qtyOpen()){ qtyClose(); return true; }
     if(wd && wd.bag){ if(!clsLocked()) bagClose(); return true; }
     if(wd && wd.book){ cuBookClose(); return true; }
     if(wd && wd.build && !wd.paused){ buildEnd(); return true; }
@@ -12052,7 +12325,7 @@
   window.addEventListener('gamepaddisconnected', ()=>{ padHeld={}; if(wd && wd.crew && anyBag()){ for(const i of activeIdx()) if(ctxGet(i, 'bag')) withPlayer(i, ()=>bagRender()); } });
   requestAnimationFrame(padPoll);
   try{ history.pushState({bloodline:1}, ''); window.addEventListener('popstate', ()=>{ if(wdPadPlaying() || goBack()) history.pushState({bloodline:1}, ''); }); }catch(e){} /* one step of history keeps the phone's Back inside the game */
-  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, wOf, frInfo, spoilStep, invFit, cuLoad, SP, vgLocked, vgSite, vgBuild, vgBegin, vgDeath, vgenTick, vgStep, vgCaged, cheatDenEnsure, denHatch, denTravel, denInside, DEN_LAD, UNDER, ENCH, BAD, MINE, DENR, MEAD, inUnder, inEnch, inBad, inMine, inDen, inMead, MEAD_OUT, PORTALS, portalStep, portalHint, PT, damSite, WD, phase, darkAt, isNight, wdSpawnWraith, wdRaidWraiths, wdWraithNight, partnerPick, mkPartner, palSwap, palRegion, PREQ, RATR, RATH, MSHAFT, MWALL, RAT_IN, RAT_EXIT, RAT_CHEESE, RAT_BOX, inRat, ratTravel, ratRoomAct, rrCheese, rrTake, kingKey, ratKingHome, wdBlocked, kingHeld, partnerWheel, PWHEEL, spec, nearMine, ratBite, petTarget, rkAct, rkFree, kingTake, kingLeave, kingFind, kingTick, kingWhy, bodyTrade, kingMake, KING, ratNeed, ratNear, ratTame, ratFeed, ratPut, ratSlotFree, kingOf, ratTxt,  putBuild, bagOpen, wdCraftNow, canCraft, RECIPES, padMove, nearChest, chestsNear, dropItem, partnerDress, mkReach, partnerWarm, wdDie, buildOk, planAdd, planConfirm, buildStart, damSite, damOpen, nearDam, nearDamExit, wdDamTravel, damWalk, traderInit, traderCamp, traderStep, traderNear, tradeDo, dtraderArrive, dtraderStep, dtraderNear, wdSipTonic, holdKM, boomThrow, boomSim, cheatDenEnsure, cuRaiseWatch, wdRespawn, respawnAt, campSurface, denCampOn, partnerDuty, fireTarget, watchCheck, watchFresh, cuPlanRows, projStatus, cuActivate, cuContribute, cuCollect, partnerPath, watchPost, partnerFire, partnerWatch, watchKept, hallTick, dreamClear, wdDrug, drugTick, ballistaOn, ballistaPos, ballistaLoad, foxReload, foxFire, BAL, denStoneNeed, winterNow, DEN_CAMP, foldCoins, invWithBooms, boomStep, wdDrug, MEAD, inMead, worldRects, snailLoan, snailCalm, wdThirstTick, wdThrowSalt, saltStep, saltLand, wdSalt, wear, bossFightOn, wdUse, bossQuake, bossAtmos, padRumble, sfxBoss, snailCharge, bossAhead, bossPast, arenaKeepOut, bossRocks, partnerThreat, partnerSkip, partnerBite, mineOpen, mineCacheAct, carryAdd, partnerHave, partnerBags, bookAnimals, craftHave, dgAct, dgStep, dgChest, cheatMineGo, mineInit, wdMusicStart, grDrum, snailWake, snailPhase2, snailReset, snailTick, bossCtx, webSlow, wdMusicTick, MUSIC, DEN_O, DEN_STORE, DEN_BASIN, GRID, denBoxDist, washAct, wdAct2, wdAltAct, wdWhatAct, hintFor, padOpt, padLbl, pauseView, pauseSetting, setTabGo, setTabStep, wdPad, touchSync, trDepthAt, trDepthArr, trSpeed, ANIMALS, cheatDz, cheatSpawnEntity, cheatClearNear, cheatCatOf, ITEMS, cheatRender, get cheatCat(){return cheatCat;}, JP, jrAdd, projPage, jrPageKind, cuBookOpen, cuBookDo, cuActivate, cuContribute, projStatus, cuCollect, cuUse, PROJECTS, cuRaiseDen, denToggle, denStep, denAct, denRec, denHatch, denInside, denNear, denOthers, DEN, hatchOpen, denFresh, PROJECTS, denLay, denKey, denRoomOn, denDeskNear, DEN_DESK, cuBookOpen, cuBookDo, cuPlanRows, beaverUnder, trDepthAt, putBuild, cuSlow, clsHp, clsDmg, wdHeavyBlow, HEAVY, BLOW, rainDry, cuChestCount, wdSlowSim, rockGrow, DENR, DEN_O, DEN_LAD, DEN_CRANK, inDen, denTravel, denClimb, denMove, denMigrate, denLost, wdBurrow, burTest, BUR, putBuild, planConfirm, planClear, planTotals, roomPieces, buildPlace, planOk, benchNear, buildOk, bodyR, BODYR, spCast, spDo, spWards, RUNES, WF, wfIgnite, wfDry, wfM, wfAct, wfNear, wfOut, wdFire, wfFuel, HD, hdTame, hdShear, hdFeed, hdTreat, hdAct, hdSicken, wdHerd, hdFlockN, hdFeared, hdFearAdd, hdSave, hdRestore, hdMax, mkAnimal, wdEcology, dzInfect, dzNames, dzEat, dzSalve, dzSlug, dzStep, rotOf, rotNear, rotStep, rotRepairNow, cuStarterCabin, cuCabinWelcome, CABIN, BLD, bldScan, bldList, inBuilding, bldRot, bldIndoor, rotComp, rotJoin, rotUnify, rotLoad, rotCost, rotGroup, ROT_SPAN, ROT_KINDS, trPlain, buildOk, putBuild, floorAdd, wdPlace, trFootOk, trHb, trOccAt, trPeek, trCover, trH, UNDER, ENCH, UBAND, EBAND, bandIx, wdTravel, wdRingTravel, underRepopulate, enchRepopulate, inUnder, inEnch, sceneOf, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trH, trSup, trSettle, trOk, trWalkOk, trFlat, trCornersI, trRow, TH, DD, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}, deathSpot, corpseStep, corpseNear, corpseStage, corpseRemove, CORPSE, drawMonkey, fcStart, fcToggle, fcMove, nearBuildBench, packFrame, planAdd, buildEnd, buildBarRender, invCount, give, structOf, PIECE_COST, wdLive, waterNear, canCraft, trDigNow, trWetUpdate, trDigCheck, cuBookOpen, touchSt, touchOn, touchSync, wdBlocked, rainAt, WD, MUSIC, mv, denMusicCtx, wdMusicTick, setAudio:(c, a)=>{ audioCtx = c; amb = a; }, denNeedsRepair, denRepair, denRepairOut, denStoneNeed, cuBookDo, cuDrawUpkeep, cuContribute, cuActivate, projStatus, cuTick, cuSlow, denFurnaceObj, denFurnaceHot, cuFurnaceAct, denUp, denBeltOn, denAutoOn, denSmelter, DEN_SMS, denAutoPick, denBeltCount, beltFor, denAutoText, denStationList, denStationsOn, KDISH, COOK, denKitchenHere, denStores, DEN_STORE, denHearthLit, denRoomAct, denBasinNear, denBoardNear, denStoreNear, washAct, washSlots, washCount, chefPot, bagWash, WASH_OF, POT_DISHES, DEN_HEARTH, nearFire, canPay, recHave, wdCraftNow, cuChests, cuMake, wdPartners, mineSteer, mineGen, mineInit, mineHit, mineStep, mineRepopulate, mineOpen, mineCacheAct, nearMine, nearMineExit, wdMineTravel, mnCellAt, mnBlocks, MN, MINE, MINE_SECRET, GATE_OF, inMine, palCall, hcFall, hcEnd, hcLose, hcBagDrop, SLEEPS, dormantNow, dormantSoon, palDrowsy, palDrowsyFor, palHibernate, palSleep, palWake, sleepDaysLeft, cheatSeason, palRegion, partnerGate, partnerTrek, partnerWarp, KIT_KEYS, pkNew, pkSave, pkWith, partnerGear, palPackOpen, palPackAct, palNear, partnerCare, palSwap, palSwapWhy, palSwapHold, weaponIdx, SWAP, DZ_SUG, DZ, dzNew, dzSave, pdzNew, pdzInfect, pdzStep, pdzEat, pdzSalve, pdzRoot, pdzNames, pdzK, pdzSave, cheatPdz, partnerRequest, partnerCycle, partnerPick, mkPartner, partnerSave, partnerHurt, PARTNER, PREQ, segWalk, partnerPath, partnerSteer, palFeed, palGive, palFeedAct, palAlt, partnerNeeds, partnerCare, palWheelOpen, palWheelClose, palWheelToggle, partnerWheel, classRender, ctxStore, ctxLoad, wdChop, nodesNear, nearStation, stationOk, canCraft, wdCraft, RECIPES, PROJECTS, denRoomOn, denStationList, denRec, DEN_O};
+  if(/[?&]wdtest\b/.test(location.search))window.__wilds={get wd(){return wd;}, VG, bnAdd, bnTake, bnFill, bnUnits, bnSpill, bnSecondary, bnClean, bagSlot, bagRender, bagSelect, bagPlaceHand, bagTakeOne, bagClose, snCatchup, wdSwing, craftMax, qtyAsk, qtyOpen, qtyClose, qtyAdd, wOf, frInfo, spoilStep, invFit, cuLoad, SP, vgLocked, vgSite, vgBuild, vgBegin, vgDeath, vgenTick, vgStep, vgCaged, cheatDenEnsure, denHatch, denTravel, denInside, DEN_LAD, UNDER, ENCH, BAD, MINE, DENR, MEAD, inUnder, inEnch, inBad, inMine, inDen, inMead, MEAD_OUT, PORTALS, portalStep, portalHint, PT, damSite, WD, phase, darkAt, isNight, wdSpawnWraith, wdRaidWraiths, wdWraithNight, partnerPick, mkPartner, palSwap, palRegion, PREQ, RATR, RATH, MSHAFT, MWALL, RAT_IN, RAT_EXIT, RAT_CHEESE, RAT_BOX, inRat, ratTravel, ratRoomAct, rrCheese, rrTake, kingKey, ratKingHome, wdBlocked, kingHeld, partnerWheel, PWHEEL, spec, nearMine, ratBite, petTarget, rkAct, rkFree, kingTake, kingLeave, kingFind, kingTick, kingWhy, bodyTrade, kingMake, KING, ratNeed, ratNear, ratTame, ratFeed, ratPut, ratSlotFree, kingOf, ratTxt,  putBuild, bagOpen, wdCraftNow, canCraft, RECIPES, padMove, nearChest, chestsNear, dropItem, partnerDress, mkReach, partnerWarm, wdDie, buildOk, planAdd, planConfirm, buildStart, damSite, damOpen, nearDam, nearDamExit, wdDamTravel, damWalk, traderInit, traderCamp, traderStep, traderNear, tradeDo, dtraderArrive, dtraderStep, dtraderNear, wdSipTonic, holdKM, boomThrow, boomSim, cheatDenEnsure, cuRaiseWatch, wdRespawn, respawnAt, campSurface, denCampOn, partnerDuty, fireTarget, watchCheck, watchFresh, cuPlanRows, projStatus, cuActivate, cuContribute, cuCollect, partnerPath, watchPost, partnerFire, partnerWatch, watchKept, hallTick, dreamClear, wdDrug, drugTick, ballistaOn, ballistaPos, ballistaLoad, foxReload, foxFire, BAL, denStoneNeed, winterNow, DEN_CAMP, foldCoins, invWithBooms, boomStep, wdDrug, MEAD, inMead, worldRects, snailLoan, snailCalm, wdThirstTick, wdThrowSalt, saltStep, saltLand, wdSalt, wear, bossFightOn, wdUse, bossQuake, bossAtmos, padRumble, sfxBoss, snailCharge, bossAhead, bossPast, arenaKeepOut, bossRocks, partnerThreat, partnerSkip, partnerBite, mineOpen, mineCacheAct, carryAdd, partnerHave, partnerBags, bookAnimals, craftHave, dgAct, dgStep, dgChest, cheatMineGo, mineInit, wdMusicStart, grDrum, snailWake, snailPhase2, snailReset, snailTick, bossCtx, webSlow, wdMusicTick, MUSIC, DEN_O, DEN_STORE, DEN_BASIN, GRID, denBoxDist, washAct, wdAct2, wdAltAct, wdWhatAct, hintFor, padOpt, padLbl, pauseView, pauseSetting, setTabGo, setTabStep, wdPad, touchSync, trDepthAt, trDepthArr, trSpeed, ANIMALS, cheatDz, cheatSpawnEntity, cheatClearNear, cheatCatOf, ITEMS, cheatRender, get cheatCat(){return cheatCat;}, JP, jrAdd, projPage, jrPageKind, cuBookOpen, cuBookDo, cuActivate, cuContribute, projStatus, cuCollect, cuUse, PROJECTS, cuRaiseDen, denToggle, denStep, denAct, denRec, denHatch, denInside, denNear, denOthers, DEN, hatchOpen, denFresh, PROJECTS, denLay, denKey, denRoomOn, denDeskNear, DEN_DESK, cuBookOpen, cuBookDo, cuPlanRows, beaverUnder, trDepthAt, putBuild, cuSlow, clsHp, clsDmg, wdHeavyBlow, HEAVY, BLOW, rainDry, cuChestCount, wdSlowSim, rockGrow, DENR, DEN_O, DEN_LAD, DEN_CRANK, inDen, denTravel, denClimb, denMove, denMigrate, denLost, wdBurrow, burTest, BUR, putBuild, planConfirm, planClear, planTotals, roomPieces, buildPlace, planOk, benchNear, buildOk, bodyR, BODYR, spCast, spDo, spWards, RUNES, WF, wfIgnite, wfDry, wfM, wfAct, wfNear, wfOut, wdFire, wfFuel, HD, hdTame, hdShear, hdFeed, hdTreat, hdAct, hdSicken, wdHerd, hdFlockN, hdFeared, hdFearAdd, hdSave, hdRestore, hdMax, mkAnimal, wdEcology, dzInfect, dzNames, dzEat, dzSalve, dzSlug, dzStep, rotOf, rotNear, rotStep, rotRepairNow, cuStarterCabin, cuCabinWelcome, CABIN, BLD, bldScan, bldList, inBuilding, bldRot, bldIndoor, rotComp, rotJoin, rotUnify, rotLoad, rotCost, rotGroup, ROT_SPAN, ROT_KINDS, trPlain, buildOk, putBuild, floorAdd, wdPlace, trFootOk, trHb, trOccAt, trPeek, trCover, trH, UNDER, ENCH, UBAND, EBAND, bandIx, wdTravel, wdRingTravel, underRepopulate, enchRepopulate, inUnder, inEnch, sceneOf, wdSaveNow, wdLoadSave, packEquip, packUnequip, packSlots, wdGateTravel, nearGate, nearGateExit, nearBed, wdWhatAct, wdSleep, wdUse, BAD, inBad, oasisAt, waterNear, badRepopulate, putBuild, get pausePage(){return pausePage;}, get sound(){return sound;}, wdTogglePause, pauseView, pauseSetting, wdMachines, pumpFuel, groundShadow, itemIcon, METALS, oreFor, nearStation, stationOk, wdChop, drawNode, drawMetalStation, DESERT, FRONTIER, frontierRepopulate, inWorld, clampWorld, wdBlocked, CROPS, SIGN_LABELS, nearFarm, farmPlant, farmWater, farmHarvest, signCycle, hotbarAction, hotbarRender, hotbarLabel, armorEquip, armorUnequip, spawnAnimal, wildlifeRepopulate, animalDef, drawAnimal, wdFoes, wdDawn, accessorySpeed, accessoryEquip, accessoryUnequip, accessoryRender, wdHurtF, nearGarden, wdHarvestGarden, wdPad, cheatSpawn, bagTakeOne, bagPlaceHand, bagSlot, bagTransfer, bagQuickStack, nearChest, wdDraw, wdHud, wdBegin, wdAttack, wdSwing, moveBy, wdCancelAction, wdCook, WD, RECIPES, COOK, buildStart, buildPlace, buildTake, buildOk, buildCell, putBuild, wdRaidCheck, wdSpawnJackal, wdCraft, nearBench, wdUse, toolFor, wdSave, wdLoadSave, wdDie, wdAct, wdEat, invAdd, wdGo, wdMenu, darkAt, wdStep, wdHurtP, burnFires, nearFire, wdRefuel, wdHeal, wdGen, wdClean, ITEMS, helmetEquip, helmetUnequip, caveRepopulate, wdSleep, spawnClear, safeSpot, wdUnstick, drawShardling, drawCave, toonUnit, bagOpen, bagClose, bagTab, bagRender, bagPrimary, wdWhatAct, wdLoop, drawPiece, wdRoll, surfaceAt, buildLevel, buildRotate, structureOk, floorAdd, floorDel, wdFixStructure, delBuild, rampZ, pGravity, LH, MAXL, PH, STEP, UNDER, inUnder, wdTravel, nearCave, nearExit, coopJoin, coopLeave, coopPoll, activeIdx, bodyOf, livePlayers, withPlayer, ctxGet, ctxSet, PCOL, wdPad, wdRead, coopRender, crewHud, underRepopulate, wdSaveNow, wdPlayerStep, mkKit, nearestLive, wdLoop, wdPlayInput, wdLayout, splitHud, hintFor, regionOf, PSKIN, drawView, wdEcology, wdAmbientStep, wdWorldSim, wdSlowSim, rainAt, nodesNear, mkAnimal, bagFit, buildsRect, kindOf, drawTufts, get menuPadIdx(){return menuPadIdx;}, anyBag, bagOk, get bagRoots(){return bagRoots;}, musicPick, MUSIC, mv, wdMusicTick, wdMusicStart, resetBar(){nextBar=0;}, EQUIP_SLOTS, eqSlots, eqShow, seatPad, mkRat, wdPets, petHurt, ratTame, ratFeed, ratEquip, ratUnequip, ratEquipAuto, nearRing, nearRingExit, wdRingTravel, enchRepopulate, ENCH, inEnch, onMain, sceneOf, drawFey, heldMeat, RAT, scytheSweep, ripeAhead, nearWildRat, ratSave, FEY, wdSound, sfxAnimal, soundHush, ensureBeds, snd, CU, PROJECTS, SEASONS, cuBookOpen, cuBookClose, cuBookDo, cuBookInput, cuBookKey, cuUse, cuTick, cuSlow, cuDawn, cuIns, cuTotals, cuActivate, cuContribute, cuCollect, cuRaiseCabin, cuNearTable, cuNearCart, cuSample, cuObserveNow, cuObsTarget, cuTrack, cuSpawnRare, cuPieceAct, cuTileAct, cuLate, cuFurnaceAct, layerEquip, layerUnequip, jrAdd, jrHas, projStatus, soilAt, cuInjure, jrExpire, trGen, trWetUpdate, trDigAct, trDigNow, trDigCheck, trAim, trIrrigate, trLvl, trIdx, dkey, TR, trH, trSup, trSettle, trOk, trWalkOk, trFlat, trCornersI, trRow, TH, DD, trWaterNear, trSlow, trSpeed, jrArea, jrAge, cuSaveWorld, cuSavePlayer, planDone, seasonN, rainDayV, cuFenced, cuBookDraw, cuDrawOverlay, cuDrawPiece, cuLoad, cuCap, get gcMap(){return gcMap;}, get sprMap(){return sprMap;}, get gcFail(){return gcFail;}, get fxRes(){return fxRes;}, set fxRes(v){fxRes = v;}, deathSpot, corpseStep, corpseNear, corpseStage, corpseRemove, CORPSE, drawMonkey, fcStart, fcToggle, fcMove, nearBuildBench, packFrame, planAdd, buildEnd, buildBarRender, invCount, give, structOf, PIECE_COST, wdLive, waterNear, canCraft, trDigNow, trWetUpdate, trDigCheck, cuBookOpen, touchSt, touchOn, touchSync, wdBlocked, rainAt, WD, MUSIC, mv, denMusicCtx, wdMusicTick, setAudio:(c, a)=>{ audioCtx = c; amb = a; }, denNeedsRepair, denRepair, denRepairOut, denStoneNeed, cuBookDo, cuDrawUpkeep, cuContribute, cuActivate, projStatus, cuTick, cuSlow, denFurnaceObj, denFurnaceHot, cuFurnaceAct, denUp, denBeltOn, denAutoOn, denSmelter, DEN_SMS, denAutoPick, denBeltCount, beltFor, denAutoText, denStationList, denStationsOn, KDISH, COOK, denKitchenHere, denStores, DEN_STORE, denHearthLit, denRoomAct, denBasinNear, denBoardNear, denStoreNear, washAct, washSlots, washCount, chefPot, bagWash, WASH_OF, POT_DISHES, DEN_HEARTH, nearFire, canPay, recHave, wdCraftNow, cuChests, cuMake, wdPartners, mineSteer, mineGen, mineInit, mineHit, mineStep, mineRepopulate, mineOpen, mineCacheAct, nearMine, nearMineExit, wdMineTravel, mnCellAt, mnBlocks, MN, MINE, MINE_SECRET, GATE_OF, inMine, palCall, hcFall, hcEnd, hcLose, hcBagDrop, SLEEPS, dormantNow, dormantSoon, palDrowsy, palDrowsyFor, palHibernate, palSleep, palWake, sleepDaysLeft, cheatSeason, palRegion, partnerGate, partnerTrek, partnerWarp, KIT_KEYS, pkNew, pkSave, pkWith, partnerGear, palPackOpen, palPackAct, palNear, partnerCare, palSwap, palSwapWhy, palSwapHold, weaponIdx, SWAP, DZ_SUG, DZ, dzNew, dzSave, pdzNew, pdzInfect, pdzStep, pdzEat, pdzSalve, pdzRoot, pdzNames, pdzK, pdzSave, cheatPdz, partnerRequest, partnerCycle, partnerPick, mkPartner, partnerSave, partnerHurt, PARTNER, PREQ, segWalk, partnerPath, partnerSteer, palFeed, palGive, palFeedAct, palAlt, partnerNeeds, partnerCare, palWheelOpen, palWheelClose, palWheelToggle, partnerWheel, classRender, ctxStore, ctxLoad, wdChop, nodesNear, nearStation, stationOk, canCraft, wdCraft, RECIPES, PROJECTS, denRoomOn, denStationList, denRec, DEN_O};
   (function makeBagPanels(){
     const orig = document.getElementById('wdBag');
     bagIds = new Set(['wdBag', ...[...orig.querySelectorAll('[id]')].map(e=>e.id)]);
