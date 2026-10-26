@@ -11870,6 +11870,13 @@
     const Q = EYW; if(!Q) return false; const dx = x - Q.cx, dy = y - Q.cy, d = dx*Q.fx + dy*Q.fy, u = Q.rx*dx + Q.ry*dy;
     return d - r > Q.dE/s || Math.abs(u) - r*Q.rn > Q.m*(d - Q.d0/s); }
   const eyeSA = [0, 0, 0, 0];
+  const EYL_P = [[1, .55, .9], [1, .5, .85], [1, 1, 0]]; /* the light sprites' falloff (lightSpr: hole, torch, halo): alpha at the middle, a stop, alpha there; nothing at the rim */
+  function eyeLitAt(L, x, y){ /* what is left of the dark at ground point (x, y) (1: all of it) under the lights in L, the same cut-outs the ground's dark gets: flat runs of [x, y, R, sprite, alpha] */
+    let m = 1; for(let i = 0; i < L.length; i += 5){ const q = Math.hypot(x - L[i], y - L[i + 1])/L[i + 2]; if(!(q < 1)) continue; const P = EYL_P[L[i + 3]], a = q < P[1] ? P[0] + (P[2] - P[0])*q/P[1] : P[2]*(1 - q)/(1 - P[1]); m *= 1 - a*L[i + 4]; } return m; }
+  const eyeShCv = [];
+  function eyeBox(e, P){ /* how far a billboard's picture reaches from its foot, in world units: [sideways, up, down]; generous, and the whole screen for the big or odd ones */
+    if(e.btn || (e.n && e.n.k==='tree')){ const r = P.cr || 22; return [r*1.9 + 14, r*4.4 + 70, 26]; } if(e.n) return [46, 96, 22]; if(e.piece || e.slab) return [34, 90, 24]; if(e.f || e.bench || e.d || e.cr || e.stink) return [40, 90, 22];
+    if(e.foe){ const f = e.foe; if(f.kind==='dworm' || f.kind==='vgen' || f.kind==='sangwraith' || f.r > 30) return [1e4, 1e4, 1e4]; return [f.r*3 + 24, f.r*4 + 60, f.r + 20]; } if(e.rat || e.partner || e.me!==undefined || e.hal) return [44, 100, 24]; if(e.fxn) return [60, 60, 30]; return [1e4, 1e4, 1e4]; }
   function eyeSqOut(gx, gy){ /* a square of ground (with the faces it drops into the squares beside it) wholly out of the eye's sight, carried in as far as its lowest corner, or a neighbour's, would take it */
     const x = gx*GRID + GRID/2, y = gy*GRID + GRID/2; if(!eyeOut(x, y, GRID*.71 + 4, 1)) return false; let lo = 0, A = eyeSA;
     trCrn(gx, gy, A); lo = Math.min(lo, A[0], A[1], A[2], A[3]); for(const S of RT_E){ trCrn(gx + S[0], gy + S[1], A); lo = Math.min(lo, A[0], A[1], A[2], A[3]); }
@@ -12172,7 +12179,7 @@
     // the dark: everything goes, except round the fires
     const dk = (inRat(p) || inGate(p)) ? 0 : den ? denDark() : mine ? .72 : under ? UDARK[bandIx(UBAND, p.x - UNDER.left)] : ench ? EDARK[bandIx(EBAND, p.x - ENCH.left)] : darkAt(wd.t);
     if(DEPTH.on){ if(RT){ c.save(); c.setTransform(dpr, 0, 0, dpr, vp.x*dpr, vp.y*dpr); depthHaze(c, 0, 0, w, h, dk, scn); c.restore(); } else depthHaze(c, x0, y0, vw, vh, dk, scn); } /* turned: the far edge is the top of the screen, whatever lies there */
-    const vn = vnBuf; vn.length = 0; if(dk > 0.01 && (under || ench)) nodesRect(x0 - 130, y0 - 130, x1 + 130, y1 + 130, n=>{ vn.push(n); }); /* the caves' and forest's lit things in sight, found once for all three light passes */
+    const eyL = []; /* the eye camera: the lights below, in the world, for its billboards (see eyeLitAt) */ const vn = vnBuf; vn.length = 0; if(dk > 0.01 && (under || ench)) nodesRect(x0 - 130, y0 - 130, x1 + 130, y1 + 130, n=>{ vn.push(n); }); /* the caves' and forest's lit things in sight, found once for all three light passes */
     if(dk > 0.01){
       const ds = (lowFx || wd.split) ? 0.4 : 0.5, dw = Math.max(1, Math.round(w*ds)), dh = Math.max(1, Math.round(h*ds));
       const darkCv = darkCvs[vk] || (darkCvs[vk] = document.createElement('canvas')); if(darkCv.width!==dw || darkCv.height!==dh){ darkCv.width = dw; darkCv.height = dh; }
@@ -12180,10 +12187,10 @@
       d.fillStyle = `rgba(4,6,16,${dk})`; d.fillRect(0, 0, dw, dh);
       d.globalCompositeOperation = 'destination-out';
       const lpx = (x, y) => RT ? W2/2 + sc*(RCS*(x - camX) - RSN*(y - camY)) : (x - x0)*sc, lpy = (x, y) => RT ? ypv + sc*KY*(RSN*(x - camX) + RCS*(y - camY)) : (y - y0)*sc*KY; /* a world point on the layer, in layer units */
-      for(const f of wd.fires){ if(!(f.fuel > 0)) continue; const fx = lpx(f.x, f.y)*ds, fy = lpy(f.x, f.y)*ds, R = lightR(f)*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(fx < -R || fy < -R || fx > dw + R || fy > dh + R) continue;
+      for(const f of wd.fires){ if(!(f.fuel > 0)) continue; if(EY) eyL.push(f.x, f.y, lightR(f), 0, 1); const fx = lpx(f.x, f.y)*ds, fy = lpy(f.x, f.y)*ds, R = lightR(f)*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(fx < -R || fy < -R || fx > dw + R || fy > dh + R) continue;
         d.drawImage(lightSpr('hole'), fx - R, fy - R*KY, 2*R, 2*R*KY); }
-      if(wd.tcamp){ const f = wd.tcamp.fire, fx = lpx(f.x, f.y)*ds, fy = lpy(f.x, f.y)*ds, R = 130*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(!(fx < -R || fy < -R || fx > dw + R || fy > dh + R)) d.drawImage(lightSpr('hole'), fx - R, fy - R*KY, 2*R, 2*R*KY); } /* the trader's fire */
-      const hole = (wx, wy, Rw)=>{ const hx = lpx(wx, wy)*ds, hy = lpy(wx, wy)*ds, R = Rw*sc*ds; if(hx < -R || hy < -R || hx > dw + R || hy > dh + R) return; d.drawImage(lightSprs.get('hole') || lightSpr('hole'), hx - R, hy - R*KY, 2*R, 2*R*KY); };
+      if(wd.tcamp){ const f = wd.tcamp.fire; if(EY) eyL.push(f.x, f.y, 130, 0, 1); const fx = lpx(f.x, f.y)*ds, fy = lpy(f.x, f.y)*ds, R = 130*sc*ds*(1 + 0.03*Math.sin(f.fl*11)); if(!(fx < -R || fy < -R || fx > dw + R || fy > dh + R)) d.drawImage(lightSpr('hole'), fx - R, fy - R*KY, 2*R, 2*R*KY); } /* the trader's fire */
+      const hole = (wx, wy, Rw)=>{ if(EY) eyL.push(wx, wy, Rw, 0, 1); const hx = lpx(wx, wy)*ds, hy = lpy(wx, wy)*ds, R = Rw*sc*ds; if(hx < -R || hy < -R || hx > dw + R || hy > dh + R) return; d.drawImage(lightSprs.get('hole') || lightSpr('hole'), hx - R, hy - R*KY, 2*R, 2*R*KY); };
       for(const b of kindOf('lamp')) hole(b.x, b.y - (b.l || 0)*LH*ZK - 8, LAMP_R);
       if(wd.wf && wd.wf.size) for(const q of wd.wf.values()) if(vis(q.x, q.y, 90)) hole(q.x, q.y - 6, 68); /* a wildfire lights the night */
       for(const n of wd.caveNodes) if(vis(n.x, n.y, 80)) hole(n.x, n.y, 46);
@@ -12197,8 +12204,8 @@
       if(clsHas('monkey') && skHas('mk_gs')) for(const f of wd.foes){ if(f.dead || f.hp <= 0 || animalDef(f).passive || hyp(f.x - p.x, f.y - p.y) > 180) continue; hole(f.x, f.y - 4, 30); } /* Ground Sense: what you feel through the ground shows even in the dark */
       if(den) denLights(hole);
       for(const q of mates){ if(q.hp <= 0) continue; const tr = q.torch > 0 ? WD.torchR*(0.6 + 0.4*Math.min(1, q.torch/15)) : 0;
-        if(tr > 0){ const px = lpx(q.x, q.y)*ds, py = (lpy(q.x, q.y) - (q.z*ZK + ((q.vth || 0)*TVS))*sc*KY)*ds, R = tr*sc*ds*(1 + 0.04*Math.sin(t*13)); d.drawImage(lightSpr('torch'), px - R, py - R*KY, 2*R, 2*R*KY); }
-        if(dk < 0.85 || under || ench || den){ const px = lpx(q.x, q.y)*ds, py = (lpy(q.x, q.y) - (q.z*ZK + ((q.vth || 0)*TVS))*sc*KY)*ds, R = (under || ench || den ? 82 : 60)*sc*ds; d.globalAlpha = under || den ? 0.8 : ench ? 0.62 : 0.45; d.drawImage(lightSpr('halo'), px - R, py - R*KY, 2*R, 2*R*KY); d.globalAlpha = 1; } }
+        if(tr > 0){ if(EY) eyL.push(q.x, q.y, tr, 1, 1); const px = lpx(q.x, q.y)*ds, py = (lpy(q.x, q.y) - (q.z*ZK + ((q.vth || 0)*TVS))*sc*KY)*ds, R = tr*sc*ds*(1 + 0.04*Math.sin(t*13)); d.drawImage(lightSpr('torch'), px - R, py - R*KY, 2*R, 2*R*KY); }
+        if(dk < 0.85 || under || ench || den){ const px = lpx(q.x, q.y)*ds, py = (lpy(q.x, q.y) - (q.z*ZK + ((q.vth || 0)*TVS))*sc*KY)*ds, R = (under || ench || den ? 82 : 60)*sc*ds; d.globalAlpha = under || den ? 0.8 : ench ? 0.62 : 0.45; if(EY) eyL.push(q.x, q.y, under || ench || den ? 82 : 60, 2, d.globalAlpha); d.drawImage(lightSpr('halo'), px - R, py - R*KY, 2*R, 2*R*KY); d.globalAlpha = 1; } }
       c.setTransform(1, 0, 0, 1, 0, 0); c.drawImage(darkCv, vp.x*dpr, vp.y*dpr, w*dpr, h*dpr);
       if(RT) wxf(c); else c.setTransform(dpr*sc, 0, 0, dpr*sc*KY, dpr*(vp.x - x0*sc), dpr*(vp.y - y0*sc*KY));
       c.globalCompositeOperation = 'lighter';
@@ -12246,21 +12253,28 @@
           out.push(sx, sy); if(sx < x0) x0 = sx; if(sx > x1) x1 = sx; if(sy < y0) y0 = sy; if(sy > y1) y1 = sy; }
         if(out.length >= 6) r = {pts:out, x0, y0, x1, y1}; o.hc.set(lq, r); return r; }; /* the ground through the eye, then everything that stands */
       const sv = [gA, gB, gC, gD, gEx, gEy, gK, YAWL], bd = Math.min(dpr0, lowFx ? 1.25 : 2), bw = Math.ceil(vp0.w*bd), bh = Math.ceil(vp0.h*bd), bc = eyeCvs[vk] || (eyeCvs[vk] = document.createElement('canvas')); if(bc.width !== bw || bc.height !== bh){ bc.width = bw; bc.height = bh; }
-      const g = bc.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, bw, bh); yawTextHook(g); const W = vp0.w, H = vp0.h, dE = Math.min(EY.dcap, EY.dmax);
+      const gL = bc.getContext('2d'); gL.setTransform(1, 0, 0, 1, 0, 0); gL.clearRect(0, 0, bw, bh); yawTextHook(gL); const W = vp0.w, H = vp0.h, dE = Math.min(EY.dcap, EY.dmax);
       const its = [], ntx = []; for(const e of EB){ if(EY.fp && e.fxn && hyp(e.fxn.x - p.x, e.fxn.y - p.y) < 48){ ntx.push(e.fxn); continue; } /* first person: words that rise off your own body show on the screen */ const P = e.btn || e.fxn || e.n || e.f || e.bench || e.foe || e.cart || e.bal || e.hal || e.rat || e.trader || e.tc || e.rrp || e.cp || e.partner || e.d || e.stink || e.cr || e.piece || (e.me!==undefined ? bodyOf(e.me) : null); if(!P || !Number.isFinite(P.x) || !Number.isFinite(P.y)) continue;
         const dx = P.x - EY.cx, dy = P.y - EY.cy, d = dx*EY.fx + dy*EY.fy; if(d < 2 || d > dE + 10) continue; its.push({e, P, d, u:RCS*dx - RSN*dy}); }
       its.sort((a, b)=>b.d - a.d); /* far to near */
-      for(const it of its){ const {e, P, d, u} = it, zc = d*EY.cT + EY.E*EY.sT; if(zc < 2) continue; const k = EY.f/zc, sx = W/2 + u*k, sy = H/2 + EY.f*(EY.E*EY.cT - d*EY.sT)/zc; if(Math.abs(sx - W/2) > W/2 + 140*k || sy - 260*k > H || sy + 40*k < 0) continue;
+      let lit = its.length; if(dk > 0.01 && eyL.length) for(let i = 0; i < its.length; i++){ if(eyeLitAt(eyL, its[i].P.x, its[i].P.y) < .98){ lit = i; break; } } /* the farthest one a light reaches: those before it share the night and are darkened at once; from it on, nearer, each is darkened by the dark left at its feet, on its own */
+      const shade = () => { if(dk > 0.01){ gL.setTransform(1, 0, 0, 1, 0, 0); gL.globalCompositeOperation = 'source-atop'; gL.fillStyle = `rgba(4,6,16,${dk.toFixed(3)})`; gL.fillRect(0, 0, bw, bh); gL.globalCompositeOperation = 'source-over'; } }; /* night falls on them as on the ground */
+      let nIt = 0;
+      for(const it of its){ const one = nIt++ >= lit; if(nIt - 1 === lit) shade(); const {e, P, d, u} = it, zc = d*EY.cT + EY.E*EY.sT; if(zc < 2) continue; const k = EY.f/zc, sx = W/2 + u*k, sy = H/2 + EY.f*(EY.E*EY.cT - d*EY.sT)/zc; if(Math.abs(sx - W/2) > W/2 + 140*k || sy - 260*k > H || sy + 40*k < 0) continue;
         let polys = null; if(occ.length && !e.fxn && e.me===undefined){ /* a player is never cut out: the player must always see their own animal */ const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), ogx = Math.floor(P.x/GRID), ogy = Math.floor(P.y/GRID), bx0 = sx - 100*k, bx1 = sx + 100*k, by0 = sy - 280*k, by1 = sy + 30*k;
           for(const o of occ){ if(o.dc >= d - 3 || o.mx <= lf + TVS*.5 || (o.gx === ogx && o.gy === ogy)) continue; const r = occPoly(o, lf); if(!r || r.x1 < bx0 || r.x0 > bx1 || r.y1 < by0 || r.y0 > by1) continue; if(!occHit(r.pts, sx, sy, k, lf < 0 ? -lf : 0)) continue; (polys || (polys = [])).push(r.pts); } } /* what is nearer and higher than its feet, where it lands on the screen */
         let al = d > dE*.8 ? clamp((dE - d)/(dE*.2), 0, 1) : 1; if((e.n || e.btn || e.piece) && d < 16) al *= clamp((d - 2)/14, 0, 1); if(al < .02) continue; /* far away it fades into the haze; a plant or wall you walk into fades rather than filling the eye */
-        const S = k*bd; gK = S; gA = S*RCS; gB = S*KY*RSN; gC = -S*RSN; gD = S*KY*RCS; gEx = sx*bd - (gA*P.x + gC*P.y); gEy = sy*bd - (gB*P.x + gD*P.y); YAWL = YAW; wxf(g); g.save(); g.globalAlpha = al;
-        if(polys){ g.setTransform(1, 0, 0, 1, 0, 0); for(const pt of polys){ g.beginPath(); g.rect(0, 0, bw, bh); g.moveTo(pt[0]*bd, pt[1]*bd); for(let n = 2; n < pt.length; n += 2) g.lineTo(pt[n]*bd, pt[n + 1]*bd); g.closePath(); g.clip('evenodd'); } wxf(g); } /* cut out what the ground in front hides */
+        let g = gL, ox = 0, oy = 0, sw = 0, shh = 0, shd = 0; if(one){ shd = dk*eyeLitAt(eyL, P.x, P.y); const B = eyeBox(e, P), bx = B[0]*k, bu = B[1]*k, bdn = B[2]*k; /* its own box on the screen */ /* lit by a fire, a lamp or a torch: drawn alone, darkened by what is left of the dark at its feet, then laid on the others */
+          const x0 = Math.max(0, Math.floor((sx - bx)*bd)), x1 = Math.min(bw, Math.ceil((sx + bx)*bd)), y0 = Math.max(0, Math.floor((sy - bu)*bd)), y1 = Math.min(bh, Math.ceil((sy + bdn)*bd)); if(x1 <= x0 || y1 <= y0) continue;
+          ox = x0; oy = y0; sw = x1 - x0; shh = y1 - y0; const cv = eyeShCv[vk] || (eyeShCv[vk] = document.createElement('canvas')); if(cv.width < sw || cv.height < shh){ cv.width = Math.max(cv.width, bw); cv.height = Math.max(cv.height, bh); }
+          g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, sw, shh); yawTextHook(g); }
+        const S = k*bd; gK = S; gA = S*RCS; gB = S*KY*RSN; gC = -S*RSN; gD = S*KY*RCS; gEx = sx*bd - (gA*P.x + gC*P.y) - ox; gEy = sy*bd - (gB*P.x + gD*P.y) - oy; YAWL = YAW; wxf(g); g.save(); g.globalAlpha = al;
+        if(polys){ g.setTransform(1, 0, 0, 1, -ox, -oy); for(const pt of polys){ g.beginPath(); g.rect(0, 0, bw, bh); g.moveTo(pt[0]*bd, pt[1]*bd); for(let n = 2; n < pt.length; n += 2) g.lineTo(pt[n]*bd, pt[n + 1]*bd); g.closePath(); g.clip('evenodd'); } wxf(g); } /* cut out what the ground in front hides */
         try{ if(e.btn){ bbBegin(g, P.x, P.y); drawTree(g, P, t, false); bbEnd(g); }
           else if(e.fxn){ const q = e.fxn, kk = Math.max(0, q.t/q.t0); bbBegin(g, q.x, q.y); yawBegin(g, q.x, q.y); g.globalAlpha = al*kk; g.lineWidth = 2.5; g.strokeStyle = 'rgba(10,7,6,.8)'; g.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; g.textAlign = 'center'; g.strokeText(q.text, q.x, q.y - 14*(1 - kk)); txc = g; txt(q.text, q.x, q.y - 14*(1 - kk), 8, q.col); txc = c; yawEnd(g); bbEnd(g); }
-          else drawEnt(g, e); } catch(err){ noteError(err); } g.restore(); }
-      [gA, gB, gC, gD, gEx, gEy, gK, YAWL] = sv;
-      if(dk > 0.01){ g.setTransform(1, 0, 0, 1, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(4,6,16,${(dk*.8).toFixed(3)})`; g.fillRect(0, 0, bw, bh); g.globalCompositeOperation = 'source-over'; } /* night falls on them as on the ground (lamps and fires do not light them yet) */
+          else drawEnt(g, e); } catch(err){ noteError(err); } g.restore();
+        if(g !== gL){ g.setTransform(1, 0, 0, 1, 0, 0); if(shd > .004){ g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(4,6,16,${shd.toFixed(3)})`; g.fillRect(0, 0, sw, shh); g.globalCompositeOperation = 'source-over'; } gL.setTransform(1, 0, 0, 1, 0, 0); gL.drawImage(g.canvas, 0, 0, sw, shh, ox, oy, sw, shh); } }
+      [gA, gB, gC, gD, gEx, gEy, gK, YAWL] = sv; const g = gL; if(lit >= its.length) shade(); /* none was reached by a light (or a far one was culled): all of them at once, here */
       if(ntx.length){ g.setTransform(bd, 0, 0, bd, 0, 0); g.textAlign = 'center'; g.textBaseline = 'middle'; const fs = Math.max(12, Math.min(W, H)*.045); g.font = `bold ${fs}px ui-monospace,Menlo,Consolas,monospace`; g.lineWidth = 3; g.strokeStyle = 'rgba(10,7,6,.8)';
         ntx.forEach((q, i)=>{ const kk = Math.max(0, q.t/q.t0), y = H*.34 - i*fs*1.3 - fs*1.2*(1 - kk); g.globalAlpha = kk; g.strokeText(q.text, W/2, y); g.fillStyle = q.col; g.fillText(q.text, W/2, y); }); g.globalAlpha = 1; }
       c0.setTransform(1, 0, 0, 1, 0, 0); c0.drawImage(bc, 0, 0, bw, bh, vp0.x*dpr0, vp0.y*dpr0, vp0.w*dpr0, vp0.h*dpr0);
