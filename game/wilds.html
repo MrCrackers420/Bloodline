@@ -11881,11 +11881,13 @@
     const k = clamp(dk || 0, 0, 1), skyT = eyeMix([118, 160, 196], [6, 8, 20], k), haze = eyeMix([196, 210, 200], [14, 18, 32], k);
     if(yF > 0){ const g = c.createLinearGradient(0, Yp, 0, Yp + yF*dpr); g.addColorStop(0, skyT); g.addColorStop(1, haze); c.fillStyle = g; c.fillRect(X, Yp, Wd, Math.min(Hd, Math.ceil(yF*dpr) + 2)); } /* the sky, down to where the haze swallows the ground */
     const huAt = yd => .5*w*(Math.min(dE, dAt(yd/dpr))*Y.cT + Y.E*Y.sT)/Y.f, fix = rtProbe && rtProbe.fixedRows, mn = Math.max(1, Math.round(dpr/2)), tol = RB_TOL*dpr*2; /* a row is laid at one width, but the width the lens wants changes down the row: near the bottom of a close view that change is large, and a row as tall as st put a step into every upright edge (the sawtooth at the sides of the view). Rows are made only as tall as keeps that step under RB_TOL */
+    const yS = Math.max(0, Math.ceil(yF*dpr) - 1); /* where the ground begins on the screen: the haze line (the sky is filled down past it) */
     for(let y = Math.max(0, Math.floor(yF*dpr/st)*st), y1; y < Hd; y = y1){ let s = st; if(!fix){ const h0 = huAt(y), r = Math.abs(huAt(y + 1) - h0)/Math.max(1e-6, h0)*Wd/2; if(r > 1e-9 && r < 1e9) s = Math.max(mn, Math.min(st, Math.floor(tol/r))); }
       y1 = Math.min(Hd, y + s); const da = Math.min(dE, dAt(y/dpr)), db = dAt(y1/dpr); if(db >= dE) continue;
-      const hu = .5*w*((da + db)/2*Y.cT + Y.E*Y.sT)/Y.f, sy0 = Y.ypv - Y.sc*ANG_KY*da, sy1 = Y.ypv - Y.sc*ANG_KY*db;
+      const hu = .5*w*((da + db)/2*Y.cT + Y.E*Y.sT)/Y.f, sy1 = Y.ypv - Y.sc*ANG_KY*db; let sy0 = Y.ypv - Y.sc*ANG_KY*da, yT = y;
+      if(y1 <= yS) continue; if(yT < yS){ sy0 += (sy1 - sy0)*(yS - yT)/(y1 - yT); yT = yS; } /* the first row starts on the row grid, above the haze line: the part of it above the line was ground at full colour, clear of both the sky and the haze band, which showed as a dark line across the horizon (over the faded far billboards too). It starts at the line now */
       if(rtProbe && dAt(y/dpr) < dE){ const e = Math.max(Math.abs(huAt(y) - hu), Math.abs(huAt(y1) - hu))/hu*Wd/2/dpr; rtProbe.rows = (rtProbe.rows || 0) + 1; if(e > (rtProbe.bmax || 0)){ rtProbe.bmax = e; } }
-      c.drawImage(src, (Y.W2/2 - hu*Y.sc)*ld, sy0*ld, 2*hu*Y.sc*ld, Math.max(.5, (sy1 - sy0)*ld), X, Yp + y, Wd, y1 - y); }
+      c.drawImage(src, (Y.W2/2 - hu*Y.sc)*ld, sy0*ld, 2*hu*Y.sc*ld, Math.max(.5, (sy1 - sy0)*ld), X, Yp + yT, Wd, y1 - yT); }
     const fh = Math.max(8, h*.1); if(yF > -fh && yF < h){ const g = c.createLinearGradient(0, Yp + yF*dpr, 0, Yp + (yF + fh)*dpr); g.addColorStop(0, haze); g.addColorStop(1, haze.replace('rgb', 'rgba').replace(')', ',0)')); c.fillStyle = g; c.fillRect(X, Yp + Math.max(0, yF*dpr - 2), Wd, fh*dpr + 2); } /* the far ground fades into the haze */
   }
   function eyePaws(c, vp, dpr, p, own, t){ /* first person: your own forepaws (or hands) at the bottom of the view, as flat pictures for now */
