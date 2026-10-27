@@ -38,6 +38,11 @@
   .uf-stats{ display:flex; flex-direction:column; gap:.25em; text-shadow:0 0 6px #000, 0 0 3px #000; background:rgba(10,7,6,.62); padding:.35em .6em .5em; border-radius:6px; }
   .uf-stats span{ font-size:.7em; letter-spacing:.12em; color:var(--bone-dim); }
   .uf-hp b{ color:#ee5a75; font-size:1.6em; }
+  .uf-stats span.wd-hpbar{ font-size:1em; letter-spacing:0; }
+  .wd-hpbar{ display:flex; width:5.6em; height:.42em; margin-top:.2em; background:rgba(0,0,0,.4); border-radius:.16em; overflow:hidden; }
+  .wd-hpbar i{ display:block; height:100%; background:#ee5a75; }
+  .wd-hpbar i.wd-hpw{ background:rgba(238,90,117,.16); }
+  .wd-hpbar i.wd-hpf{ background:#8d877d; margin-left:auto; }
   .wd-belly b{ color:#e0b54a; font-size:1.25em; }
   .wd-belly.low b{ color:#ff7a3c; animation:wd-blink 1s steps(2) infinite; }
   .wd-thirst b{ color:#6ec6ff; font-size:1.25em; }
@@ -483,7 +488,7 @@
     <div class="uf-meta on" id="wdMeta"></div>
   </div>
   <div class="uf-hud">
-    <div class="uf-stats"><div class="uf-hp"><span>HP</span> <b id="wdHp">29</b></div><div class="wd-belly" id="wdBellyBox"><span>BELLY</span> <b id="wdBelly">30</b></div><div class="wd-belly wd-thirst" id="wdThirstBox"><span>THIRST</span> <b id="wdThirst">30</b></div><div class="wd-belly" id="wdRatBox" style="display:none"><span>RAT</span> <b id="wdRat">14</b></div><div class="wd-belly" id="wdPalBox" style="display:none"><span id="wdPalName">PAL</span> <b id="wdPal">29</b></div><div class="wd-belly" id="wdPalNeedsBox" style="display:none"><span>BELLY · THIRST</span> <b id="wdPalNeeds">30 · 30</b></div><div class="wd-meters" id="wdMeters"></div><div class="uf-roomlab" id="wdRegionP1"></div></div>
+    <div class="uf-stats"><div class="uf-hp"><span>HP</span> <b id="wdHp">29</b><span id="wdHpBar"></span></div><div class="wd-belly" id="wdBellyBox"><span>BELLY</span> <b id="wdBelly">30</b></div><div class="wd-belly wd-thirst" id="wdThirstBox"><span>THIRST</span> <b id="wdThirst">30</b></div><div class="wd-belly" id="wdRatBox" style="display:none"><span>RAT</span> <b id="wdRat">14</b></div><div class="wd-belly" id="wdPalBox" style="display:none"><span id="wdPalName">PAL</span> <b id="wdPal">29</b></div><div class="wd-belly" id="wdPalNeedsBox" style="display:none"><span>BELLY · THIRST</span> <b id="wdPalNeeds">30 · 30</b></div><div class="wd-meters" id="wdMeters"></div><div class="uf-roomlab" id="wdRegionP1"></div></div>
     <div class="wd-clock"><canvas id="wdDial"></canvas><div class="uf-roomlab" id="wdDay"></div><div class="uf-roomlab" id="wdRegion"></div><div class="uf-roomlab wd-goal" id="wdGoal" style="display:none"></div></div>
     <div id="wdCrew"></div>
   </div>
@@ -1055,6 +1060,7 @@
     denhatch:{solid:true}, stonewall:{solid:true,up:true},irrigationpump:{solid:true},furnace:{solid:true},anvil:{solid:true},refiner:{solid:true},farmplot:{}, supplychest:{solid:true,up:true}, trailsign:{up:true}, garden:{}, chest:{solid:true,up:true}, wall:{solid:true,up:true}, floor:{floor:true,up:true}, frame:{solid:true}, daub:{solid:true}, stairs:{solid:'foes',ramp:true,up:true}, trap:{uses:8}, spikes:{solid:true}, sentry:{solid:true, range:140, every:1400, dmg:2},
   };
   const GRID = 20;
+  const SOILK = ['farmplot', 'garden']; /* pieces that lie flat in the soil: drawn as ground, kept out of the den */
   /* height: a storey is LH tall. A floor at level k is a slab whose top is at k*LH. You stand on the highest surface under your centre
      (the ground, a floor, a wall top, a stair ramp) and fall when it ends. Level 0 keys stay "gx,gy" so older saves load unchanged. */
   const LH = 24, MAXL = 3, SLAB = 4, PH = 16, STEP = 7, GRAV = 620, FALL_SAFE = 34, LEAP_V = 190, LEAP_SPD = 150; /* a leap rises about 29, a ledge is 20, and it carries about 90 across */
@@ -1207,7 +1213,7 @@
   const lilyDorm = n => n.k==='lily' && (seasonN(wd.t) & 3) === 3; /* it dies back to its root in Winter and cannot be dug */
   Object.assign(ITEMS,{lilyroot:{name:'Reed-lily root', one:'reed-lily root', medical:true, root:true, heal:0, desc:'Dug from a muddy shore in the warm months. One root clears Toe Foot or Knee Leg. Plants die back in Winter and take two days to regrow.'}});
   Object.assign(ITEMS,{
-    garlic:{name:'Wild garlic', one:'garlic', food:1, desc:'Grows wild only; patches regrow. Dry with rock salt at a fire for garlic salt, or cook with a herb into bug repellent. A bear that eats it heals 4 HP.'},
+    garlic:{name:'Wild garlic', one:'garlic', food:1, desc:'Grows wild only; patches regrow. Dry with rock salt at a fire for garlic salt, or cook with a herb into bug repellent. A bear that eats it eases 4 frailty.'},
     salt:{name:'Rock salt', one:'rock salt', throwable:true, desc:'Crystals from desert, Badlands, mine and cave boulders. Grind with garlic at a lit fire. Thrown at a snail it burns.'},
     garlicsalt:{name:'Garlic salt', wraithbane:true, desc:'Use to scatter a pinch ahead of you. One pinch destroys a Sangwraith, and burns a snail badly (it leaves a wide patch behind). Nothing else minds it.'}});
   COOK.push({id:'garlicsalt', at:'fire', cost:{garlic:2, salt:1}, n:3, desc:'Dry the garlic by the fire and grind it into the salt. Makes three pinches.'});
@@ -3081,9 +3087,9 @@
     const p = o.p || {}, armor=slot(o.armor), helmet=slot(o.helmet);
     const crew = (Array.isArray(o.crew) ? o.crew : []).slice(0, 3).map(c=>{ if(!c || typeof c!=='object') return null; const q = c.p || {}, a = slot(c.armor), h = slot(c.helmet), cp0 = slot(c.pack), cpk = cp0 && ITEMS[cp0.id].pack ? cp0 : null, cNS = invLen(c.inv, cpk), ci = Array.isArray(c.inv) ? c.inv.slice(0, cNS).map(slot) : []; while(ci.length < cNS) ci.push(null);
       return {inv:ci, pack:cpk, hand:slot(c.hand), armor:a && isArm(ITEMS[a.id]) ? a : null, helmet:h && isHelm(ITEMS[h.id]) ? h : null, accessory:ITEMS[c.accessory] && ITEMS[c.accessory].accessory ? c.accessory : null, rat:c.rat && typeof c.rat==='object' ? ratSave(mkRat(c.rat)) : null, rat2:c.rat2 && typeof c.rat2==='object' ? ratSave(mkRat(c.rat2)) : null,
-        cp:c.cp && typeof c.cp==='object' ? c.cp : null, p:{hp:clamp(finite(q.hp, WD.hp), 1, WD.hp + 5), hunger:clamp(finite(q.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(q.thirst, WD.thirst), 0, WD.thirst), torch:clamp(finite(q.torch, 0), 0, WD.torch)}}; });
+        cp:c.cp && typeof c.cp==='object' ? c.cp : null, p:{hp:clamp(finite(q.hp, WD.hp), 1, WD.hp + 5), fr:clamp(finite(q.fr, 0), 0, 60), hunger:clamp(finite(q.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(q.thirst, WD.thirst), 0, WD.thirst), torch:clamp(finite(q.torch, 0), 0, WD.torch)}}; });
     return {upperWalls:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='wall' && finite(b[5],0)>0).length, retired:(Array.isArray(o.builds)?o.builds:[]).filter(b=>Array.isArray(b) && b[2]==='platform').length, seed:o.seed.slice(0, 12), t:Math.max(0, finite(o.t, 15)),
-      p:{x:finite(p.x, spawnPt.x), y:finite(p.y, spawnPt.y), z:clamp(finite(p.z, 0), 0, MAXL*LH), hp:clamp(finite(p.hp, WD.hp), 1, WD.hp + 5), hunger:clamp(finite(p.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(p.thirst, WD.thirst), 0, WD.thirst)},
+      p:{x:finite(p.x, spawnPt.x), y:finite(p.y, spawnPt.y), z:clamp(finite(p.z, 0), 0, MAXL*LH), hp:clamp(finite(p.hp, WD.hp), 1, WD.hp + 5), fr:clamp(finite(p.fr, 0), 0, 60), hunger:clamp(finite(p.hunger, WD.hunger), 0, WD.hunger), thirst:clamp(finite(p.thirst, WD.thirst), 0, WD.thirst)},
       pack, armor:armor && ITEMS[armor.id].armor ? armor : null, helmet:helmet && ITEMS[helmet.id].helmet ? helmet : null, accessory:ITEMS[o.accessory] && ITEMS[o.accessory].accessory ? o.accessory : null, creative:!!o.creative, hc:o.sv===1, hg:o.hg ? 1 : 0, mine:o.mine && typeof o.mine==='object' ? {d:(Array.isArray(o.mine.d) ? o.mine.d.slice(0, 12) : []), tk:(Array.isArray(o.mine.tk) ? o.mine.tk.slice(0, 12) : []), sn:o.mine.sn ? 1 : 0, ss:o.mine.ss ? 1 : 0, dg:o.mine.dg && typeof o.mine.dg==='object' ? (q=>({c:q(o.mine.dg.c), ch:q(o.mine.dg.ch), sh:o.mine.dg.sh ? 1 : 0, key:o.mine.dg.key ? 1 : 0, seen:o.mine.dg.seen ? 1 : 0}))(a=>Array.isArray(a) ? a.slice(0, 24).map(v=>v ? 1 : 0) : []) : null} : null, hand:slot(o.hand), inv, gone:Array.isArray(o.gone) ? o.gone.filter(n=>Number.isInteger(n)) : [], regrow:o.regrow && typeof o.regrow==='object' ? o.regrow : {},
       fires:(Array.isArray(o.fires) ? o.fires : []).map(f=>{ const at = pt(f); return at ? Object.assign(at, {fuel:clamp(finite(f.fuel, 0), 0, WD.fireMax), pit:!!f.pit}) : null; }).filter(Boolean).slice(0, 60),
       benches:(Array.isArray(o.benches) ? o.benches : []).map(b=>{ const at = pt(b); return at ? Object.assign(at, {k:b.k==='def' || b.k==='build' ? b.k : 'work'}) : null; }).filter(Boolean).slice(0, 30),
@@ -3105,9 +3111,9 @@
   }
   function wdSaveNow(){
     if(!wd || wd.hcOver) return false; /* a hardcore run that has ended is never written again */
-    const h = wd.home || spawnPt, p = wd.dead > 0 ? Object.assign(safeSpot(h.x, h.y + 20), Object.assign({z:0}, wakeVals(wd.p, wd.p.maxHp))) : wd.p, regrow = {}; /* saved mid-death: you wake as you would have */
+    const h = wd.home || spawnPt, p = wd.dead > 0 ? Object.assign(safeSpot(h.x, h.y + 20), Object.assign({z:0}, wakeVals(wd.p, wd.p.maxHp + frN(wd.p)))) : wd.p, regrow = {}; /* saved mid-death: you wake as you would have */
     for(const n of wd.nodes) if(n.ready > wd.t) regrow[n.id] = Math.round(n.ready);
-    const o = {v:1, seed:wd.seed, t:+wd.t.toFixed(2), p:{x:+p.x.toFixed(4), y:+p.y.toFixed(4), z:+(p.z || 0).toFixed(2), hp:p.hp, hunger:+p.hunger.toFixed(3), thirst:+(p.thirst == null ? WD.thirst : p.thirst).toFixed(3), torch:+(wd.dead > 0 ? 0 : wd.p.torch || 0).toFixed(1)},
+    const o = {v:1, seed:wd.seed, t:+wd.t.toFixed(2), p:{x:+p.x.toFixed(4), y:+p.y.toFixed(4), z:+(p.z || 0).toFixed(2), hp:p.hp, fr:wd.dead > 0 ? 0 : +(p.fr || 0).toFixed(2), hunger:+p.hunger.toFixed(3), thirst:+(p.thirst == null ? WD.thirst : p.thirst).toFixed(3), torch:+(wd.dead > 0 ? 0 : wd.p.torch || 0).toFixed(1)},
       pack:wd.pack || null, armor:wd.armor || null, helmet:wd.helmet || null, accessory:wd.accessory || null, creative:!!wd.creative, sv:wd.hc ? 1 : 0, hg:wd.hcGot ? 1 : 0, mine:wd.mine ? {d:wd.mine.disc, tk:wd.mine.taken, sn:wd.mine.snail ? 1 : 0, ss:wd.mine.ss ? 1 : 0, dg:wd.mine.dg} : null, hand:wd.hand || null, inv:invWithBooms(wd.inv, 0), gone:wd.nodes.filter(n=>n.gone).map(n=>n.id), regrow,
       fires:wd.fires.map(f=>Object.assign({x:Math.round(f.x), y:Math.round(f.y), fuel:+f.fuel.toFixed(1)}, f.pit ? {pit:1} : {})),
       benches:wd.benches.map(b=>({x:Math.round(b.x), y:Math.round(b.y), k:b.k})),
@@ -3116,7 +3122,7 @@
       corpses:(wd.corpses || []).map(c=>({x:Math.round(c.x), y:Math.round(c.y), t0:+c.t0.toFixed(1), rats:c.rats || 0, lured:c.lured ? 1 : 0, who:c.who || 0})),
       deaths:wd.deaths, home:wd.home, bed:wd.bed || null, rat:ratSave(wd.rat), rat2:ratSave(wd.rat2), rk:wd.rk | 0, rr:wd.rr || null, rku:wd.rkU || {}, rkc:wd.rkC || {}, vg:vgSave(), dw:dwSave(), cu:cuSaveWorld(), cp:cuSavePlayer(wd), dug:[...wd.dug].map(([k, d])=>[k >> 8, k & 255, d]), tz:wd.tz || [], tr:wd.trader ? {x:Math.round(wd.trader.x), y:Math.round(wd.trader.y), tx:Math.round(wd.trader.tx), ty:Math.round(wd.trader.ty), st:wd.trader.st, age:+wd.trader.age.toFixed(1), stay:Math.round(wd.trader.stay), rest:+wd.trader.rest.toFixed(1), f:+wd.trader.f.toFixed(2)} : null, trd:wd.trDay | 0, dt:wd.dtr ? {x:Math.round(wd.dtr.x), y:Math.round(wd.dtr.y), tx:Math.round(wd.dtr.tx), ty:Math.round(wd.dtr.ty), age:+wd.dtr.age.toFixed(1), stay:Math.round(wd.dtr.stay), rest:+wd.dtr.rest.toFixed(1), f:+wd.dtr.f.toFixed(2), go:wd.dtr.go ? 1 : 0} : null, dtd:wd.dtDay | 0};
     if(wd.crew){ const cr = [1,2,3].map(i=>{ const s = wd.crew[i], k = s.kit; if(!k) return null; const dead = k.dead > 0;
-      return {inv:invWithBooms(k.inv, i), pack:k.pack || null, hand:k.hand || null, armor:k.armor || null, helmet:k.helmet || null, accessory:k.accessory || null, rat:ratSave(k.rat), rat2:ratSave(k.rat2), cp:cuSavePlayer(k), p:{hp:dead ? WD.hp : k.p.hp, hunger:dead ? Math.max(k.p.hunger, 15) : +k.p.hunger.toFixed(3), thirst:dead ? Math.max(k.p.thirst || 0, 15) : +(k.p.thirst == null ? WD.thirst : k.p.thirst).toFixed(3), torch:dead ? 0 : +(k.p.torch || 0).toFixed(1)}}; });
+      return {inv:invWithBooms(k.inv, i), pack:k.pack || null, hand:k.hand || null, armor:k.armor || null, helmet:k.helmet || null, accessory:k.accessory || null, rat:ratSave(k.rat), rat2:ratSave(k.rat2), cp:cuSavePlayer(k), p:{hp:dead ? WD.hp : k.p.hp, fr:dead ? 0 : +(k.p.fr || 0).toFixed(2), hunger:dead ? Math.max(k.p.hunger, 15) : +k.p.hunger.toFixed(3), thirst:dead ? Math.max(k.p.thirst || 0, 15) : +(k.p.thirst == null ? WD.thirst : k.p.thirst).toFixed(3), torch:dead ? 0 : +(k.p.torch || 0).toFixed(1)}}; });
       if(cr.some(Boolean)) o.crew = cr; }
     try{ localStorage.setItem(WD_KEY, JSON.stringify(o)); }catch(e){ return false; }
     wd.saveT = WD.saveEvery; return true;
@@ -3137,7 +3143,7 @@
     (S.crew || []).forEach((c, k)=>{ if(c && k < 3){ wd.crew[k + 1].kit = mkKit(c); cuGift(wd.crew[k + 1].kit.inv, wd.crew[k + 1].kit.jr); foldCoins(wd.crew[k + 1].kit); } });
     wd.unodes = G.nodes.filter(n=>inUnder(n)); wd.uspawns = G.uspawns || []; wd.enodes = G.nodes.filter(n=>inEnch(n)); wd.espawns = G.espawns || []; wd.ringNodes = G.nodes.filter(n=>n.k==='fairyring'); wd.rid = G.n0; wd.spec = {}; for(const n of G.nodes) if(SPECK.has(n.k) && !wd.spec[n.k]) wd.spec[n.k] = n;
     const p0 = S.p || {x:spawnPt.x, y:spawnPt.y, hp:WD.hp, hunger:WD.hunger, thirst:WD.thirst};
-    wd.p = {action:null, x:p0.x, y:p0.y, z:0, vz:0, z0:0, air:false, h:PH, rollT:0, rollCd:0, dx:0, dy:1, r:9, hp:p0.hp, maxHp:WD.hp, hunger:p0.hunger, thirst:p0.thirst == null ? WD.thirst : p0.thirst, fx:0, fy:1, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:S.torch || 0};
+    wd.p = {action:null, x:p0.x, y:p0.y, z:0, vz:0, z0:0, air:false, h:PH, rollT:0, rollCd:0, dx:0, dy:1, r:9, hp:p0.hp, fr:p0.fr || 0, maxHp:WD.hp, hunger:p0.hunger, thirst:p0.thirst == null ? WD.thirst : p0.thirst, fx:0, fy:1, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:S.torch || 0};
     const gone = new Set(S.gone || []);
     const keepShr = new Set(G.nodes.filter(n=>n.k==='shrine' && !n.biome).sort((a, b)=>a.id - b.id).slice(0, WOOD_SHRINES).map(n=>n.id)); /* the woodland keeps its first few shrines; the rest are removed for good, so every other node keeps its id and saves stay valid */
     for(const n of wd.nodes){n.ore=oreFor(wd.seed,n); if(n.k==='shrine' && !n.biome && !keepShr.has(n.id)){ n.gone = true; n.perm = true; } n.sol=!!NODE[n.k].solid; if(desertMouth(n) || frontierMouth(n)){n.gone=true;n.perm=true;} if(!n.biome && n.x>SAND.x0 && n.x<DESERT.left && SAND_THIN.has(n.k)){ const u=sandU(n.x,n.y); if(u>.18 && trHash(n.id,91)<Math.min(1,(u-.18)/.62)){n.gone=true;n.perm=true;} } if(gone.has(n.id)) n.gone = true; if(n.k==='cave') n.gone = false; const r = S.regrow && S.regrow[n.id]; if(isFinite(r)) n.ready = +r;
@@ -4426,6 +4432,23 @@
   const dzKnee = () => !!wd.dz && wd.dz.knee > 0;
   const dzNeedsSalve = () => !!wd.dz && (wd.dz.toe > 0 || wd.dz.knee > 0);
   function dzNames(d, T){ const a = []; if(!d) return a; if(d.cold > T) a.push('Cold'); if(d.scv) a.push('Scurvy'); if(d.toe > 0) a.push('Toe Foot'); if(d.knee > 0) a.push('Knee Leg'); if(d.pox > T) a.push('SlugPox'); if(d.dia) a.push('Diabetes'); return a; }
+  /* frailty (p.fr, pr.fr): what hunger, thirst, the cold, scurvy and raw meat wear off a body. It greys out the top of the HP bar (it lowers maxHp)
+     and the red moves down and up with it, so wounds stay wounds: a salve or bandage heals the red, food, tonic and tea ease the grey, and it fades by itself
+     while you are fed, watered, warm and not ill (three times as fast beside a fire, a little faster under a sound roof, and through a night's sleep) */
+  const FR = {fadeS:30, fireK:3, fedAt:10, warmAt:8, col:'#a39d92'};
+  const frN = o => Math.ceil(Math.max(0, (o && o.fr) || 0) - 1e-9);
+  const scvLoss = d => d && d.scv===2 ? 6 : d && d.scv ? 3 : 0;
+  function frSet(o, top, body, kill){ /* o.frB is the body share last applied: a change in it moves the red by the same amount; any other change to the top only clamps */
+    if(!kill) body = Math.min(body, Math.max(0, top - 1)); /* only a fresh blow of hunger or cold can take the last point */
+    if(o.frB != null && body !== o.frB){ const h0 = o.hp; o.hp = o.hp + (o.frB - body); if(!kill && o.hp < 1) o.hp = Math.min(h0, 1); }
+    const mh = top - body; if(o.hp > mh) o.hp = Math.max(0, mh); if(o.maxHp !== mh || o.frB !== body) hudLast = ''; o.maxHp = mh; o.frB = body; }
+  const frPlayer = kill => frSet(wd.p, clsHp(), scvLoss(wd.dz) + frN(wd.p), kill);
+  function wdFrail(n, cause){ const p = wd.p; if(wd.creative || wd.dead > 0 || !(n > 0)) return; p.fr = (p.fr || 0) + n; frPlayer(true);
+    wdFx({kind:'num', x:p.x, y:p.y - 14, text:'-' + n, col:FR.col, t:700}); sfxHurtP(); haptic([20], null, .4);
+    jrAdd('les:frail', 'lesson', 'Frailty: hunger, thirst, the cold, scurvy and raw meat do not wound you, they wear you down. The grey end of your HP bar is frailty, and your health cannot rise into it. Salves and bandages heal wounds (the red); food, tonic and tea ease frailty, and it fades by itself while you are fed, watered, warm and well, fastest beside a fire or through a night in bed.', {tags:['illness']});
+    if(p.hp <= 0) wdDie(cause); }
+  function frMend(n){ const p = wd.p, f = Math.max(0, p.fr || 0), m = Math.min(f, n); if(m > 0){ p.fr = f - m; frPlayer(false); } return m; } /* how much it eased */
+  const frSay = m => m > 0 ? 'eases ' + Math.ceil(m - 1e-9) + ' frailty' : '';
   const dzSay = (text, col) => wdFx({kind:'num', x:wd.p.x, y:wd.p.y - 24, text, col:col || '#c9d98a', t:1500});
   function dzInfect(kind){ /* true if it took */
     const d = wd.dz, T = wd.t; if(!d || wd.creative || wd.dead > 0) return false;
@@ -4462,8 +4485,9 @@
     if(!d.scv && d.vit < .15){ d.scv = 1; dzSay('Scurvy: aching gums', '#e9a0b0'); jrAdd('les:dz:scurvy', 'warning', 'Scurvy: too long without fresh food. Berries, herbs, carrots and mushrooms put it right; meat and bread will not.', {tags:['illness']}); }
     else if(d.scv && d.vit >= .3){ d.scv = 0; dzSay('Scurvy has lifted', '#8fd06b'); }
     if(d.scv) d.scv = d.vit <= .02 ? 2 : 1;
-    { const mh = clsHp() - (d.scv===2 ? 6 : d.scv ? 3 : 0); if(p.maxHp !== mh){ p.maxHp = mh; if(p.hp > mh) p.hp = mh; } }
-    if(d.scv===2 && !(wd.dead > 0)){ d.scvT += s; if(d.scvT >= 25){ d.scvT = 0; if(p.hp > WD.parchFloor) wdHurtP(1, 'Died of scurvy'); } } else d.scvT = 0;
+    if(p.fr > 0 && p.hunger >= FR.fedAt && p.thirst > 0 && wd.warm >= FR.warmAt && !(d.cold > T) && !(d.pox > T) && !d.scv) p.fr = Math.max(0, p.fr - dt/FR.fadeS*(fire ? FR.fireK : 1)*(1 + .5*inn));
+    frPlayer(false);
+    if(d.scv===2 && !(wd.dead > 0)){ d.scvT += s; if(d.scvT >= 25){ d.scvT = 0; if(p.hp > WD.parchFloor) wdFrail(1, 'Died of scurvy'); } } else d.scvT = 0;
     /* diabetes: too many sweets, for too long */
     d.sug = Math.max(0, d.sug - dt*DZ.sugDecay);
     if(!d.dia && d.sug >= DZ.diaAt*(clsHas('bear') ? DZ.diaBear : 1)){ d.dia = 1; d.diaOk = 0; dzSay('Diabetes: too many sweets', '#e9c07a'); jrAdd('les:dz:dia', 'warning', 'Diabetes: you have eaten too many sweets too fast (jam, cordial, trail mix, berries). You thirst half again as fast, walk a little slower and your roll is slow to return. It does not pass by itself: keep sugar low for two days, with meat, bread, vegetables and stews, and it comes under control. Bears do not get it, normally.', {tags:['illness']}); }
@@ -4510,7 +4534,7 @@
     if(fire) dw += 1.4*(1 - hyp(fire.x - p.x, fire.y - p.y)/62) + .2;
     if(p.torch > 0) dw += .35;
     wd.warm = clamp(wd.warm + dw*s, 0, CU.warmMax);
-    if(wd.warm <= 0){ wd.chillT += s; if(wd.chillT >= 6){ wd.chillT = 0; wdHurtP(1, 'Froze'); } if(wd.chillT > 4 && !cuInjured() && Math.random() < s*.05) cuInjure('chill'); } else wd.chillT = 0;
+    if(wd.warm <= 0){ wd.chillT += s; if(wd.chillT >= 6){ wd.chillT = 0; wdFrail(1, 'Froze'); } if(wd.chillT > 4 && !cuInjured() && Math.random() < s*.05) cuInjure('chill'); } else wd.chillT = 0;
     if(wd.warm < 15 && !wd.creative && !snailCalm(p)) p.hunger = Math.max(0, p.hunger - WD.hungerRate*s*.5*(1 - wd.warm/15));
     /* rusting iron and its clatter */
     const metal = wd.armor && ITEMS[wd.armor.id].metal;
@@ -4964,8 +4988,8 @@
   const POT_DISHES = new Set(['stew', 'veggiestew', 'fishchowder', 'mushroomsoup', 'broth', 'clearbroth', 'feast']); /* the dishes a pot makes: a Raccoon's batch feeds the party */
   function chefPot(id, washed){ if(!clsHas('raccoon') || !POT_DISHES.has(id) || !wd.crew) return;
     const R = skHas('rc4') ? 120 : 70, me = wd.p, I = ITEMS[id]; let fed = 0;
-    for(const i of activeIdx()) withPlayer(i, ()=>{ const q = wd.p; if(q===me || wd.dead > 0 || sceneOf(q)!==sceneOf(me) || hyp(q.x - me.x, q.y - me.y) > R) return; if(!(q.hunger < WD.hunger - 1 || q.hp < q.maxHp)) return;
-      const heal = (I.heal || 0) + (washed ? 1 : 0); q.hunger = Math.min(WD.hunger, q.hunger + I.food); if(heal) q.hp = Math.min(q.maxHp, q.hp + heal); dzEat(id);
+    for(const i of activeIdx()) withPlayer(i, ()=>{ const q = wd.p; if(q===me || wd.dead > 0 || sceneOf(q)!==sceneOf(me) || hyp(q.x - me.x, q.y - me.y) > R) return; if(!(q.hunger < WD.hunger - 1 || q.fr > 0)) return;
+      const heal = (I.heal || 0) + (washed ? 1 : 0); q.hunger = Math.min(WD.hunger, q.hunger + I.food); if(heal) frMend(heal); dzEat(id);
       wdFx({kind:'num', x:q.x, y:q.y - 16, text:'+' + I.food + ' belly' + (heal ? ', +' + heal + ' HP' : '') + ' · the pot', col:'#e0b54a', t:1100}); fed++; });
     if(fed) wdFx({kind:'num', x:me.x, y:me.y - 30, text:'the pot feeds ' + fed, col:'#e8c868', t:1300}); }
   function denMigrate(d){ /* a den from before the ladder (a ring of mud walls above ground) is taken down and a kit for the new one handed back */
@@ -6511,7 +6535,7 @@
       if(raidNight(n) && wd.raidDone<n){ wdNote('A pack is coming. Too dangerous to sleep'); return; }
       if(wd.foes.some(f=>!animalDef(f).passive && hyp(f.x-p.x,f.y-p.y)<260)){ wdNote('Something is near. You cannot sleep'); return; }
       const next=(Math.floor(wd.t/WD.day)+1)*WD.day+2, el=next-wd.t;
-      p.hunger=Math.max(1,p.hunger-WD.hungerRate*el*0.5); p.thirst=Math.max(1,(p.thirst == null ? WD.thirst : p.thirst)-WD.thirstRate*el*0.5); burnFires(el); wd.t=next; wd.darkT=0;
+      p.hunger=Math.max(1,p.hunger-WD.hungerRate*el*0.5); if(p.fr > 0) p.fr = Math.max(0, p.fr - el/FR.fadeS); p.thirst=Math.max(1,(p.thirst == null ? WD.thirst : p.thirst)-WD.thirstRate*el*0.5); burnFires(el); wd.t=next; wd.darkT=0;
     });
   }
   function pickAny(){ const n = nearPick(); return n && !n.gone && n.ready <= wd.t && n.k!=='hoard' && n.k!=='feycache' ? {k:'pick', n, text:NODE[n.k].verb} : null; } /* anything ready to pick in reach, whatever else stands beside it */
@@ -6675,14 +6699,14 @@
     p.thirst = Math.max(0, p.thirst - WD.thirstRate*s*mkDrain()*(clsHas('bear') ? (skHas('br1') ? .55 : .7) : 1)*(1 + .4*desert)*(wd.dz && wd.dz.dia ? 1.5 : 1)*(p.cool > wd.t ? .6 : 1));
     if(wd.rain > .3 && onMain(p) && p.z < 12 && !rainCover(p.x, p.y)) p.thirst = Math.min(WD.thirst, p.thirst + .3*s); /* rain on your face */
     if(p.thirst < 8 && !p.tw){ p.tw = 1; wdNote('Thirsty. Drink at the river bank'); } else if(p.thirst >= 12) p.tw = 0;
-    if(p.thirst <= 0){ p.parch = (p.parch || 0) + s; if(p.parch >= WD.parchEvery){ p.parch = 0; if(p.hp > WD.parchFloor){ p.inv = 0; wdHurtP(1, 'Parched'); } else wdNote('Parched. Find water'); } } else p.parch = 0;
+    if(p.thirst <= 0){ p.parch = (p.parch || 0) + s; if(p.parch >= WD.parchEvery){ p.parch = 0; if(p.hp > WD.parchFloor){ wdFrail(1, 'Parched'); } else wdNote('Parched. Find water'); } } else p.parch = 0;
   }
   function wdDrinkNow(n){ const p = wd.p; p.thirst = Math.min(WD.thirst, (p.thirst == null ? 0 : p.thirst) + n); p.parch = 0; sfxSplash(false); wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + n + ' thirst', col:'#6ec6ff', t:900}); }
   function wdSipTonic(i){ /* a tonic gourd holds three sips; each mends like herbal tonic */
     const s = wd.inv[i], p = wd.p; if(!s || s.id!=='tonicgourd') return false; const d = wd.dz, ill = !!d && (d.cold > wd.t || d.pox > wd.t);
-    if(p.hp >= p.maxHp && !ill){ wdNote('You do not need a sip'); return false; }
-    return wdAction('Sip', 600, ()=>wd.inv[i]===s && s.id==='tonicgourd', ()=>{ p.hp = Math.min(p.maxHp, p.hp + DT_SIP); p.hunger = Math.min(WD.hunger, p.hunger + 1); sfxEat(); dzEat('tonic'); s.d--;
-      wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + DT_SIP + ' HP · ' + Math.max(0, s.d) + (s.d===1 ? ' sip left' : ' sips left'), col:'#9fd06b', t:1100}); if(s.d <= 0) wd.inv[i] = {id:'gourd', n:1}; hudLast = ''; });
+    if(!(p.fr > 0) && !ill){ wdNote('You do not need a sip'); return false; }
+    return wdAction('Sip', 600, ()=>wd.inv[i]===s && s.id==='tonicgourd', ()=>{ const m = frMend(DT_SIP); p.hunger = Math.min(WD.hunger, p.hunger + 1); sfxEat(); dzEat('tonic'); s.d--;
+      wdFx({kind:'num', x:p.x, y:p.y - 16, text:(m > 0 ? frSay(m) + ' · ' : '') + Math.max(0, s.d) + (s.d===1 ? ' sip left' : ' sips left'), col:'#9fd06b', t:1100}); if(s.d <= 0) wd.inv[i] = {id:'gourd', n:1}; hudLast = ''; });
   }
   function wdDrinkSkin(i){ const s = wd.inv[i]; if(!s) return false;
     if(s.id==='tonicgourd') return wdSipTonic(i);
@@ -6696,12 +6720,12 @@
   function wdEatNow(i){
     const s = wd.inv[i], p = wd.p; if(!s || !wdLive()) return false; const I = ITEMS[s.id]; if(!I.food) return false;
     const chef = clsHas('raccoon'), food = chef ? Math.ceil(I.food*(skHas('rc1') ? 1.5 : 1.3)) : I.food, heal = I.heal ? I.heal + (chef ? 1 + (skHas('rc2') ? 2 : 0) : 0) : 0, quench = I.quench ? Math.ceil(I.quench*(chef ? 1.5 : 1)) : 0, fat = clsHas('monkey') && mkAutumn() ? 1 + .1*mkT('wf') : 1;
-    p.hunger = Math.min(WD.hunger, p.hunger + Math.ceil(food*fat - 1e-9)); if(heal) p.hp = Math.min(p.maxHp, p.hp + heal); if(quench){ p.thirst = Math.min(WD.thirst, (p.thirst == null ? 0 : p.thirst) + quench); p.parch = 0; }
+    p.hunger = Math.min(WD.hunger, p.hunger + Math.ceil(food*fat - 1e-9)); const mend = heal ? frMend(heal) : 0; if(quench){ p.thirst = Math.min(WD.thirst, (p.thirst == null ? 0 : p.thirst) + quench); p.parch = 0; }
     s.n--; if(!s.n) wd.inv[i] = null;
     sfxEat(); dzEat(s.id);
-    if(s.id==='garlic' && clsHas('bear') && wd.dz){ p.hp = Math.min(p.maxHp, p.hp + 4); wd.dz.imm = Math.max(wd.dz.imm, wd.t + WD.day); if(wd.dz.cold > wd.t) wd.dz.cold = Math.max(wd.t + 1, wd.dz.cold - WD.day); wdFx({kind:'num', x:p.x, y:p.y - 28, text:'garlic: +4 HP, no colds', col:'#d9e8b0', t:1200}); } /* a bear likes garlic: it heals and keeps colds off for a day */
-    wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + food + ' belly' + (quench ? ', +' + quench + ' thirst' : '') + (heal ? ', +' + heal + ' HP' : ''), col:'#e0b54a', t:900});
-    if(I.hurt){ p.hp -= I.hurt; wdFx({kind:'num', x:p.x, y:p.y - 4, text:'-' + I.hurt, col:'#ee5a75', t:700}); if(p.hp <= 0) wdDie('Raw meat finished you'); }
+    if(s.id==='garlic' && clsHas('bear') && wd.dz){ frMend(4); wd.dz.imm = Math.max(wd.dz.imm, wd.t + WD.day); if(wd.dz.cold > wd.t) wd.dz.cold = Math.max(wd.t + 1, wd.dz.cold - WD.day); wdFx({kind:'num', x:p.x, y:p.y - 28, text:'garlic: eases 4 frailty, no colds', col:'#d9e8b0', t:1200}); } /* a bear likes garlic: it heals and keeps colds off for a day */
+    wdFx({kind:'num', x:p.x, y:p.y - 16, text:'+' + food + ' belly' + (quench ? ', +' + quench + ' thirst' : '') + (mend ? ', ' + frSay(mend) : ''), col:'#e0b54a', t:900});
+    if(I.hurt) wdFrail(I.hurt, 'Raw meat finished you');
     return true;
   }
   function wdCook(i){ if(!wd) return false; const item=wd.inv[i]; if(!item) return false; return wdAction('Roast food',1100*(clsHas('raccoon') ? .75 : 1),()=>wd.inv[i]===item && !!ITEMS[item.id].cook && !!nearFire(WD.fireNear,true),()=>wdCookNow(i)); }
@@ -6797,6 +6821,7 @@
     if(!B || l < 0 || l > MAXL) return false;
     if(l > 0 && !B.up) return false;
     if(!inWorld(x,y,h))return false;
+    if(SOILK.includes(k) && inDen({x, y})) return false; /* crops need the sky: no plots or gardens down in the den */
     if(l===0 && !trCanBuild(gx, gy, k)) return false;
     if(B.floor ? floorAt(gx,gy,l) : wd.builds.has(gkey(gx,gy,l))) return false;
     if(!reachOk(l)) return false;
@@ -6882,6 +6907,7 @@
     if(id==='room') return roomAdd();
     if(isPaid(id)){ const c = buildCell(); return planAdd(id, c.gx, c.gy, c.l, wd.build.dir); }
     const at=buildCell(), k=ITEMS[id].build;
+    if(SOILK.includes(k) && inDen(wd.p)){ wdNote('Crops need open sky: plant on the surface'); beep(140, 0.08, 'square', 0.02); return false; }
     return wdAction('Build',650,()=>{ const c = buildCell(); return wd.build && wd.build.id===id && bHave(id) && c.gx===at.gx && c.gy===at.gy && c.l===at.l && buildOk(k,at.gx,at.gy,at.l); },()=>buildPlaceNow());
   }
   function packFrame(gx, gy){ const f = structOf(gx, gy, 0); if(!f || f.k!=='frame') return null; delBuild(f); return putBuild(gx, gy, 'daub', undefined, 0, 0); } /* the frame stays where it is, now filled in */
@@ -7257,10 +7283,10 @@
     if(!sv || typeof sv!=='object' || typeof sv.c!=='string' || !CLASSES[sv.c]) return null;
     const maxHp = pHp(sv.c), carry = [];
     if(Array.isArray(sv.carry)) for(const q of sv.carry.slice(0, 8)) if(q && ITEMS[q.id] && q.n >= 1) carry.push({id:q.id, n:Math.min(999, Math.floor(q.n))});
-    return {pcls:sv.c, x:Number.isFinite(sv.x) ? sv.x : null, y:Number.isFinite(sv.y) ? sv.y : null, r:pR(sv.c), hp:clamp(finite(sv.hp, maxHp), finite(sv.down, 0) > 1e8 ? 0 : 1, maxHp), maxHp, down:Math.max(0, finite(sv.down, 0)), req:PREQ.includes(sv.req) ? sv.req : 'home', carry, belly:clamp(finite(sv.b, WD.hunger), 0, WD.hunger), thirst:clamp(finite(sv.t, WD.thirst), 0, WD.thirst), dz:pdzNew(sv.dz), sleep:!!sv.sl, pf:sv.pf===0 || sv.pf===1 ? sv.pf : null, ps:sv.ps===0 || sv.ps===1 ? sv.ps : null, thin:Math.max(0, finite(sv.th, 0)), kit:pkNew(sv.kit), rats:Array.isArray(sv.rats) ? sv.rats.slice(0, 2).map(mkRat) : [], kl:!!sv.kl, inj:{until:Math.max(0, finite(sv.inj && sv.inj.until, 0)), kind:sv.inj && typeof sv.inj.kind==='string' ? sv.inj.kind.slice(0, 12) : ''}, starveT:0, parch:0, lastT:null, hw:0, tw:0, sc:0,
+    return {pcls:sv.c, x:Number.isFinite(sv.x) ? sv.x : null, y:Number.isFinite(sv.y) ? sv.y : null, r:pR(sv.c), hp:clamp(finite(sv.hp, maxHp), finite(sv.down, 0) > 1e8 ? 0 : 1, maxHp), maxHp, down:Math.max(0, finite(sv.down, 0)), req:PREQ.includes(sv.req) ? sv.req : 'home', carry, belly:clamp(finite(sv.b, WD.hunger), 0, WD.hunger), thirst:clamp(finite(sv.t, WD.thirst), 0, WD.thirst), dz:pdzNew(sv.dz), sleep:!!sv.sl, pf:sv.pf===0 || sv.pf===1 ? sv.pf : null, ps:sv.ps===0 || sv.ps===1 ? sv.ps : null, thin:Math.max(0, finite(sv.th, 0)), fr:clamp(finite(sv.fr, 0), 0, 60), kit:pkNew(sv.kit), rats:Array.isArray(sv.rats) ? sv.rats.slice(0, 2).map(mkRat) : [], kl:!!sv.kl, inj:{until:Math.max(0, finite(sv.inj && sv.inj.until, 0)), kind:sv.inj && typeof sv.inj.kind==='string' ? sv.inj.kind.slice(0, 12) : ''}, starveT:0, parch:0, lastT:null, hw:0, tw:0, sc:0,
       kx:0, ky:0, hit:0, cd:0, inv:0, z:0, face:0, moving:false, ph:Math.random()*6, ft:null, nt:null, lunge:0, work:0, nscan:0, fscan:0, steerT:0, age:0, tool:null, sw:null};
   }
-  const partnerSave = r => r ? {c:r.pcls, hp:+r.hp.toFixed(2), down:Math.round(r.down || 0), req:r.req, b:+r.belly.toFixed(2), t:+r.thirst.toFixed(2), x:r.x == null ? null : Math.round(r.x), y:r.y == null ? null : Math.round(r.y), carry:r.carry.map(q=>({id:q.id, n:q.n})), dz:pdzSave(r.dz), inj:{until:Math.round(r.inj ? r.inj.until : 0), kind:r.inj ? r.inj.kind : ''}, kit:pkSave(r.kit), rats:(r.rats || []).map(ratSave), kl:r.kl ? 1 : 0, sl:r.sleep ? 1 : 0, pf:r.pf == null ? -1 : r.pf, ps:r.ps == null ? -1 : r.ps, th:Math.round(r.thin || 0)} : null;
+  const partnerSave = r => r ? {c:r.pcls, hp:+r.hp.toFixed(2), down:Math.round(r.down || 0), req:r.req, b:+r.belly.toFixed(2), t:+r.thirst.toFixed(2), x:r.x == null ? null : Math.round(r.x), y:r.y == null ? null : Math.round(r.y), carry:r.carry.map(q=>({id:q.id, n:q.n})), dz:pdzSave(r.dz), inj:{until:Math.round(r.inj ? r.inj.until : 0), kind:r.inj ? r.inj.kind : ''}, kit:pkSave(r.kit), rats:(r.rats || []).map(ratSave), kl:r.kl ? 1 : 0, sl:r.sleep ? 1 : 0, pf:r.pf == null ? -1 : r.pf, ps:r.ps == null ? -1 : r.ps, th:Math.round(r.thin || 0), fr:+(r.fr || 0).toFixed(2)} : null;
   const palName = pr => CLASSES[pr.pcls].name;
   const carryAdd = (pr, id, n) => { /* what a partner picks up from its own work goes into its own bag (a little "+2 Wood" over it); only what does not fit is carried over to you */
     const left = pkWith(pr, ()=>invAdd(id, n)); if(n - left > 0) wdFx({kind:'num', x:pr.x, y:pr.y - 18, text:'+' + (n - left) + ' ' + ITEMS[id].name, col:'#cfe3a8', t:800});
@@ -7307,14 +7333,15 @@
     const I = ITEMS[id], v = palVals(pr, I), say = [];
     if(v.food){ pr.belly = Math.min(WD.hunger, pr.belly + v.food); say.push('+' + v.food + ' belly'); }
     if(v.quench){ pr.thirst = Math.min(WD.thirst, pr.thirst + v.quench); pr.parch = 0; say.push('+' + v.quench + ' thirst'); }
-    if(v.heal){ pr.hp = Math.min(pr.maxHp, pr.hp + v.heal); say.push('+' + v.heal + ' HP'); }
+    if(v.heal && I.food && !(pr.down > 0)){ const m = pFrMend(pr, v.heal); if(m > 0) say.push(frSay(m)); } /* food eases frailty; a salve heals the red */
+    else if(v.heal){ pr.hp = Math.min(pr.maxHp, pr.hp + v.heal); say.push('+' + v.heal + ' HP'); }
     if(I.medical && !I.food && !v.heal){ pr.hp = Math.min(pr.maxHp, pr.hp + (I.heal || 0)); say.push('+' + (I.heal || 0) + ' HP'); } /* (a salve used to heal twice) */
-    if(id==='garlic' && pr.pcls==='bear'){ pr.hp = Math.min(pr.maxHp, pr.hp + 4); say.push('garlic: +4 HP'); } /* a bear likes garlic */
+    if(id==='garlic' && pr.pcls==='bear'){ pFrMend(pr, 4); say.push('garlic eases it'); } /* a bear likes garlic */
     pdzEat(pr, id); if(I.medical && !I.food){ if(I.root) pdzRoot(pr); else pdzSalve(pr); } /* the player's cures: fresh food and tonic, salves, the reed-lily root */
     if(pr.down > 1e8){ const need = Math.ceil(pr.maxHp*.5); if(pr.hp >= need){ pr.down = 0; pr.belly = Math.min(pr.belly, 10); pr.thirst = Math.min(pr.thirst, 10); say.push('gets up'); pdzSay(pr, 'It gets up', '#8fd06b'); } else say.push('revive ' + Math.ceil(pr.hp) + '/' + need); } /* fallen in hardcore: healing counts up to half its health */
     else if(pr.down > 0){ pr.down = 0; pr.hp = Math.max(pr.hp, 5); pr.belly = Math.max(pr.belly, DEATH.floorLo); pr.thirst = Math.max(pr.thirst, DEATH.floorLo); }
     sfxEat(); wdFx({kind:'num', x:pr.x, y:pr.y - 14, text:say.join(', ') || 'ate', col:'#e0b54a', t:900});
-    if(I.hurt){ pr.inv = 0; partnerHurt(pr, I.hurt, null); }
+    if(I.hurt) pFrail(pr, I.hurt);
     hudLast = '';
   }
   function palGive(){ /* the selected item, into the partner beside you */
@@ -7330,7 +7357,7 @@
     const pr = palNear(), s = wd.inv[wd.sel], I = s && ITEMS[s.id]; if(!pr || !I) return null;
     const hurt = pr.hp < pr.maxHp - .5, dn = pr.down > 0; let what = null;
     const dz = pr.dz, sickEat = !!dz && (I.food || I.medical) && ((DZ_VIT[s.id] && (dz.scv || dz.vit < .5)) || (DZ_COLD[s.id] && dz.cold > wd.t));
-    if(I.food && (dn || pr.belly < WD.hunger - 1 || (I.heal && hurt) || (I.quench && pr.thirst < WD.thirst - 1))) what = 'eat';
+    if(I.food && (dn || pr.belly < WD.hunger - 1 || (I.heal && (pr.fr > 0 || (hurt && dn))) || (I.quench && pr.thirst < WD.thirst - 1))) what = 'eat';
     else if(sickEat) what = 'eat';
     else if(s.id==='fullskin' && (dn || pr.thirst < WD.thirst - 1)) what = 'drink';
     else if(I.medical && (I.root ? pdzNeedsSalve(pr) : (dn || hurt || pdzNeedsSalve(pr)))) what = 'salve';
@@ -7372,8 +7399,9 @@
     if(!d.scv && d.vit < .15){ d.scv = 1; pdzSay(pr, 'Scurvy: aching gums', '#e9a0b0'); pdzNote(i, pr, ' has scurvy', 'les:pdz:scurvy', 'Your partner has scurvy: too long without fresh food. Feed it berries, herbs, carrots or mushrooms (hold them beside it and press B); meat and bread will not help. At camp it takes what it needs from your chests.'); }
     else if(d.scv && d.vit >= .3){ d.scv = 0; pdzSay(pr, 'Scurvy has lifted', '#8fd06b'); }
     if(d.scv) d.scv = d.vit <= .02 ? 2 : 1;
-    { const mh = pHp(pr.pcls) - (d.scv===2 ? 6 : d.scv ? 3 : 0) - (pr.thin > T ? 6 : 0); if(pr.maxHp !== mh){ pr.maxHp = mh; if(pr.hp > mh) pr.hp = mh; } }
-    if(d.scv===2 && !jump){ d.scvT += s; if(d.scvT >= 25){ d.scvT = 0; pr.inv = 0; partnerHurt(pr, 1, null); } /* severe scurvy can take it down */ } else d.scvT = 0;
+    if(pr.fr > 0 && pr.belly >= FR.fedAt && pr.thirst > 0 && !(d.cold > T) && !(d.pox > T) && !d.scv) pr.fr = Math.max(0, pr.fr - dt/FR.fadeS*(fire ? FR.fireK : 1)*(1 + .5*inn));
+    pFrSet(pr, false);
+    if(d.scv===2 && !jump){ d.scvT += s; if(d.scvT >= 25){ d.scvT = 0; pFrail(pr, 1); } /* severe scurvy can take it down */ } else d.scvT = 0;
     /* diabetes, as for the player (a Bear needs three times the sugar) */
     d.sug = Math.max(0, d.sug - dt*DZ.sugDecay);
     if(!d.dia && d.sug >= DZ.diaAt*(bear ? DZ.diaBear : 1)){ d.dia = 1; d.diaOk = 0; pdzSay(pr, 'Diabetes: too many sweets', '#e9c07a'); pdzNote(i, pr, ' has diabetes', 'les:pdz:dia', 'Your partner has diabetes: it has been fed too many sweets too fast. It thirsts half again as fast and is a little slower. It clears when its sugar stays low for two days: feed it meat, bread, vegetables and stews, not jam, cordial or trail mix. Bears do not get it, normally.'); }
@@ -7438,8 +7466,8 @@
     pr.belly = Math.max(jump ? Math.min(1, pr.belly) : 0, pr.belly - WD.hungerRate*dw*k*bear*tor*partnerAccHunger(pr));
     pr.thirst = Math.max(jump ? Math.min(1, pr.thirst) : 0, pr.thirst - WD.thirstRate*dw*k*bear*tor*(1 + .4*desert)*(pr.dz && pr.dz.dia ? 1.5 : 1));
     if(!jump && wd.rain > .3 && onMain(pr) && !rainCover(pr.x, pr.y)) pr.thirst = Math.min(WD.thirst, pr.thirst + .3*s);
-    if(pr.sleep){ pr.starveT = 0; pr.parch = 0; } else if(pr.belly <= 0){ pr.starveT += dw; if(pr.starveT >= WD.starveEvery){ pr.starveT = 0; pr.inv = 0; partnerHurt(pr, 1, null); } } else pr.starveT = 0;
-    if(pr.thirst <= 0){ pr.parch += dw; if(pr.parch >= WD.parchEvery){ pr.parch = 0; pr.inv = 0; partnerHurt(pr, 1, null); } /* no floor: unlike you, a partner can die of thirst (a plan decision) */ } else pr.parch = 0;
+    if(pr.sleep){ pr.starveT = 0; pr.parch = 0; } else if(pr.belly <= 0){ pr.starveT += dw; if(pr.starveT >= WD.starveEvery){ pr.starveT = 0; pFrail(pr, 1); } } else pr.starveT = 0;
+    if(pr.thirst <= 0){ pr.parch += dw; if(pr.parch >= WD.parchEvery){ pr.parch = 0; pFrail(pr, 1); } /* no floor: unlike you, a partner can die of thirst (a plan decision) */ } else pr.parch = 0;
     if(!pr.sleep) pdzStep(i, pr, dw, s, jump); /* illness is frozen while it sleeps */
     if(pr.belly < 8 && !pr.hw){ pr.hw = 1; withPlayer(i, ()=>wdNote('Your ' + palName(pr).toLowerCase() + ' is hungry')); } else if(pr.belly >= 12) pr.hw = 0;
     if(pr.thirst < 8 && !pr.tw){ pr.tw = 1; withPlayer(i, ()=>wdNote('Your ' + palName(pr).toLowerCase() + ' is thirsty')); } else if(pr.thirst >= 12) pr.tw = 0;
@@ -7461,6 +7489,13 @@
     const best = pick([pr.kit.inv]) || (out ? null : pick(campStores(hm).filter(b=>b.k!=='denpantry' || denStoreNear(pr, b)).map(b=>b.slots))); /* the den's pantry: it has to be standing at it */
     if(best){ const q = best.L[best.i], id = q.id; q.n--; if(!(q.n > 0)) best.L[best.i] = null; palEat(pr, id); }
   }
+  /* a partner's frailty, as the player's (frSet): starving, thirst, scurvy and raw meat grey out the top of its bar. Worn to nothing it goes down
+     as from a wound, and the frailty is spent, so reviving it works as before */
+  const pFrSet = (pr, kill) => frSet(pr, pHp(pr.pcls) - (pr.thin > wd.t ? 6 : 0), scvLoss(pr.dz) + frN(pr), kill);
+  function pFrail(pr, n){ if(pr.down > 0 || pr.hp <= 0 || pr.sleep || !(n > 0)) return; pr.fr = (pr.fr || 0) + n; pFrSet(pr, true);
+    wdFx({kind:'num', x:pr.x, y:pr.y - 12, text:'-' + n, col:FR.col, t:500}); hudLast = '';
+    if(pr.hp <= 0){ pr.hp = .01; pr.inv = 0; partnerHurt(pr, 1, null); pr.fr = 0; pr.frB = null; } }
+  function pFrMend(pr, n){ const f = Math.max(0, pr.fr || 0), m = Math.min(f, n); if(m > 0){ pr.fr = f - m; pFrSet(pr, false); } return m; }
   function partnerHurt(r, dmg, src){
     if(r.down > 0 || r.hp <= 0 || r.inv > 0 || r.sleep) return; r.inv = 350; /* a sleeper cannot be hurt */
     if(src && r.kit){ for(const [sl, base] of [['armor', .4], ['helmet', 0]]){ const w = r.kit[sl]; if(!w || !ITEMS[w.id]) continue; const pc = ITEMS[w.id].prot == null ? base : ITEMS[w.id].prot, b = Math.min(w.d == null ? 99 : w.d, dmg*pc); dmg -= b; if(w.d != null){ w.d -= b; if(w.d <= 0) r.kit[sl] = null; } } } /* what it wears takes part of an animal's bite, as yours does */
@@ -7526,11 +7561,11 @@
     const pr = wd.partner, p = wd.p, i = wd.cur || 0; if(wd.hand) bagReturnHand(); const carried = pr.carry; pr.carry = [];
     const jobOut = p.action && p.action.cr ? {r:p.action.cr.r, left:p.action.cr.left, tot:p.action.cr.tot, t:p.action.left, ms:p.action.ms} : null; if(p.action && p.action.cr) p.action = null; const jobIn = pr.cj || null; pr.cj = null; /* the batch you were making goes with the animal you leave; the one the other animal was making comes to you */
     const oc = wd.cls[0], nc = pr.pcls, ox = p.x, oy = p.y, nx = pr.x, ny = pr.y;
-    const old = {hp:p.hp, hunger:p.hunger, thirst:p.thirst == null ? WD.thirst : p.thirst, parch:p.parch || 0, starve:wd.starveT || 0, dz:wd.dz, inj:wd.inj};
-    wd.cls = [nc]; p.maxHp = clsHp(); p.hp = Math.max(.1, Math.min(pr.hp, p.maxHp)); p.hunger = pr.belly; p.thirst = pr.thirst; p.parch = pr.parch || 0; wd.starveT = pr.starveT || 0;
+    const old = {fr:p.fr || 0, hp:p.hp, hunger:p.hunger, thirst:p.thirst == null ? WD.thirst : p.thirst, parch:p.parch || 0, starve:wd.starveT || 0, dz:wd.dz, inj:wd.inj};
+    wd.cls = [nc]; p.fr = pr.fr || 0; p.frB = null; p.maxHp = clsHp() - frN(p); p.hp = Math.max(.1, Math.min(pr.hp, p.maxHp)); p.hunger = pr.belly; p.thirst = pr.thirst; p.parch = pr.parch || 0; wd.starveT = pr.starveT || 0;
     wd.dz = dzNew(pdzSave(pr.dz)); wd.inj = pr.inj ? {until:pr.inj.until, kind:pr.inj.kind} : {until:0, kind:''};
     p.x = nx; p.y = ny; p.z = 0; p.vz = 0; p.air = false; p.rollT = 0; p.tw = 0; wdSolid(p);
-    pr.pcls = oc; pr.r = pR(oc); pr.maxHp = pHp(oc); pr.hp = Math.max(.1, Math.min(old.hp, pr.maxHp)); pr.belly = clamp(old.hunger, 0, WD.hunger); pr.thirst = clamp(old.thirst, 0, WD.thirst); pr.parch = old.parch; pr.starveT = old.starve;
+    pr.pcls = oc; pr.r = pR(oc); pr.fr = old.fr; pr.frB = null; pr.maxHp = pHp(oc) - frN(pr); pr.hp = Math.max(.1, Math.min(old.hp, pr.maxHp)); pr.belly = clamp(old.hunger, 0, WD.hunger); pr.thirst = clamp(old.thirst, 0, WD.thirst); pr.parch = old.parch; pr.starveT = old.starve;
     pr.dz = pdzNew(dzSave(old.dz)); pr.inj = old.inj && typeof old.inj==='object' ? {until:old.inj.until, kind:old.inj.kind} : {until:0, kind:''};
     pr.x = ox; pr.y = oy; pr.kx = pr.ky = 0; pr.path = null; pr.pg = null; pr.ft = pr.nt = null; pr.work = 0; pr.tool = null; pr.wpn = null; pr.sw = null; pr.body = null; pr.hw = pr.tw = 0; pr.inv = 0; pr.cd = 0; pr.lastT = wd.t; pr.carry = []; pr.swapAt = wd.t + SWAP.cd; pr.swH = 0; pr.swDone = true; pr.thin = 0; pr.sleep = false;
     if(force==='fall'){ pr.hp = 0; pr.down = 1e9; pr.req = 'home'; pr.rev = 0; wd.p.inv = 1500; wd.dead = 0; } /* hardcore: it lies where it fell until it is treated; a moment's grace for you */
@@ -8669,6 +8704,7 @@
   function wdRespawn(quiet){
     const p = wd.p, h = respawnAt(); wd.dead = 0;
     p.r = moveR(); { const q = safeSpot(h.x, h.y + 20); p.x = q.x; p.y = q.y; } p.z = 0; p.air = false; p.vz = 0; p.rollT = 0; p.rollCd = 0; wdSolid(p); if(!spawnClear(p.x, p.y)){ const q = safeSpot(p.x, p.y); p.x = q.x; p.y = q.y; }
+    p.maxHp += frN(p); p.fr = 0; p.frB = null; /* you wake without the frailty that wore you down */
     const dF = p.dF == null ? 1 : p.dF, scvDeath = !!p.dScv, wv = wakeVals(p, p.maxHp); p.dF = null; p.dScv = false;
     p.hp = p.maxHp; p.hunger = wv.hunger; p.thirst = wv.thirst; p.parch = 0; p.inv = 3000; p.swingT = 0; p.combo = 0; p.comboT = 0; p.fishT = 0;
     wd.darkT = 0; wd.starveT = 0; wd.warm = CU.warmMax*.7; wd.wet = 0; wd.chillT = 0;
@@ -8689,7 +8725,7 @@
   const PK = ['p','inv','sel','hand','armor','pack','helmet','accessory','rat','rat2','partner','reserve','pwheel','palAsked','darkT','starveT','dead','build','fc','bplan','buildRoom','mouse','chest','chestSel','bagSide','tab','csel','bag','fullNote','beatT','lastI','buildDir','shake','fade','warm','wet','base','mid','socks','shoes','jr','ag','sk','inj','dz','cls','clsAsked','skl','skp','skW','book','hitch','chillT','cuLoad','cuCapV','lastCraft','gold','kc','trading','pauseMenu'];
   function mkBody(x, y, hp, hunger, torch, thirst){ return {action:null, x, y, z:0, vz:0, z0:0, air:false, h:PH, rollT:0, rollCd:0, dx:0, dy:1, r:9, hp, maxHp:WD.hp, hunger, thirst:thirst == null ? WD.thirst : thirst, fx:0, fy:1, inv:0, swingT:0, comboT:0, combo:0, queued:false, sword:null, fishT:0, torch:torch || 0}; }
   function mkKit(sv){ sv = sv || {}; const q = sv.p || {};
-    return {p:mkBody(0, 0, q.hp != null ? q.hp : WD.hp, q.hunger != null ? q.hunger : WD.hunger, q.torch, q.thirst), inv:sv.inv ? sv.inv.map(s=>s ? {...s} : null) : Array(WD.slots).fill(null), sel:0, hand:sv.hand ? {...sv.hand} : null,
+    return {p:Object.assign(mkBody(0, 0, q.hp != null ? q.hp : WD.hp, q.hunger != null ? q.hunger : WD.hunger, q.torch, q.thirst), {fr:q.fr || 0}), inv:sv.inv ? sv.inv.map(s=>s ? {...s} : null) : Array(WD.slots).fill(null), sel:0, hand:sv.hand ? {...sv.hand} : null,
       armor:sv.armor ? {...sv.armor} : null, pack:sv.pack ? {...sv.pack} : null, helmet:sv.helmet ? {...sv.helmet} : null, accessory:sv.accessory || null, rat:sv.rat ? mkRat(sv.rat) : null, rat2:sv.rat2 ? mkRat(sv.rat2) : null, darkT:0, starveT:0, dead:0, build:null, fc:null, bplan:[], mouse:null, chest:null, chestSel:0, bagSide:'bag', tab:'bag', csel:0, bag:false, pauseMenu:false, fullNote:0, beatT:0, lastI:{mx:0, my:0}, buildDir:0, shake:0, fade:null, ...cuKit(sv.cp)}; }
   function ctxStore(){ const s = wd.crew[wd.cur]; if(!s.kit) s.kit = {}; for(const k of PK) s.kit[k] = wd[k]; s.kit.padEl = padEl; s.kit.padHeld = padHeld; s.kit.padNext = padNext; s.kit.pausePage = pausePage; s.kit.setTab = setTab; } /* each seat keeps its own menu focus and button edges */
   function ctxLoad(i){ const s = wd.crew[i]; for(const k of PK) wd[k] = s.kit[k]; padEl = s.kit.padEl || null; padHeld = s.kit.padHeld || {}; padNext = s.kit.padNext || 0; pausePage = s.kit.pausePage || 'main'; setTab = s.kit.setTab || 'sound'; wd.cur = i; optSelect(i); if(cameraRenderSeat===null) cameraSelect(i); }
@@ -8896,7 +8932,7 @@
       else { p.fishT -= dt; if(p.fishT <= 0){ wear(toolFor('fish')); const chum = invCount('fishchum') > 0, bait = !chum && invCount('grub') > 0; if(chum){ invTake('fishchum', 1); wdFx({kind:'num', x:p.x, y:p.y - 16, text:'chum', col:'#b9c28a', t:800}); } else if(bait){ invTake('grub', 1); wdFx({kind:'num', x:p.x, y:p.y - 16, text:'grub bait', col:'#e8d8a0', t:800}); } if(Math.random() < WD.fishOdds + (chum ? .35 : bait ? .25 : 0) + (wd.accessory ? ITEMS[wd.accessory].fishLuck || 0 : 0) + (wd.rain > 0.3 ? 0.12 : 0)){ give('fish', skHas('ot1') ? 2 : 1, p); sfxSplash(true); } else wdNote('Nothing bit'); } } }
     // the belly (Don't Starve: empty means you lose health until you eat)
     p.hunger = wd.creative ? WD.hunger : snailCalm(p) ? p.hunger : Math.max(0, p.hunger - WD.hungerRate*s*mkDrain()*(p.hazy > 0 ? .65 : 1)*(wd.accessory ? ITEMS[wd.accessory].hunger || 1 : 1)*(clsHas('bear') ? (skHas('br1') ? .55 : .7) : 1));
-    if(p.hunger <= 0){ wd.starveT += s; if(wd.starveT >= WD.starveEvery){ wd.starveT = 0; p.inv = 0; wdHurtP(1, 'Starved'); } } else wd.starveT = 0;
+    if(p.hunger <= 0){ wd.starveT += s; if(wd.starveT >= WD.starveEvery){ wd.starveT = 0; wdFrail(1, 'Starved'); } } else wd.starveT = 0;
     wdThirstTick(s); skTick(); invFit();
     if(!wd.clsAsked && wd.cls.length < 1 && !wd.book && !wd.build && bagOk() && !/[?&]wdtest\b/.test(location.search)){ p.clsT = (p.clsT || 0) + s; if(p.clsT > 1.5){ wd.clsAsked = true; wd.palAsked = true; bagOpen('class'); } } /* a first visit opens the class menu */
     if(!wd.partner && !wd.palAsked && wd.clsAsked && !wd.book && !wd.build && bagOk() && (!/[?&]wdtest\b/.test(location.search) || window.__wdAsk)){ p.palT = (p.palT || 0) + s; if(p.palT > 1.5){ wd.palAsked = true; bagOpen('class'); } } /* an old save has no partner: it opens the animals tab once, to pick one (and your own animal, if you never did) */
@@ -11993,13 +12029,13 @@
      each thing is drawn afterwards as a billboard, the same picture the angled camera draws, scaled for its own distance (far to near). Beyond dcap the ground gives way to haze and sky. ---- */
   const OCC_LO = [0, .55, 1]; /* a thing standing in a hollow is drawn lower on the screen by about its depth: the samples follow it down */
   const OCC_S = [[0, 0], [0, -14], [0, -34], [0, -62], [0, -100], [-22, -8], [22, -8], [-22, -40], [22, -40], [-8, 6], [8, 6]]; /* sample points on a billboard, in sprite units from its foot (up is negative) */
-  const NEAR_EYE = .5, FP_FOV = 1.25, FP_DCAP = 290, EYE_AHEAD = 420, EYE_FAR = 1, eyeCvs = []; /* EYE_FAR: how much farther than those the eye sees before the haze; the layer keeps the grain it has at 1 (see eyeCam) */
+  const NEAR_EYE = .5, FP_TV = .5, FP_FOV = 1.25, FP_DCAP = 290, EYE_AHEAD = 420, EYE_FAR = 1, eyeCvs = []; /* EYE_FAR: how much farther than those the eye sees before the haze; the layer keeps the grain it has at 1 (see eyeCam) */
   function eyeCam(p, vp){
     const fp = !!CAM.fp, nr = clamp(CAM.nr || 0, NEAR_MIN, 1); if(!fp && nr <= NEAR_EYE) return null;
-    const w = vp.w, h = vp.h, gm = Math.sqrt(w*h), a = CAM.yaw, fx = -Math.sin(a), fy = -Math.cos(a), gz = (p.z || 0) + (p.vth || 0)*TVS0;
+    const w = vp.w, h = vp.h, gm = Math.sqrt(w*h), a = CAM.yaw, fx = -Math.sin(a), fy = -Math.cos(a), gz = (p.z || 0) + (p.vth || 0)*TVS0*(fp ? FP_TV : 1);
     const base = Math.min(w, h)/WD.view, sc1 = Math.max(base*0.6, Math.min(base, w/190, h/230));
     let th, f, E, cx, cy, dcap;
-    if(fp){ f = .5*gm/Math.tan(FP_FOV/2); th = clamp(CAM.fpP === undefined ? .1 : CAM.fpP, -.5, .8); const hd = p.r*1.35 + 2; E = Math.max(gz + hd, hd*.6); /* the lens's ground is the plain level: down in a hollow the eyes sat below it (E < 0) and the whole view turned inside out (no walls, the floor smeared to the horizon). For now the eyes stay a little above that level, as if peering over the rim */ cx = p.x + fx*p.r*.5; cy = p.y + fy*p.r*.5; dcap = FP_DCAP; } /* the eyes: a little ahead of the body's middle, at its head */
+    if(fp){ f = .5*gm/Math.tan(FP_FOV/2); th = clamp(CAM.fpP === undefined ? .1 : CAM.fpP, -.5, .8); const hd = p.r*1.35 + 2; E = Math.max(gz + hd, hd*.7); /* the lens's ground is the plain level: down in a hollow the eyes sat below it (E < 0) and the whole view turned inside out (no walls, the floor smeared to the horizon). The eyes stay a little above that level, as if peering over the rim (lower, and the faces near eye height go wrong under the flat layer: cam_test, desert hollow); with the ground at its real height (FP_TV) a hollow is half as deep, so they float far less over its floor */ cx = p.x + fx*p.r*.5; cy = p.y + fy*p.r*.5; dcap = FP_DCAP; } /* the eyes: a little ahead of the body's middle, at its head */
     else { const u = (nr - NEAR_EYE)/(1 - NEAR_EYE), e = u*u*(3 - 2*u), fov = .45 + (1.08 - .45)*e; f = .5*gm/Math.tan(fov/2); th = .64 + (.2 - .64)*e; /* from the angled camera's own tilt (about 37 degrees, a long lens) down to 11 degrees over the shoulder (a wide one) */
       const k = sc1*(1.225 + (2.6 - 1.225)*e), phi = th + Math.atan((.2 - .05*e)*h/f), zc = f/k, B = zc/(Math.cos(th) + Math.tan(phi)*Math.sin(th)); /* the animal stays the size the "Close" view shows it at, growing as it comes in, a little below the middle */
       E = Math.max(gz + B*Math.tan(phi), B*Math.tan(phi)*.6); cx = p.x - fx*B; cy = p.y - fy*B; dcap = B + EYE_AHEAD; }
@@ -12041,17 +12077,38 @@
       c.drawImage(src, (Y.W2/2 - hu*Y.sc)*ld, sy0*ld, 2*hu*Y.sc*ld, Math.max(.5, (sy1 - sy0)*ld), X, Yp + yT, Wd, y1 - yT); }
     const fh = Math.max(8, h*.1); if(yF > -fh && yF < h){ const g = c.createLinearGradient(0, Yp + yF*dpr, 0, Yp + (yF + fh)*dpr); g.addColorStop(0, haze); g.addColorStop(1, haze.replace('rgb', 'rgba').replace(')', ',0)')); c.fillStyle = g; c.fillRect(X, Yp + Math.max(0, yF*dpr - 2), Wd, fh*dpr + 2); } /* the far ground fades into the haze */
   }
-  function eyePaws(c, vp, dpr, p, own, t){ /* first person: your own forepaws (or hands) at the bottom of the view, as flat pictures for now */
+  function eyePaws(c, vp, dpr, p, own, t){ /* first person: your own forepaws (or hands) at the bottom of the view, Minecraft style: they bob with the stride and breathe when still, lag a little behind a turn, the right one holds what is selected and swings with every blow, dips when the item changes, and both work at a task */
     if(!p || p.hp <= 0 || p.bur > 0 || ctxGet(own, 'dead') > 0 || ctxGet(own, 'book')) return;
-    let an = 'monkey'; withPlayer(own, ()=>{ an = animalOf(); monkeyStep(p, t); }); const AN = ANLOOK[an] || ANLOOK.monkey, MK = Object.assign({}, MKB, AN.col), hand = an==='monkey';
-    const w = vp.w, h = vp.h, s = Math.min(w, h)/190*Math.min(1.25, AN.fpaw || 1), mv = p._mv || 0, ph = (p.gait || 0)*.27, sw = p.sword && p.sword.dur && p.sword.t < p.sword.dur ? clamp(p.sword.t/p.sword.dur, 0, 1) : -1;
+    let an = 'monkey', hid = null; withPlayer(own, ()=>{ an = animalOf(); monkeyStep(p, t); const sel = wd.build ? null : wd.inv[wd.sel]; hid = p.fishT > 0 ? 'rod' : p.sword && p.sword.t < p.sword.dur + 120 ? (p.sword.id || p.sword.tool) : sel ? sel.id : null; }); if(hid && !ITEMS[hid]) hid = null;
+    const AN = ANLOOK[an] || ANLOOK.monkey, MK = Object.assign({}, MKB, AN.col), hand = an==='monkey', kind = hid ? heldKind(hid) : null;
+    const w = vp.w, h = vp.h, s = Math.min(w, h)/190*Math.min(1.25, AN.fpaw || 1), mv = p._mv || 0, ph = (p.gait || 0)*.27;
+    const F = p._fp || (p._fp = {t, yaw:CAM.yaw, lag:0, id:hid, eq:0}), dt = clamp(t - F.t, 0, .1); F.t = t; /* per body: the turn lag and the change of item, run on the clock of the frames that draw it */
+    let dy = CAM.yaw - F.yaw; dy -= 6.2832*Math.round(dy/6.2832); F.yaw = CAM.yaw; F.lag = clamp((F.lag + dy*w*.35)*Math.exp(-dt*9), -w*.08, w*.08); /* turning: the paws trail behind and catch up */
+    if(F.id !== hid){ F.id = hid; F.eq = 1; } F.eq = Math.max(0, F.eq - dt*4); const eq = Math.sin(Math.min(1, F.eq)*Math.PI*.5); /* a new item: the hand drops away and comes back up with it */
+    const sw = p.sword && p.sword.dur && p.sword.t < p.sword.dur ? clamp(p.sword.t/p.sword.dur, 0, 1) : -1, bt = p.bite && p.bite.dur && p.bite.t < p.bite.dur ? Math.sin(Math.PI*clamp(p.bite.t/p.bite.dur, 0, 1)) : 0, punch = !!(p.bite && p.bite.punch);
+    const work = p.action && !(p.rollT > 0) ? Math.sin(t*11) : 0, wk = p.action ? 1 : 0, breath = Math.sin(t*1.7)*(1 - mv);
     c.setTransform(dpr, 0, 0, dpr, vp.x*dpr, vp.y*dpr); c.save(); c.beginPath(); c.rect(0, 0, w, h); c.clip();
-    for(const sd of [-1, 1]){ const step = Math.sin(ph + (sd > 0 ? Math.PI : 0))*mv, hit = sd > 0 && sw >= 0 ? Math.sin(Math.PI*sw) : 0;
-      const x = w/2 + sd*(w*.3 - hit*w*.2) + step*4*s, y = h - 22*s - step*7*s - hit*h*.2 + (p.rollT > 0 ? 40*s : 0), r = -sd*(.28 + hit*.5);
-      c.save(); c.translate(x, y); c.rotate(r); c.scale(s, s); c.lineJoin = 'round'; c.strokeStyle = OL; c.lineWidth = 3;
+    const fist = (sd) => { c.fillStyle = hand ? MK.face : MK.fur; c.beginPath(); c.ellipse(0, -2, 17, 15, 0, 0, 6.2832); c.fill(); c.stroke(); /* a paw closed round a grip: the knuckles over it */
+      for(let i = 0; i < 4; i++){ c.beginPath(); c.ellipse(-12 + i*8, -11, 4.6, 5.6, 0, 0, 6.2832); c.fill(); c.stroke(); }
+      if(hand){ c.beginPath(); c.ellipse(-sd*14, -4, 4.5, 8, sd*1.1, 0, 6.2832); c.fill(); c.stroke(); } };
+    for(const sd of [-1, 1]){ const R = sd > 0, step = Math.sin(ph + (R ? Math.PI : 0))*mv, bobY = Math.abs(Math.cos(ph))*mv*6 + breath*2.2;
+      let x = w/2 + sd*w*.3 + step*4*s + F.lag, y = h - 22*s - step*7*s + bobY*s + (p.rollT > 0 ? 40*s : 0), r = -sd*.28, k = 1;
+      if(R && sw >= 0){ /* the blow: up and back, then across and down toward the middle, then home */
+        const e = sw < .22 ? sw/.22 : sw < .55 ? 1 - (sw - .22)/.33 : 0, a = sw < .22 ? 0 : sw < .55 ? (sw - .22)/.33 : 1 - (sw - .55)/.45, ea = a*a*(3 - 2*a);
+        r += .35*e - .7*ea; x -= w*.2*ea; y += -16*s*e + h*.13*ea; }
+      if(bt){ if(punch){ if(R){ x -= w*.12*bt; y -= h*.1*bt; k = 1 - .3*bt; r += .2*bt; } } else { x -= sd*w*.04*bt; y += 10*s*bt; } } /* a punch jabs the right paw at the middle; a bite pulls both aside as the head lunges */
+      if(wk){ y += (R ? work : -work)*5*s; r += (R ? work : -work)*.08; } /* at work: the paws go at it in turn */
+      if(R && eq > 0) y += eq*h*.3;
+      c.save(); c.translate(x, y); c.rotate(r); c.scale(s*k, s*k); c.lineJoin = 'round'; c.strokeStyle = OL; c.lineWidth = 3;
       c.fillStyle = MK.fur; c.beginPath(); c.moveTo(-15, 120); c.lineTo(-17, 10); c.quadraticCurveTo(0, -4, 17, 10); c.lineTo(15, 120); c.closePath(); c.fill(); c.stroke(); /* the forearm, from below the screen */
       c.fillStyle = 'rgba(0,0,0,.14)'; c.fillRect(sd*6 - 4, 14, 8, 100);
-      if(hand){ c.fillStyle = MK.face; c.beginPath(); c.ellipse(0, -2, 17, 15, 0, 0, 6.2832); c.fill(); c.stroke(); /* a monkey has hands: a palm and four fingers */
+      const tor = !R && p.torch > 0; /* a lit torch goes in the other paw */
+      if(R && bt && punch && !hid) fist(sd);
+      else if(R && hid){ if(kind){ c.save(); c.rotate(-Math.PI/2 - .2); c.scale(3, 3); c.translate(1, 0); drawHeld(c, hid, kind); c.restore(); fist(sd); } /* a tool stands up out of the fist */
+        else { fist(sd); try{ c.drawImage(itemIcon(hid), -17, -50, 34, 34); }catch(e){} } } /* anything else is held up in front of it */
+      else if(tor){ c.lineCap = 'round'; c.strokeStyle = OL; c.lineWidth = 9; c.beginPath(); c.moveTo(4, 6); c.lineTo(10, -52); c.stroke(); c.strokeStyle = MK.wood; c.lineWidth = 6; c.stroke();
+        const fl = 1 + Math.sin(t*23)*.08 + Math.sin(t*37)*.05; c.fillStyle = '#f0a43a'; c.beginPath(); c.ellipse(10.5, -62, 8*fl, 13*fl, 0, 0, 6.2832); c.fill(); c.fillStyle = '#ffe08a'; c.beginPath(); c.ellipse(10.5, -59, 4*fl, 7*fl, 0, 0, 6.2832); c.fill(); c.lineWidth = 3; c.strokeStyle = OL; fist(sd); }
+      else if(hand){ c.fillStyle = MK.face; c.beginPath(); c.ellipse(0, -2, 17, 15, 0, 0, 6.2832); c.fill(); c.stroke(); /* a monkey has hands: a palm and four fingers */
         for(let i = 0; i < 4; i++){ const fx = -12 + i*8; c.beginPath(); c.ellipse(fx, -17 - (i===1 || i===2 ? 3 : 0), 3.6, 8, 0, 0, 6.2832); c.fill(); c.stroke(); }
         c.beginPath(); c.ellipse(-sd*17, 2, 4, 8, sd*.8, 0, 6.2832); c.fill(); c.stroke(); }
       else { c.fillStyle = MK.fur; c.beginPath(); c.ellipse(0, -2, 18, 15, 0, 0, 6.2832); c.fill(); c.stroke(); /* a paw: toes, and the pads shown */
@@ -12090,7 +12147,7 @@
   function drawPlayerView(c, vp, vk, dpr, t, dt){ /* one player's view of the world: their own camera, their own scene (the surface or the caves) */
     let w = vp.w, h = vp.h; const own = vp.i, act = activeIdx(), p = bodyOf(own), under = inUnder(p), ench = inEnch(p), den = inDen(p), mine = inMine(p), scn = sceneOf(p), mates = act.map(bodyOf).filter(q=>sceneOf(q)===scn); wd.fb = mates; /* who shares this view's scene */
     const camV = scn===0 && !inRat(p) && !inGate(p); KY = CAM.angle && camV ? ANG_KY : 1; ZK = !camV ? 1 : CAM.angle ? ANG_HV/ANG_KY : 0; ZL = ZK; bbSq = KY; bbStk.length = 0; /* this view's camera: angled (tilted to look north), straight down (what stands shows no side at all), or the old oblique look of the caves and rooms */
-    const EY = camV && CAM.angle && !CAM.sw && !ctxGet(own, 'fc') ? eyeCam(p, vp) : null, EB = []; /* the eye camera (first person, or the angled camera brought all the way in): see eyeCam */
+    const EY = camV && CAM.angle && !CAM.sw && !ctxGet(own, 'fc') ? eyeCam(p, vp) : null, EB = []; if(EY && EY.fp) TVS *= FP_TV; /* first person: the ground at its real height (TVS0 doubles it so a ledge reads from above), so the eyes stand as high over it as the animal is tall (drawView puts TVS back) */ /* the eye camera (first person, or the angled camera brought all the way in): see eyeCam */
     const wq = EY ? {b:0, vs:1} : camV ? camWarp() : null, c0 = c, vp0 = vp, dpr0 = dpr; let W2 = 0, ypv = 0; /* the angled camera's perspective (see warpBlit) */
     const yw0 = camV && !CAM.angle && !wq ? CAM.yaw : 0, yq0 = yw0/(Math.PI/2), yqi = Math.round(yq0), yex = Math.abs(yq0 - yqi) < 1e-6, yqm = ((yqi % 4) + 4) % 4; let YQ = null; /* the top-down camera turned: the view is painted into a layer as if facing north, then laid on the screen turned (see yawBlit) */
     if(yw0 && !(yex && yqm===0)){ const cs = yex ? [1, 0, -1, 0][yqm] : Math.cos(yw0), sn = yex ? [0, 1, 0, -1][yqm] : Math.sin(yw0), Lw = Math.abs(cs)*vp.w + Math.abs(sn)*vp.h, Lh = Math.abs(sn)*vp.w + Math.abs(cs)*vp.h;
@@ -12135,8 +12192,8 @@
     if(scn===0 && x0 < DESERT.left + 10){ const a = Math.max(0, x0 - 5), b = Math.min(DESERT.left, x1 + 5);
       if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
       if(y1 > WD.H - WD.RIVER - 10){ c.save(); c.translate(0, WD.H); c.scale(1, -1); waterBody(c, a, b, 0, WD.RIVER, t, -1, 16); c.restore(); } }
-    // Flat farm soil/crops are ground decals, always beneath actors and standing objects.
-    for(const b of kindOf('farmplot'))if(vis(b.x,b.y,30) && !(scn===0 && wd.tr && !trPlain(b.gx, b.gy)))drawPiece(c,b.k,b.x,b.y,b,t);
+    // Flat farm soil, crops and berry gardens are ground decals, always beneath actors and standing objects (a garden was drawn standing up, over the player and over the plots beside it).
+    for(const kd of SOILK) for(const b of kindOf(kd))if(vis(b.x,b.y,30) && !(scn===0 && wd.tr && !trPlain(b.gx, b.gy)))drawPiece(c,b.k,b.x,b.y,b,t);
     if(scn===0 && x0 < DESERT.left){ drawDam(c, t); drawDamSign(c, vis); drawShip(c, t, vis); }
     if(scn===0 && x1 > MEAD.left - 140 && x0 < MEAD.left + 120) drawMeadRiver(c, t, x0, y0, x1, y1);
     if(scn===0) cuDrawGround(c, vis, t);
@@ -12150,7 +12207,7 @@
       L.push(e); }); /* standing just behind higher ground: shown whole, in front of its edge, rather than cut off by it */
     for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push(trEnt({y:f.y, f, top:20}, f.x, f.y));
     for(const b of wd.benches) if(vis(b.x,b.y,180)) L.push(trEnt({y:b.y, bench:b, top:20}, b.x, b.y));
-    buildsRect(x0 - 180, y0 - 180, x1 + 180, y1 + 180, b=>{ if(RT && !vis(b.x, b.y, 60)) return; if(b.k!=='farmplot'){ const e = {y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)}; if(TL){ e.lift = trH(b.x, b.y, true); e.clip = trCovV(b.x, b.y, e.lift, 14); } L.push(e); } else if(TL && !trPlain(b.gx, b.gy)) L.push(trEnt({y:b.gy*GRID + .01, plot:b}, b.x, b.y)); });
+    buildsRect(x0 - 180, y0 - 180, x1 + 180, y1 + 180, b=>{ if(RT && !vis(b.x, b.y, 60)) return; if(!SOILK.includes(b.k)){ const e = {y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)}; if(TL){ e.lift = trH(b.x, b.y, true); e.clip = trCovV(b.x, b.y, e.lift, 14); } L.push(e); } else if(TL && !trPlain(b.gx, b.gy)) L.push(trEnt({y:b.gy*GRID + .01, plot:b, top:0}, b.x, b.y)); }); /* top 0: a plot on a hill is under the feet of whoever stands on it */
     for(const f of wd.upFl.values()) if(vis(f.gx*GRID + 10, f.gy*GRID + 10, 180)) { const e = {y:f.gy*GRID + f.l*0.02 - 0.01, slab:f, top:f.l*LH}; if(TL){ e.lift = trH(f.gx*GRID + 10, f.gy*GRID + 10, true); e.clip = trCovV(f.gx*GRID + 10, f.gy*GRID + 10, e.lift, 14); } L.push(e); }
     if(TL){ const ga = Math.floor(x0/GRID) - 1, gb = Math.floor(x1/GRID) + 1, ha = Math.floor(y0/GRID) - 1, hb = Math.floor(y1/GRID) + 1; /* floors laid on a hill, a slope, a hole or a shore rise and sink with the ground */
       for(let cx = ga >> 2; cx <= gb >> 2; cx++) for(let cy = ha >> 2; cy <= hb >> 2; cy++){ const q = wd.fk.get(bkKey(cx, cy)); if(!q) continue;
@@ -12487,15 +12544,15 @@
     $('wdOverlay').classList.toggle('wd-booking', !!wd.book); /* the book takes the whole screen: the status text steps aside */
     const p = wd.p, hint = hintFor(!!activePad());
     const region=(wd.cur>0 || wd.split ? 'P'+(wd.cur+1)+' · ' : '')+regionOf(p);
-    const gl = wd.split ? null : goalWatch(); const key = [gl ? gl.title : '-', region,Math.ceil(p.hp), Math.ceil(p.hunger), Math.ceil(p.thirst), Math.floor(wd.t/WD.day), cuSeasonLabel(), wd.raidDone, wd.rainOn ? 1 : 0, wd.rat ? ratTxt() : '-', wd.partner ? Math.ceil(wd.partner.hp) + ':' + (wd.partner.down > 0 ? 1 : 0) + wd.partner.req + ':' + Math.ceil(wd.partner.belly) + ':' + Math.ceil(wd.partner.thirst) : '-', wd.sel, wd.inv.map(s=>s ? s.id + s.n + (s.d ? (ITEMS[s.id].shelf ? Math.round(s.d*40) : s.d) : '') : '').join(','), hint].join('|');
+    const gl = wd.split ? null : goalWatch(); const key = [gl ? gl.title : '-', region,Math.ceil(p.hp), p.maxHp, p.frB || 0, Math.ceil(p.hunger), Math.ceil(p.thirst), Math.floor(wd.t/WD.day), cuSeasonLabel(), wd.raidDone, wd.rainOn ? 1 : 0, wd.rat ? ratTxt() : '-', wd.partner ? Math.ceil(wd.partner.hp) + ':' + frN(wd.partner) + ':' + (wd.partner.down > 0 ? 1 : 0) + wd.partner.req + ':' + Math.ceil(wd.partner.belly) + ':' + Math.ceil(wd.partner.thirst) : '-', wd.sel, wd.inv.map(s=>s ? s.id + s.n + (s.d ? (ITEMS[s.id].shelf ? Math.round(s.d*40) : s.d) : '') : '').join(','), hint].join('|');
     if(key!==hudLast){ hudLast = key; { const ge = $('wdGoal'); ge.textContent = gl ? 'Goal: ' + gl.title : ''; ge.style.display = gl ? '' : 'none'; } $('wdRegion').textContent=region; $('wdRegionP1').textContent=region;
-      $('wdHp').innerHTML = Math.max(0, Math.ceil(p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small>`;
+      $('wdHp').innerHTML = Math.max(0, Math.ceil(p.hp)) + `<small style="font-size:.5em;color:var(--bone-dim)">/${p.maxHp}</small>`; $('wdHpBar').innerHTML = hpBar(p);
       $('wdBelly').innerHTML = Math.ceil(p.hunger) + `<small style="font-size:.5em;color:var(--bone-dim)">/${WD.hunger}</small>`;
       $('wdBellyBox').classList.toggle('low', p.hunger < 6);
       $('wdThirst').innerHTML = Math.ceil(p.thirst) + `<small style="font-size:.5em;color:var(--bone-dim)">/${WD.thirst}</small>`;
       $('wdThirstBox').classList.toggle('low', p.thirst < 6);
       { const rb = $('wdRatBox'); rb.style.display = wd.rat ? '' : 'none'; if(wd.rat){ $('wdRat').textContent = ratTxt(); rb.classList.toggle('low', ratLowQ()); } }
-      { const pb = $('wdPalBox'), pa = wd.partner; pb.style.display = pa ? '' : 'none'; if(pa){ $('wdPalName').textContent = palName(pa).toUpperCase(); $('wdPal').textContent = pa.down > 0 ? 'down' : pa.sleep ? 'asleep \u00b7 ' + sleepDaysLeft(wd.t) + ' d' : Math.ceil(pa.hp) + ' · ' + PREQ_INFO[pa.req].short; pb.classList.toggle('low', pa.down > 0 || pa.hp < pa.maxHp*.35); } const nb = $('wdPalNeedsBox'); nb.style.display = pa ? '' : 'none'; if(pa){ $('wdPalNeeds').textContent = Math.ceil(pa.belly) + ' · ' + Math.ceil(pa.thirst) + palSickText(pa); nb.classList.toggle('low', pa.belly < 8 || pa.thirst < 8); } }
+      { const pb = $('wdPalBox'), pa = wd.partner; pb.style.display = pa ? '' : 'none'; if(pa){ $('wdPalName').textContent = palName(pa).toUpperCase(); $('wdPal').textContent = pa.down > 0 ? 'down' : pa.sleep ? 'asleep \u00b7 ' + sleepDaysLeft(wd.t) + ' d' : Math.ceil(pa.hp) + (frN(pa) ? ' (' + frN(pa) + ' frail)' : '') + ' · ' + PREQ_INFO[pa.req].short; pb.classList.toggle('low', pa.down > 0 || pa.hp < pa.maxHp*.35); } const nb = $('wdPalNeedsBox'); nb.style.display = pa ? '' : 'none'; if(pa){ $('wdPalNeeds').textContent = Math.ceil(pa.belly) + ' · ' + Math.ceil(pa.thirst) + palSickText(pa); nb.classList.toggle('low', pa.belly < 8 || pa.thirst < 8); } }
       { const n = Math.floor(wd.t/WD.day) + 1; $('wdDay').innerHTML = `Day <b>${n}</b> · ${cuSeasonLabel()}`; }
       $('wdBar').innerHTML = wd.inv.slice(0, WD.slots).map((s, i)=>`<div class="wd-slot${i===wd.sel ? ' sel' : ''}" data-i="${i}"><span class="wd-key">${(i+1)%10}</span>${slotHtml(s)}</div>`).join('');
       { const inBar = !!wd.build && !bbSplit(); $('wdHint').innerHTML = inBar ? '' : hint; bbHintTxt = inBar ? hint : ''; } { const bh = $('bbHint'); if(bh) bh.innerHTML = bbHintTxt; } }
@@ -12550,14 +12607,14 @@
     if(ov._sk!==sk){ ov._sk = sk; const st = ov.style; st.setProperty('--v0cx', (hd.bx + hd.bw/2) + 'px'); st.setProperty('--v0b', (H - c0.y - c0.h) + 'px'); st.setProperty('--v0w', hd.bw + 'px'); st.setProperty('--v0sw', hd.sw + 'px'); st.setProperty('--v0fs', hd.fS + 'px'); st.setProperty('--v0fb', hd.fB + 'px'); st.setProperty('--v0fh', hd.fH + 'px'); st.setProperty('--v0fp', hd.fP + 'px'); st.setProperty('--v0pad', (.6*hd.fB) + 'px'); st.setProperty('--v0hb', (5.75*hd.fB) + 'px'); }
     root.style.display = '';
     const parts = vps.filter(vp=>vp.i > 0 && !ctxGet(vp.i, 'bag') && !ctxGet(vp.i, 'book') && !ctxGet(vp.i, 'pauseMenu')).map(vp=>{ const i = vp.i, q = bodyOf(i), inv = ctxGet(i, 'inv'), sel = ctxGet(i, 'sel'), hb = hotbarInfo(i), n = Math.floor(wd.t/WD.day) + 1;
-      return {vp, i, bagLbl:withPlayer(i, ()=>padLbl('bag')), hp:Math.max(0, Math.ceil(q.hp)), maxHp:q.maxHp, belly:Math.ceil(q.hunger), thirst:Math.ceil(q.thirst == null ? WD.thirst : q.thirst), dead:ctxGet(i, 'dead') > 0, meter:meterOf(i), region:'P' + (i + 1) + ' · ' + regionOf(q), hint:withPlayer(i, ()=>hintFor(true)), sel, hb,
+      return {vp, i, bagLbl:withPlayer(i, ()=>padLbl('bag')), hp:Math.max(0, Math.ceil(q.hp)), maxHp:q.maxHp, bar:hpBar(q), belly:Math.ceil(q.hunger), thirst:Math.ceil(q.thirst == null ? WD.thirst : q.thirst), dead:ctxGet(i, 'dead') > 0, meter:meterOf(i), region:'P' + (i + 1) + ' · ' + regionOf(q), hint:withPlayer(i, ()=>hintFor(true)), sel, hb,
         day:`Day <b>${n}</b> · ${cuSeasonLabel()}`,
         slots:inv.map(s=>s ? s.id + s.n + (s.d ? (ITEMS[s.id].shelf ? Math.round(s.d*40) : s.d) : '') : '').join(','), inv}; });
-    const key = parts.map(o=>{ const c = o.vp.cell, hd = o.vp.hud, hb = o.hb; return [c.x, c.y, c.w, c.h, hd.fS, hd.fB, hd.fH, hd.sw, hd.bh, hd.bx, hd.bw, o.i, o.hp, o.maxHp, o.belly, o.thirst, hb.rat, hb.pal, hb.palN, meterKey(o.meter), o.dead ? 1 : 0, o.region, o.hint, o.sel, o.slots, hb.label, hb.use, hb.useOff ? 1 : 0, hb.cookOff ? 1 : 0, hb.dropOff ? 1 : 0, hb.bagOff ? 1 : 0, o.day, o.bagLbl].join('|'); }).join('||');
+    const key = parts.map(o=>{ const c = o.vp.cell, hd = o.vp.hud, hb = o.hb; return [c.x, c.y, c.w, c.h, hd.fS, hd.fB, hd.fH, hd.sw, hd.bh, hd.bx, hd.bw, o.i, o.hp, o.maxHp, o.bar, o.belly, o.thirst, hb.rat, hb.pal, hb.palN, meterKey(o.meter), o.dead ? 1 : 0, o.region, o.hint, o.sel, o.slots, hb.label, hb.use, hb.useOff ? 1 : 0, hb.cookOff ? 1 : 0, hb.dropOff ? 1 : 0, hb.bagOff ? 1 : 0, o.day, o.bagLbl].join('|'); }).join('||');
     if(key===root._key) return; root._key = key;
     root.innerHTML = parts.map(o=>{ const c = o.vp.cell, hd = o.vp.hud, col = PCOL[o.i], hb = o.hb, small = t=>`<small style="font-size:.5em;color:var(--bone-dim)">${t}</small>`, btn = (t, off)=>`<button${off ? ' disabled' : ''}>${t}</button>`;
       return `<div class="wd-vp${o.dead ? ' dead' : ''}" style="left:${c.x}px;top:${c.y}px;width:${c.w}px;height:${c.h}px">`
-        + `<div class="vp-side${hd.right ? ' r' : ''}" style="width:${hd.sw}px;height:${hd.full ? c.h - hd.bh : c.h}px;font-size:${hd.fS}px"><div class="uf-stats" style="border-left:.3em solid ${col}"><div class="uf-hp"><span>HP</span> <b>${o.hp}</b>${small('/' + o.maxHp)}</div>`
+        + `<div class="vp-side${hd.right ? ' r' : ''}" style="width:${hd.sw}px;height:${hd.full ? c.h - hd.bh : c.h}px;font-size:${hd.fS}px"><div class="uf-stats" style="border-left:.3em solid ${col}"><div class="uf-hp"><span>HP</span> <b>${o.hp}</b>${small('/' + o.maxHp)}${o.bar}</div>`
         + `<div class="wd-belly${o.belly < 6 ? ' low' : ''}"><span>BELLY</span> <b>${o.belly}</b>${small('/' + WD.hunger)}</div>`
         + `<div class="wd-belly wd-thirst${o.thirst < 6 ? ' low' : ''}"><span>THIRST</span> <b>${o.thirst}</b>${small('/' + WD.thirst)}</div>`
         + (hb.rat != null ? `<div class="wd-belly${hb.ratLow ? ' low' : ''}"><span>RAT</span> <b>${hb.rat}</b></div>` : '')
@@ -12992,7 +13049,7 @@
     bagStorageRender();
     accessoryRender(false);
     const s = bagSelected(), I = s && ITEMS[s.id], fire = !!nearFire(WD.fireNear, true);
-    const info = !s ? 'Empty' : I.name + (I.dur ? ` (${s.d} of ${I.dur} uses left)\n${I.desc}` : ' ×' + s.n) + (I.shelf ? ' · ' + frHead(s) : '') + (I.food ? `\nFood ${I.food}` + (I.heal ? `, heals ${I.heal}` : '') + (I.quench ? `, quenches ${I.quench}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.shelf ? (I.food ? ' · ' : '\n') + frLeft(s, wd.bagSide==='chest' && coolStore(wd.chest)) : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a lit fire') : '') + (I.light ? `\nLight it to see for ${WD.torch} seconds` : '') + (I.desc && !I.dur ? '\n' + I.desc : '') + (I.fuel ? '\nFuel: +' + I.fuel + ' seconds' : '');
+    const info = !s ? 'Empty' : I.name + (I.dur ? ` (${s.d} of ${I.dur} uses left)\n${I.desc}` : ' ×' + s.n) + (I.shelf ? ' · ' + frHead(s) : '') + (I.food ? `\nFood ${I.food}` + (I.heal ? `, eases ${I.heal} frailty` : '') + (I.quench ? `, quenches ${I.quench}` : '') + (I.hurt ? `, hurts ${I.hurt}` : '') : '') + (I.shelf ? (I.food ? ' · ' : '\n') + frLeft(s, wd.bagSide==='chest' && coolStore(wd.chest)) : '') + (I.cook ? (fire ? '\nCook it here at the fire' : '\nCook it at a lit fire') : '') + (I.light ? `\nLight it to see for ${WD.torch} seconds` : '') + (I.desc && !I.dur ? '\n' + I.desc : '') + (I.fuel ? '\nFuel: +' + I.fuel + ' seconds' : '');
     $('wdBagInfo').textContent = (wd.bagSide==='chest' ? 'Chest: ' : 'Bag: ') + info; bnRender();
     $('wdEat').disabled = !(I && (I.food || (I.medical && (I.root ? dzNeedsSalve() : (wd.p.hp < wd.p.maxHp || dzNeedsSalve())))));
     $('wdEat').textContent = (activePad() ? 'RT · ' : '') + (I && I.medical ? 'Heal' : 'Eat');
@@ -13073,7 +13130,7 @@
       if(gk!==last){ last = gk; html += CF.by==='type' ? `<div class="wd-grp">${CF_TYPES[gk]}</div>` : (()=>{ const ok = stationOk(r); return `<div class="wd-grp">${GROUPS[r.at]}${r.at==='hand' ? '' : ok ? ' · <span style="color:#e0b54a">here</span>' : r.at==='still' && nearStation('still') ? ' · <span style="color:#ee5a75">cold: light a fire beside it</span>' : ' · none near'}</div>`; })(); }
       if(icons){ html += `<button data-i="${i}" class="ic${canCraft(r) ? '' : ' off'}" title="${recName(r).replace(/"/g, '')}" aria-label="${recName(r).replace(/"/g, '')}"${canCraft(r) ? '' : ' aria-disabled="true"'}><img alt="" src="${iconSrc(r.id)}">${r.n > 1 ? `<i>×${r.n}</i>` : ''}</button>`; return; }
       const cost = recCostHtml(r);
-      const I = ITEMS[r.id], gain = I && I.food ? ` · <em>food ${I.food}${I.heal ? ', heals ' + I.heal : ''}</em>` : '';
+      const I = ITEMS[r.id], gain = I && I.food ? ` · <em>food ${I.food}${I.heal ? ', eases ' + I.heal + ' frailty' : ''}</em>` : '';
       html += `<button data-i="${i}"${canCraft(r) ? '' : ' class="off" aria-disabled="true"'}><img alt="" src="${iconSrc(r.id)}"><span>${recName(r)}${r.auto && wd.cu.den && wd.cu.den.sr===r.auto ? ' · SELECTED' : ''}${r.n ? ' ×' + r.n : ''}<small>${cost}${gain}${r.at==='still' ? ' · <em>needs a lit fire beside it</em>' : ''}</small></span></button>`; });
     L.classList.toggle('icons', icons); cfBar(list, keys, tab);
     L.innerHTML = html; recraftRender(); if(craftArm >= 0){ const ab = L.querySelector('button[data-i="' + craftArm + '"]'); if(ab) ab.classList.add('armed'); }
@@ -13265,7 +13322,10 @@
   $('wdCheatSkill').onclick=()=>{wd.skp++;wdSave();hudLast='';wdNote('+1 skill point');};
   $('wdCheatMore').onclick=()=>{cheatMore=!cheatMore;cheatRender();};
   $('wdCheatToggle').onclick=()=>{wd.creative=!wd.creative;wdSave();cheatRender();};
-  $('wdCheatHeal').onclick=()=>{wd.p.hp=wd.p.maxHp;wd.p.hunger=WD.hunger;wd.p.thirst=WD.thirst;wdSave();};
+  function hpBar(o){ /* red: health; dark: wounds (a salve heals them); grey: frailty and scurvy (food, tonic and rest) */
+    const body = Math.max(0, o.frB || 0), top = Math.max(1, o.maxHp + body), w = v => (Math.max(0, v)/top*100).toFixed(1) + '%';
+    return `<span class="wd-hpbar"><i style="width:${w(o.hp)}"></i><i class="wd-hpw" style="width:${w(o.maxHp - Math.max(0, o.hp))}"></i><i class="wd-hpf" style="width:${w(body)}"></i></span>`; }
+  $('wdCheatHeal').onclick=()=>{wd.p.fr=0;wd.p.maxHp+=wd.p.frB||0;wd.p.frB=null;wd.p.hp=wd.p.maxHp;wd.p.hunger=WD.hunger;wd.p.thirst=WD.thirst;wdSave();};
   $('wdCheatAmount').onclick=()=>{cheatStack=!cheatStack;$('wdCheatAmount').textContent='Spawn amount: '+(cheatStack ? 'full stack' : 'one');cheatRender();};
   $('wdCheatKit').onclick=()=>{for(const id of ['seasonedtimber','chest','supplychest','trailsign','table','chair','bed','shelf','lamp','garden','farmplot','carrotseed','wheatseed','wateringcan','plank'])cheatSpawn(id,20);};
   $('wdCheatTools').onclick=()=>{for(const id of ['hatchet','pickaxe','shovel','rod','spear','torch','salve','stew'])cheatSpawn(id,1);};
