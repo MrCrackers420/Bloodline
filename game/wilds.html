@@ -710,7 +710,7 @@
   function cameraMenuToggle(){ withPlayer(cameraMenuSeat(), ()=>camToggle(true)); camLabel(); }
   let RT = false, RTIN = false, RCS = 1, RSN = 0, UX = 0, UY = -1, gA = 1, gB = 0, gC = 0, gD = 1; /* RT: this view is the angled camera turned off north (it turns all the way round). RCS, RSN: the cosine and sine of that turn; UX, UY: the world direction that shows straight up on the screen; gA..gD: the world-to-screen matrix of the view (with gEx, gEy) */
   const vDep = (x, y) => RSN*x + RCS*y; /* how far into the view a point lies (the depth the turned view sorts by) */
-  let YAW = 0, YAWL = 0, SHR = 0, YANC = null, VXF = null; const ystk = [], shstk = []; /* YAW: this view's turn; YAWL: the turn still to undo here (0 inside an upright billboard); YANC: what the words being drawn belong to; VXF: world to screen for the overlays of a turned view; SHR: the eye camera's perspective lean at a billboard (what lies further off slides toward the middle of the view, by SHR per unit of depth): it is undone with the turn wherever a thing is stood upright (0 inside one) */
+  let YAW = 0, YAWL = 0, SHR = 0, GSQ = 1, PFACE = 0, YANC = null, VXF = null; const ystk = [], shstk = []; /* YAW: this view's turn; YAWL: the turn still to undo here (0 inside an upright billboard); YANC: what the words being drawn belong to; VXF: world to screen for the overlays of a turned view; SHR: the eye camera's perspective lean at a billboard (what lies further off slides toward the middle of the view, by SHR per unit of depth): it is undone with the turn wherever a thing is stood upright (0 inside one); GSQ: how much of what lies flat on the ground (shadows, a table's top, a chest's lid, a ring of stones) shows, against the angled camera's own tilt: 1 there and everywhere else, down to .15 when the eye camera sees a thing from low down (eye level), so props are drawn as seen from the side; PFACE: which side of a built piece the eye camera sees (every piece is built facing south): 0 its front, 1 its east side, 2 its back, 3 its west side; 0 everywhere else */
   let depthMode = 'full'; try{ if(localStorage.getItem('bloodline_depth')==='off') depthMode = 'off'; }catch(e){} /* the 3D look: lean, sun shadows, shaded sides, haze */
   try{ bareGfx = localStorage.getItem('bloodline_bare')==='1'; }catch(e){}
   let fxMode = 'auto';
@@ -815,9 +815,13 @@
   }
   // Shadow offsets use world axes, never the texture's local rotation.
   function groundShadow(c,x,y,rx,ry,dx=1,dy=2,angle=0){
-    c.save();c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+dx,y+dy,rx,ry,angle,0,Math.PI*2);c.fill();c.restore();
+    c.save();c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+dx,y+dy*GSQ,rx,ry*GSQ,angle,0,Math.PI*2);c.fill();c.restore();
   }
   function toonStone(c, x, y, rx, ry, base){
+    if(GSQ < .99){ const rb = ry*GSQ, rt = ry*(1.1 - .1*GSQ), yb = y + ry - rb; /* low down: a dome on its flat foot, as tall as it is, its foot a thin ellipse */
+      c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 1, yb + 1.5*GSQ, rx, rb + .4, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = base; c.strokeStyle = 'rgba(14,10,8,.85)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, yb, rx, rt + ry - ry, 0, Math.PI, 0); c.ellipse(x, yb, rx, rb, 0, 0, Math.PI); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = 'rgba(255,240,215,.22)'; c.beginPath(); c.ellipse(x - rx*.3, yb - rt*.62, rx*.38, rt*.2, -.2, 0, Math.PI*2); c.fill(); return; }
     c.fillStyle = 'rgba(0,0,0,.35)'; c.beginPath(); c.ellipse(x + 1, y + 1.5, rx, ry, 0, 0, Math.PI*2); c.fill(); // a flat shadow
     c.fillStyle = base; c.strokeStyle = 'rgba(14,10,8,.85)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y, rx, ry, 0, 0, Math.PI*2); c.fill(); c.stroke();
     c.fillStyle = 'rgba(255,240,215,.22)'; c.beginPath(); c.ellipse(x - rx*.3, y - ry*.35, rx*.38, ry*.25, -.3, 0, Math.PI*2); c.fill(); // one hard highlight
@@ -5857,7 +5861,7 @@
   const mixHex = (a, b, k)=>{ const p = s=>[parseInt(s.slice(1, 3), 16), parseInt(s.slice(3, 5), 16), parseInt(s.slice(5, 7), 16)], A = p(a), B = p(b); return `rgb(${A.map((v, i)=>Math.round(v + (B[i] - v)*k)).join(',')})`; };
   function cuDrawPiece(c, k, x, y, b, t){ c.save(); const r = cuDrawPiece0(c, k, x, y, b, t); c.restore(); return r; }
   function cuDrawPiece0(c, k, x, y, b, t){
-    const O = '#120c09', sh = (rx)=>{ c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 8, rx, 3.4, 0, 0, Math.PI*2); c.fill(); };
+    const O = '#120c09', sh = (rx)=>{ c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 8, rx, 3.4*GSQ, 0, 0, Math.PI*2); c.fill(); };
     c.lineJoin = 'round'; c.lineWidth = 1.1; c.strokeStyle = O;
     if(k==='furnace'){ const r = b && b.run; if(r && r.st==='run' && r.heat > .02){ const g = c.createRadialGradient(x, y, 2, x, y, 38), a = .35*Math.min(1, r.heat + .2); g.addColorStop(0, `rgba(255,170,70,${a})`); g.addColorStop(1, 'rgba(255,120,30,0)'); c.fillStyle = g; c.fillRect(x - 40, y - 40, 80, 80);
         if(r.heat >= .25) for(let i = 0; i < 3; i++){ const ph = (t*.5 + i/3) % 1; c.fillStyle = `rgba(80,76,72,${.35*(1 - ph)})`; c.beginPath(); c.arc(x + Math.sin(t + i*2)*3 + ph*5, y - 18 - ph*26, 3 + ph*5, 0, Math.PI*2); c.fill(); } }
@@ -9962,9 +9966,10 @@
     if(k==='rock') key = n.gone ? 'rg' : 'rk|' + q + '|' + (n.v < 0.5 ? 0 : 1) + '|' + (n.ore || '');
     else if(k==='bone' || k==='flint'){ if(n.gone) return true; key = k==='bone' ? 'bn' : 'fl|' + Math.round(n.v*64); }
     else key = (k==='berry' ? 'by|' : 'hb|') + (ready ? 1 : 0);
+    const gq = Math.round(GSQ*8)/8, g0 = GSQ; if(gq < 1) key += '|e' + gq; GSQ = gq;
     const [ox, oy, bw, bh] = k==='rock' ? [27, 20, 54, 40] : k==='bone' ? [15, 10, 30, 20] : k==='flint' ? [8, 8, 16, 14] : k==='berry' ? [16, 17, 32, 26] : [10, 13, 20, 18]; /* measured: each kind's drawing fits inside these with a pixel or two to spare */
     const e = sprGet(key, ox, oy, bw, bh, g=>drawNode(g, {k, x:0, y:0, r:q, v:k==='rock' ? (n.v < 0.5 ? 0 : 1) : k==='flint' ? Math.round(n.v*64)/64 : 0, ore:n.ore, gone:n.gone, ready:ready ? 0 : 1e12, biome:n.biome}, 0, true));
-    sprPut(c, e, n.x, n.y); return true;
+    GSQ = g0; sprPut(c, e, n.x, n.y); return true;
   }
   function drawGateNode(c, n, t){ /* a sandstone arch half sunk in the dunes; a stair goes down inside it (and a lit doorway up, at the far end) */
     const x = n.x, y = n.y, up = n.k==='dunegateexit', pulse = .5 + .5*Math.sin(t*2 + x);
@@ -10013,23 +10018,26 @@
       c.drawImage(itemIcon(n.k),x-12,y-20,24,24);return;
     }
     if(n.k==='sapling'){ const sw = Math.sin(t*1.3 + x*0.07)*0.8;
-      c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 1, y + 1, 6, 2.2, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = 'rgba(0,0,0,.25)'; c.beginPath(); c.ellipse(x + 1, y + GSQ, 6, 2.2*GSQ, 0, 0, Math.PI*2); c.fill();
       if(!ready){ c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); c.moveTo(x, y); c.lineTo(x, y - 4); c.stroke(); c.strokeStyle = '#6b4a2c'; c.lineWidth = 1.2; c.stroke(); return; }
       c.lineCap = 'round'; for(const [w, col] of [[2.8, OL], [1.4, '#7a5233']]){ c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(x, y); c.lineTo(x + sw, y - 14); c.moveTo(x + sw*0.5, y - 7); c.lineTo(x - 5, y - 11); c.moveTo(x + sw*0.7, y - 10); c.lineTo(x + 5, y - 14); c.stroke(); }
       for(const [lx, ly] of [[-5, -11], [5, -14], [sw, -15]]){ c.fillStyle = OL; c.beginPath(); c.ellipse(x + lx, y + ly, 2.6, 1.7, 0.5, 0, Math.PI*2); c.fill(); c.fillStyle = '#6f9a45'; c.beginPath(); c.ellipse(x + lx, y + ly, 1.9, 1.1, 0.5, 0, Math.PI*2); c.fill(); }
       return; }
     if(n.k==='flint'){ if(n.gone) return; groundShadow(c,x,y,5,2,1,2);
+      if(GSQ < .99){ const hf = .35 + .65*(1 - GSQ), f = n.v*6, m = Math.cos(f) < 0 ? -1 : 1; /* low down: the shard from the side, a dark knapped edge with one bright facet */
+        c.fillStyle = '#3c4048'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.moveTo(x - 4.5*m, y + 1.2); c.lineTo(x - 3*m, y + 1.2 - 2.6*hf); c.lineTo(x - .5*m, y + 1.2 - 4.2*hf); c.lineTo(x + 1.6*m, y + 1.2 - 2.8*hf); c.lineTo(x + 3.2*m, y + 1.2 - 3.4*hf); c.lineTo(x + 4.5*m, y + 1.2); c.closePath(); c.fill(); c.stroke();
+        c.fillStyle = 'rgba(200,215,235,.4)'; c.beginPath(); c.moveTo(x - 2.6*m, y + .6 - 2.2*hf); c.lineTo(x - .5*m, y + .6 - 3.6*hf); c.lineTo(x + .4*m, y + .8 - 1.6*hf); c.closePath(); c.fill(); return; }
       c.save(); c.translate(x, y); c.rotate(n.v*6);
       c.fillStyle = '#4a4f58'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.moveTo(-4, 1); c.lineTo(-1, -3.5); c.lineTo(4, -2); c.lineTo(3, 2.5); c.closePath(); c.fill(); c.stroke();
       c.save();c.clip();c.rotate(-n.v*6);c.fillStyle='rgba(200,215,235,.35)';c.fillRect(-6,-5,12,3);c.restore();c.restore();return; }
     if(n.k==='rock'){ if(n.gone){ for(const [dx, dy] of [[-4, 1], [3, -1], [1, 3]]) toonStone(c, x + dx, y + dy, 2.4, 1.8, '#6b655c'); return; } toonStone(c, x, y, n.r*1.1, n.r*0.8, n.v < 0.5 ? '#6b655c' : '#5f5a54'); toonStone(c, x + n.r*0.7, y + n.r*0.35, n.r*0.45, n.r*0.32, '#77706a');if(n.ore){c.save();c.strokeStyle=METALS[n.ore].col;c.lineWidth=2;for(const [dx,dy] of [[-6,-4],[2,-7],[6,-1]]){c.beginPath();c.moveTo(x+dx-2,y+dy+2);c.lineTo(x+dx+2,y+dy-2);c.stroke();}c.restore();}return; }
     if(n.k==='bone'){ if(n.gone) return;
-      c.fillStyle = '#4a3d2e'; c.strokeStyle = 'rgba(14,10,8,.6)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y + 1, 12, 6, 0, 0, Math.PI*2); c.fill(); c.stroke();
-      for(const [bx, by, a] of [[-4, -1, 0.5], [3, 0, -0.7], [0, 2, 0.1]]){ c.save(); c.translate(x + bx, y + by); c.rotate(a); c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(-5, 0); c.lineTo(5, 0); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.8; c.stroke();
-        c.fillStyle = '#e6dcc4'; for(const ex of [-5, 5]){ c.beginPath(); c.arc(ex, 0, 1.6, 0, Math.PI*2); c.fill(); } c.restore(); }
-      c.fillStyle = '#e6dcc4'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.arc(x + 6, y - 3, 3.2, 0, Math.PI*2); c.fill(); c.stroke(); c.fillStyle = OL; c.fillRect(x + 4.6, y - 3.6, 1.1, 1.1); c.fillRect(x + 6.6, y - 3.6, 1.1, 1.1); return; }
+      c.fillStyle = '#4a3d2e'; c.strokeStyle = 'rgba(14,10,8,.6)'; c.lineWidth = 1; c.beginPath(); c.ellipse(x, y + 1, 12, 6*GSQ, 0, 0, Math.PI*2); c.fill(); c.stroke(); /* the trampled earth they lie on */
+      for(const [bx, by, a] of [[-4, -1, 0.5], [3, 0, -0.7], [0, 2, 0.1]]){ const ex = Math.cos(a)*5, ey = Math.sin(a)*5*GSQ, cx = x + bx, cy = y + 1 + (by - 1)*GSQ - 1.6*(1 - GSQ); c.strokeStyle = OL; c.lineWidth = 3.4; c.beginPath(); c.moveTo(cx - ex, cy - ey); c.lineTo(cx + ex, cy + ey); c.stroke(); c.strokeStyle = '#e6dcc4'; c.lineWidth = 1.8; c.stroke();
+        c.fillStyle = '#e6dcc4'; for(const s of [-1, 1]){ c.beginPath(); c.arc(cx + s*ex, cy + s*ey, 1.6, 0, Math.PI*2); c.fill(); } }
+      const skY = y + 1 + (-4)*GSQ - 2.2*(1 - GSQ); c.fillStyle = '#e6dcc4'; c.strokeStyle = OL; c.lineWidth = 1.2; c.beginPath(); c.arc(x + 6, skY, 3.2, 0, Math.PI*2); c.fill(); c.stroke(); c.fillStyle = OL; c.fillRect(x + 4.6, skY - .6, 1.1, 1.1); c.fillRect(x + 6.6, skY - .6, 1.1, 1.1); return; }
     if(n.k==='berry'){
-      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 2, y + 3, 12, 5, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 2, y + 3*GSQ, 12, 5*GSQ, 0, 0, Math.PI*2); c.fill();
       const lobes = [[0, -5, 8], [-6, -1, 6], [6, -1, 6]];
       c.strokeStyle = OL; c.lineWidth = 2.6; c.beginPath(); for(const [lx, ly, lr] of lobes){ c.moveTo(x + lx + lr, y + ly); c.arc(x + lx, y + ly, lr, 0, Math.PI*2); } c.stroke();
       c.fillStyle = ready ? '#3e6a33' : '#4d5e33'; c.beginPath(); for(const [lx, ly, lr] of lobes){ c.moveTo(x + lx + lr, y + ly); c.arc(x + lx, y + ly, lr, 0, Math.PI*2); } c.fill();
@@ -10104,9 +10112,9 @@
     if(ZK===0 && !CAM.angle){ drawFireTop(c, f, t); return; } /* straight down */
     const x = f.x, y = f.y, k = Math.min(1, f.fuel/90);
     if(!f.pit && !(f.fuel>0)){ drawAsh(c,x,y); return; }
-    if(f.pit){ c.fillStyle = '#2e2926'; c.beginPath(); c.ellipse(x, y, 10, 6, 0, 0, Math.PI*2); c.fill(); for(let i=0;i<9;i++){ const a = i/9*Math.PI*2; toonStone(c, x + Math.cos(a)*12, y + Math.sin(a)*7, 4, 3, '#8a847a'); } if(!(f.fuel > 0)) return; }
-    else for(let i=0;i<7;i++){ const a = i/7*Math.PI*2; toonStone(c, x + Math.cos(a)*10, y + Math.sin(a)*6, 3.2, 2.4, '#6b655c'); }
-    c.save(); c.translate(x, y); for(const a of [0.5, -0.5]){ c.save(); c.rotate(a); c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(-7, -1.8, 14, 3.6); c.strokeRect(-7, -1.8, 14, 3.6); c.restore(); } c.restore();
+    if(f.pit){ c.fillStyle = '#2e2926'; c.beginPath(); c.ellipse(x, y, 10, 6*GSQ, 0, 0, Math.PI*2); c.fill(); for(let i=0;i<9;i++){ const a = i/9*Math.PI*2; toonStone(c, x + Math.cos(a)*12, y + Math.sin(a)*7*GSQ, 4, 3, '#8a847a'); } if(!(f.fuel > 0)) return; }
+    else for(let i=0;i<7;i++){ const a = i/7*Math.PI*2; toonStone(c, x + Math.cos(a)*10, y + Math.sin(a)*6*GSQ, 3.2, 2.4, '#6b655c'); }
+    for(const a of [0.5, -0.5]){ c.save(); c.translate(x, y - 1.8*(1 - GSQ)); c.scale(1, GSQ); c.rotate(a); c.beginPath(); c.rect(-7, -1.8, 14, 3.6); c.restore(); c.fillStyle = '#5a3b22'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fill(); c.stroke(); if(GSQ < .99){ c.fillRect(x - 7*Math.cos(a), y - 1.8*(1 - GSQ), 14*Math.cos(a), 2.6*(1 - GSQ)); } } /* the logs lie flat (low down, each shows its round side) */
     const fl = f.fl, h = 8 + 12*k;
     for(const [col, sc, dx] of [['#c9461f', 1, 0], ['#f39a2c', 0.72, 0.5], ['#ffe08a', 0.42, 0]]){
       const w = 6.5*sc*(0.6 + 0.4*k), hh = h*sc*(0.9 + 0.12*Math.sin(fl*13 + sc*5)), tip = Math.sin(fl*9 + sc*3)*2;
@@ -10126,14 +10134,15 @@
   }
   function drawBench(c, b){
     if(ZK===0 && !CAM.angle){ drawBenchTop(c, b); return; } /* straight down */
+    if(PFACE){ drawBenchFace(c, b); return; } /* the eye camera sees it from the end or from behind */
     const x = b.x, y = b.y;
-    c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(x + 2, y + 5, 16, 5, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(x + 2, y + 5, 16, 5*GSQ, 0, 0, Math.PI*2); c.fill(); const bt = 2.5 + 5.5*GSQ, by = 8 - bt; /* the top: its planks show less the lower it is seen */
     for(const lx of [-11, 9]){ c.fillStyle = '#4a311c'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(x + lx, y - 6, 3, 10); c.strokeRect(x + lx, y - 6, 3, 10); }
-    c.fillStyle = '#9a6c40'; c.strokeStyle = OL; c.lineWidth = 1.8; c.beginPath(); c.rect(x - 15, y - 13, 30, 8); c.fill(); c.stroke();
-    c.strokeStyle = '#7a5233'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(x - 5, y - 13); c.lineTo(x - 5, y - 5); c.moveTo(x + 5, y - 13); c.lineTo(x + 5, y - 5); c.stroke();
-    c.fillStyle = 'rgba(255,240,200,.22)'; c.fillRect(x - 13.5, y - 12, 27, 1.4);
-    c.fillStyle = '#9aa3ad'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.rect(x + 2, y - 17, 8, 4); c.fill(); c.stroke(); /* a saw */
-    c.strokeStyle = '#8a6440'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 10, y - 15); c.lineTo(x - 3, y - 18); c.stroke(); /* a mallet */
+    c.fillStyle = '#9a6c40'; c.strokeStyle = OL; c.lineWidth = 1.8; c.beginPath(); c.rect(x - 15, y - 13 + by, 30, bt); c.fill(); c.stroke();
+    c.strokeStyle = '#7a5233'; c.lineWidth = 0.8; c.beginPath(); c.moveTo(x - 5, y - 13 + by); c.lineTo(x - 5, y - 5); c.moveTo(x + 5, y - 13 + by); c.lineTo(x + 5, y - 5); c.stroke();
+    c.fillStyle = 'rgba(255,240,200,.22)'; c.fillRect(x - 13.5, y - 12 + by, 27, 1.4*GSQ);
+    c.fillStyle = '#9aa3ad'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.rect(x + 2, y - 17 + by*.7, 8, 4); c.fill(); c.stroke(); /* a saw */
+    c.strokeStyle = '#8a6440'; c.lineWidth = 2; c.beginPath(); c.moveTo(x - 10, y - 15 + by); c.lineTo(x - 3, y - 18 + by); c.stroke(); /* a mallet */
   }
   function drawBenchTop(c, b){ /* the workbench from above: its planked top with the saw and mallet lying on it */
     const x = b.x, y = b.y - 5;
@@ -10270,7 +10279,7 @@
     c.fillStyle = 'rgba(255,230,190,.08)'; c.fillRect(x + 1, y + 1, GRID - 2, 1);
   }
   function drawPump(c,x,y){
-    c.save();c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+3,10,4,0,0,Math.PI*2);c.fill();
+    c.save();c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+3,10,4*GSQ,0,0,Math.PI*2);c.fill();
     c.strokeStyle=OL;c.lineWidth=1;c.fillStyle='#73818a';c.fillRect(x-9,y-5,18,9);c.strokeRect(x-9,y-5,18,9);
     c.fillStyle='#bfa05c';c.fillRect(x-5,y-14,10,12);c.strokeRect(x-5,y-14,10,12);
     c.strokeStyle='#c67e54';c.lineWidth=3;c.beginPath();c.moveTo(x,y-14);c.lineTo(x,y-19);c.lineTo(x+8,y-19);c.lineTo(x+8,y-15);c.stroke();
@@ -10279,7 +10288,7 @@
   }
   function drawMetalStation(c,k,x,y,t){
     c.save();c.strokeStyle=OL;c.lineWidth=1.2;
-    c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x,y+4,12,5,0,0,Math.PI*2);c.fill();
+    c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x,y+4,12,5*GSQ,0,0,Math.PI*2);c.fill();
     if(k==='furnace'){c.fillStyle='#7e7569';c.fillRect(x-9,y-17,18,21);c.strokeRect(x-9,y-17,18,21);c.fillStyle='#292321';c.fillRect(x-6,y-8,12,9);c.fillStyle='#cb7838';c.fillRect(x-4,y-5,8,5);c.fillStyle='#e7b05d';c.fillRect(x-2,y-3,4,3);c.strokeStyle='#4c4540';for(let dy=-13;dy<3;dy+=5){c.beginPath();c.moveTo(x-8,y+dy);c.lineTo(x+8,y+dy);c.stroke();}}
     else if(k==='anvil'){c.fillStyle='#5c4c3d';c.fillRect(x-8,y-5,16,10);c.strokeRect(x-8,y-5,16,10);c.fillStyle='#8e9aa2';c.beginPath();c.moveTo(x-12,y-16);c.lineTo(x+13,y-16);c.lineTo(x+7,y-10);c.lineTo(x+3,y-10);c.lineTo(x+4,y-5);c.lineTo(x-5,y-5);c.lineTo(x-3,y-10);c.lineTo(x-10,y-10);c.closePath();c.fill();c.stroke();}
     else{c.fillStyle='#665647';c.fillRect(x-10,y-7,20,11);c.strokeRect(x-10,y-7,20,11);c.fillStyle='#83a6a0';c.beginPath();c.moveTo(x-8,y-18);c.lineTo(x+8,y-18);c.lineTo(x+4,y-7);c.lineTo(x-4,y-7);c.closePath();c.fill();c.stroke();c.strokeStyle='#aeb7ad';c.lineWidth=2;c.beginPath();c.arc(x+8,y-1,4,0,Math.PI*2);c.stroke();}
@@ -10287,7 +10296,7 @@
   }
   function drawStill(c, x, y, t, hot){ /* a copper pot on a brick firebox, a pipe down to a bottle; steam and an ember glow while it is heated */
     c.save(); c.lineJoin = 'round'; c.strokeStyle = OL; c.lineWidth = 1.2;
-    c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 6, 13, 4.5, 0, 0, Math.PI*2); c.fill();
+    c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 6, 13, 4.5*GSQ, 0, 0, Math.PI*2); c.fill();
     c.fillStyle = '#74695d'; c.fillRect(x - 10, y - 3, 20, 9); c.strokeRect(x - 10, y - 3, 20, 9);
     c.fillStyle = hot ? '#e8832f' : '#241d1a'; c.fillRect(x - 5, y + 1, 10, 4);
     if(hot){ c.fillStyle = '#ffd37a'; c.fillRect(x - 3, y + 2, 6, 2); }
@@ -10303,33 +10312,75 @@
       c.globalAlpha = 1; c.lineCap = 'butt'; }
     c.restore();
   }
+  /* ---- built pieces seen from the side or from behind (the eye camera walks round them; PFACE). Each is built facing south; what has no picture of its own here shows its front, or its front mirrored from behind (MIRK) ---- */
+  const MIRK = {table:1, still:1, refiner:1, irrigationpump:1, anvil:1, leanto:1, lamp:1};
+  function drawPieceFace(c, k, x, y, b, t){
+    const l = x - 10, F = PFACE, sd = F & 1, e = F === 1 ? 1 : -1; /* sd: a side; e: +1 seen from the east (its back, north, lies to the right), -1 from the west */
+    if(k==='chair'){ const st = Math.max(2.2, 6*GSQ); c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 8, 8, 3*GSQ, 0, 0, Math.PI*2); c.fill(); c.lineWidth = 1.2; c.strokeStyle = OL;
+      if(sd){ c.fillStyle = '#5a3b22'; for(const lx of [-6, 3]){ c.fillRect(x + lx, y + 1, 3, 8); c.strokeRect(x + lx, y + 1, 3, 8); } /* from the side: the seat edge-on, the back a post rising at the far end */
+        const bx = e > 0 ? x + 4 : x - 7; c.fillStyle = '#8a6038'; c.fillRect(bx, y - 14, 3, 17); c.strokeRect(bx, y - 14, 3, 17);
+        c.fillStyle = '#a37446'; c.fillRect(x - 8, y + 3 - st, 16, st); c.strokeRect(x - 8, y + 3 - st, 16, st); return true; }
+      c.fillStyle = '#5a3b22'; for(const lx of [-6, 3]){ c.fillRect(x + lx, y + 1, 3, 8); c.strokeRect(x + lx, y + 1, 3, 8); } /* from behind: the seat is hidden by the back's boards, which run down to it */
+      c.fillStyle = '#a37446'; c.fillRect(x - 8, y + 3 - st, 16, st); c.strokeRect(x - 8, y + 3 - st, 16, st);
+      c.fillStyle = '#7a5432'; c.fillRect(x - 7, y - 14, 14, 15); c.strokeRect(x - 7, y - 14, 14, 15); c.fillStyle = '#5a3b22'; c.fillRect(x - 6, y - 12, 12, 2); c.fillRect(x - 6, y - 5, 12, 2); return true; } /* the two rails across the back */
+    if(k==='shelf'){ c.fillStyle = 'rgba(0,0,0,.32)'; c.lineWidth = 1.4; c.strokeStyle = OL;
+      if(sd){ c.fillRect(x - 3, y + 6, 10, 4*GSQ + 1); c.fillStyle = '#80502f'; c.fillRect(x - 4, y - 18, 8, 26); c.strokeRect(x - 4, y - 18, 8, 26); /* end on: one side board, the shelves' ends showing through its edge */
+        c.fillStyle = '#5a3a22'; for(const yy of [-9, -1, 6]) c.fillRect(x - 4, y + yy - 1, 8, 2); c.fillStyle = 'rgba(255,240,200,.18)'; c.fillRect(x - 3, y - 17, 6, 1.2); return true; }
+      c.fillRect(l + 2, y - 2, 20, 10 + 2*GSQ); c.fillStyle = '#6e4428'; c.fillRect(l + 1, y - 18, 18, 26); c.strokeRect(l + 1, y - 18, 18, 26); /* from behind: its plank back */
+      c.strokeStyle = '#4a2e1a'; c.lineWidth = .9; c.beginPath(); for(const xx of [5.5, 10, 14.5]){ c.moveTo(l + xx, y - 17); c.lineTo(l + xx, y + 7); } c.stroke(); return true; }
+    if(k==='trailsign'){ const label = Number.isInteger(b.label) ? b.label : 0, colors = ['#d9c9a3', '#82ad60', '#d4b66d', '#dc6e65']; c.fillStyle = '#69462c'; c.fillRect(x - 2, y - 7, 4, 19);
+      if(sd){ c.fillStyle = '#382a20'; c.fillRect(x - 1.6, y - 17, 3.2, 14); c.fillStyle = colors[label]; c.fillRect(x - 1.6, y - 17, 3.2, 1); return true; } /* edge on: a plank's thickness */
+      c.fillStyle = '#382a20'; c.fillRect(x - 16, y - 17, 32, 14); c.strokeStyle = '#5a4532'; c.strokeRect(x - 16, y - 17, 32, 14); c.strokeStyle = '#2a1e16'; c.beginPath(); c.moveTo(x - 15, y - 10); c.lineTo(x + 15, y - 10); c.stroke(); return true; } /* from behind: the bare board, its words on the other side */
+    if(k==='tent'){ c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 9, 15, 5*GSQ, 0, 0, Math.PI*2); c.fill(); c.lineJoin = 'round'; c.lineWidth = 1.4; c.strokeStyle = OL;
+      if(sd){ c.fillStyle = '#8f6b44'; c.beginPath(); c.moveTo(x - 14, y + 8); c.lineTo(x - 11, y - 13); c.lineTo(x + 11, y - 13); c.lineTo(x + 14, y + 8); c.closePath(); c.fill(); c.stroke(); /* from the side: one long slope of hide from the ridge pole to the ground */
+        c.strokeStyle = 'rgba(30,18,10,.5)'; c.lineWidth = .8; c.beginPath(); for(const xx of [-6, 0, 6]){ c.moveTo(x + xx*.85, y - 12); c.lineTo(x + xx*1.05, y + 7); } c.stroke();
+        c.strokeStyle = '#4a301c'; c.lineWidth = 1.6; c.beginPath(); for(const xx of [-11, 11]){ c.moveTo(x + xx, y - 13); c.lineTo(x + xx, y - 17); } c.stroke(); return true; }
+      c.fillStyle = '#7a5a38'; c.beginPath(); c.moveTo(x - 13, y + 8); c.lineTo(x, y - 13); c.lineTo(x + 13, y + 8); c.closePath(); c.fill(); c.stroke(); /* from behind: closed, no door */
+      c.fillStyle = '#a8845a'; c.beginPath(); c.moveTo(x, y - 13); c.lineTo(x - 13, y + 8); c.lineTo(x - 3, y + 8); c.closePath(); c.fill(); c.stroke();
+      c.strokeStyle = '#4a301c'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(x, y - 13); c.lineTo(x, y - 17); c.stroke(); return true; }
+    if(k==='furnace' && F === 2){ c.save(); c.strokeStyle = OL; c.lineWidth = 1.2; c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x, y + 4, 12, 5*GSQ, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = '#7e7569'; c.fillRect(x - 9, y - 17, 18, 21); c.strokeRect(x - 9, y - 17, 18, 21); c.strokeStyle = '#4c4540'; for(let dy = -13; dy < 3; dy += 5){ c.beginPath(); c.moveTo(x - 8, y + dy); c.lineTo(x + 8, y + dy); c.stroke(); } /* from behind: plain stone, no fire door */
+      c.beginPath(); for(let dy = -13, i = 0; dy < 3; dy += 5, i++){ const jx = i % 2 ? -2 : 3; c.moveTo(x + jx, y + dy); c.lineTo(x + jx, y + dy + 5); } c.stroke(); c.restore(); return true; }
+    if(k==='anvil' && sd){ c.save(); c.strokeStyle = OL; c.lineWidth = 1.2; c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x, y + 4, 9, 4*GSQ, 0, 0, Math.PI*2); c.fill(); /* end on: the block, the waist, the face */
+      c.fillStyle = '#5c4c3d'; c.fillRect(x - 6, y - 5, 12, 10); c.strokeRect(x - 6, y - 5, 12, 10); c.fillStyle = '#8e9aa2'; c.beginPath(); c.moveTo(x - 6, y - 16); c.lineTo(x + 6, y - 16); c.lineTo(x + 6, y - 11); c.lineTo(x + 3, y - 10); c.lineTo(x + 3.5, y - 5); c.lineTo(x - 3.5, y - 5); c.lineTo(x - 3, y - 10); c.lineTo(x - 6, y - 11); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.25)'; c.fillRect(x - 5, y - 15, 10, 1.2); c.restore(); return true; }
+    if(MIRK[k] && F === 2){ c.save(); c.translate(x, 0); c.scale(-1, 1); c.translate(-x, 0); PFACE = 0; try{ drawPiece(c, k, x, y, b, t); } finally{ PFACE = F; c.restore(); } return true; } /* from behind: the front, mirrored */
+    return false; }
+  function drawBenchFace(c, b){ /* the workbench from its end, or from behind (mirrored) */
+    const x = b.x, y = b.y, F = PFACE; if(F === 2){ c.save(); c.translate(x, 0); c.scale(-1, 1); c.translate(-x, 0); PFACE = 0; try{ drawBench(c, b); } finally{ PFACE = F; c.restore(); } return; }
+    const bt = 2.5 + 5.5*GSQ, by = 8 - bt; c.fillStyle = 'rgba(0,0,0,.32)'; c.beginPath(); c.ellipse(x + 1, y + 5, 10, 5*GSQ, 0, 0, Math.PI*2); c.fill();
+    for(const lx of [-7, 4]){ c.fillStyle = '#4a311c'; c.strokeStyle = OL; c.lineWidth = 1.4; c.fillRect(x + lx, y - 6, 3, 10); c.strokeRect(x + lx, y - 6, 3, 10); }
+    c.fillStyle = '#9a6c40'; c.strokeStyle = OL; c.lineWidth = 1.8; c.beginPath(); c.rect(x - 9, y - 13 + by, 18, bt); c.fill(); c.stroke();
+    c.fillStyle = '#9aa3ad'; c.lineWidth = 1; c.beginPath(); c.rect(x - 2, y - 17 + by*.7, 3, 4); c.fill(); c.stroke(); /* the saw, edge on */
+    c.strokeStyle = '#8a6440'; c.lineWidth = 2; c.beginPath(); c.moveTo(x + (F === 1 ? -6 : 6), y - 15 + by); c.lineTo(x + (F === 1 ? -3 : 3), y - 17 + by); c.stroke(); }
   const PIECE_FLATK = {farmplot:1, trap:1, garden:1, bed:1}; /* pieces already drawn from above */
   function drawPiece(c, k, x, y, b, t){ /* Flat XY building footprint; no height physics. */
     if(ZK===0 && !CAM.angle && drawPieceTop(c, k, x, y, b, t)) return; /* straight down */
     if(YAWL && !PIECE_FLATK[k]){ yawBegin(c, x, y); try{ drawPiece(c, k, x, y, b, t); } finally{ yawEnd(c); } return; } /* the top-down camera turned: a station drawn from the side stands upright */
+    if(PFACE && drawPieceFace(c, k, x, y, b, t)) return; /* the eye camera sees it from the side or from behind */
     if(cuDrawPiece(c, k, x, y, b, t)) return;
     const l = x - 10, tp = y - 10;
     if(k==='table'){
-      c.fillStyle='rgba(0,0,0,.32)';c.beginPath();c.ellipse(x+2,y+8,12,4,0,0,Math.PI*2);c.fill();
+      c.fillStyle='rgba(0,0,0,.32)';c.beginPath();c.ellipse(x+2,y+8,12,4*GSQ,0,0,Math.PI*2);c.fill(); const tt=Math.max(2.5,10*GSQ); /* the top shows less the lower it is seen */
       c.lineWidth=1.3;c.strokeStyle=OL;c.fillStyle='#5a3b22';for(const lx of [-9,7]){c.fillRect(x+lx,y,3,9);c.strokeRect(x+lx,y,3,9);}
       c.fillStyle='#6e4a2b';c.fillRect(l+1,y-1,18,5);c.strokeRect(l+1,y-1,18,5);
-      c.fillStyle='#9a6c40';c.fillRect(l+1,y-10,18,10);c.strokeRect(l+1,y-10,18,10);
-      c.strokeStyle='#6e4a2b';c.lineWidth=.8;c.beginPath();c.moveTo(x-3,y-10);c.lineTo(x-3,y);c.moveTo(x+4,y-10);c.lineTo(x+4,y);c.stroke();
-      c.fillStyle='rgba(255,240,200,.28)';c.fillRect(l+2,y-9,16,1.4);
-      c.fillStyle='#d9c9a3';c.strokeStyle=OL;c.lineWidth=.8;c.beginPath();c.arc(x-5,y-5,2.4,0,Math.PI*2);c.fill();c.stroke(); /* a bowl */
+      c.fillStyle='#9a6c40';c.fillRect(l+1,y-tt,18,tt);c.strokeRect(l+1,y-tt,18,tt);
+      c.strokeStyle='#6e4a2b';c.lineWidth=.8;c.beginPath();c.moveTo(x-3,y-tt);c.lineTo(x-3,y);c.moveTo(x+4,y-tt);c.lineTo(x+4,y);c.stroke();
+      c.fillStyle='rgba(255,240,200,.28)';c.fillRect(l+2,y-tt+1,16,1.4*GSQ);
+      c.fillStyle='#d9c9a3';c.strokeStyle=OL;c.lineWidth=.8;c.beginPath();if(GSQ<.99){c.ellipse(x-5,y-tt-.3,3,2.6,0,Math.PI,0);c.closePath();}else c.arc(x-5,y-5,2.4,0,Math.PI*2);c.fill();c.stroke(); /* a bowl: seen into from above, its round side from low down */
       return;
     }
     if(k==='chair'){
-      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+8,8,3,0,0,Math.PI*2);c.fill();
+      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+8,8,3*GSQ,0,0,Math.PI*2);c.fill(); const st=Math.max(2.2,6*GSQ);
       c.lineWidth=1.2;c.strokeStyle=OL;c.fillStyle='#5a3b22';for(const lx of [-6,3]){c.fillRect(x+lx,y+1,3,8);c.strokeRect(x+lx,y+1,3,8);}
       c.fillStyle='#8a6038';c.fillRect(x-7,y-14,14,11);c.strokeRect(x-7,y-14,14,11);
       c.strokeStyle='#5a3b22';c.lineWidth=.8;c.beginPath();c.moveTo(x-4,y-14);c.lineTo(x-4,y-3);c.moveTo(x,y-14);c.lineTo(x,y-3);c.moveTo(x+4,y-14);c.lineTo(x+4,y-3);c.stroke();
-      c.fillStyle='#a37446';c.strokeStyle=OL;c.lineWidth=1.2;c.fillRect(x-8,y-3,16,6);c.strokeRect(x-8,y-3,16,6);
-      c.fillStyle='rgba(255,240,200,.28)';c.fillRect(x-7,y-2.4,14,1.2);
+      c.fillStyle='#a37446';c.strokeStyle=OL;c.lineWidth=1.2;c.fillRect(x-8,y+3-st,16,st);c.strokeRect(x-8,y+3-st,16,st);
+      c.fillStyle='rgba(255,240,200,.28)';c.fillRect(x-7,y+3.6-st,14,1.2*GSQ);
       return;
     }
     if(k==='tent'){
-      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+9,15,5,0,0,Math.PI*2);c.fill();
+      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+9,15,5*GSQ,0,0,Math.PI*2);c.fill();
       c.lineJoin='round';c.lineWidth=1.4;c.strokeStyle=OL;
       c.fillStyle='#7a5a38';c.beginPath();c.moveTo(x-13,y+8);c.lineTo(x,y-13);c.lineTo(x+13,y+8);c.closePath();c.fill();c.stroke();
       c.fillStyle='#a8845a';c.beginPath();c.moveTo(x,y-13);c.lineTo(x+13,y+8);c.lineTo(x+3,y+8);c.closePath();c.fill();c.stroke();
@@ -10339,13 +10390,14 @@
       return;
     }
     if(k==='leanto'){
-      c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(x+1,y+9,15,5,0,0,Math.PI*2);c.fill();
+      const ry=yy=>y+8-(y+8-yy)*(.4+.6*GSQ); /* the thatch slopes toward you: low down it is seen nearer edge-on */
+      c.fillStyle='rgba(0,0,0,.28)';c.beginPath();c.ellipse(x+1,y+9,15,5*GSQ,0,0,Math.PI*2);c.fill();
       c.lineJoin='round';c.lineWidth=1.4;c.strokeStyle=OL;
-      c.fillStyle='#5a3b22';c.fillRect(x-12,y-10,2.6,17);c.strokeRect(x-12,y-10,2.6,17);
-      c.fillStyle='#3a2616';c.fillRect(x-4,y-10,2.6,6);
-      c.fillStyle='#c9b46a';c.beginPath();c.moveTo(x-13,y-12);c.lineTo(x+4,y-14);c.lineTo(x+14,y+7);c.lineTo(x-9,y+8);c.closePath();c.fill();c.stroke();
-      c.strokeStyle='#8e7a3e';c.lineWidth=.9;c.beginPath();for(let i=0;i<5;i++){c.moveTo(x-9+i*4.6,y-12+i*.4);c.lineTo(x-7+i*5.2,y+7);}c.stroke();
-      c.fillStyle='rgba(255,244,190,.3)';c.fillRect(x-8,y-11,10,1.6);
+      c.fillStyle='#5a3b22';c.fillRect(x-12,ry(y-10),2.6,y+7-ry(y-10));c.strokeRect(x-12,ry(y-10),2.6,y+7-ry(y-10));
+      c.fillStyle='#3a2616';c.fillRect(x-4,ry(y-10),2.6,6*(.4+.6*GSQ));
+      c.fillStyle='#c9b46a';c.beginPath();c.moveTo(x-13,ry(y-12));c.lineTo(x+4,ry(y-14));c.lineTo(x+14,ry(y+7));c.lineTo(x-9,y+8);c.closePath();c.fill();c.stroke();
+      c.strokeStyle='#8e7a3e';c.lineWidth=.9;c.beginPath();for(let i=0;i<5;i++){c.moveTo(x-9+i*4.6,ry(y-12+i*.4));c.lineTo(x-7+i*5.2,ry(y+7));}c.stroke();
+      c.fillStyle='rgba(255,244,190,.3)';c.fillRect(x-8,ry(y-11),10,1.6);
       return;
     }
     if(k==='bed'){
@@ -10371,9 +10423,9 @@
     }
     if(k==='lamp'){
       const fl=Math.sin(t*9+b.gx)*.5;
-      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+7,7,2.6,0,0,Math.PI*2);c.fill();
+      c.fillStyle='rgba(0,0,0,.3)';c.beginPath();c.ellipse(x+1,y+7,7,2.6*GSQ,0,0,Math.PI*2);c.fill();
       c.strokeStyle=OL;c.lineWidth=3.4;c.beginPath();c.moveTo(x,y+6);c.lineTo(x,y-9);c.stroke();c.strokeStyle='#6e4a2b';c.lineWidth=1.8;c.stroke();
-      c.fillStyle='#5a3b22';c.strokeStyle=OL;c.lineWidth=1.2;c.beginPath();c.ellipse(x,y+6,5,2,0,0,Math.PI*2);c.fill();c.stroke();
+      c.fillStyle='#5a3b22';c.strokeStyle=OL;c.lineWidth=1.2;c.beginPath();c.ellipse(x,y+6,5,Math.max(.9,2*GSQ),0,0,Math.PI*2);c.fill();c.stroke();
       c.fillStyle='#f3c466';c.beginPath();c.moveTo(x-5,y-8);c.lineTo(x-4,y-18);c.lineTo(x+4,y-18);c.lineTo(x+5,y-8);c.closePath();c.fill();c.stroke();
       c.fillStyle='#fff0b8';c.beginPath();c.ellipse(x,y-12.5+fl*.3,2,3.2+fl*.4,0,0,Math.PI*2);c.fill();
       c.fillStyle='rgba(255,255,255,.4)';c.fillRect(x-3.4,y-17,1.4,6);
@@ -10400,7 +10452,7 @@
       for(const [dx,dy] of [[-5,-5],[5,-5],[-5,5],[5,5]]){c.fillStyle=ripe?'#80a653':'#526d3c';c.beginPath();c.arc(x+dx,y+dy,4,0,Math.PI*2);c.fill();if(ripe){c.fillStyle='#d64b68';c.beginPath();c.arc(x+dx+1,y+dy,1.6,0,Math.PI*2);c.fill();}}
       return;
     }
-    if(isStorage(k)){ c.fillStyle='rgba(0,0,0,.3)';c.fillRect(l+2,y-2,20,14);c.fillStyle='#80502f';c.strokeStyle=OL;c.lineWidth=1.5;c.fillRect(l,y-12,20,20);c.strokeRect(l,y-12,20,20);c.fillStyle='#ac7b46';c.fillRect(l,y-16,20,8);c.strokeRect(l,y-16,20,8);c.fillStyle='#d4b56b';c.fillRect(l+3,y-15,2,22);c.fillRect(l+15,y-15,2,22);c.fillRect(x-2,y-6,4,5);if(k==='supplychest'){c.fillStyle='#81ac9c';c.fillRect(x-5,y-7,10,3);c.fillRect(x-1.5,y-10,3,9);}return; }
+    if(isStorage(k)){ const lt=4*GSQ; c.fillStyle='rgba(0,0,0,.3)';c.fillRect(l+2,y-2,20,10+4*GSQ);c.fillStyle='#80502f';c.strokeStyle=OL;c.lineWidth=1.5;c.fillRect(l,y-12,20,20);c.strokeRect(l,y-12,20,20);c.fillStyle='#ac7b46';c.fillRect(l,y-12-lt,20,4+lt);c.strokeRect(l,y-12-lt,20,4+lt);c.fillStyle='#d4b56b';c.fillRect(l+3,y-11-lt,2,18+lt);c.fillRect(l+15,y-11-lt,2,18+lt); /* the lid: its top shows less the lower it is seen */if(!PFACE)c.fillRect(x-2,y-6,4,5);else if(PFACE&1){c.strokeStyle='#2a1c12';c.lineWidth=1.4;c.beginPath();c.arc(x,y-5,3,0,Math.PI);c.stroke();} /* the lock on its front; an iron handle on each side; nothing behind */if(k==='supplychest' && PFACE!==2){c.fillStyle='#81ac9c';c.fillRect(x-5,y-7,10,3);c.fillRect(x-1.5,y-10,3,9);}return; }
     if(k==='wall' || k==='spikes'){
       c.fillStyle=k==='wall'?'#805734':'#614329';c.strokeStyle=OL;c.lineWidth=1.4;c.fillRect(l,tp,20,20);c.strokeRect(l,tp,20,20);
       c.strokeStyle='#ae8351';c.beginPath();for(const yy of [tp+5,tp+10,tp+15]){c.moveTo(l+2,yy);c.lineTo(l+18,yy);}c.stroke();
@@ -10414,7 +10466,7 @@
         c.fillStyle = '#efe6cf'; c.strokeStyle = OL; c.lineWidth = 0.8; c.beginPath(); c.moveTo(bx - 1.4, by); c.lineTo(bx + (armed ? 0 : Math.cos(a + Math.PI)*2), by - h); c.lineTo(bx + 1.4, by); c.closePath(); c.fill(); c.stroke(); }
       return; }
     if(k==='sentry'){
-      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 3, 10, 4, 0, 0, Math.PI*2); c.fill();
+      c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 3, 10, 4*GSQ, 0, 0, Math.PI*2); c.fill();
       c.strokeStyle = OL; c.lineWidth = 3.2; c.beginPath(); c.moveTo(x - 8, y + 4); c.lineTo(x, y - 12); c.lineTo(x + 8, y + 4); c.moveTo(x, y + 6); c.lineTo(x, y - 12); c.stroke();
       c.strokeStyle = '#7a5233'; c.lineWidth = 1.6; c.stroke();
       const a = b.ang != null ? b.ang : -Math.PI/2, cx = Math.cos(a), cy = Math.sin(a), hx = x, hy = y - 14;
@@ -11380,7 +11432,7 @@
     /* no full-canvas clear: every view paints its whole rectangle, and the dividers go over the seams */
     wd.vps.forEach((vp, k)=>{ /* each player's view is drawn on its own, clipped to its own rectangle */
       c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.beginPath(); c.rect(vp.x*dpr, vp.y*dpr, vp.w*dpr, vp.h*dpr); c.clip();
-      try{ drawView(c, vp, k, dpr, t, dt); } finally{ HQ = null; HBL = HBX = HBY = 0; LEAN.live = false; KY = 1; ZK = 1; ZL = 1; bbSq = 1; bbStk.length = 0; bbOffY = 0; YAW = YAWL = SHR = 0; YANC = VXF = null; ystk.length = shstk.length = 0; RT = false; RCS = 1; RSN = 0; UX = 0; UY = -1; c.restore(); } });
+      try{ drawView(c, vp, k, dpr, t, dt); } finally{ HQ = null; HBL = HBX = HBY = 0; LEAN.live = false; KY = 1; ZK = 1; ZL = 1; bbSq = 1; bbStk.length = 0; bbOffY = 0; YAW = YAWL = SHR = 0; GSQ = 1; PFACE = 0; YANC = VXF = null; ystk.length = shstk.length = 0; RT = false; RCS = 1; RSN = 0; UX = 0; UY = -1; c.restore(); } });
     if(wd.split){ /* the dividers */
       c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#0a0706';
       for(const v of wd.vps){ const vp = v.cell || v; if(vp.x > 0) c.fillRect((vp.x - 2)*dpr, vp.y*dpr, 4*dpr, vp.h*dpr); if(vp.y > 0) c.fillRect(vp.x*dpr, (vp.y - 2)*dpr, vp.w*dpr, 4*dpr); }
@@ -12265,7 +12317,7 @@
         let polys = null; if(occ.length && !e.fxn && e.me===undefined){ /* a player is never cut out: the player must always see their own animal */ const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), ogx = Math.floor(P.x/GRID), ogy = Math.floor(P.y/GRID), bx0 = sx - 100*k, bx1 = sx + 100*k, by0 = sy - 280*k, by1 = sy + 30*k;
           for(const o of occ){ if(o.dc >= d - 3 || o.mx <= lf + TVS*.5 || (o.gx === ogx && o.gy === ogy)) continue; const r = occPoly(o, lf); if(!r || r.x1 < bx0 || r.x0 > bx1 || r.y1 < by0 || r.y0 > by1) continue; if(!occHit(r.pts, sx, sy, k, lf < 0 ? -lf : 0)) continue; (polys || (polys = [])).push(r.pts); } } /* what is nearer and higher than its feet, where it lands on the screen */
         let al = d > dE*.8 ? clamp((dE - d)/(dE*.2), 0, 1) : 1; if((e.n || e.btn || e.piece) && d < 16) al *= clamp((d - 2)/14, 0, 1); if(al < .02) continue; /* far away it fades into the haze; a plant or wall you walk into fades rather than filling the eye */
-        const sh = EY.cT*(sx - W/2)/EY.f; SHR = sh; UX = sh*RCS - RSN; UY = -RCS - sh*RSN; YAW = yv[4] || 1e-9; /* perspective where it stands: the view's turn, and what lies further off slides toward the middle of the view, as the eye really sees it (a wall's front stays level, its side shows on the side nearer the middle; heights still go straight up the screen, along U). Before, everything was drawn as if straight ahead, so walls and props kept the same face to the screen and spun against the camera as it turned */
+        const sh = EY.cT*(sx - W/2)/EY.f; SHR = sh; { const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), hz = Math.max(.5, EY.E - lf); GSQ = clamp(hz/Math.hypot(hz, P.x - EY.cx, P.y - EY.cy)/ANG_KY, .15, 1); } /* how low it is seen from: the sine of the eye's angle above its foot, against the angled camera's (eye level: 0) */ if(e.piece || e.bench){ const ax = EY.cx - P.x, ay = EY.cy - P.y; PFACE = Math.abs(ax) > Math.abs(ay) ? (ax > 0 ? 1 : 3) : (ay >= 0 ? 0 : 2); } else PFACE = 0; /* which side of a built piece faces the eye (all are built facing south) */ UX = sh*RCS - RSN; UY = -RCS - sh*RSN; YAW = yv[4] || 1e-9; /* perspective where it stands: the view's turn, and what lies further off slides toward the middle of the view, as the eye really sees it (a wall's front stays level, its side shows on the side nearer the middle; heights still go straight up the screen, along U). Before, everything was drawn as if straight ahead, so walls and props kept the same face to the screen and spun against the camera as it turned */
         let g = gL, ox = 0, oy = 0, sw = 0, shh = 0, shd = 0; if(one){ shd = dk*eyeLitAt(eyL, P.x, P.y); const B = eyeBox(e, P), bx = B[0]*k, bu = B[1]*k, bdn = B[2]*k; /* its own box on the screen */ /* lit by a fire, a lamp or a torch: drawn alone, darkened by what is left of the dark at its feet, then laid on the others */
           const x0 = Math.max(0, Math.floor((sx - bx)*bd)), x1 = Math.min(bw, Math.ceil((sx + bx)*bd)), y0 = Math.max(0, Math.floor((sy - bu)*bd)), y1 = Math.min(bh, Math.ceil((sy + bdn)*bd)); if(x1 <= x0 || y1 <= y0) continue;
           ox = x0; oy = y0; sw = x1 - x0; shh = y1 - y0; const cv = eyeShCv[vk] || (eyeShCv[vk] = document.createElement('canvas')); if(cv.width < sw || cv.height < shh){ cv.width = Math.max(cv.width, bw); cv.height = Math.max(cv.height, bh); }
@@ -12276,9 +12328,9 @@
           else if(e.fxn){ const q = e.fxn, kk = Math.max(0, q.t/q.t0); bbBegin(g, q.x, q.y); yawBegin(g, q.x, q.y); g.globalAlpha = al*kk; g.lineWidth = 2.5; g.strokeStyle = 'rgba(10,7,6,.8)'; g.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; g.textAlign = 'center'; g.strokeText(q.text, q.x, q.y - 14*(1 - kk)); txc = g; txt(q.text, q.x, q.y - 14*(1 - kk), 8, q.col); txc = c; yawEnd(g); bbEnd(g); }
           else drawEnt(g, e); } catch(err){ noteError(err); } g.restore();
         if(g !== gL){ g.setTransform(1, 0, 0, 1, 0, 0); if(shd > .004){ g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(4,6,16,${shd.toFixed(3)})`; g.fillRect(0, 0, sw, shh); g.globalCompositeOperation = 'source-over'; } gL.setTransform(1, 0, 0, 1, 0, 0); gL.drawImage(g.canvas, 0, 0, sw, shh, ox, oy, sw, shh); } }
-      [gA, gB, gC, gD, gEx, gEy, gK, YAWL] = sv; [RCS, RSN, UX, UY, YAW] = yv; SHR = 0; const g = gL; if(lit >= its.length) shade(); /* none was reached by a light (or a far one was culled): all of them at once, here */
-      if(ntx.length){ g.setTransform(bd, 0, 0, bd, 0, 0); g.textAlign = 'center'; g.textBaseline = 'middle'; const fs = Math.max(12, Math.min(W, H)*.045); g.font = `bold ${fs}px ui-monospace,Menlo,Consolas,monospace`; g.lineWidth = 3; g.strokeStyle = 'rgba(10,7,6,.8)';
-        ntx.forEach((q, i)=>{ const kk = Math.max(0, q.t/q.t0), y = H*.34 - i*fs*1.3 - fs*1.2*(1 - kk); g.globalAlpha = kk; g.strokeText(q.text, W/2, y); g.fillStyle = q.col; g.fillText(q.text, W/2, y); }); g.globalAlpha = 1; }
+      [gA, gB, gC, gD, gEx, gEy, gK, YAWL] = sv; [RCS, RSN, UX, UY, YAW] = yv; SHR = 0; GSQ = 1; PFACE = 0; const g = gL; if(lit >= its.length) shade(); /* none was reached by a light (or a far one was culled): all of them at once, here */
+      if(ntx.length){ const yl = YAWL; YAWL = 0; /* screen words: the turned layer's word hook (on this canvas too) must not spin them (facing south they came out upside down) */ g.setTransform(bd, 0, 0, bd, 0, 0); g.textAlign = 'center'; g.textBaseline = 'middle'; const fs = Math.max(12, Math.min(W, H)*.045); g.font = `bold ${fs}px ui-monospace,Menlo,Consolas,monospace`; g.lineWidth = 3; g.strokeStyle = 'rgba(10,7,6,.8)';
+        ntx.forEach((q, i)=>{ const kk = Math.max(0, q.t/q.t0), y = H*.34 - i*fs*1.3 - fs*1.2*(1 - kk); g.globalAlpha = kk; g.strokeText(q.text, W/2, y); g.fillStyle = q.col; g.fillText(q.text, W/2, y); }); g.globalAlpha = 1; YAWL = yl; }
       c0.setTransform(1, 0, 0, 1, 0, 0); c0.drawImage(bc, 0, 0, bw, bh, vp0.x*dpr0, vp0.y*dpr0, vp0.w*dpr0, vp0.h*dpr0);
       if(EY.fp) eyePaws(c0, vp0, dpr0, p, own, t);
       c = c0; vp = vp0; dpr = dpr0; w = vp0.w; h = vp0.h; VXF = null; YAWL = 0; }
