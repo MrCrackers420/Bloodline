@@ -1055,6 +1055,7 @@
     denhatch:{solid:true}, stonewall:{solid:true,up:true},irrigationpump:{solid:true},furnace:{solid:true},anvil:{solid:true},refiner:{solid:true},farmplot:{}, supplychest:{solid:true,up:true}, trailsign:{up:true}, garden:{}, chest:{solid:true,up:true}, wall:{solid:true,up:true}, floor:{floor:true,up:true}, frame:{solid:true}, daub:{solid:true}, stairs:{solid:'foes',ramp:true,up:true}, trap:{uses:8}, spikes:{solid:true}, sentry:{solid:true, range:140, every:1400, dmg:2},
   };
   const GRID = 20;
+  const SOILK = ['farmplot', 'garden']; /* pieces that lie flat in the soil: drawn as ground, kept out of the den */
   /* height: a storey is LH tall. A floor at level k is a slab whose top is at k*LH. You stand on the highest surface under your centre
      (the ground, a floor, a wall top, a stair ramp) and fall when it ends. Level 0 keys stay "gx,gy" so older saves load unchanged. */
   const LH = 24, MAXL = 3, SLAB = 4, PH = 16, STEP = 7, GRAV = 620, FALL_SAFE = 34, LEAP_V = 190, LEAP_SPD = 150; /* a leap rises about 29, a ledge is 20, and it carries about 90 across */
@@ -6797,6 +6798,7 @@
     if(!B || l < 0 || l > MAXL) return false;
     if(l > 0 && !B.up) return false;
     if(!inWorld(x,y,h))return false;
+    if(SOILK.includes(k) && inDen({x, y})) return false; /* crops need the sky: no plots or gardens down in the den */
     if(l===0 && !trCanBuild(gx, gy, k)) return false;
     if(B.floor ? floorAt(gx,gy,l) : wd.builds.has(gkey(gx,gy,l))) return false;
     if(!reachOk(l)) return false;
@@ -6882,6 +6884,7 @@
     if(id==='room') return roomAdd();
     if(isPaid(id)){ const c = buildCell(); return planAdd(id, c.gx, c.gy, c.l, wd.build.dir); }
     const at=buildCell(), k=ITEMS[id].build;
+    if(SOILK.includes(k) && inDen(wd.p)){ wdNote('Crops need open sky: plant on the surface'); beep(140, 0.08, 'square', 0.02); return false; }
     return wdAction('Build',650,()=>{ const c = buildCell(); return wd.build && wd.build.id===id && bHave(id) && c.gx===at.gx && c.gy===at.gy && c.l===at.l && buildOk(k,at.gx,at.gy,at.l); },()=>buildPlaceNow());
   }
   function packFrame(gx, gy){ const f = structOf(gx, gy, 0); if(!f || f.k!=='frame') return null; delBuild(f); return putBuild(gx, gy, 'daub', undefined, 0, 0); } /* the frame stays where it is, now filled in */
@@ -12135,8 +12138,8 @@
     if(scn===0 && x0 < DESERT.left + 10){ const a = Math.max(0, x0 - 5), b = Math.min(DESERT.left, x1 + 5);
       if(y0 < WD.RIVER + 10) waterBody(c, a, b, 0, WD.RIVER, t, 1, 16);
       if(y1 > WD.H - WD.RIVER - 10){ c.save(); c.translate(0, WD.H); c.scale(1, -1); waterBody(c, a, b, 0, WD.RIVER, t, -1, 16); c.restore(); } }
-    // Flat farm soil/crops are ground decals, always beneath actors and standing objects.
-    for(const b of kindOf('farmplot'))if(vis(b.x,b.y,30) && !(scn===0 && wd.tr && !trPlain(b.gx, b.gy)))drawPiece(c,b.k,b.x,b.y,b,t);
+    // Flat farm soil, crops and berry gardens are ground decals, always beneath actors and standing objects (a garden was drawn standing up, over the player and over the plots beside it).
+    for(const kd of SOILK) for(const b of kindOf(kd))if(vis(b.x,b.y,30) && !(scn===0 && wd.tr && !trPlain(b.gx, b.gy)))drawPiece(c,b.k,b.x,b.y,b,t);
     if(scn===0 && x0 < DESERT.left){ drawDam(c, t); drawDamSign(c, vis); drawShip(c, t, vis); }
     if(scn===0 && x1 > MEAD.left - 140 && x0 < MEAD.left + 120) drawMeadRiver(c, t, x0, y0, x1, y1);
     if(scn===0) cuDrawGround(c, vis, t);
@@ -12150,7 +12153,7 @@
       L.push(e); }); /* standing just behind higher ground: shown whole, in front of its edge, rather than cut off by it */
     for(const f of wd.fires) if(vis(f.x, f.y, 30)) L.push(trEnt({y:f.y, f, top:20}, f.x, f.y));
     for(const b of wd.benches) if(vis(b.x,b.y,180)) L.push(trEnt({y:b.y, bench:b, top:20}, b.x, b.y));
-    buildsRect(x0 - 180, y0 - 180, x1 + 180, y1 + 180, b=>{ if(RT && !vis(b.x, b.y, 60)) return; if(b.k!=='farmplot'){ const e = {y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)}; if(TL){ e.lift = trH(b.x, b.y, true); e.clip = trCovV(b.x, b.y, e.lift, 14); } L.push(e); } else if(TL && !trPlain(b.gx, b.gy)) L.push(trEnt({y:b.gy*GRID + .01, plot:b}, b.x, b.y)); });
+    buildsRect(x0 - 180, y0 - 180, x1 + 180, y1 + 180, b=>{ if(RT && !vis(b.x, b.y, 60)) return; if(!SOILK.includes(b.k)){ const e = {y:(b.k==='trap' ? b.y - 10 : b.y + GRID/2) + (b.l || 0)*0.02, piece:b, top:pieceTop(b)}; if(TL){ e.lift = trH(b.x, b.y, true); e.clip = trCovV(b.x, b.y, e.lift, 14); } L.push(e); } else if(TL && !trPlain(b.gx, b.gy)) L.push(trEnt({y:b.gy*GRID + .01, plot:b, top:0}, b.x, b.y)); }); /* top 0: a plot on a hill is under the feet of whoever stands on it */
     for(const f of wd.upFl.values()) if(vis(f.gx*GRID + 10, f.gy*GRID + 10, 180)) { const e = {y:f.gy*GRID + f.l*0.02 - 0.01, slab:f, top:f.l*LH}; if(TL){ e.lift = trH(f.gx*GRID + 10, f.gy*GRID + 10, true); e.clip = trCovV(f.gx*GRID + 10, f.gy*GRID + 10, e.lift, 14); } L.push(e); }
     if(TL){ const ga = Math.floor(x0/GRID) - 1, gb = Math.floor(x1/GRID) + 1, ha = Math.floor(y0/GRID) - 1, hb = Math.floor(y1/GRID) + 1; /* floors laid on a hill, a slope, a hole or a shore rise and sink with the ground */
       for(let cx = ga >> 2; cx <= gb >> 2; cx++) for(let cy = ha >> 2; cy <= hb >> 2; cy++){ const q = wd.fk.get(bkKey(cx, cy)); if(!q) continue;
