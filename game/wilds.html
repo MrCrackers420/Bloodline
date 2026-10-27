@@ -710,7 +710,7 @@
   function cameraMenuToggle(){ withPlayer(cameraMenuSeat(), ()=>camToggle(true)); camLabel(); }
   let RT = false, RTIN = false, RCS = 1, RSN = 0, UX = 0, UY = -1, gA = 1, gB = 0, gC = 0, gD = 1; /* RT: this view is the angled camera turned off north (it turns all the way round). RCS, RSN: the cosine and sine of that turn; UX, UY: the world direction that shows straight up on the screen; gA..gD: the world-to-screen matrix of the view (with gEx, gEy) */
   const vDep = (x, y) => RSN*x + RCS*y; /* how far into the view a point lies (the depth the turned view sorts by) */
-  let YAW = 0, YAWL = 0, SHR = 0, GSQ = 1, PFACE = 0, YANC = null, VXF = null; const ystk = [], shstk = []; /* YAW: this view's turn; YAWL: the turn still to undo here (0 inside an upright billboard); YANC: what the words being drawn belong to; VXF: world to screen for the overlays of a turned view; SHR: the eye camera's perspective lean at a billboard (what lies further off slides toward the middle of the view, by SHR per unit of depth): it is undone with the turn wherever a thing is stood upright (0 inside one); GSQ: how much of what lies flat on the ground (shadows, a table's top, a chest's lid, a ring of stones) shows, against the angled camera's own tilt: 1 there and everywhere else, down to .15 when the eye camera sees a thing from low down (eye level), so props are drawn as seen from the side; PFACE: which side of a built piece the eye camera sees (every piece is built facing south): 0 its front, 1 its east side, 2 its back, 3 its west side; 0 everywhere else */
+  let YAW = 0, YAWL = 0, SHR = 0, GSQ = 1, PFACE = 0, EYB = null, YANC = null, VXF = null; const ystk = [], shstk = []; /* YAW: this view's turn; YAWL: the turn still to undo here (0 inside an upright billboard); YANC: what the words being drawn belong to; VXF: world to screen for the overlays of a turned view; SHR: the eye camera's perspective lean at a billboard (what lies further off slides toward the middle of the view, by SHR per unit of depth): it is undone with the turn wherever a thing is stood upright (0 inside one); GSQ: how much of what lies flat on the ground (shadows, a table's top, a chest's lid, a ring of stones) shows, against the angled camera's own tilt: 1 there and everywhere else, down to .15 when the eye camera sees a thing from low down (eye level), so props are drawn as seen from the side; PFACE: which side of a built piece the eye camera sees (every piece is built facing south): 0 its front, 1 its east side, 2 its back, 3 its west side; 0 everywhere else; EYB: the eye camera's spot on the ground [x, y] while its billboards are drawn (null otherwise): creatures seen from low down stand up (drawStand) */
   let depthMode = 'full'; try{ if(localStorage.getItem('bloodline_depth')==='off') depthMode = 'off'; }catch(e){} /* the 3D look: lean, sun shadows, shaded sides, haze */
   try{ bareGfx = localStorage.getItem('bloodline_bare')==='1'; }catch(e){}
   let fxMode = 'auto';
@@ -10268,6 +10268,98 @@
     if(wd.sight > wd.t && f.fd != null && !f.dead){ const fd = clamp(f.fd, 0, 1), bx = f.x - 9, by = f.y - f.r - 10; c.fillStyle='rgba(0,0,0,.6)'; c.fillRect(bx - 1, by - 1, 20, 4); c.fillStyle = fd > .55 ? '#8fd06b' : fd > .3 ? '#e0c050' : '#d9694a'; c.fillRect(bx, by, 18*fd, 2);
       c.font='bold 6px ui-monospace,Menlo,monospace'; c.textAlign='center'; if(f.sick){ c.fillStyle='#b8d85a'; c.fillText('mange', f.x, by - 3); } else if(hdWoolReady(f)){ c.fillStyle='#f4efe0'; c.fillText('ready to shear', f.x, by - 3); } }
   }
+  /* ---- creatures standing up (the eye camera, seen from low down: EYB set, GSQ low). Each is a small puppet of rounded parts placed in its own frame (f forward, s to its right, u up) and seen from the eye's bearing, the far parts first: an animal shows its flank as it crosses, its face as it comes at you and its tail as it goes, and every angle between. The top-down pictures (drawAnimal, drawMonkey, drawRatBody) stay for every other camera ---- */
+  const STAND_Q = {jackal:1, sheep:1, rabbit:1, deer:1, boar:1, rat:1, spider:1, matriarch:1, slug:1, cavesnail:1, saltcrawler:1};
+  const stShade = (hex, k) => { const n = parseInt(hex.slice(1), 16), f = v => Math.max(0, Math.min(255, Math.round(v*k))); return 'rgb(' + f(n >> 16) + ',' + f((n >> 8) & 255) + ',' + f(n & 255) + ')'; };
+  function standOf(e){ /* what this entry stands up as, or null (it keeps its picture from above) */
+    if(e.foe){ const f = e.foe; return STAND_Q[f.kind] && !f.dead ? {kind:f.kind, x:f.x, y:f.y, r:f.r, a:Number.isFinite(f.facing) ? f.facing : 0, mv:!!f.moving, ph:f.hx || 0, hit:f.hit > 0, sleep:!!f.sleep, f} : null; }
+    if(e.rat){ const q = e.rat; return {kind:'rat', x:q.x, y:q.y, r:q.r + .5, a:q.face || 0, mv:!!q.moving, ph:q.ph || 0, hit:q.hit > 0, down:q.down > 0, tag:PCOL[e.gi]}; }
+    if(e.partner){ const q = e.partner; return {kind:'mammal', cls:q.pcls, x:q.x, y:q.y, r:BODYR[q.pcls] || 9, a:q.face || 0, mv:!!q.moving, ph:0, hit:false, down:q.down > 0, tag:PCOL[e.gi]}; }
+    if(e.me!==undefined) return {kind:'mammal', me:e.me};
+    return null; }
+  function drawStand(c, S, t){
+    const x = S.x, y = S.y, r = S.r, a = S.a, k = S.kind, vx = EYB[0] - x, vy = EYB[1] - y, vl = Math.hypot(vx, vy) || 1, Vx = vx/vl, Vy = vy/vl, ca = Math.cos(a), sa = Math.sin(a);
+    const fx = ca*Vy - sa*Vx, sx = -sa*Vy - ca*Vx, fd = ca*Vx + sa*Vy, sd = -sa*Vx + ca*Vy, el = Math.max(.08, GSQ*ANG_KY); /* forward and side across the screen and toward the eye (screen right is the bearing turned a quarter) */
+    const P = (f, s, u) => [x + f*fx + s*sx, y - u + (f*fd + s*sd)*el, f*fd + s*sd]; /* a point of the puppet: on the screen, and how near the eye */
+    const parts = [], add = (d, fn) => parts.push([d, fn]);
+    const ell = (f, s, u, L, W, H, col, lw) => { const p = P(f, s, u); add(p[2], () => { c.fillStyle = col; c.strokeStyle = OL; c.lineWidth = lw || 1.2; c.beginPath(); c.ellipse(p[0], p[1], Math.max(.6, Math.hypot(L*fx, W*sx)), Math.max(.6, Math.hypot(H, el*Math.hypot(L*fd, W*sd))), 0, 0, 6.2832); c.fill(); c.stroke(); }); return p; };
+    const limb = (a0, a1, w, col, dz) => { const p = P(...a0), q = P(...a1); add((p[2] + q[2])/2 + (dz || 0), () => { c.lineCap = 'round'; c.strokeStyle = OL; c.lineWidth = w + 2; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); c.strokeStyle = col; c.lineWidth = w; c.stroke(); }); };
+    const chain = (pts, w, col, dz, wEnd) => { const Q = pts.map(v => P(...v)), d = Q.reduce((s, q) => s + q[2], 0)/Q.length + (dz || 0); add(d, () => { c.lineCap = 'round'; c.lineJoin = 'round'; for(const [lw, st] of [[w + 2, OL], [w, col]]){ c.strokeStyle = st; c.lineWidth = lw; c.beginPath(); Q.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); } if(wEnd){ const e = Q[Q.length - 1]; c.fillStyle = wEnd; c.beginPath(); c.arc(e[0], e[1], w*.55, 0, 6.2832); c.fill(); } }); };
+    const dot = (f, s, u, rr, col, need) => { const p = P(f, s, u); add(p[2] + .01, () => { if(need !== undefined && need < -.05) return; c.fillStyle = col; c.beginPath(); c.arc(p[0], p[1], rr, 0, 6.2832); c.fill(); }); };
+    const ear = (f, s, u, h, w, col, round) => { const b = P(f, s, u), tp = P(f - h*.15, s*1.1, u + h); add(b[2] - .02, () => { c.fillStyle = col; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); if(round){ c.arc(b[0] + (tp[0] - b[0])*.5, b[1] - h*.5, h*.55, 0, 6.2832); } else { c.moveTo(b[0] - w, b[1]); c.lineTo(tp[0], tp[1]); c.lineTo(b[0] + w, b[1]); c.closePath(); } c.fill(); c.stroke(); }); };
+    const gait = S.mv ? Math.sin(t*14 + S.ph) : 0, lift = v => Math.max(0, v)*r*.12;
+    const shadow = (L, W) => { c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(x + 1, y + 1, Math.max(2, Math.hypot(L*fx, W*sx))*1.05, Math.max(.7, el*Math.hypot(L*fd, W*sd)), 0, 0, 6.2832); c.fill(); };
+    let top = r*1.6, eyeN = fd; /* top: the height the name and the health bar sit over */
+    const quad = (o) => { /* four legs, a body, a head with a muzzle, eyes, ears and a tail */
+      const L = o.L*r, W = o.W*r, H = o.H*r, lh = o.lh*r, bu = lh + H*.8, hr = o.hr*r, hf = L*.95 + hr*.35, hu = bu + H*(o.hu || .55);
+      shadow(L*1.1, W*1.1);
+      for(const sdn of [-1, 1]) for(const fr of [-1, 1]){ const g = gait*fr*sdn; limb([fr*L*.55, sdn*W*.55, bu - H*.72], [fr*L*.55 + g*r*.18, sdn*W*.6, lift(g)], o.lw*r, o.leg || o.dark); /* from the belly down, so a near leg never shows across the body */ }
+      ell(0, 0, bu, L, W, H, o.fur, 1.3);
+      if(o.belly) ell(L*.15, 0, bu - H*.45, L*.6, W*.75, H*.35, o.belly, .8);
+      if(o.extra) o.extra(L, W, H, bu);
+      if(o.neck) limb([L*.7, 0, bu + H*.3], [hf, 0, hu - hr*.3], hr*1.1, o.fur);
+      ell(hf, 0, hu, hr, hr*.9, hr, o.head || o.fur, 1.2);
+      ell(hf + hr*.75, 0, hu - hr*.25, hr*o.mz, hr*.5, hr*.42, o.muzzle || o.head || o.fur, 1);
+      dot(hf + hr*.75 + hr*o.mz*.9, 0, hu - hr*.2, Math.max(.7, hr*.16), o.nose || OL, fd);
+      for(const sdn of [-1, 1]){ const n = fd*.75 + sdn*sd*.66; dot(hf + hr*.55, sdn*hr*.48, hu + hr*.25, Math.max(.7, hr*.15), OL, n); }
+      for(const sdn of [-1, 1]) ear(hf - hr*.25, sdn*hr*.55, hu + hr*.6, hr*(o.eh || .7), hr*.42, o.earC || o.fur, o.roundEar);
+      if(o.tail) o.tail(L, W, H, bu);
+      top = Math.max(hu + hr*1.5, bu + H*1.2); };
+    if(k==='mammal'){ const AN = ANLOOK[S.cls] || ANLOOK.monkey, C = Object.assign({}, MKB, AN.col), cl = AN.id, sz = (AN.bl + AN.bw)/2; /* the body radius already holds the size; the class keeps only its shape */
+      const fur = S.hit ? '#f2eadb' : C.fur;
+      quad({L:.8*AN.bl/sz, W:.55*AN.bw/sz, H:.55*AN.bw/sz, lh:.5, lw:.24*AN.paw/sz, hr:.46*AN.hs/sz, mz:cl==='mole' || cl==='ratking' ? .7 : cl==='fox' ? .75 : .5, hu:.75, fur, dark:C.dark, leg:C.dark, belly:C.belly, head:fur, muzzle:C.face, nose:cl==='mole' ? '#e58fa0' : OL, earC:C.dark, roundEar:cl!=='fox', eh:cl==='fox' ? .85 : .55,
+        extra:(L, W, H, bu) => { if(S.tag){ const hf = L*.82; limb([hf, -W*.55, bu + H*.55], [hf, W*.55, bu + H*.55], 2.2, S.tag, .02); } /* the bandana: whose animal it is */
+          if(cl==='raccoon'){ const hr = .46*AN.hs/sz*r, hf = L*.95 + hr*.35, hu = bu + H*.75; limb([hf + hr*.5, -hr*.55, hu + hr*.22], [hf + hr*.5, hr*.55, hu + hr*.22], hr*.4, '#26262b', .05); }
+          if(cl==='ratking'){ const hr = .46*AN.hs/sz*r, hf = L*.95 + hr*.35, hu = bu + H*.75 + hr*.95; const p = P(hf, 0, hu); add(p[2] + .05, () => { c.fillStyle = '#e0b54a'; c.strokeStyle = OL; c.lineWidth = .8; c.beginPath(); c.moveTo(p[0] - 3.5, p[1] + 1.5); for(let i = 0; i <= 4; i++) c.lineTo(p[0] - 3.5 + i*1.75, p[1] + (i % 2 ? -2.5 : -.5)); c.lineTo(p[0] + 3.5, p[1] + 1.5); c.closePath(); c.fill(); c.stroke(); }); } },
+        tail:(L, W, H, bu) => { const tb = [-L*.9, 0, bu + H*.2];
+          if(cl==='monkey') chain([tb, [-L*1.4, 0, bu + H*.4], [-L*1.6, 0, bu + H*1.3], [-L*1.35, 0, bu + H*1.7]], 1.8, C.fur);
+          else if(cl==='beaver'){ const p = P(-L*1.35, 0, bu - H*.45); add(p[2], () => { c.fillStyle = '#3a2a1e'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.ellipse(p[0], p[1], Math.max(1.2, Math.hypot(L*.5*fx, W*.55*sx)), Math.max(1, r*.12 + el*Math.hypot(L*.5*fd, W*.55*sd)), 0, 0, 6.2832); c.fill(); c.stroke(); }); }
+          else if(cl==='fox'){ chain([tb, [-L*1.5, 0, bu - H*.1], [-L*1.9, 0, bu + H*.1]], r*.32, C.fur, 0, '#f3e6cc'); }
+          else if(cl==='raccoon'){ const pts = [tb, [-L*1.3, 0, bu + H*.05], [-L*1.7, 0, bu + H*.2]]; chain(pts, r*.26, C.fur); for(const q of [.45, .75]) dot(-L*(.9 + q*.8), 0, bu + H*(.2 - q*.1 + q*.15), r*.14, '#2c2c31'); }
+          else if(cl==='otter') chain([tb, [-L*1.4, 0, bu - H*.2], [-L*1.8, 0, bu - H*.45]], r*.22, C.fur);
+          else if(cl==='ratking') chain([tb, [-L*1.5, 0, bu - H*.35], [-L*2, 0, bu - H*.2]], .9, '#c98f90');
+          else if(cl==='mole' || cl==='bear') dot(-L*.98, 0, bu + H*.1, r*.12, C.dark);
+          else chain([tb, [-L*1.3, 0, bu + H*.1]], 1.6, C.fur); } }); }
+    else if(k==='rat'){ const fur = S.hit ? '#efe3cc' : S.f ? '#8b8175' : '#9a8f82';
+      quad({L:.75, W:.5, H:.45, lh:.2, lw:.16, hr:.38, mz:.8, hu:.4, fur, dark:'#5a5048', leg:'#c98f90', belly:'#c9b9a6', nose:'#e58fa0', earC:'#d9a3a0', roundEar:true, eh:.55,
+        extra: S.tag ? (L, W, H, bu) => { const p = P(0, 0, bu + H*1.35); add(p[2] + .1, () => { c.fillStyle = S.tag; c.strokeStyle = OL; c.lineWidth = .8; c.beginPath(); c.arc(p[0], p[1] - 3, 1.7, 0, 6.2832); c.fill(); c.stroke(); }); } : null,
+        tail:(L, W, H, bu) => chain([[-L*.9, 0, bu], [-L*1.5, 0, bu - H*.6], [-L*2.2, 0, bu - H*.5], [-L*2.6, 0, bu - H*.2]], .9, '#c98f90') }); }
+    else if(k==='jackal' || k==='sheep' || k==='rabbit' || k==='deer' || k==='boar'){ const J = animalDef(S.f), sh = k==='sheep' && S.f.flock && wd.t < (S.f.woolT || 0), fur = S.hit ? '#bfe3df' : sh ? '#e0bfa6' : J.color, dk = stShade(fur.charAt(0) === '#' ? fur : '#888888', .62);
+      if(k==='jackal') quad({L:.85, W:.45, H:.45, lh:.65, lw:.16, hr:.36, mz:1, hu:.7, fur, dark:dk, muzzle:'#c4b080', earC:fur, eh:.95, belly:'#c4b080', neck:true,
+        tail:(L, W, H, bu) => chain([[-L*.85, 0, bu + H*.2], [-L*1.4, 0, bu - H*.2], [-L*1.75, 0, bu - H*.55]], r*.26, fur, 0, '#3a3a2e') });
+      else if(k==='sheep'){ const wool = '#efe9d9'; quad({L:.75, W:.6, H:.6, lh:.5, lw:.15, hr:.32, mz:.6, hu:.35, fur:sh ? fur : wool, dark:'#3a3330', leg:'#3a3330', head:'#3a3330', muzzle:'#4a423e', earC:'#3a3330', eh:.45,
+        extra: sh ? null : (L, W, H, bu) => { for(const [pf, ps, pu] of [[-.6, -.5, .4], [-.6, .5, .4], [0, -.7, .5], [0, .7, .5], [.55, -.5, .45], [.55, .5, .45], [-.2, 0, .95], [.35, 0, .9]]) ell(pf*L, ps*W, bu + (pu - .4)*H, H*.48, H*.48, H*.46, wool, 1); },
+        tail:(L, W, H, bu) => dot(-L*1.02, 0, bu + H*.2, r*.14, wool) }); }
+      else if(k==='rabbit') quad({L:.6, W:.5, H:.55, lh:.22, lw:.18, hr:.4, mz:.45, hu:.65, fur, dark:dk, belly:'#e8dfca', earC:fur, eh:1.7,
+        tail:(L, W, H, bu) => { const p = P(-L*1.02, 0, bu + H*.15); add(p[2] - .01, () => { c.fillStyle = '#f2ecdd'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.arc(p[0], p[1], r*.22, 0, 6.2832); c.fill(); c.stroke(); }); } });
+      else if(k==='deer') quad({L:.85, W:.4, H:.42, lh:1, lw:.12, hr:.3, mz:.9, hu:1.5, fur, dark:dk, belly:'#e9d8b8', earC:fur, eh:.85, neck:true,
+        extra:(L, W, H, bu) => { const hr = .3*r, hf = L*.95 + hr*.35, hu = bu + H*1.5 + hr*.8; for(const sdn of [-1, 1]) chain([[hf - hr*.2, sdn*hr*.35, hu], [hf - hr*.5, sdn*hr*1.1, hu + hr*1.6], [hf - hr*.2, sdn*hr*1.4, hu + hr*2.3]], 1.1, '#dfc9a0', .03); },
+        tail:(L, W, H, bu) => dot(-L*.98, 0, bu + H*.4, r*.12, '#f2ecdd') });
+      else quad({L:.95, W:.6, H:.6, lh:.35, lw:.2, hr:.46, mz:.55, hu:.15, fur, dark:dk, muzzle:'#ad7e68', nose:'#6b4436', earC:dk, eh:.55,
+        extra:(L, W, H, bu) => { const hr = .46*r, hf = L*.95 + hr*.35, hu = bu + H*.15; for(const sdn of [-1, 1]){ const p = P(hf + hr*.9, sdn*hr*.35, hu - hr*.35), q = P(hf + hr*1.1, sdn*hr*.55, hu + hr*.1); add(p[2] + .05, () => { c.fillStyle = '#f3dfb7'; c.strokeStyle = OL; c.lineWidth = .8; c.beginPath(); c.moveTo(p[0] - 1, p[1]); c.lineTo(q[0], q[1]); c.lineTo(p[0] + 1, p[1]); c.closePath(); c.fill(); c.stroke(); }); } },
+        tail:(L, W, H, bu) => chain([[-L*.95, 0, bu + H*.3], [-L*1.15, 0, bu]], 1.2, dk) });
+      if(S.f.flock){ const p = P(.55*r, -.3*r, r*1.35); add(p[2] + .2, () => { c.fillStyle = '#d4493e'; c.strokeStyle = OL; c.lineWidth = .6; c.beginPath(); c.arc(p[0], p[1], r*.17, 0, 6.3); c.fill(); c.stroke(); }); } }
+    else if(k==='spider' || k==='matriarch'){ const f = S.f, body = S.hit ? '#e9e0f5' : k==='matriarch' ? '#4a2430' : f.elite ? '#2c3a52' : '#3b3148', sw = S.mv ? t*20 + S.ph : 0;
+      shadow(r*1.6, r*1.6);
+      for(const sdn of [-1, 1]) for(const [lx, ph] of [[.9, 0], [.35, 3.14], [-.2, 0], [-.7, 3.14]]){ const g = S.mv ? Math.sin(sw + ph)*.25 : 0; chain([[lx*r*.5, sdn*r*.3, r*.55], [lx*r*1.1 + g*r, sdn*r*1.2, r*1.15], [lx*r*1.6 + g*r, sdn*r*1.9, 0]], 1.1, '#3a3048'); }
+      ell(-r*.55, 0, r*.75, r*.95, r*.72, r*.62, body, 1.2); ell(r*.5, 0, r*.55, r*.55, r*.5, r*.42, body, 1.2);
+      for(const sdn of [-1, 1]) dot(r*.95, sdn*r*.15, r*.65, 1, '#ff5a6a', fd*.8 + sdn*sd*.5); top = r*1.7; }
+    else if(k==='slug'){ const w = Math.sin(t*5 + S.ph)*.07, col = S.hit ? '#efe3ff' : '#a98bd4';
+      shadow(r + 3, r*.8); ell(0, 0, r*.4, r + 3 + w*r, r*.75, r*.42, col, 1); ell(r + 2, 0, r*.5, 3, 2.6, 2.6, col, 1);
+      for(const sdn of [-1, 1]) chain([[r + 3, sdn*1.2, r*.6], [r + 5, sdn*2.4, r*.6 + 4]], .8, col, .02, '#ffffff');
+      for(let q = -1; q <= 1; q++){ const p = P(q*2.6, 0, r*.82); add(p[2] + .03, () => { c.fillStyle = '#ff6fb5'; c.beginPath(); c.moveTo(p[0] - 1.1, p[1]); c.lineTo(p[0], p[1] - 3.4); c.lineTo(p[0] + 1.1, p[1]); c.closePath(); c.fill(); }); } top = r*1.3; }
+    else if(k==='cavesnail'){ const col = S.hit ? '#f0e2b8' : '#a6926a', sc = S.hit ? '#f0e2b8' : '#8a7a54';
+      shadow(r*1.3, r*.7); ell(r*.15, 0, r*.28, r*1.05, r*.55, r*.28, col, 1.2); ell(r*1.05, 0, r*.4, r*.35, r*.3, r*.3, col, 1.1);
+      for(const sdn of [-1, 1]) chain([[r*1.2, sdn*r*.1, r*.55], [r*1.45, sdn*r*.35, r*1.05]], .8, col, .02, '#e6d6ad');
+      const p = ell(-r*.1, 0, r*1.05, r*.8, r*.6, r*.8, sc, 1.3); add(p[2] + .01, () => { c.strokeStyle = '#4f3f22'; c.lineWidth = 1; c.beginPath(); for(let q = 0; q < 18; q++){ const an = q*.5, rr = r*.06 + q*r*.036; c.lineTo(p[0] + Math.cos(an)*rr*Math.max(.25, Math.abs(sd) + .2), p[1] + Math.sin(an)*rr); } c.stroke(); }); top = r*2; }
+    else if(k==='saltcrawler'){ const col = S.hit ? '#efe3cc' : '#b59874', sw = S.mv ? t*22 + S.ph : 0;
+      shadow(r*1.2, r*1.1);
+      for(const sdn of [-1, 1]) for(const [lx, ph] of [[-.55, 0], [-.05, 3.14], [.45, 0]]){ const g = S.mv ? Math.sin(sw + ph)*.15 : 0; chain([[lx*r, sdn*r*.4, r*.45], [lx*r + g*r, sdn*r*1.05, r*.55], [lx*r + g*r, sdn*r*1.25, 0]], 1.2, '#6d5237'); }
+      ell(0, 0, r*.55, r*.98, r*.72, r*.42, col, 1.2); ell(r*.95, 0, r*.5, r*.3, r*.28, r*.26, S.hit ? col : '#7a5c3d', 1);
+      for(const sdn of [-1, 1]) chain([[r*1.1, sdn*r*.15, r*.55], [r*1.5, sdn*r*.45, r*.75], [r*1.7, sdn*r*.4, r*.6]], .9, '#7a5c3d', .02); top = r*1.3; }
+    parts.sort((u, v) => u[0] - v[0]); for(const q of parts) q[1]();
+    if(S.f && S.f.maxHp && S.f.hp < S.f.maxHp){ const bw = r*2; c.fillStyle = OL; c.fillRect(x - bw/2 - 1, y - top - 5, bw + 2, 3.4); c.fillStyle = '#3f8580'; c.fillRect(x - bw/2, y - top - 4.3, bw*Math.max(0, S.f.hp/S.f.maxHp), 2); } /* the health ring, as a bar over it */
+    S.top = top; return top; }
   function drawFloor(c, x, y, gx, gy){ /* boards, two to a tile, the grain alternating */
     c.fillStyle = '#7a5836'; c.fillRect(x, y, GRID, GRID);
     const across = (gx + gy) % 2===0;
@@ -11432,7 +11524,7 @@
     /* no full-canvas clear: every view paints its whole rectangle, and the dividers go over the seams */
     wd.vps.forEach((vp, k)=>{ /* each player's view is drawn on its own, clipped to its own rectangle */
       c.save(); c.setTransform(1, 0, 0, 1, 0, 0); c.beginPath(); c.rect(vp.x*dpr, vp.y*dpr, vp.w*dpr, vp.h*dpr); c.clip();
-      try{ drawView(c, vp, k, dpr, t, dt); } finally{ HQ = null; HBL = HBX = HBY = 0; LEAN.live = false; KY = 1; ZK = 1; ZL = 1; bbSq = 1; bbStk.length = 0; bbOffY = 0; YAW = YAWL = SHR = 0; GSQ = 1; PFACE = 0; YANC = VXF = null; ystk.length = shstk.length = 0; RT = false; RCS = 1; RSN = 0; UX = 0; UY = -1; c.restore(); } });
+      try{ drawView(c, vp, k, dpr, t, dt); } finally{ HQ = null; HBL = HBX = HBY = 0; LEAN.live = false; KY = 1; ZK = 1; ZL = 1; bbSq = 1; bbStk.length = 0; bbOffY = 0; YAW = YAWL = SHR = 0; GSQ = 1; PFACE = 0; EYB = null; YANC = VXF = null; ystk.length = shstk.length = 0; RT = false; RCS = 1; RSN = 0; UX = 0; UY = -1; c.restore(); } });
     if(wd.split){ /* the dividers */
       c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#0a0706';
       for(const v of wd.vps){ const vp = v.cell || v; if(vp.x > 0) c.fillRect((vp.x - 2)*dpr, vp.y*dpr, 4*dpr, vp.h*dpr); if(vp.y > 0) c.fillRect(vp.x*dpr, (vp.y - 2)*dpr, vp.w*dpr, 4*dpr); }
@@ -12118,7 +12210,8 @@
       const rcl = RT && e.rclip; if(rcl){ c.save(); rtClipOut(c, rcl, x0 - 300, y0 - 300, x1 + 300, y1 + 300); } /* turned: higher ground in front that was drawn before it */
       const lf = e.lift || 0, lc = e.clip; if(lf || lc!==undefined){ c.save(); if(lc!==undefined){ c.beginPath(); const T0 = y0 - 400, BIG = y0 + vh + 600, XR = x0 + vw + 60; let xs = x0 - 60; for(const [xa, xb, bot] of lc){ if(xa > xs) c.rect(xs, T0, xa - xs, BIG - T0); c.rect(xa, T0, xb - xa, bot - T0); xs = xb; } if(xs < XR) c.rect(xs, T0, XR - xs, BIG - T0); c.clip(); } if(lf){ if(HQ && e.hx !== undefined){ const o = hP(e.hx, e.hy, lf, [0, 0]), tx = o[0] - e.hx, ty = o[1] - e.hy; c.translate(tx, ty); HBL = lf; HBX = tx; HBY = ty; } else upT(c, lf); } }
       let lean = false; if(DEPTH.on){ const lb = e.n || e.f || e.bench || e.foe || e.cart || e.rat || e.partner || (e.me!==undefined ? bodyOf(e.me) : null); if(lb && Number.isFinite(lb.x)){ c.save(); leanBill(c, lb.x, lb.y); lean = true; } } /* upright things lean away from the middle of the view */
-      let bbk = false, ybk = false; if(KY!==1 || YAW){ const td = e.foe ? !(e.foe.kind==='sangwraith' || e.foe.kind==='vgen' || e.foe.kind==='vbat' || FEY[e.foe.kind]) : !!(e.rat || e.partner || e.me!==undefined || e.cr || e.trader || e.cart || (e.hal && e.hal.k!=='wraith')); /* a body drawn from above is seen at the camera's tilt; a thing drawn from the side stands up */ const bo = e.n || e.f || e.bench || e.foe || e.cart || e.bal || e.hal || e.rat || e.trader || e.tc || e.rrp || e.cp || e.partner || e.d || e.stink || e.cr || (e.me!==undefined ? bodyOf(e.me) : null) || (e.piece && !FLATK[e.piece.k] ? e.piece : null); if(bo && Number.isFinite(bo.x) && Number.isFinite(bo.y)){ if(KY!==1){ bbBegin(c, bo.x, bo.y, td ? ANG_TDY : 1); bbk = true; if(RT && td) YANC = bo; } else { YANC = bo; if(!td && (e.foe || e.d || e.tc || e.bal || e.hal || e.stink)){ yawBegin(c, bo.x, bo.y); ybk = true; } } } } /* angled camera: it stands upright on its feet */
+      const stS = EYB && GSQ < .8 ? standOf(e) : null; /* the eye camera, low down: a creature stands up (drawStand) instead of being seen from above */
+      let bbk = false, ybk = false; if(KY!==1 || YAW){ const td = !stS && (e.foe ? !(e.foe.kind==='sangwraith' || e.foe.kind==='vgen' || e.foe.kind==='vbat' || FEY[e.foe.kind]) : !!(e.rat || e.partner || e.me!==undefined || e.cr || e.trader || e.cart || (e.hal && e.hal.k!=='wraith'))); /* a body drawn from above is seen at the camera's tilt; a thing drawn from the side stands up */ const bo = e.n || e.f || e.bench || e.foe || e.cart || e.bal || e.hal || e.rat || e.trader || e.tc || e.rrp || e.cp || e.partner || e.d || e.stink || e.cr || (e.me!==undefined ? bodyOf(e.me) : null) || (e.piece && !FLATK[e.piece.k] ? e.piece : null); if(bo && Number.isFinite(bo.x) && Number.isFinite(bo.y)){ if(KY!==1){ bbBegin(c, bo.x, bo.y, td ? ANG_TDY : 1); bbk = true; if(RT && td) YANC = bo; } else { YANC = bo; if(!td && (e.foe || e.d || e.tc || e.bal || e.hal || e.stink)){ yawBegin(c, bo.x, bo.y); ybk = true; } } } } /* angled camera: it stands upright on its feet */
       if(e.n){ if(e.n.k==='tree') drawTree(c, e.n, t, !e.n.gone && (RT ? mates.some(q=>{ const dd = vDep(q.x, q.y) - vDep(e.n.x, e.n.y), dx = RCS*(q.x - e.n.x) - RSN*(q.y - e.n.y); return dd < -4 && Math.abs(dx) < e.n.cr && dd > -18 - e.n.cr*1.8; }) : CAM.angle ? mates.some(q=>q.y < e.n.y - 4 && Math.abs(q.x - e.n.x) < e.n.cr && q.y > e.n.y - 18 - e.n.cr*1.8) : mates.some(q=>hyp(q.x - e.n.x, q.y - e.n.y) < e.n.cr*1.05))); else drawNode(c, e.n, t); }
       else if(e.bd) drawBloodDecal(c, e.bd);
       else if(e.stink){ const f = e.stink; c.save(); c.strokeStyle = 'rgba(150,170,70,.45)'; c.lineWidth = 1.1; c.lineCap = 'round'; for(let q=-1;q<=1;q++){ const ph = t*1.6 + q*1.3 + f.hx*.01; c.beginPath(); c.moveTo(f.x + q*4, f.y - 2); c.bezierCurveTo(f.x + q*4 + Math.sin(ph)*3, f.y - 6, f.x + q*4 - Math.sin(ph)*3, f.y - 10, f.x + q*4 + Math.sin(ph*1.3)*2, f.y - 15); c.stroke(); } c.restore(); }
@@ -12135,31 +12228,31 @@
         else { c.fillStyle = 'rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(d.x, d.y + 6 - (d.z || 0)*ZL, 6, 2, 0, 0, Math.PI*2); c.fill(); c.drawImage(itemIcon(d.id), x - 8, y - 8, 16, 16);
           if(d.n > 1) txt(String(d.n), x + 8, y + 5, 6, '#e6dcc4'); } }
       else if(e.foe){ const f = e.foe; const ga0 = c.globalAlpha; const fs = foeSub(f), fw = fs > .4, frz = fw && trPitWet(f.x, f.y) ? fs*TVS : 0; if(fw){ c.save(); c.beginPath(); yRect(c, f.x, f.y, -f.r*3, -frz - 140, f.r*6, 140 + f.r*.45); c.clip(); upT(c, -headUp(subSink(fs, f.r*1.4 + 4, f.r*2.2, t, f.x) - frz, fs, f.facing, f.r*.8, f.r*.4, f.r, frz)); } /* an animal in water swims at the top, its head above the water */ if(e.vis < 1) c.globalAlpha = ga0*e.vis; f._va = e.vis;
-        const facing=Number.isFinite(f.facing)?f.facing:0;
+        if(stS) drawStand(c, stS, t); else { const facing=Number.isFinite(f.facing)?f.facing:0;
         // Project the turning body onto a flattened ground footprint; light offset stays fixed.
         groundShadow(c,f.x,f.y,f.r*Math.hypot(Math.cos(facing),.6*Math.sin(facing)),f.r*.4*Math.hypot(Math.sin(facing),.6*Math.cos(facing)),1,f.r*.4);
         if(f.wind > 0) flatIn(c, f.x, f.y, ()=>{ c.beginPath(); c.arc(f.x, f.y, f.r + 4, 0, Math.PI*2); c.strokeStyle = 'rgba(243,227,211,.85)'; c.lineWidth = 1.5; c.stroke(); });
         if(f.kind==='shardling') toonUnit(c, f.x, f.y + Math.sin(t*3 + f.hx*0.1)*1.2, f.r + 2, 'diamond', f.hp/f.maxHp, '#3f8580', f.hit > 0 ? '#e8fdff' : '#2f8aa0'); else if(!FEY[f.kind] && f.kind!=='sangwraith' && f.kind!=='vgen' && f.kind!=='dworm') flatIn(c, f.x, f.y, ()=>ring(c, f.x, f.y, f.r, f.hp/f.maxHp, '#3f8580'));
         if(f.kind==='dworm') drawWorm(c, f, t); else if(f.kind==='vgen' || f.kind==='vbat') drawVamp(c, f, t); else if(FEY[f.kind]) drawFey(c, f, t); else if(f.kind==='sangwraith') drawWraith(c, f, t); else drawAnimal(c,f,t);
-        if(f.kind!=='shardling' && f.kind!=='sangwraith' && f.kind!=='dworm' && !FEY[f.kind]){ c.fillStyle='rgba(255,255,255,.22)'; c.beginPath(); c.ellipse(f.x - f.r*0.3, f.y - f.r*0.35, f.r*0.32, f.r*0.18, -0.3, 0, Math.PI*2); c.fill(); } /* cel highlight */
-        if(hyp(f.x-p.x,f.y-p.y)<120)txt(animalDef(f).name,f.x,f.y-f.r-12,6,'#e6dcc4');
-        if(f.sleep) txt('z', f.x + f.r, f.y - f.r - 5 + Math.sin(t*2 + f.hx)*1.5, 7, '#9fb7d6'); c.globalAlpha = ga0; if(fw){ c.restore(); trRipple(c, f.x, f.y - frz + f.r*.45, f.r, t, fs); } } /* p is this view's own player */
+        if(f.kind!=='shardling' && f.kind!=='sangwraith' && f.kind!=='dworm' && !FEY[f.kind]){ c.fillStyle='rgba(255,255,255,.22)'; c.beginPath(); c.ellipse(f.x - f.r*0.3, f.y - f.r*0.35, f.r*0.32, f.r*0.18, -0.3, 0, Math.PI*2); c.fill(); } /* cel highlight */ }
+        if(hyp(f.x-p.x,f.y-p.y)<120)txt(animalDef(f).name,f.x,f.y-(stS ? stS.top + 9 : f.r+12),6,'#e6dcc4');
+        if(f.sleep) txt('z', f.x + f.r, f.y - (stS ? stS.top : f.r + 5) + Math.sin(t*2 + f.hx)*1.5, 7, '#9fb7d6'); c.globalAlpha = ga0; if(fw){ c.restore(); trRipple(c, f.x, f.y - frz + f.r*.45, f.r, t, fs); } } /* p is this view's own player */
       else if(e.cart) cuDrawCart(c, e.cart, t);
       else if(e.bal) drawBallista(c, e.bal, t);
       else if(e.hal) drawHallu(c, e.hal, t);
-      else if(e.rat) drawPetRat(c, e.rat, e.gi, t);
+      else if(e.rat){ if(stS) drawStand(c, stS, t); else drawPetRat(c, e.rat, e.gi, t); }
       else if(e.trader) drawTrader(c, e.trader, t, p);
       else if(e.tc) drawTCamp(c, e.tc, t);
       else if(e.rrp) drawRatProp(c, e.rrp, t);
       else if(e.cp) drawCastleProp(c, e.cp, t);
-      else if(e.partner) drawPartner(c, e.partner, e.gi, t);
+      else if(e.partner){ if(stS) drawStand(c, stS, t); else drawPartner(c, e.partner, e.gi, t); }
       else if(e.me!==undefined){ withPlayer(e.me, ()=>{ if(wd.dead > 0) return; const p = wd.p, PC = PSKIN[e.me]; const sub = p.bur > 0 ? 0 : (p.sub || 0), wl = sub > .4 && p.z < 3, rz = wl && trPitWet(p.x, p.y) ? sub*TVS : 0; /* in water: cut at the waterline, sunk by the depth (a flooded hole's floor is lower than its water, so the body is raised to it first) */
         if(wl){ c.save(); c.beginPath(); yRect(c, p.x, p.y, -60, -rz - 140, 120, 140 + p.r*.45); c.clip(); upT(c, -headUp(subSink(sub, PH, p.r*2.3, t, p.x) - rz, sub, p._fa, 7.8, 3.7*(ANLOOK[animalOf()] || ANLOOK.monkey).hs, p.r, rz)); }
-        if(!wl){ const gz = p.air ? surfaceAt(p.x, p.y, p.z) : p.z; c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(p.x+1,p.y+p.r*.7-gz*ZL,p.r,p.r*.4,0,0,Math.PI*2); c.fill(); }
+        if(!wl && !stS){ const gz = p.air ? surfaceAt(p.x, p.y, p.z) : p.z; c.fillStyle='rgba(0,0,0,.3)'; c.beginPath(); c.ellipse(p.x+1,p.y+p.r*.7-gz*ZL,p.r,p.r*.4,0,0,Math.PI*2); c.fill(); }
         c.save(); upT(c, p.z*ZL); if(!ZL && p.air){ const az = p.z - surfaceAt(p.x, p.y, p.z); if(az > .3){ const k = 1 + Math.min(.45, az*.014); c.translate(p.x, p.y); c.scale(k, k); c.translate(-p.x, -p.y); } } /* straight down, a jump shows as the body coming nearer the camera */
         if(p.rollT > 0 && !p.leap) for(let i=1;i<=3;i++){ c.globalAlpha = 0.16*(4 - i); c.fillStyle = PC.ring; c.beginPath(); c.arc(p.x - p.dx*i*6, p.y - p.dy*i*6, p.r - 2.5 - i*0.6, 0, Math.PI*2); c.fill(); }
         c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
-        if(p.bur > 0) drawBurrow(c, p, t); else drawMonkey(c, p, PC, e.me, t);
+        if(p.bur > 0) drawBurrow(c, p, t); else if(stS) drawStand(c, {kind:'mammal', cls:animalOf(), x:p.x, y:p.y, r:p.r, a:Number.isFinite(p._fa) ? p._fa : Math.atan2(p.fy || 0, p.fx || 1), mv:(p._mv || 0) > .15, ph:(p.gait || 0)*.27, hit:false, tag:PC.ring}, t); else drawMonkey(c, p, PC, e.me, t);
         if(p.action && (p.action.label==='Dig' || p.action.label==='Fill') && !(p.bur > 0)) drawShovelSwing(c, p);
         c.globalAlpha = 1;
         if(act.length > 1) txt('P' + (e.me + 1), p.x, p.y - p.r - 9, 6, PC.tag);
@@ -12317,7 +12410,7 @@
         let polys = null; if(occ.length && !e.fxn && e.me===undefined){ /* a player is never cut out: the player must always see their own animal */ const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), ogx = Math.floor(P.x/GRID), ogy = Math.floor(P.y/GRID), bx0 = sx - 100*k, bx1 = sx + 100*k, by0 = sy - 280*k, by1 = sy + 30*k;
           for(const o of occ){ if(o.dc >= d - 3 || o.mx <= lf + TVS*.5 || (o.gx === ogx && o.gy === ogy)) continue; const r = occPoly(o, lf); if(!r || r.x1 < bx0 || r.x0 > bx1 || r.y1 < by0 || r.y0 > by1) continue; if(!occHit(r.pts, sx, sy, k, lf < 0 ? -lf : 0)) continue; (polys || (polys = [])).push(r.pts); } } /* what is nearer and higher than its feet, where it lands on the screen */
         let al = d > dE*.8 ? clamp((dE - d)/(dE*.2), 0, 1) : 1; if((e.n || e.btn || e.piece) && d < 16) al *= clamp((d - 2)/14, 0, 1); if(al < .02) continue; /* far away it fades into the haze; a plant or wall you walk into fades rather than filling the eye */
-        const sh = EY.cT*(sx - W/2)/EY.f; SHR = sh; { const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), hz = Math.max(.5, EY.E - lf); GSQ = clamp(hz/Math.hypot(hz, P.x - EY.cx, P.y - EY.cy)/ANG_KY, .15, 1); } /* how low it is seen from: the sine of the eye's angle above its foot, against the angled camera's (eye level: 0) */ if(e.piece || e.bench){ const ax = EY.cx - P.x, ay = EY.cy - P.y; PFACE = Math.abs(ax) > Math.abs(ay) ? (ax > 0 ? 1 : 3) : (ay >= 0 ? 0 : 2); } else PFACE = 0; /* which side of a built piece faces the eye (all are built facing south) */ UX = sh*RCS - RSN; UY = -RCS - sh*RSN; YAW = yv[4] || 1e-9; /* perspective where it stands: the view's turn, and what lies further off slides toward the middle of the view, as the eye really sees it (a wall's front stays level, its side shows on the side nearer the middle; heights still go straight up the screen, along U). Before, everything was drawn as if straight ahead, so walls and props kept the same face to the screen and spun against the camera as it turned */
+        const sh = EY.cT*(sx - W/2)/EY.f; SHR = sh; { const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), hz = Math.max(.5, EY.E - lf); GSQ = clamp(hz/Math.hypot(hz, P.x - EY.cx, P.y - EY.cy)/ANG_KY, .15, 1); } /* how low it is seen from: the sine of the eye's angle above its foot, against the angled camera's (eye level: 0) */ if(e.piece || e.bench){ const ax = EY.cx - P.x, ay = EY.cy - P.y; PFACE = Math.abs(ax) > Math.abs(ay) ? (ax > 0 ? 1 : 3) : (ay >= 0 ? 0 : 2); } else PFACE = 0; /* which side of a built piece faces the eye (all are built facing south) */ EYB = EYB || [EY.cx, EY.cy]; UX = sh*RCS - RSN; UY = -RCS - sh*RSN; YAW = yv[4] || 1e-9; /* perspective where it stands: the view's turn, and what lies further off slides toward the middle of the view, as the eye really sees it (a wall's front stays level, its side shows on the side nearer the middle; heights still go straight up the screen, along U). Before, everything was drawn as if straight ahead, so walls and props kept the same face to the screen and spun against the camera as it turned */
         let g = gL, ox = 0, oy = 0, sw = 0, shh = 0, shd = 0; if(one){ shd = dk*eyeLitAt(eyL, P.x, P.y); const B = eyeBox(e, P), bx = B[0]*k, bu = B[1]*k, bdn = B[2]*k; /* its own box on the screen */ /* lit by a fire, a lamp or a torch: drawn alone, darkened by what is left of the dark at its feet, then laid on the others */
           const x0 = Math.max(0, Math.floor((sx - bx)*bd)), x1 = Math.min(bw, Math.ceil((sx + bx)*bd)), y0 = Math.max(0, Math.floor((sy - bu)*bd)), y1 = Math.min(bh, Math.ceil((sy + bdn)*bd)); if(x1 <= x0 || y1 <= y0) continue;
           ox = x0; oy = y0; sw = x1 - x0; shh = y1 - y0; const cv = eyeShCv[vk] || (eyeShCv[vk] = document.createElement('canvas')); if(cv.width < sw || cv.height < shh){ cv.width = Math.max(cv.width, bw); cv.height = Math.max(cv.height, bh); }
@@ -12328,7 +12421,7 @@
           else if(e.fxn){ const q = e.fxn, kk = Math.max(0, q.t/q.t0); bbBegin(g, q.x, q.y); yawBegin(g, q.x, q.y); g.globalAlpha = al*kk; g.lineWidth = 2.5; g.strokeStyle = 'rgba(10,7,6,.8)'; g.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; g.textAlign = 'center'; g.strokeText(q.text, q.x, q.y - 14*(1 - kk)); txc = g; txt(q.text, q.x, q.y - 14*(1 - kk), 8, q.col); txc = c; yawEnd(g); bbEnd(g); }
           else drawEnt(g, e); } catch(err){ noteError(err); } g.restore();
         if(g !== gL){ g.setTransform(1, 0, 0, 1, 0, 0); if(shd > .004){ g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(4,6,16,${shd.toFixed(3)})`; g.fillRect(0, 0, sw, shh); g.globalCompositeOperation = 'source-over'; } gL.setTransform(1, 0, 0, 1, 0, 0); gL.drawImage(g.canvas, 0, 0, sw, shh, ox, oy, sw, shh); } }
-      [gA, gB, gC, gD, gEx, gEy, gK, YAWL] = sv; [RCS, RSN, UX, UY, YAW] = yv; SHR = 0; GSQ = 1; PFACE = 0; const g = gL; if(lit >= its.length) shade(); /* none was reached by a light (or a far one was culled): all of them at once, here */
+      [gA, gB, gC, gD, gEx, gEy, gK, YAWL] = sv; [RCS, RSN, UX, UY, YAW] = yv; SHR = 0; GSQ = 1; PFACE = 0; EYB = null; const g = gL; if(lit >= its.length) shade(); /* none was reached by a light (or a far one was culled): all of them at once, here */
       if(ntx.length){ const yl = YAWL; YAWL = 0; /* screen words: the turned layer's word hook (on this canvas too) must not spin them (facing south they came out upside down) */ g.setTransform(bd, 0, 0, bd, 0, 0); g.textAlign = 'center'; g.textBaseline = 'middle'; const fs = Math.max(12, Math.min(W, H)*.045); g.font = `bold ${fs}px ui-monospace,Menlo,Consolas,monospace`; g.lineWidth = 3; g.strokeStyle = 'rgba(10,7,6,.8)';
         ntx.forEach((q, i)=>{ const kk = Math.max(0, q.t/q.t0), y = H*.34 - i*fs*1.3 - fs*1.2*(1 - kk); g.globalAlpha = kk; g.strokeText(q.text, W/2, y); g.fillStyle = q.col; g.fillText(q.text, W/2, y); }); g.globalAlpha = 1; YAWL = yl; }
       c0.setTransform(1, 0, 0, 1, 0, 0); c0.drawImage(bc, 0, 0, bw, bh, vp0.x*dpr0, vp0.y*dpr0, vp0.w*dpr0, vp0.h*dpr0);
