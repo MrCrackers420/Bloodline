@@ -12139,7 +12139,7 @@
      each thing is drawn afterwards as a billboard, the same picture the angled camera draws, scaled for its own distance (far to near). Beyond dcap the ground gives way to haze and sky. ---- */
   const OCC_LO = [0, .55, 1]; /* a thing standing in a hollow is drawn lower on the screen by about its depth: the samples follow it down */
   const OCC_S = [[0, 0], [0, -14], [0, -34], [0, -62], [0, -100], [-22, -8], [22, -8], [-22, -40], [22, -40], [-8, 6], [8, 6]]; /* sample points on a billboard, in sprite units from its foot (up is negative) */
-  const NEAR_EYE = .5, FP_TV = .5, FP_FOV = 1.25, FP_DCAP = 290, EYE_AHEAD = 420, EYE_FAR = 1, eyeCvs = []; /* EYE_FAR: how much farther than those the eye sees before the haze; the layer keeps the grain it has at 1 (see eyeCam) */
+  const NEAR_EYE = .5, FP_TV = .75, FP_FOV = 1.25, FP_DCAP = 290, EYE_AHEAD = 420, EYE_FAR = 1, eyeCvs = []; /* EYE_FAR: how much farther than those the eye sees before the haze; the layer keeps the grain it has at 1 (see eyeCam) */
   function eyeCam(p, vp){
     const fp = !!CAM.fp, nr = clamp(CAM.nr || 0, NEAR_MIN, 1); if(!fp && nr <= NEAR_EYE) return null;
     const w = vp.w, h = vp.h, gm = Math.sqrt(w*h), a = CAM.yaw, fx = -Math.sin(a), fy = -Math.cos(a), gz = (p.z || 0) + (p.vth || 0)*TVS0*(fp ? FP_TV : 1);
@@ -12420,7 +12420,7 @@
         c.save(); upT(c, p.z*ZL); if(!ZL && p.air){ const az = p.z - surfaceAt(p.x, p.y, p.z); if(az > .3){ const k = 1 + Math.min(.45, az*.014); c.translate(p.x, p.y); c.scale(k, k); c.translate(-p.x, -p.y); } } /* straight down, a jump shows as the body coming nearer the camera */
         if(p.rollT > 0 && !p.leap) for(let i=1;i<=3;i++){ c.globalAlpha = 0.16*(4 - i); c.fillStyle = PC.ring; c.beginPath(); c.arc(p.x - p.dx*i*6, p.y - p.dy*i*6, p.r - 2.5 - i*0.6, 0, Math.PI*2); c.fill(); }
         c.globalAlpha = p.inv > 0 && p.rollT <= 0 && Math.floor(p.inv/80)%2 ? 0.4 : 1;
-        if(p.bur > 0) drawBurrow(c, p, t); else if(stS) drawStand(c, {kind:'mammal', cls:animalOf(), x:p.x, y:p.y, r:p.r, a:Number.isFinite(p._fa) ? p._fa : Math.atan2(p.fy || 0, p.fx || 1), mv:(p._mv || 0) > .15, ph:(p.gait || 0)*.27, hit:false, tag:PC.ring}, t); else drawMonkey(c, p, PC, e.me, t);
+        if(p.bur > 0) drawBurrow(c, p, t); else if(stS){ monkeyStep(p, t); drawStand(c, {kind:'mammal', cls:animalOf(), x:p.x, y:p.y, r:p.r, a:Number.isFinite(p._fa) ? p._fa : Math.atan2(p.fy || 0, p.fx || 1), mv:(p._mv || 0) > .15, ph:(p.gait || 0)*.27, hit:false, tag:PC.ring}, t); } else drawMonkey(c, p, PC, e.me, t); /* standing up it still turns the way it goes (monkeyStep: drawMonkey's own step, which a standing body skipped) */
         if(p.action && (p.action.label==='Dig' || p.action.label==='Fill') && !(p.bur > 0)) drawShovelSwing(c, p);
         c.globalAlpha = 1;
         if(act.length > 1) txt('P' + (e.me + 1), p.x, p.y - p.r - 9, 6, PC.tag);
