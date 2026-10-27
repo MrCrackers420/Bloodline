@@ -10319,7 +10319,7 @@
     const x = S.x, y = S.y, r = S.r, a = S.a, k = S.kind, vx = EYB[0] - x, vy = EYB[1] - y, vl = Math.hypot(vx, vy) || 1, Vx = vx/vl, Vy = vy/vl, ca = Math.cos(a), sa = Math.sin(a);
     const fx = ca*Vy - sa*Vx, sx = -sa*Vy - ca*Vx, fd = ca*Vx + sa*Vy, sd = -sa*Vx + ca*Vy, el = Math.max(.08, GSQ*ANG_KY); /* forward and side across the screen and toward the eye (screen right is the bearing turned a quarter) */
     const P = (f, s, u) => [x + f*fx + s*sx, y - u + (f*fd + s*sd)*el, f*fd + s*sd]; /* a point of the puppet: on the screen, and how near the eye */
-    const parts = [], add = (d, fn) => parts.push([d, fn]);
+    const parts = []; let ZB = 0; const add = (d, fn) => parts.push([d + ZB, fn]); /* ZB: a part group's lean in the sort, so the head stays over the body and the tail under it while the animal is seen side on (with nothing between them they swapped back and forth as it turned a hair either way) */
     const ell = (f, s, u, L, W, H, col, lw) => { const p = P(f, s, u); add(p[2], () => { c.fillStyle = col; c.strokeStyle = OL; c.lineWidth = lw || 1.2; c.beginPath(); c.ellipse(p[0], p[1], Math.max(.6, Math.hypot(L*fx, W*sx)), Math.max(.6, Math.hypot(H, el*Math.hypot(L*fd, W*sd))), 0, 0, 6.2832); c.fill(); c.stroke(); }); return p; };
     const limb = (a0, a1, w, col, dz) => { const p = P(...a0), q = P(...a1); add((p[2] + q[2])/2 + (dz || 0), () => { c.lineCap = 'round'; c.strokeStyle = OL; c.lineWidth = w + 2; c.beginPath(); c.moveTo(p[0], p[1]); c.lineTo(q[0], q[1]); c.stroke(); c.strokeStyle = col; c.lineWidth = w; c.stroke(); }); };
     const chain = (pts, w, col, dz, wEnd) => { const Q = pts.map(v => P(...v)), d = Q.reduce((s, q) => s + q[2], 0)/Q.length + (dz || 0); add(d, () => { c.lineCap = 'round'; c.lineJoin = 'round'; for(const [lw, st] of [[w + 2, OL], [w, col]]){ c.strokeStyle = st; c.lineWidth = lw; c.beginPath(); Q.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); c.stroke(); } if(wEnd){ const e = Q[Q.length - 1]; c.fillStyle = wEnd; c.beginPath(); c.arc(e[0], e[1], w*.55, 0, 6.2832); c.fill(); } }); };
@@ -10333,15 +10333,15 @@
       shadow(L*1.1, W*1.1);
       for(const sdn of [-1, 1]) for(const fr of [-1, 1]){ const g = gait*fr*sdn; limb([fr*L*.55, sdn*W*.55, bu - H*.72], [fr*L*.55 + g*r*.18, sdn*W*.6, lift(g)], o.lw*r, o.leg || o.dark); /* from the belly down, so a near leg never shows across the body */ }
       ell(0, 0, bu, L, W, H, o.fur, 1.3);
-      if(o.belly) ell(L*.15, 0, bu - H*.45, L*.6, W*.75, H*.35, o.belly, .8);
-      if(o.extra) o.extra(L, W, H, bu);
+      ZB = r*.05; if(o.belly) ell(L*.15, 0, bu - H*.45, L*.6, W*.75, H*.35, o.belly, .8);
+      ZB = r*.5; if(o.extra) o.extra(L, W, H, bu);
       if(o.neck) limb([L*.7, 0, bu + H*.3], [hf, 0, hu - hr*.3], hr*1.1, o.fur);
-      ell(hf, 0, hu, hr, hr*.9, hr, o.head || o.fur, 1.2);
-      ell(hf + hr*.75, 0, hu - hr*.25, hr*o.mz, hr*.5, hr*.42, o.muzzle || o.head || o.fur, 1);
-      dot(hf + hr*.75 + hr*o.mz*.9, 0, hu - hr*.2, Math.max(.7, hr*.16), o.nose || OL, fd);
+      ZB = r*.6; ell(hf, 0, hu, hr, hr*.9, hr, o.head || o.fur, 1.2);
+      ZB = r*.7; ell(hf + hr*.75, 0, hu - hr*.25, hr*o.mz, hr*.5, hr*.42, o.muzzle || o.head || o.fur, 1); /* neck, head, muzzle: each a little over the last, so side on they keep their order (facing away the depth still puts them behind) */
+      dot(hf + hr*.75 + hr*o.mz*.9, 0, hu - hr*.2, Math.max(.7, hr*.16), o.nose || OL, fd + .3);
       for(const sdn of [-1, 1]){ const n = fd*.75 + sdn*sd*.66; dot(hf + hr*.55, sdn*hr*.48, hu + hr*.25, Math.max(.7, hr*.15), OL, n); }
-      for(const sdn of [-1, 1]) ear(hf - hr*.25, sdn*hr*.55, hu + hr*.6, hr*(o.eh || .7), hr*.42, o.earC || o.fur, o.roundEar);
-      if(o.tail) o.tail(L, W, H, bu);
+      ZB = r*.6; for(const sdn of [-1, 1]) ear(hf - hr*.25, sdn*hr*.55, hu + hr*.6, hr*(o.eh || .7), hr*.42, o.earC || o.fur, o.roundEar);
+      ZB = -r*.5; if(o.tail) o.tail(L, W, H, bu); ZB = 0;
       top = Math.max(hu + hr*1.5, bu + H*1.2); };
     if(k==='mammal'){ const AN = ANLOOK[S.cls] || ANLOOK.monkey, C = Object.assign({}, MKB, AN.col), cl = AN.id, sz = (AN.bl + AN.bw)/2; /* the body radius already holds the size; the class keeps only its shape */
       const fur = S.hit ? '#f2eadb' : C.fur;
@@ -10366,7 +10366,7 @@
       if(k==='jackal') quad({L:.85, W:.45, H:.45, lh:.65, lw:.16, hr:.36, mz:1, hu:.7, fur, dark:dk, muzzle:'#c4b080', earC:fur, eh:.95, belly:'#c4b080', neck:true,
         tail:(L, W, H, bu) => chain([[-L*.85, 0, bu + H*.2], [-L*1.4, 0, bu - H*.2], [-L*1.75, 0, bu - H*.55]], r*.26, fur, 0, '#3a3a2e') });
       else if(k==='sheep'){ const wool = '#efe9d9'; quad({L:.75, W:.6, H:.6, lh:.5, lw:.15, hr:.32, mz:.6, hu:.35, fur:sh ? fur : wool, dark:'#3a3330', leg:'#3a3330', head:'#3a3330', muzzle:'#4a423e', earC:'#3a3330', eh:.45,
-        extra: sh ? null : (L, W, H, bu) => { for(const [pf, ps, pu] of [[-.6, -.5, .4], [-.6, .5, .4], [0, -.7, .5], [0, .7, .5], [.55, -.5, .45], [.55, .5, .45], [-.2, 0, .95], [.35, 0, .9]]) ell(pf*L, ps*W, bu + (pu - .4)*H, H*.48, H*.48, H*.46, wool, 1); },
+        extra: sh ? null : (L, W, H, bu) => { for(const [pf, ps, pu] of [[-.6, -.5, .4], [-.6, .5, .4], [0, -.7, .5], [0, .7, .5], [.55, -.5, .45], [.55, .5, .45], [-.2, 0, .95], [.35, 0, .9]]){ ZB = r*(pu > .8 ? .52 + pf*.1 : .5); ell(pf*L, ps*W, bu + (pu - .4)*H, H*.48, H*.48, H*.46, wool, 1); } ZB = r*.5; }, /* the two puffs along the back each keep their own place */
         tail:(L, W, H, bu) => dot(-L*1.02, 0, bu + H*.2, r*.14, wool) }); }
       else if(k==='rabbit') quad({L:.6, W:.5, H:.55, lh:.22, lw:.18, hr:.4, mz:.45, hu:.65, fur, dark:dk, belly:'#e8dfca', earC:fur, eh:1.7,
         tail:(L, W, H, bu) => { const p = P(-L*1.02, 0, bu + H*.15); add(p[2] - .01, () => { c.fillStyle = '#f2ecdd'; c.strokeStyle = OL; c.lineWidth = 1; c.beginPath(); c.arc(p[0], p[1], r*.22, 0, 6.2832); c.fill(); c.stroke(); }); } });
@@ -10380,21 +10380,21 @@
     else if(k==='spider' || k==='matriarch'){ const f = S.f, body = S.hit ? '#e9e0f5' : k==='matriarch' ? '#4a2430' : f.elite ? '#2c3a52' : '#3b3148', sw = S.mv ? t*20 + S.ph : 0;
       shadow(r*1.6, r*1.6);
       for(const sdn of [-1, 1]) for(const [lx, ph] of [[.9, 0], [.35, 3.14], [-.2, 0], [-.7, 3.14]]){ const g = S.mv ? Math.sin(sw + ph)*.25 : 0; chain([[lx*r*.5, sdn*r*.3, r*.55], [lx*r*1.1 + g*r, sdn*r*1.2, r*1.15], [lx*r*1.6 + g*r, sdn*r*1.9, 0]], 1.1, '#3a3048'); }
-      ell(-r*.55, 0, r*.75, r*.95, r*.72, r*.62, body, 1.2); ell(r*.5, 0, r*.55, r*.55, r*.5, r*.42, body, 1.2);
-      for(const sdn of [-1, 1]) dot(r*.95, sdn*r*.15, r*.65, 1, '#ff5a6a', fd*.8 + sdn*sd*.5); top = r*1.7; }
+      ell(-r*.55, 0, r*.75, r*.95, r*.72, r*.62, body, 1.2); ZB = r*.3; ell(r*.5, 0, r*.55, r*.55, r*.5, r*.42, body, 1.2);
+      for(const sdn of [-1, 1]) dot(r*.95, sdn*r*.15, r*.65, 1, '#ff5a6a', fd*.8 + sdn*sd*.5); ZB = 0; top = r*1.7; }
     else if(k==='slug'){ const w = Math.sin(t*5 + S.ph)*.07, col = S.hit ? '#efe3ff' : '#a98bd4';
-      shadow(r + 3, r*.8); ell(0, 0, r*.4, r + 3 + w*r, r*.75, r*.42, col, 1); ell(r + 2, 0, r*.5, 3, 2.6, 2.6, col, 1);
-      for(const sdn of [-1, 1]) chain([[r + 3, sdn*1.2, r*.6], [r + 5, sdn*2.4, r*.6 + 4]], .8, col, .02, '#ffffff');
+      shadow(r + 3, r*.8); ell(0, 0, r*.4, r + 3 + w*r, r*.75, r*.42, col, 1); ZB = r*.3; ell(r + 2, 0, r*.5, 3, 2.6, 2.6, col, 1);
+      for(const sdn of [-1, 1]) chain([[r + 3, sdn*1.2, r*.6], [r + 5, sdn*2.4, r*.6 + 4]], .8, col, .02, '#ffffff'); ZB = 0;
       for(let q = -1; q <= 1; q++){ const p = P(q*2.6, 0, r*.82); add(p[2] + .03, () => { c.fillStyle = '#ff6fb5'; c.beginPath(); c.moveTo(p[0] - 1.1, p[1]); c.lineTo(p[0], p[1] - 3.4); c.lineTo(p[0] + 1.1, p[1]); c.closePath(); c.fill(); }); } top = r*1.3; }
     else if(k==='cavesnail'){ const col = S.hit ? '#f0e2b8' : '#a6926a', sc = S.hit ? '#f0e2b8' : '#8a7a54';
-      shadow(r*1.3, r*.7); ell(r*.15, 0, r*.28, r*1.05, r*.55, r*.28, col, 1.2); ell(r*1.05, 0, r*.4, r*.35, r*.3, r*.3, col, 1.1);
+      shadow(r*1.3, r*.7); ell(r*.15, 0, r*.28, r*1.05, r*.55, r*.28, col, 1.2); ZB = r*.45; ell(r*1.05, 0, r*.4, r*.35, r*.3, r*.3, col, 1.1);
       for(const sdn of [-1, 1]) chain([[r*1.2, sdn*r*.1, r*.55], [r*1.45, sdn*r*.35, r*1.05]], .8, col, .02, '#e6d6ad');
-      const p = ell(-r*.1, 0, r*1.05, r*.8, r*.6, r*.8, sc, 1.3); add(p[2] + .01, () => { c.strokeStyle = '#4f3f22'; c.lineWidth = 1; c.beginPath(); for(let q = 0; q < 18; q++){ const an = q*.5, rr = r*.06 + q*r*.036; c.lineTo(p[0] + Math.cos(an)*rr*Math.max(.25, Math.abs(sd) + .2), p[1] + Math.sin(an)*rr); } c.stroke(); }); top = r*2; }
+      ZB = r*.3; const p = ell(-r*.1, 0, r*1.05, r*.8, r*.6, r*.8, sc, 1.3); /* the shell always over the foot, the head over the shell until it turns away */ add(p[2] + .01, () => { c.strokeStyle = '#4f3f22'; c.lineWidth = 1; c.beginPath(); for(let q = 0; q < 18; q++){ const an = q*.5, rr = r*.06 + q*r*.036; c.lineTo(p[0] + Math.cos(an)*rr*Math.max(.25, Math.abs(sd) + .2), p[1] + Math.sin(an)*rr); } c.stroke(); }); ZB = 0; top = r*2; }
     else if(k==='saltcrawler'){ const col = S.hit ? '#efe3cc' : '#b59874', sw = S.mv ? t*22 + S.ph : 0;
       shadow(r*1.2, r*1.1);
       for(const sdn of [-1, 1]) for(const [lx, ph] of [[-.55, 0], [-.05, 3.14], [.45, 0]]){ const g = S.mv ? Math.sin(sw + ph)*.15 : 0; chain([[lx*r, sdn*r*.4, r*.45], [lx*r + g*r, sdn*r*1.05, r*.55], [lx*r + g*r, sdn*r*1.25, 0]], 1.2, '#6d5237'); }
-      ell(0, 0, r*.55, r*.98, r*.72, r*.42, col, 1.2); ell(r*.95, 0, r*.5, r*.3, r*.28, r*.26, S.hit ? col : '#7a5c3d', 1);
-      for(const sdn of [-1, 1]) chain([[r*1.1, sdn*r*.15, r*.55], [r*1.5, sdn*r*.45, r*.75], [r*1.7, sdn*r*.4, r*.6]], .9, '#7a5c3d', .02); top = r*1.3; }
+      ell(0, 0, r*.55, r*.98, r*.72, r*.42, col, 1.2); ZB = r*.3; ell(r*.95, 0, r*.5, r*.3, r*.28, r*.26, S.hit ? col : '#7a5c3d', 1);
+      for(const sdn of [-1, 1]) chain([[r*1.1, sdn*r*.15, r*.55], [r*1.5, sdn*r*.45, r*.75], [r*1.7, sdn*r*.4, r*.6]], .9, '#7a5c3d', .02); ZB = 0; top = r*1.3; }
     parts.sort((u, v) => u[0] - v[0]); for(const q of parts) q[1]();
     if(S.f && S.f.maxHp && S.f.hp < S.f.maxHp){ const bw = r*2; c.fillStyle = OL; c.fillRect(x - bw/2 - 1, y - top - 5, bw + 2, 3.4); c.fillStyle = '#3f8580'; c.fillRect(x - bw/2, y - top - 4.3, bw*Math.max(0, S.f.hp/S.f.maxHp), 2); } /* the health ring, as a bar over it */
     S.top = top; return top; }
@@ -11543,6 +11543,99 @@
     else if(l){ const a = fadeFor(b.gx, b.gy, zb, 16, key); c.save(); leanBill(c, b.x, b.y); c.globalAlpha *= a; c.translate(0, -zb*ZL); drawPiece(c, b.k, b.x, b.y, b, t); c.restore(); }
     else { const a = fadeFor(b.gx, b.gy, 0, 16, key); c.save(); leanBill(c, b.x, b.y); if(a < 1){ c.save(); c.globalAlpha *= a; drawPiece(c, b.k, b.x, b.y, b, t); c.restore(); } else drawPiece(c, b.k, b.x, b.y, b, t); c.restore(); }
   }
+  /* ---- first person: furniture, stations and built pieces as small solid models (m3Of), drawn face by face through the true lens in the eye camera (drawPlayerView) instead of as flat pictures. A model is a list of parts in world units (x east, y south, z up), each a box (b), an upright many-sided post (cy), a pyramid (py), a tent roof (pr: ridge north to south) or a lean-to slope (ln: high at the north), with its colour; options: top (the top's colour), ln/vl/tl (lines across the sides, up the sides, across the top: [count, colour]), hide (faces never seen: n e s w t b), glow (lit from inside: the dark does not reach it), zb (a lean in the draw order) ---- */
+  const M3_SIGN = ['#d9c9a3', '#82ad60', '#d4b66d', '#dc6e65'];
+  function m3Kit(X, Y, Z){ const P = []; const o = (q, extra) => { P.push(extra ? Object.assign(q, extra) : q); return q; };
+    return {P, B:(x0, y0, z0, x1, y1, z1, c, e) => o({t:'b', a:[X + x0, Y + y0, Z + z0, X + x1, Y + y1, Z + z1], c}, e),
+      Cy:(x, y, r, z0, z1, c, e) => o({t:'cy', a:[X + x, Y + y, r, Z + z0, Z + z1], c}, e),
+      Py:(x, y, r, z0, z1, c, e) => o({t:'py', a:[X + x, Y + y, r, Z + z0, Z + z1], c}, e),
+      Pr:(x0, y0, z0, x1, y1, z1, c, e) => o({t:'pr', a:[X + x0, Y + y0, Z + z0, X + x1, Y + y1, Z + z1], c}, e),
+      Ln:(x0, y0, z0, x1, y1, z1, c, e) => o({t:'ln', a:[X + x0, Y + y0, Z + z0, X + x1, Y + y1, Z + z1], c}, e),
+      Ob:(x, y, z0, z1, hl, hw, ang, c, e) => o({t:'ob', a:[X + x, Y + y, Z + z0, Z + z1, hl, hw, ang], c}, e)}; } /* Ob: a box turned to ang about its middle, hl and hw its half length and width */
+  const m3Legs = (K, x, y, z, w, c) => { for(const sx of [-1, 1]) for(const sy of [-1, 1]) K.B(sx > 0 ? x - w : -x, sy > 0 ? y - w : -y, 0, sx > 0 ? x : -x + w, sy > 0 ? y : -y + w, z, c); };
+  function m3Piece(b, Z){ /* a placed piece; null keeps its picture */
+    const k = b.k, K = m3Kit(b.x, b.y, Z), {B, Cy, Py, Pr, Ln} = K, l = b.l || 0;
+    if(BOXK[k] || k==='stonewall'){ const x0 = b.gx*GRID - b.x, y0 = b.gy*GRID - b.y, hid = rtWallBy(b.gx, b.gy, l), hide = (hid(0, -1) ? 'n' : '') + (hid(1, 0) ? 'e' : '') + (hid(0, 1) ? 's' : '') + (hid(-1, 0) ? 'w' : '') + 'b';
+      if(k==='spikes'){ B(x0, y0, 0, x0 + GRID, y0 + GRID, 9, '#573d26', {top:'#7e5c39', ln:[2, '#2c1e12'], hide}); for(const [dx, dy] of [[5, 5], [15, 5], [5, 15], [15, 15]]) Py(x0 + dx, y0 + dy, 2.6, 9, 19, '#e0c697'); return K.P; }
+      if(k==='denhatch') return null;
+      const S = {wall:['#6e4a2b', '#9a6c40', [4, '#3a2616'], null], stonewall:['#75716a', '#9a958b', [3, '#4d4a44'], [2, '#4d4a44']], frame:['#33271a', '#8a6a3e', [3, '#a57e4a'], [3, '#a57e4a']], daub:['#9c7b55', '#b8976c', [2, '#6a4c2e'], null]}[k];
+      B(x0, y0, 0, x0 + GRID, y0 + GRID, LH, S[0], {top:S[1], ln:S[2], vl:S[3], tl:[2, k==='stonewall' ? '#6f6b63' : '#6e4a2b'], hide}); return K.P; }
+    if(k==='stairs'){ const d = (b.dir | 0) & 3, N = 4, q = GRID/N, x0 = b.gx*GRID - b.x, y0 = b.gy*GRID - b.y; /* climbs toward DIRS[d] */
+      for(let i = 0; i < N; i++){ const z1 = LH*(i + 1)/N, a = i*q, e = {top:i % 2 ? '#a8794a' : '#b98a56', hide:'b'};
+        if(d===0) B(x0 + a, y0, 0, x0 + a + q, y0 + GRID, z1, '#6b4528', e); else if(d===2) B(x0 + GRID - a - q, y0, 0, x0 + GRID - a, y0 + GRID, z1, '#6b4528', e);
+        else if(d===1) B(x0, y0 + a, 0, x0 + GRID, y0 + a + q, z1, '#6b4528', e); else B(x0, y0 + GRID - a - q, 0, x0 + GRID, y0 + GRID - a, z1, '#6b4528', e); }
+      return K.P; }
+    if(k==='table'){ B(-9, -6, 8, 9, 6, 10, '#7a5432', {top:'#9a6c40', tl:[2, '#6e4a2b']}); B(-8, -5, 6.5, 8, 5, 8, '#6e4a2b', {hide:'tb'}); m3Legs(K, 8, 5, 6.5, 2.2, '#5a3b22'); Cy(-4, -1, 2.4, 10, 11.6, '#d9c9a3', {n:6}); return K.P; }
+    if(k==='chair'){ B(-5, -5, 5, 5, 5, 6.5, '#8a6038', {top:'#a37446'}); m3Legs(K, 5, 5, 5, 1.6, '#5a3b22'); B(-5, -5, 6.5, 5, -3.6, 15, '#7a5432', {ln:[2, '#5a3b22']}); return K.P; } /* its back to the north: every piece is built facing south */
+    if(isStorage(k)){ B(-9, -6, 0, 9, 6, 8, '#80502f', {ln:[1, '#5a3a22']}); B(-9.4, -6.4, 8, 9.4, 6.4, 11, '#ac7b46', {top:'#b88650'}); for(const x of [-6, 4.5]) B(x, -6.6, 0, x + 1.5, 6.6, 11.3, '#d4b56b', {hide:'b'});
+      B(-1.6, 6, 4.5, 1.6, 6.9, 8.5, '#d2b779'); if(k==='supplychest') B(-4.5, 6.4, 1.5, 4.5, 6.8, 3.6, '#81ac9c'); return K.P; }
+    if(k==='shelf'){ for(const x of [-9, 8]) B(x, -4, 0, x + 1.2, 4, 19, '#80502f'); B(-8, -4, 0, 8, -3, 19, '#5c3a22', {vl:[3, '#4a2e1a']});
+      const cols = ['#9c2a44', '#3f8580', '#d9c9a3', '#e0b54a', '#7fae6b', '#c73a5c', '#a37446']; let n = 0;
+      for(const z of [0, 6.2, 12.4, 18]){ B(-8, -3, z, 8, 4, z + 1.1, '#6e4428', {top:'#ac7b46'}); if(z > 17) continue; let x = -7; for(let j = 0; j < 4; j++){ const w = 2 + ((n*5 + j*3) % 3), h = 2.6 + ((n + j) % 3); B(x, -1.5, z + 1.1, x + w, 1.5, z + 1.1 + h, cols[(n++) % cols.length]); x += w + 1; } } return K.P; }
+    if(k==='bed'){ B(-8, -10, 0, 8, 10, 4, '#6e4a2b'); B(-7.5, -9.5, 4, 7.5, 9.5, 6.2, '#e1d6bc'); B(-7.6, -1, 4.1, 7.6, 9.6, 6.6, '#9c2a44', {top:'#b8304f'}); B(-5.5, -9, 6.2, 5.5, -5, 7.8, '#f4ecd6'); B(-8.6, -11.2, 0, 8.6, -9.6, 11, '#5a3b22', {top:'#6e4a2b'}); return K.P; }
+    if(k==='lamp'){ Cy(0, 0, 4.2, 0, 1.4, '#5a3b22', {n:8}); B(-.9, -.9, 1.4, .9, .9, 13, '#6e4a2b'); B(-4, -4, 13, 4, 4, 21, '#f3c466', {glow:1, top:'#c99a44'}); B(-1.6, -1.6, 21, 1.6, 1.6, 22.4, '#3a2a1e'); return K.P; }
+    if(k==='trailsign'){ const lc = M3_SIGN[Number.isInteger(b.label) ? b.label : 0] || M3_SIGN[0]; B(-1.2, -1.2, 0, 1.2, 1.2, 10, '#69462c'); B(-11, -1, 9, 11, 1, 18, '#382a20', {top:lc, ln:[1, lc]}); return K.P; }
+    if(k==='tent'){ Pr(-12, -10, 0, 12, 10, 15, '#8f6b44', {ln:[2, '#6f4f30']}); K.P.push({t:'q', p:[[b.x - 4.5, b.y + 10.05, Z], [b.x + 4.5, b.y + 10.05, Z], [b.x, b.y + 10.05, Z + 10]], n:[0, 1, 0], c:'#2a1c12', zb:.5}); for(const y of [-10, 10]) B(-.8, y - .8, 15, .8, y + .8, 18, '#4a301c'); return K.P; } /* its door to the south */
+    if(k==='leanto'){ for(const x of [-12, 9.6]) B(x, -9, 0, x + 2.4, -6.6, 14, '#5a3b22'); Ln(-13, -9, 0, 13, 9, 15, '#c9b46a', {vl:[5, '#8e7a3e'], top:'#c9b46a'}); return K.P; }
+    if(k==='furnace'){ B(-9, -7, 0, 9, 7, 19, '#7e7569', {top:'#8e867a', ln:[3, '#4c4540']}); B(-6, 7, 2, 6, 7.6, 10, '#292321', {hide:'b'}); B(-4, 7.5, 3, 4, 7.9, 7.5, '#e09048', {glow:1}); B(-3, -3, 19, 3, 3, 25, '#6a6258'); return K.P; }
+    if(k==='anvil'){ B(-6, -4, 0, 6, 4, 6, '#5c4c3d'); B(-3, -2.5, 6, 3, 2.5, 9, '#6e6a66'); B(-8, -3.2, 9, 8, 3.2, 13, '#8e9aa2', {top:'#aab4bb'}); Py(10.5, 0, 3.2, 9, 13, '#8e9aa2'); return K.P; }
+    if(k==='still'){ Cy(0, 0, 6.5, 0, 10, '#b06c3c', {n:10, top:'#c98252'}); Cy(0, 0, 3, 10, 14, '#a5603a', {n:8}); B(-.8, -.8, 13, .8, .8, 16, '#8a5030'); B(-.8, -.8, 15, 9, .8, 16.6, '#8a5030'); B(7.4, -.8, 3, 9, .8, 16, '#8a5030'); B(-6, -6, 0, 6, 6, 3, '#4a4038', {hide:'t'}); return K.P; }
+    if(k==='refiner'){ B(-10, -6, 0, 10, 6, 11, '#665647', {top:'#76665a'}); B(-7, -4.5, 11, 7, 4.5, 19, '#83a6a0', {top:'#2e3a38'}); B(10, -4.5, 3, 11.4, 4.5, 12, '#aeb7ad'); return K.P; }
+    if(k==='irrigationpump'){ B(-9, -5, 0, 9, 5, 5, '#73818a'); B(-5, -4, 5, 5, 4, 14, '#bfa05c', {top:'#cdb070'}); B(-1, -1, 14, 1, 1, 19, '#c67e54'); B(-1, -1, 18, 9, 1, 19.6, '#c67e54'); B(7.4, -1, 14, 9, 1, 19, '#c67e54'); B(-2.4, 4, 6.5, 2.4, 4.6, 11, '#323b41'); return K.P; }
+    if(k==='sentry'){ for(const [x, y] of [[-6, 4], [6, 4], [0, -6]]) K.P.push({t:'b', a:[b.x + x - .9, b.y + y - .9, Z, b.x + x + .9, b.y + y + .9, Z + 12], c:'#7a5233'}); B(-2, -2, 11, 2, 2, 14, '#5a3b22');
+      const a = b.ang != null ? b.ang : -Math.PI/2, cx = Math.cos(a), cy = Math.sin(a); K.Ob(cx*2.5, cy*2.5, 14, 16, 7.5, 1.1, a, '#8a6440'); K.Ob(cx*7, cy*7, 14.3, 15.7, .8, 7, a, '#d9c9a3'); return K.P; } /* the stock along its aim, the bone bow across it */
+    return null; }
+  function m3Bench(q, Z){ const K = m3Kit(q.x, q.y, Z), {B} = K, def = q.k==='def', bld = q.k==='build'; /* the workbench, the defense bench, the builder's bench */
+    B(-15, -6, 9, 15, 6, 11.5, def ? '#6e5a4a' : '#7a5432', {top:def ? '#857060' : bld ? '#a8794a' : '#9a6c40', tl:[2, '#6e4a2b']}); m3Legs(K, 13, 5, 9, 2.6, '#4a311c');
+    if(def){ B(2, -3, 11.5, 10, 2, 14, '#8a8f96'); B(-11, -2, 11.5, -4, 3, 13, '#e0c697'); } else if(bld){ B(-12, -4, 11.5, -2, 3, 12.3, '#e8dcc0'); B(4, -2, 11.5, 11, 1, 14.5, '#6b4528'); } else { B(2, -2, 11.5, 10, 2, 12.5, '#9aa3ad'); B(-10, -1, 11.5, -3, 1, 13, '#8a6440'); } return K.P; }
+  function m3Slab(f, Z){ const K = m3Kit(f.gx*GRID, f.gy*GRID, Z), nb = (dx, dy) => wd.upFl.has(gkey(f.gx + dx, f.gy + dy, f.l)), hide = (nb(0, -1) ? 'n' : '') + (nb(1, 0) ? 'e' : '') + (nb(0, 1) ? 's' : '') + (nb(-1, 0) ? 'w' : '');
+    K.B(0, 0, f.l*LH - SLAB, GRID, GRID, f.l*LH, '#4a3320', {top:'#a8794a', tl:[3, '#7a5233'], hide}); return K.P; }
+  /* the den: its furniture stands up over its picture on the floor (DEN_BOX: each box, how tall, its colour and top), the lamps hang on the walls and the ladder climbs its shaft */
+  const DEN_M3 = [[10, '#6a4727', '#86613c', 'table'], [40, '#57534d', '#6a655d'], [40, '#57534d', '#6a655d'], [40, '#57534d', '#6a655d'], [40, '#57534d', '#6a655d'], [6, '#6a4727', '#7a5836'], [6, '#6a4727', '#7a5836'], [22, '#5a3b22', '#d9c9a3', 'board'], [11, '#6a4727', '#5a4a3a', 'ore'], [11, '#6a4727', '#5a4a3a', 'ore'], [12, '#4b4f55', '#3a3a40', 'ore'], [7, '#6a665f', '#1d4a63', 'water'], [8, '#6a665f', '#1d4a63', 'water'], [13, '#5a5048', '#3a3430', 'fire'], [9, '#6a4727', '#86613c'], [18, '#6a4727', '#80502f'],
+    [17, '#6d6156', '#857869', 'fire'], [11, '#5a5e64', '#7a7e84'], [8, '#6a4727', '#86613c'], [8, '#5a5e64', '#7a7e84'], [19, '#8a4f3a', '#9a604a', 'fire'], [10, '#6a4727', '#86613c'], [19, '#6d6156', '#857869', 'fire'], [10, '#5a5e64', '#7a7e84']];
+  function m3Den(out, near){ /* every model of the den's furniture: [prims, x, y] */
+    for(let i = 0; i < DEN_BOX.length; i++){ const [x0, y0, x1, y1, rk] = DEN_BOX[i], S = DEN_M3[i]; if(!S || !denRoomOn(rk)) continue; const cx = (x0 + x1)/2, cy = (y0 + y1)/2; if(!near(cx, cy)) continue;
+      const K = m3Kit(cx, cy, 0), w = (x1 - x0)/2, d = (y1 - y0)/2, h = S[0], kd = S[3];
+      if(kd==='table'){ for(const s of [-1, 1]) K.B(-w + 4, s > 0 ? d - 7 : -d, 0, w - 4, s > 0 ? d : -d + 7, 6, '#6a4727', {top:'#7a5836'}); K.B(-w, -d + 9, h - 2, w, d - 9, h, '#6a4727', {top:'#86613c', tl:[3, '#5a3b22']}); m3Legs(K, w - 2, d - 10, h - 2, 3, '#4a311c');
+        for(const [dx, c] of [[-w + 18, '#c9825a'], [-w + 36, '#d98f4e'], [-w + 58, '#dfe9ee'], [-w + 70, '#58c4a0']]) K.B(dx - 2.5, -2, h, dx + 2.5, 2, h + 3, c); }
+      else if(kd==='board'){ K.B(-w, -d, 0, -w + 1.6, -d + 1.6, h, '#5a3b22'); K.B(w - 1.6, -d, 0, w, -d + 1.6, h, '#5a3b22'); K.B(-w + 1, -d, 8, w - 1, -d + 1.2, h, '#d9c9a3', {ln:[4, '#7a6a50']}); }
+      else { K.B(-w, -d, 0, w, d, h, S[1], {top:S[2], ln:h > 30 ? [3, 'rgba(16,12,9,.55)'] : null});
+        if(kd==='ore') for(let n = 0; n < 6; n++){ const ox = -w + 6 + (n % 3)*(2*w - 12)/2, oy = n < 3 ? -d/2 : d/2; K.B(ox - 2.5, oy - 2, h, ox + 2.5, oy + 2, h + 2.6, DEN_ORE[n % DEN_ORE.length]); }
+        if(kd==='water') K.B(-w + 3, -d + 3, h - .6, w - 3, d - 3, h + .05, '#1d4a63', {glow:0, hide:'nesw'});
+        if(kd==='fire'){ K.B(-w*.45, d, 1.5, w*.45, d + .4, h*.5, '#1c1410', {hide:'b'}); K.B(-w*.3, d + .3, 2, w*.3, d + .6, h*.36, '#e8883a', {glow:1, hide:'b'}); } } /* the fire door, and the fire through it */
+      out.push([K.P, cx, cy]); }
+    if(denRoomOn('floor2')) for(const S of [DEN_STAIR1, DEN_STAIR2]){ const gx = Math.round(S.x/GRID) - 1, gy = Math.floor(S.y/GRID); if(!near(gx*GRID + GRID, gy*GRID + 10)) continue; const P = []; for(const g of [gx, gx + 1]) P.push(...m3Piece({k:'stairs', gx:g, gy, l:0, dir:3, x:g*GRID + GRID/2, y:gy*GRID + GRID/2}, 0)); out.push([P, gx*GRID + GRID, gy*GRID + 10]); } /* the stairs between the floors, two pieces wide, climbing north */
+    for(const l of denLamps()){ if(!near(l.x, l.y)) continue; const fy = Math.floor((l.y - DEN_O.y)/GRID)*GRID + DEN_O.y, K = m3Kit(l.x, fy, 0); /* on the wall face to the north */
+      K.B(-.7, 0, 30, .7, 4, 31.4, '#2b2b30'); K.B(-3, 2.5, 22, 3, 7.5, 30, '#f4c868', {glow:1, top:'#3a342c'}); K.B(-3.6, 2, 30, 3.6, 8, 31.4, '#3a342c'); out.push([K.P, l.x, fy + 5]); }
+    if(near(DEN_LAD.x, DEN_O.y)){ const K = m3Kit(DEN_LAD.x, DEN_O.y, 0), open = !!(denRec() && denRec().open); for(const s of [-7, 5.6]) K.B(s, 1, 0, s + 1.4, 3, 78, '#b08a5a'); for(let z = 5; z < 78; z += 6) K.B(-6, 1.6, z, 5.8, 2.6, z + 1, '#8a6440', {hide:'tb'}); /* the ladder, up the north wall and on up its shaft */
+      K.B(-14, -1, DEN_WH, 14, 0, 78, open ? '#d8c890' : '#1a120c', {glow:open ? 1 : 0, hide:'tb'}); out.push([K.P, DEN_LAD.x, DEN_O.y + 2]);
+      const C = m3Kit(DEN_CRANK.x, DEN_O.y + 14, 0); C.B(-3, -3, 0, 3, 3, 11, '#6d4a2b'); C.B(-6, -1, 8, 6, 1, 20, '#2b2b30', {hide:'tb'}); C.B(-1, -2, 13, 1, 2, 15, '#d2b779'); out.push([C.P, DEN_CRANK.x, DEN_O.y + 14]); } }
+  function m3Faces(q){ /* a part's faces: {p: corners (a side runs foot, foot, top, top, so its lines can be laid along it), n: the outward normal, s: its letter (n e s w t b), top: a top or a slope} */
+    const a = q.a, F = [];
+    if(q.t==='q') return [{p:q.p, n:q.n, s:'f'}];
+    if(q.t==='b'){ const [x0, y0, z0, x1, y1, z1] = a;
+      F.push({p:[[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], n:[0, 1, 0], s:'s'}, {p:[[x1, y0, z0], [x0, y0, z0], [x0, y0, z1], [x1, y0, z1]], n:[0, -1, 0], s:'n'},
+        {p:[[x1, y1, z0], [x1, y0, z0], [x1, y0, z1], [x1, y1, z1]], n:[1, 0, 0], s:'e'}, {p:[[x0, y0, z0], [x0, y1, z0], [x0, y1, z1], [x0, y0, z1]], n:[-1, 0, 0], s:'w'},
+        {p:[[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], n:[0, 0, 1], s:'t', top:1}, {p:[[x0, y1, z0], [x1, y1, z0], [x1, y0, z0], [x0, y0, z0]], n:[0, 0, -1], s:'b'}); return F; }
+    if(q.t==='ob'){ const [cx, cy, z0, z1, hl, hw, an] = a, ca = Math.cos(an), sa = Math.sin(an), C = [[hl, hw], [-hl, hw], [-hl, -hw], [hl, -hw]].map(([u, v]) => [cx + u*ca - v*sa, cy + u*sa + v*ca]);
+      for(let i = 0; i < 4; i++){ const A = C[i], B = C[(i + 1) % 4], mx = (A[0] + B[0])/2 - cx, my = (A[1] + B[1])/2 - cy, ml = Math.hypot(mx, my) || 1; F.push({p:[[A[0], A[1], z0], [B[0], B[1], z0], [B[0], B[1], z1], [A[0], A[1], z1]], n:[mx/ml, my/ml, 0], s:'x'}); }
+      F.push({p:C.map(v => [v[0], v[1], z1]), n:[0, 0, 1], s:'t', top:1}, {p:C.map(v => [v[0], v[1], z0]).reverse(), n:[0, 0, -1], s:'b'}); return F; }
+    if(q.t==='cy' || q.t==='py'){ const [cx, cy, r, z0, z1] = a, n = q.t==='py' ? 4 : (q.n || 8), o = q.t==='py' ? Math.PI/4 : 0, R = [];
+      for(let i = 0; i < n; i++){ const t = o + i*2*Math.PI/n; R.push([cx + Math.cos(t)*r, cy + Math.sin(t)*r]); }
+      for(let i = 0; i < n; i++){ const A = R[i], B = R[(i + 1) % n], mx = (A[0] + B[0])/2 - cx, my = (A[1] + B[1])/2 - cy, ml = Math.hypot(mx, my) || 1;
+        if(q.t==='py'){ const h = z1 - z0, nl = Math.hypot(h, ml); F.push({p:[[B[0], B[1], z0], [A[0], A[1], z0], [cx, cy, z1]], n:[mx/ml*h/nl, my/ml*h/nl, ml/nl], s:'x'}); }
+        else F.push({p:[[B[0], B[1], z0], [A[0], A[1], z0], [A[0], A[1], z1], [B[0], B[1], z1]], n:[mx/ml, my/ml, 0], s:'x'}); }
+      if(q.t==='cy') F.push({p:R.map(v => [v[0], v[1], z1]), n:[0, 0, 1], s:'t', top:1}); F.push({p:R.map(v => [v[0], v[1], z0]).reverse(), n:[0, 0, -1], s:'b'}); return F; }
+    if(q.t==='pr'){ const [x0, y0, z0, x1, y1, z1] = a, xm = (x0 + x1)/2, w = (x1 - x0)/2, h = z1 - z0, nl = Math.hypot(h, w); /* a tent: two slopes meeting at a ridge from north to south, a gable at each end */
+      F.push({p:[[x0, y0, z0], [x0, y1, z0], [xm, y1, z1], [xm, y0, z1]], n:[-h/nl, 0, w/nl], s:'w', top:1}, {p:[[x1, y1, z0], [x1, y0, z0], [xm, y0, z1], [xm, y1, z1]], n:[h/nl, 0, w/nl], s:'e', top:1},
+        {p:[[x0, y1, z0], [x1, y1, z0], [xm, y1, z1]], n:[0, 1, 0], s:'s'}, {p:[[x1, y0, z0], [x0, y0, z0], [xm, y0, z1]], n:[0, -1, 0], s:'n'}); return F; }
+    if(q.t==='ln'){ const [x0, y0, z0, x1, y1, z1] = a, d = y1 - y0, h = z1 - z0, nl = Math.hypot(h, d); /* a lean-to: one slope down from a high north edge to the ground at the south, open underneath */
+      F.push({p:[[x0, y1, z0], [x1, y1, z0], [x1, y0, z1], [x0, y0, z1]], n:[0, h/nl, d/nl], s:'t', top:1}, {p:[[x1, y0, z1], [x0, y0, z1], [x0, y1, z0], [x1, y1, z0]], n:[0, -h/nl, -d/nl], s:'b'}); return F; }
+    return F; }
+  const M3RGB = new Map();
+  function m3Fill(c, k, shd){ /* a colour lit by k and darkened by the night (shd) */
+    let v = M3RGB.get(c); if(!v){ const n = parseInt(c.slice(1), 16); v = [n >> 16, (n >> 8) & 255, n & 255]; M3RGB.set(c, v); }
+    const f = (x, i) => Math.max(0, Math.min(255, Math.round(x*k*(1 - shd) + [4, 6, 16][i]*shd))); return 'rgb(' + f(v[0], 0) + ',' + f(v[1], 1) + ',' + f(v[2], 2) + ')'; }
   const darkCvs = []; /* one low-resolution darkness layer per view */
   function wdLayout(w, h, n){ /* the screen cut into one view per player: two sit side by side (or one above the other on a tall screen), three or four take a grid */
     const land = w >= h, mx = Math.round(w/2), my = Math.round(h/2), R = (x, y, ww, hh) => ({x, y, w:ww, h:hh});
@@ -12479,6 +12572,14 @@
       const eScr = (q) => { const r = eP(q[0], q[1], q[2]); return [(W/2 + r[1]*EY.f/r[0])*bd, (H/2 + EY.f*r[2]/r[0])*bd]; };
       const ePoly = (g, pts, fill) => { const cp = eClip(pts, .6); if(cp.length < 3) return; g.beginPath(); cp.forEach((q, i) => { const s = eScr(q); i ? g.lineTo(s[0], s[1]) : g.moveTo(s[0], s[1]); }); g.closePath(); g.fillStyle = fill; g.fill(); };
       const eLine = (g, a, b) => { const cp = eClip([a, b], .6); if(cp.length < 2) return; const s0 = eScr(cp[0]), s1 = eScr(cp[1]); g.moveTo(s0[0], s0[1]); g.lineTo(s1[0], s1[1]); };
+      const drawM3 = (g, prims, ox, oy, al, shd, zc) => { const ex = EY.cx, ey = EY.cy, ez = EY.E, lw = clamp(EY.f/Math.max(1, zc)*.75, .45, 1.8)*bd, ds = q => { const v = q.a, cn = q.t==='cy' || q.t==='py' || q.t==='ob', cx = q.t==='q' ? q.p[0][0] : cn ? v[0] : (v[0] + v[3])/2, cy = q.t==='q' ? q.p[0][1] : cn ? v[1] : (v[1] + v[4])/2, cz = q.t==='q' ? q.p[0][2] : cn ? (v[2] + v[3])/2*(q.t==='ob') + (v[3] + v[4])/2*(q.t!=='ob') : (v[2] + v[5])/2; return Math.hypot(cx - ex, cy - ey, cz - ez) - (q.zb || 0); }; /* a model through the true lens: its parts far to near, each part's faces that look toward the eye (a part is convex, so those never overlap one another) */
+        const ord = prims.map(q => [ds(q), q]).sort((u, v) => v[0] - u[0]); g.setTransform(1, 0, 0, 1, -ox, -oy); g.save(); g.globalAlpha = al; g.lineJoin = 'round'; g.lineWidth = lw;
+        const lineSet = (F, spec, along) => { if(!spec) return; const [n, col] = spec, P = F.p; if(P.length < 4) return; g.strokeStyle = col; g.lineWidth = lw*.7; g.beginPath(); for(let i = 1; i <= n; i++){ const f = i/(n + 1), L = (a, b) => [a[0] + (b[0] - a[0])*f, a[1] + (b[1] - a[1])*f, a[2] + (b[2] - a[2])*f]; if(along) eLine(g, L(P[0], P[3]), L(P[1], P[2])); else eLine(g, L(P[0], P[1]), L(P[3], P[2])); } g.stroke(); g.lineWidth = lw; };
+        for(const [, q] of ord) for(const F of m3Faces(q)){ const n = F.n, v = F.p[0]; if((ex - v[0])*n[0] + (ey - v[1])*n[1] + (ez - v[2])*n[2] <= 1e-4 || (q.hide && q.hide.includes(F.s))) continue;
+          const cp = eClip(F.p, .6); if(cp.length < 3) continue; g.beginPath(); cp.forEach((w, i) => { const s = eScr(w); i ? g.lineTo(s[0], s[1]) : g.moveTo(s[0], s[1]); }); g.closePath();
+          const k = q.glow ? 1 : n[2] < -.5 ? .55 : .74 + .3*rtLit(n[0], n[1]) + .34*Math.max(0, n[2]); g.fillStyle = m3Fill(F.top && q.top ? q.top : q.c, k, q.glow ? 0 : shd); g.fill(); g.strokeStyle = OL; g.stroke();
+          if(F.s==='t' && F.top && q.t==='b') lineSet(F, q.tl, true); else if(!F.top && F.p.length===4){ lineSet(F, q.ln, true); lineSet(F, q.vl, false); } else if(q.t==='ln'){ lineSet(F, q.vl, false); } }
+        g.restore(); };
       const wallFaces = (b, out) => { for(const S of RT_SIDES){ const nx = S[0], ny = S[1]; if(!DL.kind.has((b.cx + nx) + ',' + (b.cy + ny))) continue; const x0 = b.gx*GRID, y0 = b.gy*GRID, ax = x0 + S[2]*GRID, ay = y0 + S[3]*GRID, bx = x0 + S[4]*GRID, by = y0 + S[5]*GRID, mx = (ax + bx)/2, my = (ay + by)/2;
           if((EY.cx - mx)*nx + (EY.cy - my)*ny <= 0) continue; const dx = mx - EY.cx, dy = my - EY.cy, d = dx*EY.fx + dy*EY.fy; if(d < -GRID || d > dE + 10) continue; if(Math.abs(RCS*dx - RSN*dy) > (d + GRID + EY.E*EY.sT/EY.cT)*W*EY.cT/EY.f/2 + GRID) continue; /* behind, past the haze, or out to the side */
           out.push({wf:{ax, ay, bx, by, nx, ny, b, i:nx ? b.cy : b.cx}, P:{x:mx + nx*3, y:my + ny*3}, d:d + .5, u:0}); }
@@ -12495,14 +12596,15 @@
       const drawTop = (b, al, shd) => { const g = gL, x0 = b.gx*GRID, y0 = b.gy*GRID, sq = [[x0, y0, wH], [x0 + GRID, y0, wH], [x0 + GRID, y0 + GRID, wH], [x0, y0 + GRID, wH]]; g.setTransform(1, 0, 0, 1, 0, 0); g.save(); g.globalAlpha = al; ePoly(g, sq, denHash(b.cx, b.cy, 3) < .5 ? '#726d66' : '#686259'); /* the earth's edge over a wall: its top, rimmed where it drops into a room */
         g.strokeStyle = 'rgba(16,12,9,.85)'; g.lineWidth = Math.max(.8, bd); g.beginPath(); for(const S of RT_SIDES) if(DL.kind.has((b.cx + S[0]) + ',' + (b.cy + S[1]))) eLine(g, [x0 + S[2]*GRID, y0 + S[3]*GRID, wH], [x0 + S[4]*GRID, y0 + S[5]*GRID, wH]); g.stroke();
         if(shd > .004){ g.globalCompositeOperation = 'source-atop'; ePoly(g, sq, `rgba(4,6,16,${shd.toFixed(3)})`); g.globalCompositeOperation = 'source-over'; } g.restore(); };
-      const its = [], ntx = []; for(const e of EB){ if(DL && e.piece && e.piece.k==='denwall'){ wallFaces(e.piece, its); continue; } if(EY.fp && e.fxn && hyp(e.fxn.x - p.x, e.fxn.y - p.y) < 48){ ntx.push(e.fxn); continue; } /* first person: words that rise off your own body show on the screen */ const P = e.btn || e.fxn || e.n || e.f || e.bench || e.foe || e.cart || e.bal || e.hal || e.rat || e.trader || e.tc || e.rrp || e.cp || e.partner || e.d || e.stink || e.cr || e.piece || (e.me!==undefined ? bodyOf(e.me) : null); if(!P || !Number.isFinite(P.x) || !Number.isFinite(P.y)) continue;
+      const its = [], ntx = []; if(DL){ const M = []; m3Den(M, (x, y) => { const d = (x - EY.cx)*EY.fx + (y - EY.cy)*EY.fy; return d > -60 && d < dE + 40; }); for(const [P3, x, y] of M) its.push({m3:P3, P:{x, y}, d:(x - EY.cx)*EY.fx + (y - EY.cy)*EY.fy, u:0}); } /* the den's furniture, lamps and ladder */
+      for(const e of EB){ if(DL && e.piece && e.piece.k==='denwall'){ wallFaces(e.piece, its); continue; } if(EY.fp && e.fxn && hyp(e.fxn.x - p.x, e.fxn.y - p.y) < 48){ ntx.push(e.fxn); continue; } /* first person: words that rise off your own body show on the screen */ const P = e.btn || e.fxn || e.n || e.f || e.bench || e.foe || e.cart || e.bal || e.hal || e.rat || e.trader || e.tc || e.rrp || e.cp || e.partner || e.d || e.stink || e.cr || e.piece || (e.slab ? {x:e.slab.gx*GRID + GRID/2, y:e.slab.gy*GRID + GRID/2} : null) || (e.me!==undefined ? bodyOf(e.me) : null); if(!P || !Number.isFinite(P.x) || !Number.isFinite(P.y)) continue;
         const dx = P.x - EY.cx, dy = P.y - EY.cy, d = dx*EY.fx + dy*EY.fy; if(d < 2 || d > dE + 10) continue; its.push({e, P, d, u:RCS*dx - RSN*dy}); }
       its.sort((a, b)=>b.d - a.d); /* far to near */
       const yv = [RCS, RSN, UX, UY, YAW]; /* the view's own turn, put back after the billboards */
       let lit = its.length; if(dk > 0.01 && eyL.length) for(let i = 0; i < its.length; i++){ if(eyeLitAt(eyL, its[i].P.x, its[i].P.y) < .98){ lit = i; break; } } /* the farthest one a light reaches: those before it share the night and are darkened at once; from it on, nearer, each is darkened by the dark left at its feet, on its own */
       const shade = () => { if(dk > 0.01){ gL.setTransform(1, 0, 0, 1, 0, 0); gL.globalCompositeOperation = 'source-atop'; gL.fillStyle = `rgba(4,6,16,${dk.toFixed(3)})`; gL.fillRect(0, 0, bw, bh); gL.globalCompositeOperation = 'source-over'; } }; /* night falls on them as on the ground */
       let nIt = 0;
-      for(const it of its){ const one = nIt++ >= lit; if(nIt - 1 === lit) shade(); if(it.wt){ drawTop(it.wt, it.d > dE*.8 ? clamp((dE - it.d)/(dE*.2), 0, 1) : 1, one ? dk*eyeLitAt(eyL, it.P.x, it.P.y) : 0); continue; } if(it.wf){ drawFace(it, it.d > dE*.8 ? clamp((dE - it.d)/(dE*.2), 0, 1) : 1, one ? dk*eyeLitAt(eyL, it.P.x, it.P.y) : 0); continue; } const {e, P, d, u} = it, zc = d*EY.cT + EY.E*EY.sT; if(zc < 2) continue; const k = EY.f/zc, sx = W/2 + u*k, sy = H/2 + EY.f*(EY.E*EY.cT - d*EY.sT)/zc; { const B = eyeBox(e, P), Eh = EY.E - (e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0))*ANG_KY/ANG_HV, zh = d*EY.cT + Eh*EY.sT; if(zh > 1){ const kh = EY.f/zh, sxh = W/2 + u*kh, syh = H/2 + EY.f*(Eh*EY.cT - d*EY.sT)/zh; if(Math.abs(sxh - W/2) > W/2 + B[0]*kh || syh - B[1]*kh > H || syh + B[2]*kh < 0) continue; } } /* off the screen: its own box (eyeBox) round its foot where it really stands, up a hill or down a hollow. Before, every picture got the same box at ground level, so tall trees went before their tops left the view and things on a slope came and went at the edges */
+      for(const it of its){ const one = nIt++ >= lit; if(nIt - 1 === lit) shade(); if(it.wt){ drawTop(it.wt, it.d > dE*.8 ? clamp((dE - it.d)/(dE*.2), 0, 1) : 1, one ? dk*eyeLitAt(eyL, it.P.x, it.P.y) : 0); continue; } if(it.wf){ drawFace(it, it.d > dE*.8 ? clamp((dE - it.d)/(dE*.2), 0, 1) : 1, one ? dk*eyeLitAt(eyL, it.P.x, it.P.y) : 0); continue; } if(it.m3){ drawM3(gL, it.m3, 0, 0, it.d > dE*.8 ? clamp((dE - it.d)/(dE*.2), 0, 1) : 1, one ? dk*eyeLitAt(eyL, it.P.x, it.P.y) : 0, Math.max(4, it.d*EY.cT + EY.E*EY.sT)); continue; } const {e, P, d, u} = it, zc = d*EY.cT + EY.E*EY.sT; if(zc < 2) continue; const k = EY.f/zc, sx = W/2 + u*k, sy = H/2 + EY.f*(EY.E*EY.cT - d*EY.sT)/zc; { const B = eyeBox(e, P), Eh = EY.E - (e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0))*ANG_KY/ANG_HV, zh = d*EY.cT + Eh*EY.sT; if(zh > 1){ const kh = EY.f/zh, sxh = W/2 + u*kh, syh = H/2 + EY.f*(Eh*EY.cT - d*EY.sT)/zh; if(Math.abs(sxh - W/2) > W/2 + B[0]*kh || syh - B[1]*kh > H || syh + B[2]*kh < 0) continue; } } /* off the screen: its own box (eyeBox) round its foot where it really stands, up a hill or down a hollow. Before, every picture got the same box at ground level, so tall trees went before their tops left the view and things on a slope came and went at the edges */
         let polys = null; if(occ.length && !e.fxn && e.me===undefined){ /* a player is never cut out: the player must always see their own animal */ const lf = e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0), ogx = Math.floor(P.x/GRID), ogy = Math.floor(P.y/GRID), bx0 = sx - 100*k, bx1 = sx + 100*k, by0 = sy - 280*k, by1 = sy + 30*k;
           for(const o of occ){ if(o.dc >= d - 3 || o.mx <= lf + TVS*.5 || (o.gx === ogx && o.gy === ogy)) continue; const r = occPoly(o, lf); if(!r || r.x1 < bx0 || r.x0 > bx1 || r.y1 < by0 || r.y0 > by1) continue; if(!occHit(r.pts, sx, sy, k, lf < 0 ? -lf : 0)) continue; (polys || (polys = [])).push(r.pts); } } /* what is nearer and higher than its feet, where it lands on the screen */
         let al = d > dE*.8 ? clamp((dE - d)/(dE*.2), 0, 1) : 1; if(e.n || e.btn || (e.piece && e.piece.k!=='denwall')){ const hw = e.btn || (e.n && e.n.k==='tree') ? 7 : e.n ? (e.n.r || 6)*1.2 + 3 : 10, nr = Math.hypot(d, Math.max(0, Math.abs(u) - hw)); if(nr < 16) al *= clamp((nr - 4)/12, 0, 1); } if(al < .02) continue; /* far away it fades into the haze; a plant or wall you walk into fades rather than filling the eye: by how near its nearest side is (a tree: its trunk), so what you pass beside stays solid */
@@ -12513,7 +12615,9 @@
           g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, 0, 0); g.clearRect(0, 0, sw, shh); yawTextHook(g); }
         const S = k*bd; gK = S; gA = S*(RCS + sh*RSN); gB = S*KY*RSN; gC = S*(sh*RCS - RSN); gD = S*KY*RCS; gEx = sx*bd - (gA*P.x + gC*P.y) - ox; gEy = sy*bd - (gB*P.x + gD*P.y) - oy; YAWL = YAW; wxf(g); g.save(); g.globalAlpha = al;
         if(polys){ g.setTransform(1, 0, 0, 1, -ox, -oy); for(const pt of polys){ g.beginPath(); g.rect(0, 0, bw, bh); g.moveTo(pt[0]*bd, pt[1]*bd); for(let n = 2; n < pt.length; n += 2) g.lineTo(pt[n]*bd, pt[n + 1]*bd); g.closePath(); g.clip('evenodd'); } wxf(g); } /* cut out what the ground in front hides */
-        try{ if(e.btn){ bbBegin(g, P.x, P.y); drawTree(g, P, t, false); bbEnd(g); }
+        const m3 = e.piece || e.bench || e.slab ? (()=>{ const lf = (e.lift !== undefined ? e.lift : (TL ? trH(P.x, P.y, true) : 0))*ANG_KY/ANG_HV; return e.piece ? (e.piece.k==='denwall' ? null : m3Piece(e.piece, lf + (e.piece.l || 0)*LH)) : e.bench ? m3Bench(e.bench, lf) : m3Slab(e.slab, lf); })() : null; /* furniture, stations and built pieces stand as solid models; what has none keeps its picture */
+        if(m3){ try{ drawM3(g, m3, ox, oy, al, 0, zc); if(e.piece){ wxf(g); rotMark(g, e.piece); } } catch(err){ noteError(err); } } /* (the night falls on it with the rest, or on its own lit canvas, below) */
+        else try{ if(e.btn){ bbBegin(g, P.x, P.y); drawTree(g, P, t, false); bbEnd(g); }
           else if(e.fxn){ const q = e.fxn, kk = Math.max(0, q.t/q.t0); bbBegin(g, q.x, q.y); yawBegin(g, q.x, q.y); g.globalAlpha = al*kk; g.lineWidth = 2.5; g.strokeStyle = 'rgba(10,7,6,.8)'; g.font = 'bold 8px ui-monospace,Menlo,Consolas,monospace'; g.textAlign = 'center'; g.strokeText(q.text, q.x, q.y - 14*(1 - kk)); txc = g; txt(q.text, q.x, q.y - 14*(1 - kk), 8, q.col); txc = c; yawEnd(g); bbEnd(g); }
           else drawEnt(g, e); } catch(err){ noteError(err); } g.restore();
         if(g !== gL){ g.setTransform(1, 0, 0, 1, 0, 0); if(shd > .004){ g.globalCompositeOperation = 'source-atop'; g.fillStyle = `rgba(4,6,16,${shd.toFixed(3)})`; g.fillRect(0, 0, sw, shh); g.globalCompositeOperation = 'source-over'; } gL.setTransform(1, 0, 0, 1, 0, 0); gL.drawImage(g.canvas, 0, 0, sw, shh, ox, oy, sw, shh); } }
