@@ -1,0 +1,154 @@
+# wilds.html map (15841 lines, 2215 KB). Sections only; line numbers are for THIS file. Find a function: grep -n "function NAME" wilds.html | cut -c1-200, then Read offset/limit.
+- L1080 §paid pieces: walls, floors and stairs are not items. Bui
+- L1231 §Field craft (content update): seasons, warmth and layers
+- L1286 §runes: spells carved on stone. Select one and press B; e
+- L1294 §thirst: a second, slower meter. Water from the river ban
+- L1301 §classes: you ARE an animal. One per player, chosen once;
+- L1331 §skills: one point every two in-game days; every animal a
+- L1618 §the Raccoon's washing: rinsed food is its own item, so a
+- L1624 §the kitchen's refined dishes: only a Raccoon cooks them,
+- L1699 §the shovel and dirt (digging, ditches, wells)
+- L1713 §metallurgy and chemistry: the den's kiln and foundry mak
+- L1739 §bronze and bone: tin (a pale ore found only in the Badla
+- L1809 §the Rat King's wall: a stone brick wall along the north 
+- L1938 §the world: grown from the seed, the same every time; wha
+- L2025 §A bigger desert with an oasis, and the Badlands beyond t
+- L2077 §The Shardling Caves and the Enchanted Forest, each grown
+- L2082 §the caves
+- L2118 §the forest
+- L2229 §terrain: hollows and plateaus with real heights, cliffs 
+- L2555 §drawing: every row of squares that has height is one ent
+- L2633 §the soft shadow of higher ground. Worked out for a whole
+- L2734 §the angled camera turned (RT): the ground with height is
+- L2741 §heights under the angled camera's lens (HQ). The lens (w
+- L2802 §the turned view's cliff faces, painted the way the strai
+- L2840 §soft shadows in the turned view: the same ambient occlus
+- L2908 §level ground at the rim of a hollow, in the turned view.
+- L3101 §saves
+- L3155 §a world in play
+- L3268 §the beaver dam: a project filed under the Beaver (the pl
+- L3281 §the wooden ship: a Beaver-filed project (planning table,
+- L3316 §the meadow trader: he lives in the Beaver meadow all the
+- L3408 §the desert trader: a wanderer who comes in through the w
+- L3584 §the living world: weather, grazing, breeding, hunting, s
+- L3713 §the herd: fear, bare meadows, mange, and a tame flock yo
+- L3779 §runes: casting
+- L3801 §wildfire: dry lightning, and sparks from open fires. It 
+- L3972 §Field craft: state, soil, journal, tracks
+- L4060 §weather by season, and the soil under your boots
+- L4072 §the journal
+- L4161 §tracks, rare trails and buried caches
+- L4201 §the pack: weight, and what it does to your legs
+- L4215 §layers: insulation, wet cloth, metal
+- L4232 §rot: wood left to the weather goes soft over two weeks a
+- L4259 §structures: wood that touches rots together. Walls, stai
+- L4383 §buildings: a closed space made of player-made pieces, at
+- L4443 §illness: a cold, scurvy, Toe Foot (which climbs into Kne
+- L4582 §Field craft: stations, planning table, carts, events
+- L4715 §carts
+- L4737 §the planning table
+- L4745 §the goal trail: what to do next, worked out from the wor
+- L4827 §the cabin: raised from a kit, in the dry months, on a su
+- L4847 §the starter mud house: a small cob house near the spawn 
+- L4889 §the Mole's den: a bunker under the hill, reached by a la
+- L5001 §the Raccoon: washing, and the chef's pot
+- L5112 §clothing slots
+- L5124 §the clock: once a second
+- L5176 §farm hooks: seasons, water, seed, soil
+- L5200 §Field craft: the book (journal, pack, wear, plans), the 
+- L5288 §drawing the book
+- L5296 §the journal's pages: drawn by hand in pencil or quill, o
+- L5411 §soil sampler
+- L5453 §tracking stake / trail camera
+- L5493 §a new area
+- L5631 §painting the ops onto a canvas
+- L5900 §the season's light (the warm / wet / load bars are in th
+- L5909 §pieces
+- L6003 §icons for the new items (drawn once, in the same toon st
+- L6245 §day and night (Don't Starve's clock)
+- L6270 §the bag
+- L6298 §what you do
+- L6469 §Signature moves, unlocked when the Duneworm falls (wd.dw
+- L6673 §the second action: where two real things can be done at 
+- L6828 §build mode (Terraria's: hold the piece, place it on the 
+- L6832 §the free camera: at a builder's bench the view lets go o
+- L6885 §plans: walls, floors, stairs and rooms are only drawn up
+- L6981 §blood: wounds spatter the ground, dry to brown and fade;
+- L7095 §salt against snails. Rock salt is thrown (it lands where
+- L7139 §hurt, death and waking
+- L7175 §the combat rat: tamed with meat, tied to one player, fol
+- L7290 §the partner: a second animal, chosen once (partner anima
+- L7304 §every animal has its own bag (partner animals plan): the
+- L7409 §partner sickness (partner animals plan, step 4): the pla
+- L7475 §partners wear what is in their bag: the best armour, hel
+- L7581 §the swap (partner animals plan): you and your partner tr
+- L7659 §walking over the land: hills, plateaus and holes have re
+- L7726 §SURVIVAL mode (internally still `wd.hc`, saved as `sv`; 
+- L7751 §the mines: a mineshaft in the woodland leads down to a m
+- L7764 §THE LOWER WORKS: a dungeon between the mine and the snai
+- L7959 §the giant snail's fight. f.st: 'sleep' (it has not woken
+- L8032 §the boss's hazards: it remembers where each player has b
+- L8122 §the Lower Works at play. A fight room starts when a play
+- L8172 §the Rat King: caged in the mine's farthest room. Freeing
+- L8235 §the Rat King's rat hole (in the stone wall north of the 
+- L8308 §the mine in the angled cameras (angled, over the shoulde
+- L8374 §hibernation (animals plan section 12, step 2): an animal
+- L8529 §a craft the animal carries on alone: swap in the middle 
+- L8814 §local co-op: up to four on one world and one screen, eac
+- L8907 §one step of the world
+- L8942 §walk-through doorways: the cave mound, the mineshaft, th
+- L9044 §the Vampire General (Sanguine Forest, slice 1). A vampir
+- L9053 §spoilage: every food and ingredient has a shelf life in 
+- L9090 §the keychain: every key clips onto it and stays there. T
+- L9099 §the Rat King copies keys. He is the only one who can: a 
+- L9542 §the Duneworm (Badlands, slice 1). It sleeps under a sand
+- L9654 §after a boss falls: its small kin fill its ground (and d
+- L9766 §3D gore and dropped items (Settings > Display > 3D model
+- L9841 §pictures
+- L10281 §straight down (the top-down camera): the plants, bushes 
+- L10369 §rounded bodies from above: each oval of an animal (body,
+- L10505 §creatures standing up (the eye camera, seen from low dow
+- L10663 §built pieces seen from the side or from behind (the eye 
+- L10897 §the player is a monkey: it walks on all fours, its gait 
+- L10935 §each animal looks like itself (animals plan 2a): the mon
+- L11169 §the Mole's den, below ground: a bank of earth full of fo
+- L11410 §the Enchanted Forest
+- L11525 §rats: wild ones, and each player's own with its gear on
+- L11597 §the third dimension. Everything that stands leans away f
+- L11669 §built pieces, drawn with height: a wall is a box LH tall
+- L11688 §the angled camera turned: built boxes. Each face that lo
+- L11795 §first person: furniture, stations and built pieces as sm
+- L12107 §HDR lighting (Settings > Display). A post-pass over each
+- L12155 §the surface ground: flat, never changes, so it is painte
+- L12564 §sprites: things that never change shape (trees, rocks, b
+- L12572 §the compass: a dial at the top of the view of any player
+- L12613 §the eye camera: a real pinhole lens standing at a spot i
+- L12657 §the eye camera's sky: the sun and the moon on their way 
+- L12745 §the angled camera's perspective: the view is painted int
+- L13227 §the HUD
+- L13301 §menus in the world (first person). The bag panel (the ba
+- L13477 §the bag panel
+- L13484 §the bundle, as in Minecraft: a pouch holding a mix of it
+- L13534 §the stack you pick up is drawn in your hand: it follows 
+- L13866 §the craft menu's views: group by station or by type, fil
+- L13919 §how many? (Palworld's way): pressing a recipe that can b
+- L13965 §the animal select: a live portrait of the animal you are
+- L14101 §Raccoon and den tests
+- L14139 §pause, menu, leaving
+- L14209 §game snapshot: one JSON file that puts the game back at 
+- L14537 §input
+- L14631 §touch: a floating stick anywhere on the world, Attack / 
+- L14710 §the loop
+- L14750 §sound: a calm day, a cold night, a heartbeat in the dark
+- L14808 §junk instruments: a band that falls in on one beat, and 
+- L15131 §the area tracks. Every area that is not the open woodlan
+- L15306 §the world's own voice: rain, wind, water, fire, birds, f
+- L15360 §spatial sound: every sound in the world is heard from Pl
+- L15375 §footsteps, by what is underfoot
+- L15376 §footprints in mud: soft ground (the wet shore of a pond 
+- L15400 §the shovel stroke (shovelBeat does the sound and the ear
+- L15433 §what the hands do
+- L15478 §creatures
+- L15534 §the sky and the ground
+- L15593 §the continuous beds (rain, wind, water, fire, cave, glad
+- L15683 §controller and Back on this page (the Catacombs's menu c

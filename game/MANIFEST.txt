@@ -1,0 +1,9 @@
+wilds page manifest 2026-10-28 03:00
+file: wilds.html
+bytes: 2268824
+lines: 15841
+sha256: c08478deea076afa64f83c8ea875697d80591342480a7f78259bbf7dd4d2ba91
+ends with </html>: True
+script parses (node --check): True
+
+A copy of wilds.html that is much shorter than this (for example about 256 KB) is a truncated view, not the real file.
