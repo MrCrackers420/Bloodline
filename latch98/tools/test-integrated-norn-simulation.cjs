@@ -2,15 +2,14 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const html = fs.readFileSync('apps/norn-world-lab/index.html','utf8');
-// Norn Round 4 moved from body-center distance to physical-ear distance plus
-// solid-obstruction checks. Recognize both safe implementations for older builds.
-const oldBodyCenter = 'n.body && Number.isFinite(window.NornCore.cxOf(n.body)) &&\n    Math.abs(window.NornCore.cxOf(n.body)-d.x)<180';
-const physicalEar = html.includes('const ear=n.body.p?.[window.NornCore.HEAD_I]||n.body.p?.[1];') &&
-  html.includes('Number.isFinite(ear.x)') &&
-  html.includes('Math.hypot(ear.x-sx,ear.y-sy)<180') &&
-  html.includes('world.clearBetween') && html.includes('window.NornCore.geoClear');
-assert(html.includes(oldBodyCenter) || physicalEar,
-  'Doozer hearing must use physical listener coordinates with finite guards');
+// Approved Norn Round 4 evaluates acoustic exposure from the physical ear,
+// with a finite-coordinate guard, actual distance and terrain occlusion.
+for (const listening of [
+  'const ear=n.body.p?.[window.NornCore.HEAD_I]||n.body.p?.[1]',
+  '!Number.isFinite(ear.x)||!Number.isFinite(ear.y)',
+  'Math.hypot(ear.x-sx,ear.y-sy)<180',
+  'world.clearBetween(sx,sy,ear.x,ear.y)'
+]) assert(html.includes(listening), 'Physical Doozer hearing guard missing: '+listening);
 assert(!html.includes('Math.abs((n.body?.x??n.x??0)-d.x)<180'), 'Doozer origin fallback has returned');
 for (const marker of ['id="norn-disk-host"','id="norn-files"','NornDiskEmbedded','NornFiles','window.NornCore']) {
  assert(html.includes(marker), 'Norn host integration missing '+marker);
@@ -20,4 +19,4 @@ const swarm = fs.readFileSync('web/swarmwire.js','utf8');
 assert(disk.includes('nornTransfer,setNornTransfer'), 'No shared transfer-state API');
 assert(!swarm.includes("localStorage.setItem(KEY"), 'SwarmWire reintroduced split localStorage saves');
 assert(swarm.includes('fs.nornTransfer()'), 'SwarmWire not reading the mounted virtual disk');
-console.log('PASS: physical Doozer hearing correction, Norn host bridge preserved, SwarmWire state stored in virtual disk');
+console.log('PASS: physical/occlusion-aware Doozer hearing correction, Norn host bridge preserved, SwarmWire state stored in virtual disk');

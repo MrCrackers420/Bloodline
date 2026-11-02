@@ -1,0 +1,46 @@
+# Builds the Latch 98 Android APK (WebView + Rust disk bridge) and attaches it to the
+# "latch98-android" GitHub Release, replacing the previous APK there.
+name: Build Latch 98 Android APK
+on:
+  push:
+    branches: [main]
+    paths: ['latch98/web/**', 'latch98/apps/**', 'latch98/android/**', '.github/workflows/android.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: android
+  cancel-in-progress: true
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      NDK_VERSION: 27.2.12479018
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - uses: gradle/actions/setup-gradle@v4
+        with: { gradle-version: '8.9' }
+      - name: Android SDK packages
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" "ndk;$NDK_VERSION" > /dev/null
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$NDK_VERSION" >> "$GITHUB_ENV"
+      - name: Build APK
+        run: bash latch98/android/build_android.sh
+      - name: Name the APK
+        id: apk
+        run: |
+          ver=$(grep -oP "versionName '\K[^']+" latch98/android/app/build.gradle)
+          cp latch98/android/app/build/outputs/apk/debug/app-debug.apk "Latch98-android-$ver.apk"
+          echo "file=Latch98-android-$ver.apk" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with: { name: latch98-android-apk, path: '${{ steps.apk.outputs.file }}' }
+      - name: Publish to the latch98-android release
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          gh release view latch98-android >/dev/null 2>&1 || gh release create latch98-android --title "Latch 98 for Android" --notes "Debug-signed APK of Latch 98, rebuilt on every change. Android asks you to allow installs from this source the first time." --latest=false
+          for a in $(gh release view latch98-android --json assets -q '.assets[].name'); do gh release delete-asset latch98-android "$a" -y; done
+          cp "${{ steps.apk.outputs.file }}" Latch98-android.apk
+          gh release upload latch98-android Latch98-android.apk "${{ steps.apk.outputs.file }}" --clobber

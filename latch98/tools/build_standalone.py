@@ -28,7 +28,7 @@ solitaire=solitaire.replace('<script src="app.js"></script>',script_inline(read(
 minesweeper=read('apps/minesweeper/latch98-minesweeper-preview.html')
 norn=read('apps/norn-world-lab/index.html')
 packed='\n'.join([payload('norn',norn),payload('solitaire',solitaire),payload('minesweeper',minesweeper)])
-for app in ('wilds','catacombs','weedwarrior','soundstudio','audacity','spritestudio'):
+for app in ('wilds','catacombs','weedwarrior','soundstudio','audacity','spritestudio','latchamp'):
     packed+=payload(app,read('apps/'+('sprite-studio' if app=='spritestudio' else app)+'/index.html'))
 bloodline_path=Path(a.bloodline) if a.bloodline else (root/'apps/bloodline/bloodline.html')
 if bloodline_path.exists():
@@ -38,6 +38,7 @@ if bloodline_path.exists():
 source=source.replace('<script src="latchnet.js"></script>',packed+'\n'+script_inline(read('web/latchnet.js')))
 source=source.replace('<script src="filesystem.js"></script>',script_inline(read('web/filesystem.js')))
 source=source.replace('<script src="swarmwire.js"></script>',script_inline(read('web/swarmwire.js')))
+source=source.replace('<script src="latch-update.js"></script>',script_inline(read('web/latch-update.js')))
 source=source.replace('<script src="desktop.js"></script>',script_inline(read('web/standalone_runtime.js'))+'''\n<script>
 window.LATCH98_SOLITAIRE_B64=document.getElementById('l98-packed-solitaire').textContent.trim();
 window.LATCH98_MINESWEEPER_PREVIEW_B64=document.getElementById('l98-packed-minesweeper').textContent.trim();

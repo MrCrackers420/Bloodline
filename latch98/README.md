@@ -48,7 +48,3 @@ GitHub repository overlay deployment is described in `DEPLOY_LATCH98.md` in the 
 ## Development boundaries
 
 Norn simulation development is owned by its **separate Norn integrator**. This Latch release must not change `apps/norn-world-lab/index.html`. Bloodline gameplay source remains owned by its own development line. The Round 4 ownership map, original baseline manifest, and safe patch merging utilities are preserved in `coordination/` and `tools/`. **Do not treat the Round 4 baseline manifest as a fresh Round 5 baseline.** Refresh hashes and ownership before commissioning a new parallel development round.
-
-## Norn World Lab Round 4 application update
-
-The optional integrator checkpoint now packages the Norn-only Round 4 app SHA-256 `3bc36a7992e7d4540a4afc93acbb3d6f2d8e26b639402b998bdb1d10e86b34db`. The existing Round 5 specialist baseline is unchanged; see `NORN_WORLD_LAB_HANDOFF.md`.

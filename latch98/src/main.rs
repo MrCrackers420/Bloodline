@@ -22,6 +22,8 @@ const EXPLORER_CSS: &str = include_str!("../web/explorer_v08.css");
 const SWARMWIRE_CSS: &str = include_str!("../web/swarmwire.css");
 const SWARMWIRE_JS: &str = include_str!("../web/swarmwire.js");
 const FILESYSTEM_JS: &str = include_str!("../web/filesystem.js");
+const UPDATE_JS: &str = include_str!("../web/latch-update.js");
+const LATCHAMP_HTML: &str = include_str!("../apps/latchamp/index.html");
 const SOLITAIRE_HTML: &str = include_str!("../apps/solitaire/solitaire.html");
 const SOLITAIRE_CSS: &str = include_str!("../apps/solitaire/solitaire.css");
 const SOLITAIRE_ENGINE: &str = include_str!("../apps/solitaire/engine.js");
@@ -111,6 +113,8 @@ fn handle(mut stream: TcpStream, root: PathBuf) -> std::io::Result<()> {
         ("GET", "/swarmwire.css") => send(&mut stream, "200 OK", "text/css; charset=utf-8", SWARMWIRE_CSS.as_bytes()),
         ("GET", "/swarmwire.js") => send(&mut stream, "200 OK", "text/javascript; charset=utf-8", SWARMWIRE_JS.as_bytes()),
         ("GET", "/filesystem.js") => send(&mut stream, "200 OK", "text/javascript; charset=utf-8", FILESYSTEM_JS.as_bytes()),
+        ("GET", "/latch-update.js") => send(&mut stream, "200 OK", "text/javascript; charset=utf-8", UPDATE_JS.as_bytes()),
+        ("GET", "/apps/latchamp/index.html") => send(&mut stream, "200 OK", "text/html; charset=utf-8", LATCHAMP_HTML.as_bytes()),
         ("GET", "/apps/solitaire/solitaire.html") => send(&mut stream, "200 OK", "text/html; charset=utf-8", SOLITAIRE_HTML.as_bytes()),
         ("GET", "/apps/solitaire/solitaire.css") => send(&mut stream, "200 OK", "text/css; charset=utf-8", SOLITAIRE_CSS.as_bytes()),
         ("GET", "/apps/solitaire/engine.js") => send(&mut stream, "200 OK", "text/javascript; charset=utf-8", SOLITAIRE_ENGINE.as_bytes()),

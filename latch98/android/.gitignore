@@ -1,0 +1,7 @@
+/app/src/main/assets/
+/app/src/main/jniLibs/
+/app/build/
+/build/
+/.gradle/
+/rust/target/
+local.properties

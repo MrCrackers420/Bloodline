@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#c0c0c0">
+<title>LatchAmp 1.10 — Latch 98</title>
+<style>
+:root{font-family:Tahoma,'MS Sans Serif',Verdana,sans-serif;color:#111;background:#008080;font-size:13px}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:15px}
+.window{background:#c0c0c0;border:2px solid;border-color:#fff #3b3b3b #3b3b3b #fff;box-shadow:2px 2px 0 #000;max-width:760px;width:100%;padding:3px;min-width:0}
+.titlebar{background:linear-gradient(90deg,#000080,#0860a2);color:white;display:flex;align-items:center;justify-content:space-between;padding:4px 6px;min-height:27px;letter-spacing:.1px;font-weight:bold}
+.caption{display:flex;gap:8px;align-items:center}.lamp{border:1px solid #fff;background:#1dd36d;width:10px;height:10px}
+.title-actions{font-size:11px;color:#ddd;letter-spacing:1px}
+.menubar{display:flex;gap:18px;padding:7px 8px 3px;align-items:center;font-size:12px}
+.menubar .menulink{background:transparent;border:0;min-height:auto;padding:0 2px;font:inherit;font-size:12px}.menubar .menulink:hover{text-decoration:underline}.device{color:#555;margin-left:auto}
+.main{padding:7px}
+.display{border:2px solid;border-color:#585858 #fff #fff #585858;background:linear-gradient(155deg,#151c20,#111e19);color:#a7ed79;padding:12px 12px 6px;box-shadow:inset 1px 1px #000;font-family:'Courier New',monospace}
+.readout{display:flex;justify-content:space-between;gap:12px;align-items:center;min-width:0}.song{font-size:16px;font-weight:bold;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.status{color:#65bd69;font-size:10px;white-space:nowrap}
+.subread{margin-top:4px;color:#88b67b;font-size:11px}
+#visual{width:100%;height:40px;display:block;margin-top:6px}
+.seekrow{display:flex;gap:9px;align-items:center;margin:9px 0 7px;font-family:'Courier New',monospace;font-size:12px}
+.seekrow input{flex:1;min-width:0}.transport{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-bottom:9px}
+button,.button{font:inherit;color:#111;border:2px solid;border-color:#fff #505050 #505050 #fff;background:#d5d5d5;min-height:28px;padding:3px 10px;cursor:pointer;border-radius:0}
+button:active:not(:disabled){border-color:#505050 #fff #fff #505050}button:focus-visible,input:focus-visible{outline:2px dotted #000;outline-offset:2px}button:disabled{color:#888;text-shadow:1px 1px #fff;cursor:default}
+button.primary{font-weight:bold;min-width:58px}button.active{background:#ddd;border-color:#555 #fff #fff #555}.volume{margin-left:auto;display:flex;align-items:center;gap:6px}.volume input{width:96px}
+input[type=range]{accent-color:#296937;cursor:pointer}input[type=text],input[type=url]{font:inherit;background:white;border:2px solid;border-color:#666 #fff #fff #666;padding:5px;min-width:0;width:100%;border-radius:0}
+.tabs{display:flex;gap:2px;margin-top:7px}.tab{border-bottom:0;position:relative;top:2px;padding:5px 12px;min-height:30px}.tab[aria-selected=true]{background:#fff;z-index:2;font-weight:bold}
+.content{border:2px solid;border-color:#fff #555 #555 #fff;background:#efefef;padding:12px;min-height:235px}
+.content[hidden]{display:none}.toolbar{display:flex;gap:7px;margin-bottom:8px;align-items:center;flex-wrap:wrap}
+.hint{font-size:11px;color:#555;line-height:1.45}.library{background:white;border:2px solid;border-color:#555 #fff #fff #555;min-height:153px;max-height:260px;overflow:auto;padding:1px}
+.track{width:100%;display:flex;gap:9px;align-items:center;justify-content:space-between;border:0;border-bottom:1px dotted #ddd;box-shadow:none;background:white;padding:8px 7px;min-height:34px;text-align:left}.track:hover,.track.playing{background:#e3f1d8}.track.selected{outline:1px dotted #444;outline-offset:-3px}.track strong{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0;font-size:12px}.track small{font-size:10px;color:#666;white-space:nowrap}
+.track .remove{color:#9c2222;min-height:23px;padding:0 5px;border:1px solid #bbb;background:#fafafa}
+.empty{padding:28px 12px;text-align:center;color:#666}
+.inputgroup{display:flex;gap:6px;align-items:center}.inputgroup input{flex:1}.ytpanel{background:#fff;padding:9px;border:1px inset #999;margin:9px 0}
+.video-shell{background:#101010;margin:10px 0;padding:3px;border:2px inset #777;min-height:213px;display:flex;align-items:center;justify-content:center}
+.video-shell iframe{width:100%;aspect-ratio:16/9;min-height:200px;border:0;display:block}.video-shell .placeholder{color:#b9b9b9;text-align:center;padding:35px 15px;font-size:12px}
+.foot{display:flex;justify-content:space-between;gap:8px;padding:6px 8px 3px;border-top:1px solid #8c8c8c;color:#555;font-size:11px;flex-wrap:wrap}
+#feedback{min-height:14px}.note{line-height:1.5;font-size:12px;margin-top:5px}
+@media(max-width:540px){body{padding:4px;align-items:start}.window{margin-top:4px}.main{padding:3px}.transport{gap:3px}.transport button{padding:2px 7px}.volume{margin-left:0}.content{padding:7px}.song{font-size:13px}.inputgroup{flex-wrap:wrap}.inputgroup button{flex:1}.menubar{gap:9px}.title-actions{display:none}}
+
+/* LatchAmp 1.10: small-device queue, equalizer, searchable library. */
+.controls-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.controls-line label{display:flex;gap:5px;align-items:center;font-size:11px}
+.controls-line input[type=search]{font:inherit;font-size:12px;padding:5px;border:2px inset #bbb;background:white;flex:1;min-width:120px;max-width:320px}
+.controls-line select,.eqpanel select{font:inherit;background:white;border:2px inset #aaa;padding:4px;min-width:0}
+.eqpanel{background:#d6d6d6;border:2px inset #aaa;margin-bottom:10px;padding:7px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.eqpanel strong{font-size:11px;min-width:75px}.eqpanel label{font-size:11px;display:flex;gap:4px;align-items:center}
+.eqpanel input[type=range]{width:72px}.eqpanel output{display:inline-block;min-width:30px;text-align:right;font:11px 'Courier New',monospace}
+.track{gap:5px}.track .move{min-height:25px;padding:1px 5px;font-size:11px;color:#333;background:#e6e6e6;flex-shrink:0}
+.track .name{overflow:hidden;white-space:nowrap;text-overflow:ellipsis;flex:1;min-width:0;font-size:12px}
+.track .number{width:25px;font-size:10px;color:#666;text-align:right;flex-shrink:0}
+.track .size{font-size:10px;color:#666;white-space:nowrap}
+.track button{flex-shrink:0}.queue-status{font-size:11px;color:#444;margin:3px 0 7px}
+.transport .speed{display:flex;align-items:center;gap:5px;font-size:11px}.transport .speed select{font:inherit;padding:3px}
+body.in-latch{display:block;background:#c0c0c0;padding:0;min-height:0}
+body.in-latch .window{max-width:none;width:100%;border:0;box-shadow:none}
+body.in-latch .titlebar{display:none}
+body.in-latch .main{padding:4px}
+@media(max-width:540px){.eqpanel{gap:5px;padding:5px}.eqpanel input[type=range]{width:55px}.track .size{display:none}.track .move{padding:0 3px}.transport .speed{order:8}}
+</style>
+</head>
+<body>
+<main class="window" aria-label="LatchAmp music player">
+  <div class="titlebar"><div class="caption"><span class="lamp"></span><span>LatchAmp 1.10 — Portable Audio Player</span></div><div class="title-actions">LATCH 98</div></div>
+  <div class="menubar"><button class="menulink" id="menu-file"><u>F</u>ile</button><button class="menulink" id="menu-playlist"><u>P</u>laylist</button><button class="menulink" id="menu-help"><u>H</u>elp</button><span class="device">LATCH 98 · SOUND</span></div>
+  <div class="main">
+    <section class="display" aria-label="Now playing">
+      <div class="readout"><span class="song" id="song">NO TRACK LOADED</span><span class="status" id="status">STOPPED</span></div>
+      <div class="subread" id="subread">44 kHz • STEREO • LATCHAMP</div>
+      <canvas id="visual" width="600" height="40" aria-label="Music level meter"></canvas>
+    </section>
+    <div class="seekrow"><span id="elapsed">00:00</span><input type="range" id="seek" aria-label="Seek" min="0" max="1000" value="0" disabled><span id="duration">00:00</span></div>
+    <div class="transport">
+      <button id="previous" title="Previous track" aria-label="Previous track">◀◀</button>
+      <button id="play" class="primary" title="Play/Pause" aria-label="Play or pause">▶</button>
+      <button id="stop" title="Stop" aria-label="Stop">■</button>
+      <button id="next" title="Next track" aria-label="Next track">▶▶</button>
+      <button id="shuffle" title="Shuffle">SHF</button>
+      <button id="repeat" title="Cycle repeat mode" aria-label="Repeat mode: off">RPT OFF</button>
+      <label class="speed">SPEED <select id="speed" aria-label="Playback speed"><option value="0.75">0.75×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select></label>
+      <label class="volume">VOL <input type="range" id="volume" min="0" max="100" value="80" aria-label="Volume"></label>
+    </div>
+    <div class="tabs" role="tablist">
+      <button role="tab" class="tab" id="tab-local" aria-controls="local-panel" aria-selected="true">Local Music</button>
+      <button role="tab" class="tab" id="tab-yt" aria-controls="yt-panel" aria-selected="false">YouTube / Music</button>
+    </div>
+    <section class="content" id="local-panel" role="tabpanel" aria-labelledby="tab-local">
+      <div class="toolbar"><button id="import">+ Add audio files</button><button id="clear">Clear library</button><button id="exportlist">Export track list</button><button id="importlistbtn">Import track list</button><button id="savelatch" hidden>Save list to C:</button><button id="loadlatch" hidden>Load list from C:</button></div>
+      <div class="eqpanel" role="group" aria-label="Three-band equalizer">
+        <strong>GRAPHIC EQ</strong>
+        <label>Preset <select id="eqpreset"><option value="flat">Flat</option><option value="bass">Bass boost</option><option value="vocal">Voice</option><option value="treble">Treble boost</option><option value="custom">Custom</option></select></label>
+        <label>Bass <input id="eqbass" aria-label="Bass equalizer" type="range" min="-12" max="12" value="0"><output id="eqbassval">0 dB</output></label>
+        <label>Mid <input id="eqmid" aria-label="Mid equalizer" type="range" min="-12" max="12" value="0"><output id="eqmidval">0 dB</output></label>
+        <label>Treble <input id="eqtreble" aria-label="Treble equalizer" type="range" min="-12" max="12" value="0"><output id="eqtrebleval">0 dB</output></label>
+      </div>
+      <div class="controls-line"><input id="search" type="search" placeholder="Find a song…" aria-label="Search music library"><span id="queue-status" class="queue-status" aria-live="polite">0 tracks</span></div>
+      <input type="file" id="pick" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" multiple hidden>
+      <div class="library" id="library" aria-label="Your local audio library"></div>
+      <p class="hint">Audio remains on this device in browser storage where supported; exported track lists contain names/order, not the audio files. Tap ↑ or ↓ to reorder tracks. EQ works on local playback. Android may pause background audio.</p>
+    </section>
+    <section class="content" id="yt-panel" role="tabpanel" aria-labelledby="tab-yt" hidden>
+      <div class="inputgroup"><input type="url" id="ytlink" placeholder="Paste a YouTube or YouTube Music link" aria-label="YouTube URL" autocomplete="off"><button id="loadvideo">Load video</button></div>
+      <div class="video-shell" id="video-shell"><div class="placeholder">The official YouTube video player appears here when a video is loaded. It stays visible while playing.</div></div>
+      <div class="toolbar"><button id="openmusic">Open in YouTube Music ↗</button><button id="openvideo">Open on YouTube ↗</button><button id="unloadvideo">Stop / Unload video</button></div>
+      <p class="note">YouTube videos use the official embedded player, including its controls and ads. YouTube Music links can open the official Android app or browser; playback, Premium benefits, and background music are handled by YouTube Music, not LatchAmp. The embedded player needs an internet connection and a supported HTTPS/HTTP application origin.</p>
+    </section>
+    <footer class="foot"><span id="feedback" role="status" aria-live="polite">Ready.</span><span>Latch Audio Devices, 2003</span></footer>
+  </div>
+</main>
+<audio id="audio" preload="metadata"></audio>
+<input type="file" id="importlist" accept=".json,application/json" hidden>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id), audio=$('audio');
+const STORAGE='latchamp.prefs.v110', ORDER='latchamp.queue.v110';
+const presetGains={flat:[0,0,0],bass:[7,-1,0],vocal:[-3,5,1],treble:[-2,0,6]};
+let tracks=[], order=[], currentId=null, currentURL=null, db=null, shuffle=false, repeatMode='off', search='';
+let ctx=null, filters=[], analyser=null, meterBuf=null, animating=false, shuffledBag=[], history=[];
+let gains=[0,0,0];
+const post = message => $('feedback').textContent=message;
+const format = t => Number.isFinite(t) ? String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.floor(t%60)).padStart(2,'0') : '00:00';
+const cleanName = name => String(name||'Track').replace(/\.[^.]+$/,'').slice(0,110);
+const hasAudioExt = name => /\.(mp3|wav|m4a|aac|ogg|oga|flac|opus|webm)$/i.test(name);
+const idKey = v => String(v);
+const findTrack = id => tracks.find(t=>idKey(t.id)===idKey(id));
+const safeRead=(key,def)=>{try{const r=localStorage.getItem(key);return r?JSON.parse(r):def;}catch{return def;}};
+const safeStore=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch{post('Some player preferences could not be saved.');}};
+const queue = () => order.map(id=>findTrack(id)).filter(Boolean);
+function normalizeOrder(){const ids=new Set(tracks.map(t=>idKey(t.id)));order=order.filter(id=>ids.has(idKey(id)));for(const t of tracks)if(!order.some(id=>idKey(id)===idKey(t.id)))order.push(t.id);saveOrder();}
+function saveOrder(){safeStore(ORDER,order);}
+function savePrefs(){safeStore(STORAGE,{shuffle,repeatMode,volume:audio.volume,speed:audio.playbackRate,gains});}
+function openDB(){return new Promise((resolve,reject)=>{if(!indexedDB){reject(Error('IndexedDB unavailable'));return;}
+ const req=indexedDB.open('latchamp-audio-v1',1);
+ req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('tracks'))req.result.createObjectStore('tracks',{keyPath:'id',autoIncrement:true});};
+ req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error||Error('Cannot open library'));
+});}
+function transaction(method,value){return new Promise((resolve,reject)=>{
+ const tx=db.transaction('tracks',method==='getAll'?'readonly':'readwrite'),store=tx.objectStore('tracks');
+ const req=method==='getAll'?store.getAll():method==='add'?store.add(value):method==='delete'?store.delete(value):store.clear();
+ let result;req.onsuccess=()=>{result=req.result;};req.onerror=()=>reject(req.error);tx.onerror=()=>reject(tx.error);
+ tx.oncomplete=()=>resolve(result);
+});}
+function updateReadout(){const t=findTrack(currentId);$('song').textContent=t?cleanName(t.name).toUpperCase():'NO TRACK LOADED';
+ $('status').textContent=t?(audio.paused?'PAUSED':'PLAYING'):'STOPPED';$('play').textContent=t&&!audio.paused?'Ⅱ':'▶';
+ $('subread').textContent=t?`LOCAL • ${(t.size/1048576).toFixed(1)} MB • ${t.mime||'AUDIO'}`:'44 kHz • STEREO • LATCHAMP';
+}
+function render(){const list=$('library');list.replaceChildren();const all=queue(),visible=all.filter(t=>cleanName(t.name).toLowerCase().includes(search));
+ $('queue-status').textContent=`${visible.length}/${all.length} tracks`;
+ if(!visible.length){const n=document.createElement('div');n.className='empty';n.textContent=all.length?'No songs match your search.':'No music yet. Choose “Add audio files” to build a playlist.';list.append(n);return;}
+ for(const t of visible){const i=all.findIndex(x=>idKey(x.id)===idKey(t.id)),row=document.createElement('div');row.className='track'+(idKey(t.id)===idKey(currentId)?' playing':'');row.dataset.trackid=String(t.id);
+ const number=document.createElement('span');number.className='number';number.textContent=String(i+1).padStart(2,'0');
+ const title=document.createElement('strong');title.className='name';title.textContent=cleanName(t.name);title.title=t.name;
+ const size=document.createElement('small');size.className='size';size.textContent=(t.size/1048576).toFixed(1)+' MB';
+ const button=(txt,label,fn,cls)=>{const b=document.createElement('button');b.textContent=txt;b.title=label;b.setAttribute('aria-label',label);if(cls)b.className=cls;b.addEventListener('click',fn);return b;};
+ const start=button('▶','Play '+t.name,()=>playId(t.id));
+ const up=button('↑','Move '+t.name+' up',()=>moveTrack(t.id,-1),'move'),down=button('↓','Move '+t.name+' down',()=>moveTrack(t.id,1),'move');
+ up.disabled=i===0||!!search;down.disabled=i===all.length-1||!!search;
+ const remove=button('×','Remove '+t.name,()=>removeId(t.id),'remove');
+ row.append(number,start,title,size,up,down,remove);row.addEventListener('dblclick',e=>{if(!e.target.closest('button'))playId(t.id);});list.append(row);
+ }
+}
+function moveTrack(id,delta){const index=order.findIndex(x=>idKey(x)===idKey(id)),to=index+delta;if(index<0||to<0||to>=order.length)return;
+ [order[index],order[to]]=[order[to],order[index]];saveOrder();render();post('Playlist order saved.');}
+function release(){audio.pause();audio.removeAttribute('src');audio.load();if(currentURL){URL.revokeObjectURL(currentURL);currentURL=null;}}
+function updateMediaSession(){if(!('mediaSession' in navigator))return;const t=findTrack(currentId);
+ try{navigator.mediaSession.metadata=t&&window.MediaMetadata?new MediaMetadata({title:cleanName(t.name),artist:'Local audio',album:'LatchAmp'}):null;
+ navigator.mediaSession.playbackState=t?(audio.paused?'paused':'playing'):'none';}catch{}
+}
+async function playId(id,{recordHistory=true}={}){const t=findTrack(id);if(!t)return;try{
+ if(idKey(id)!==idKey(currentId)||!audio.src){if(recordHistory&&currentId!==null&&idKey(currentId)!==idKey(id))history.push(currentId);release();currentId=id;currentURL=URL.createObjectURL(t.blob);audio.src=currentURL;}
+ await audio.play();startMeter();updateReadout();updateMediaSession();render();post('Playing '+t.name);
+ }catch(err){post('Cannot play this file on this device: '+(err.message||err));updateReadout();}}
+function resetBag(){shuffledBag=queue().filter(t=>idKey(t.id)!==idKey(currentId)).map(t=>t.id);for(let i=shuffledBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffledBag[i],shuffledBag[j]]=[shuffledBag[j],shuffledBag[i]];}}
+function nextIndex(delta,auto=false){const all=queue();if(!all.length)return;
+ if(delta<0&&audio.currentTime>3){audio.currentTime=0;return;}
+ if(delta<0&&shuffle&&history.length){const prior=history.pop();playId(prior,{recordHistory:false});return;}
+ let n=all.findIndex(t=>idKey(t.id)===idKey(currentId));
+ if(delta>0&&shuffle&&all.length>1){if(!shuffledBag.length){if(auto&&repeatMode==='off'){endPlaylist();return;}resetBag();}
+ const next=shuffledBag.shift();if(next!==undefined){playId(next);return;}}
+ if(n<0)n=delta>0?-1:0;
+ const next=n+delta;
+ if(auto&&repeatMode==='off'&&next>=all.length){endPlaylist();return;}
+ playId(all[(next+all.length)%all.length].id);
+}
+function endPlaylist(){audio.pause();audio.currentTime=Number.isFinite(audio.duration)?audio.duration:0;updateReadout();updateMediaSession();post('End of playlist.');}
+async function removeId(id){if(idKey(currentId)===idKey(id)){release();currentId=null;updateReadout();updateMediaSession();}
+ tracks=tracks.filter(t=>idKey(t.id)!==idKey(id));order=order.filter(x=>idKey(x)!==idKey(id));shuffledBag=shuffledBag.filter(x=>idKey(x)!==idKey(id));history=history.filter(x=>idKey(x)!==idKey(id));
+ saveOrder();render();if(db)try{await transaction('delete',id);}catch(e){post('Could not persist removal: '+e.message);return;}post('Track removed.');}
+async function addFiles(fileList){const files=[...fileList].filter(f=>f.type.startsWith('audio/')||hasAudioExt(f.name));if(!files.length){post('No supported audio files selected.');return;}
+ let added=0;for(const file of files){const data={name:file.name,size:file.size,mime:file.type,blob:file,addedAt:Date.now()};
+ try{const id=db?await transaction('add',data):Date.now()+Math.random();tracks.push({...data,id});order.push(id);added++;}
+ catch(err){post('Device storage is full or unavailable: '+err.message);break;}}
+ saveOrder();render();post(`Added ${added} file${added===1?'':'s'}.`);
+}
+function setRepeat(mode,save=true){repeatMode=mode;$('repeat').textContent='RPT '+({off:'OFF',all:'ALL',one:'1'}[mode]||'OFF');$('repeat').classList.toggle('active',mode!=='off');$('repeat').setAttribute('aria-label','Repeat mode: '+mode);if(save)savePrefs();}
+function setGains(next,save=true){gains=next.map(v=>Math.max(-12,Math.min(12,Number(v)||0)));for(const [i,key] of ['bass','mid','treble'].entries()){
+ $('eq'+key).value=String(gains[i]);$('eq'+key+'val').textContent=gains[i]+' dB';if(filters[i])filters[i].gain.value=gains[i];}
+ const detected=Object.entries(presetGains).find(([,g])=>g.every((n,i)=>n===gains[i]));$('eqpreset').value=detected?detected[0]:'custom';if(save)savePrefs();
+}
+function startMeter(){if(!window.AudioContext&&!window.webkitAudioContext)return;try{if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();const source=ctx.createMediaElementSource(audio);
+ const settings=[['lowshelf',140,0.7],['peaking',1100,0.85],['highshelf',6500,0.7]];
+ filters=settings.map(([type,frequency,q],i)=>{const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=frequency;f.Q.value=q;f.gain.value=gains[i];return f;});
+ source.connect(filters[0]);filters[0].connect(filters[1]);filters[1].connect(filters[2]);analyser=ctx.createAnalyser();analyser.fftSize=128;filters[2].connect(analyser);analyser.connect(ctx.destination);meterBuf=new Uint8Array(analyser.frequencyBinCount);
+ }ctx.resume().catch(()=>{});if(!animating){animating=true;requestAnimationFrame(drawMeter);}}
+ catch(err){post('Audio works, but this browser does not support the EQ/meter.');}}
+function drawMeter(){const c=$('visual'),g=c.getContext('2d');if(!g){animating=false;return;}g.fillStyle='#151c20';g.fillRect(0,0,c.width,c.height);
+ if(!analyser||audio.paused){animating=false;return;}analyser.getByteFrequencyData(meterBuf);
+ const bars=34,gap=3,w=(c.width-(bars-1)*gap)/bars;for(let i=0;i<bars;i++){
+ const val=meterBuf[Math.min(meterBuf.length-1,Math.round(i/bars*(meterBuf.length-1)))],h=Math.max(2,val/255*c.height);
+ g.fillStyle=h>30?'#d8e863':'#7fd457';g.fillRect(i*(w+gap),c.height-h,w,h);}
+ requestAnimationFrame(drawMeter);
+}
+function downloadFile(content,name,type='application/json'){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
+function playlistRecord(){return {format:'latchamp-tracklist-v1',player:'LatchAmp 1.10',tracks:queue().map(t=>({name:t.name,size:t.size,mime:t.mime})),equalizer:gains,shuffle,repeatMode};}
+function exportList(){downloadFile(JSON.stringify(playlistRecord(),null,2),'LatchAmp-Track-List.json');post('Exported track names, order and settings (not audio files).');}
+function applyTrackList(data){if(!data||data.format!=='latchamp-tracklist-v1'||!Array.isArray(data.tracks)||data.tracks.length>5000)throw Error('This is not a LatchAmp track list');
+ const all=queue(),used=new Set(),sorted=[];let missing=0;
+ for(const item of data.tracks){if(!item||typeof item.name!=='string'||!Number.isFinite(item.size))throw Error('Invalid track list entry');
+ const found=all.find(t=>!used.has(idKey(t.id))&&t.name===item.name&&t.size===item.size);
+ if(found){sorted.push(found.id);used.add(idKey(found.id));}else missing++;}
+ for(const t of all)if(!used.has(idKey(t.id)))sorted.push(t.id);
+ order=sorted;saveOrder();if(Array.isArray(data.equalizer)&&data.equalizer.length===3)setGains(data.equalizer);
+ if(['off','all','one'].includes(data.repeatMode))setRepeat(data.repeatMode);
+ if(typeof data.shuffle==='boolean'){shuffle=data.shuffle;shuffledBag=[];$('shuffle').classList.toggle('active',shuffle);$('shuffle').setAttribute('aria-pressed',String(shuffle));savePrefs();}
+ render();post('Loaded track list. '+missing+' unmatched file(s); import those audio files on this device to play them.');}
+async function importTrackList(file){if(!file)return;try{if(file.size>300000)throw Error('Track list is too large');applyTrackList(JSON.parse(await file.text()));}catch(e){post('Could not import track list: '+e.message);}}
+async function loadFromLatch(){try{const host=window.parent.LatchFS;if(!host)throw Error('Latch disk unavailable');await host.ready;
+ const text=host.read('C:/My Documents/LatchAmp Playlist.json');applyTrackList(JSON.parse(text));}catch(e){post('Could not read playlist: '+e.message);}}
+async function saveToLatch(){try{const host=window.parent.LatchFS;if(!host)throw Error('Latch disk is unavailable');await host.ready;const path='C:/My Documents/LatchAmp Playlist.json';host.write(path,JSON.stringify(playlistRecord(),null,2));await host.sync();post('Playlist information saved to C:\My Documents (audio files stay local).');}
+ catch(err){post('Could not save playlist: '+err.message);}}
+$('menu-file').onclick=()=>{$('pick').click();};$('menu-playlist').onclick=()=>{tabs('local');$('search').focus();};
+$('menu-help').onclick=()=>alert('LatchAmp 1.10\n\nLocal Music: Import music from your device. Search, reorder with arrows, and export a track list. Imported files remain on this device.\n\nEqualizer: Choose a preset or adjust three frequency bands; speed changes local playback only. Repeat cycles Off / All / One.\n\nYouTube Music uses its official app; YouTube iframe is a visible official video player, not an audio extractor.');
+$('import').onclick=()=>$('pick').click();$('pick').onchange=e=>{addFiles(e.target.files);e.target.value='';};
+$('clear').onclick=async()=>{if(!tracks.length||!confirm('Remove all imported music from LatchAmp?'))return;
+ if(db){try{await transaction('clear');}catch(e){post('Cannot clear library: '+e.message);return;}}
+ release();currentId=null;tracks=[];order=[];history=[];shuffledBag=[];saveOrder();render();updateReadout();updateMediaSession();post('Library cleared.');};
+$('search').oninput=e=>{search=e.target.value.toLowerCase().trim();render();};
+$('exportlist').onclick=exportList;
+$('importlistbtn').onclick=()=>$('importlist').click();
+$('importlist').onchange=e=>{importTrackList(e.target.files?.[0]);e.target.value='';};
+$('savelatch').onclick=saveToLatch;
+$('loadlatch').onclick=loadFromLatch;
+$('play').onclick=async()=>{if(!audio.src){const all=queue();if(all.length)playId(all[0].id);else post('Add a music file first.');return;}
+ if(audio.paused){try{await audio.play();startMeter();}catch(e){post('Playback blocked: '+e.message);}}else audio.pause();updateReadout();};
+$('stop').onclick=()=>{audio.pause();if(audio.src)audio.currentTime=0;updateReadout();};
+$('next').onclick=()=>nextIndex(1);$('previous').onclick=()=>nextIndex(-1);
+$('shuffle').onclick=()=>{shuffle=!shuffle;shuffledBag=[];history=[];$('shuffle').classList.toggle('active',shuffle);$('shuffle').setAttribute('aria-pressed',String(shuffle));savePrefs();};
+$('repeat').onclick=()=>setRepeat(({off:'all',all:'one',one:'off'})[repeatMode]);
+$('volume').oninput=e=>{audio.volume=Number(e.target.value)/100;savePrefs();};
+$('speed').onchange=e=>{audio.playbackRate=Number(e.target.value);savePrefs();post('Playback speed: '+e.target.selectedOptions[0].textContent);};
+$('eqpreset').onchange=e=>{if(presetGains[e.target.value])setGains(presetGains[e.target.value]);};
+for(const [i,key] of ['bass','mid','treble'].entries())$('eq'+key).oninput=e=>{const next=[...gains];next[i]=Number(e.target.value);setGains(next);};
+$('seek').oninput=e=>{if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=Number(e.target.value)/1000*audio.duration;};
+audio.ontimeupdate=()=>{const d=audio.duration;$('elapsed').textContent=format(audio.currentTime);$('duration').textContent=format(d);
+ if(Number.isFinite(d)&&d>0){$('seek').disabled=false;$('seek').value=Math.round(audio.currentTime/d*1000);}else $('seek').disabled=true;};
+audio.onended=()=>{if(repeatMode==='one'){audio.currentTime=0;audio.play().catch(()=>{});}else nextIndex(1,true);};
+audio.onpause=()=>{updateReadout();updateMediaSession();};audio.onplay=()=>{updateReadout();updateMediaSession();};
+audio.onerror=()=>post('Playback failed. This device may not support the audio format.');
+if('mediaSession' in navigator){try{navigator.mediaSession.setActionHandler('play',()=>{if(audio.paused)$('play').click();});
+ navigator.mediaSession.setActionHandler('pause',()=>audio.pause());navigator.mediaSession.setActionHandler('nexttrack',()=>nextIndex(1));
+ navigator.mediaSession.setActionHandler('previoustrack',()=>nextIndex(-1));navigator.mediaSession.setActionHandler('stop',()=>{$('stop').click();});
+ navigator.mediaSession.setActionHandler('seekto',details=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,Math.max(0,details.seekTime));});
+ }catch{}}
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,button'))return;
+ if(e.code==='Space'){e.preventDefault();$('play').click();}if(e.code==='ArrowRight'&&audio.src)audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+5);
+ if(e.code==='ArrowLeft'&&audio.src)audio.currentTime=Math.max(0,audio.currentTime-5);});
+function stopVideo(){const shell=$('video-shell');shell.replaceChildren();const p=document.createElement('div');p.className='placeholder';p.textContent='Video unloaded. Choose another link or open YouTube Music.';shell.append(p);}
+function tabs(mode){$('local-panel').hidden=mode!=='local';$('yt-panel').hidden=mode!=='yt';$('tab-local').setAttribute('aria-selected',String(mode==='local'));
+ $('tab-yt').setAttribute('aria-selected',String(mode==='yt'));if(mode!=='yt')stopVideo();}
+$('tab-local').onclick=()=>tabs('local');$('tab-yt').onclick=()=>tabs('yt');
+function youtubeInfo(input){const text=String(input||'').trim();let url;try{url=new URL(text);}catch{return null;}
+ if(!['https:','http:'].includes(url.protocol))return null;
+ const host=url.hostname.toLowerCase();if(host!=='youtu.be'&&host!=='youtube.com'&&!host.endsWith('.youtube.com'))return null;
+ let video='';if(host==='youtu.be')video=url.pathname.slice(1).split('/')[0];else if(url.pathname==='/watch')video=url.searchParams.get('v')||'';
+ else if(url.pathname.startsWith('/shorts/')||url.pathname.startsWith('/embed/'))video=url.pathname.split('/')[2]||'';
+ const list=url.searchParams.get('list')||'';if(video&&!/^[\w-]{11}$/.test(video))return null;
+ if(list&&!/^[\w-]{5,100}$/.test(list))return null;if(!video&&!list)return null;return{video,list};}
+function linkFor(service){const src=$('ytlink').value.trim(),item=youtubeInfo(src);
+ if(!src)return service==='music'?'https://music.youtube.com/':'https://www.youtube.com/';
+ if(!item){post('Paste a valid YouTube video or playlist URL.');return null;}
+ const base=service==='music'?'https://music.youtube.com':'https://www.youtube.com';
+ return item.video?`${base}/watch?v=${encodeURIComponent(item.video)}${item.list?'&list='+encodeURIComponent(item.list):''}`:`${base}/playlist?list=${encodeURIComponent(item.list)}`;}
+function openExternal(url){if(!url)return;const w=window.open(url,'_blank','noopener,noreferrer');if(!w){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open link';$('feedback').replaceChildren(a);}}
+$('openmusic').onclick=()=>openExternal(linkFor('music'));$('openvideo').onclick=()=>openExternal(linkFor('youtube'));$('unloadvideo').onclick=stopVideo;
+$('loadvideo').onclick=()=>{const info=youtubeInfo($('ytlink').value);if(!info){post('Paste a YouTube or YouTube Music link.');return;}
+ const scheme=(()=>{try{return new URL(document.baseURI).protocol;}catch{return location.protocol;}})();
+ if(scheme==='file:'){post('Embedded YouTube needs a hosted HTTP/HTTPS page. Choose “Open on YouTube” for this file.');return;}
+ audio.pause(); // prevent two simultaneous audio sources
+ const id=info.video?encodeURIComponent(info.video):'videoseries',q=new URLSearchParams({playsinline:'1',rel:'0'});if(info.list)q.set('list',info.list);
+ const f=document.createElement('iframe');f.title='Official YouTube embedded player';f.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';f.allowFullscreen=true;
+ f.referrerPolicy='strict-origin-when-cross-origin';f.src=`https://www.youtube.com/embed/${id}?${q.toString()}`;$('video-shell').replaceChildren(f);
+ post('Video loaded; use the official YouTube controls.');};
+$('ytlink').onkeydown=e=>{if(e.key==='Enter')$('loadvideo').click();};
+document.addEventListener('visibilitychange',()=>{if(document.hidden)stopVideo();});
+function readPrefs(){const cfg=safeRead(STORAGE,{});shuffle=cfg.shuffle===true;$('shuffle').classList.toggle('active',shuffle);$('shuffle').setAttribute('aria-pressed',String(shuffle));
+ setRepeat(['off','one','all'].includes(cfg.repeatMode)?cfg.repeatMode:'off',false);
+ const volume=Number.isFinite(cfg.volume)?Math.max(0,Math.min(1,cfg.volume)):.8;audio.volume=volume;$('volume').value=String(Math.round(volume*100));
+ const rate=[.75,1,1.25,1.5,2].includes(cfg.speed)?cfg.speed:1;audio.playbackRate=rate;$('speed').value=String(rate);
+ setGains(Array.isArray(cfg.gains)&&cfg.gains.length===3?cfg.gains:[0,0,0],false);
+}
+(async()=>{try{if(window.parent!==window&&window.parent.LatchFS){document.body.classList.add('in-latch');$('savelatch').hidden=false;$('loadlatch').hidden=false;}}catch{}
+ readPrefs();try{db=await openDB();tracks=await transaction('getAll');order=safeRead(ORDER,[]);normalizeOrder();post(`Library ready: ${tracks.length} local tracks.`);}
+ catch(e){post('Local music storage unavailable. Files will last until this page closes.');}
+ render();updateReadout();})();
+})();
+</script>
+</body>
+</html>

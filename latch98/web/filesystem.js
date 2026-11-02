@@ -34,7 +34,7 @@ const defaults=()=>{disk={version:1,nodes:{'C:':{name:'Local Disk (C:)',parent:n
 // Latch removable-media tray: a mounted A: drive is a real, editable disk image
 // within the Latch filesystem. No physical USB/CD prompts or fabricated device events.
 const CHARACTER_MAP='charmap';
-const KNOWN_SOFTWARE={charmap:{name:'Character Map',dir:'C:/PROGRAM FILES/ACCESSORIES/CHARACTER MAP',menu:'C:/WINDOWS/START MENU/PROGRAMS/ACCESSORIES/CHARACTER MAP.LNK'},nornlab:{name:'Norn World Lab',dir:'C:/PROGRAM FILES/NORN WORLD LAB',menu:'C:/WINDOWS/START MENU/PROGRAMS/NORN WORLD LAB.LNK'}};
+const KNOWN_SOFTWARE={charmap:{name:'Character Map',dir:'C:/PROGRAM FILES/ACCESSORIES/CHARACTER MAP',menu:'C:/WINDOWS/START MENU/PROGRAMS/ACCESSORIES/CHARACTER MAP.LNK'},nornlab:{name:'Norn World Lab',dir:'C:/PROGRAM FILES/NORN WORLD LAB',menu:'C:/WINDOWS/START MENU/PROGRAMS/NORN WORLD LAB.LNK'},latchamp:{name:'LatchAmp',dir:'C:/PROGRAM FILES/LATCHAMP',menu:'C:/WINDOWS/START MENU/PROGRAMS/ACCESSORIES/LATCHAMP.LNK'}};
 function snapshotA(){const contents={};for(const [path,n] of Object.entries(disk.nodes))if(path.startsWith('A:/'))contents[path]={...n};return contents;}
 function ensureSystem(){
  ensureSwarmwire();
@@ -110,17 +110,32 @@ function createBlankDisk(name){
  name=nameCheck(name);const id='disk_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6);
  disk.media.disks[id]={name,readOnly:false,nodes:{}};switchMedia(id);return id;
 }
+function createAppInstaller(id){
+ if(id!=='latchamp')throw Error('This program cannot be downloaded by Latch Update');
+ const path='C:/Downloads/LatchAmp-110.setup.exe';
+ const old=get(path);if(old){if(old.kind!=='installer'||old.program!==id)throw Error('The setup filename is already in use');return path;}
+ add(path,'installer',{program:id,version:'1.10'});save();return path;
+}
 function installSoftware(id){
  if(id==='charmap'&&(!disk.media?.mounted||get('A:/SETUP.EXE')?.program!=='charmap'))throw Error('Insert the Latch Utilities floppy and run A:\\Setup.exe first.');
  if(id==='nornlab'&&(!disk.cdrom?.mounted||get('D:/SETUP.EXE')?.program!=='nornlab'))throw Error('Insert the Norn World Lab disc into drive D: first.');
+ if(id==='latchamp'&&get('C:/DOWNLOADS/LATCHAMP-110.SETUP.EXE')?.program!=='latchamp')throw Error('Download LatchAmp Setup from Latch Update first.');
  const def=KNOWN_SOFTWARE[id];if(!def)throw Error('This setup program is not compatible with Latch 98');
- if(disk.installed[id])throw Error(def.name+' is already installed');
+ if(disk.installed[id]){
+  if(id!=='latchamp'||disk.installed[id].version==='1.10')throw Error(def.name+' is already installed');
+  // Upgrade in place: retain existing virtual disk and shortcuts, and never delete user files.
+  disk.installed[id].version='1.10';disk.installed[id].updated=Date.now();
+  const readme=get(def.dir+'/README.TXT');if(readme?.kind==='text'){
+    readme.data='LatchAmp 1.10\nUpdated through Latch Setup.\nYour device-local music library is unchanged.\n';readme.modified=Date.now();
+  }
+  save();return def;
+ }
  const dir=def.dir;
  if(!isDir(dir))add(dir,'dir');
- add(dir+'/README.TXT','text',{data:id==='nornlab'?'Norn World Lab\n\nInstalled from NWLAB03.\nOriginal research application.\n':def.name+'\nCopyright Latch Computer Co.\nInstalled using Latch Setup.\n'});
+ add(dir+'/README.TXT','text',{data:id==='nornlab'?'Norn World Lab\n\nInstalled from NWLAB03.\nOriginal research application.\n':id==='latchamp'?'LatchAmp 1.10\nInstalled through Latch Setup.\n':''+def.name+'\nCopyright Latch Computer Co.\nInstalled using Latch Setup.\n'});
  add(dir+'/'+id.toUpperCase()+'.EXE','shortcut',{target:id});
  add(def.menu,'shortcut',{target:id});
- disk.installed[id]={name:def.name,dir,menu:def.menu,installed:Date.now()};save();return def;
+ disk.installed[id]={name:def.name,dir,menu:def.menu,installed:Date.now(),...(id==='latchamp'?{version:'1.10'}:{})};save();return def;
 }
 function uninstallSoftware(id){
  const installed=disk.installed[id];if(!installed)throw Error('Program is not installed');
@@ -270,6 +285,11 @@ function save(){
  disk=candidate;
  lastPersisted=data;
  lastError='';
+ if(mode==='android'){
+  // Android JNI writes the exact revision to private app storage, with an atomic rename.
+  try{if(!window.LatchAndroid.writeDisk(data))throw Error('Native disk write failed');pendingServerError='';}
+  catch(e){pendingServerError='Android disk save failed: '+e.message;lastError=pendingServerError;throw Error(lastError);}
+ }
  if(mode==='rust'){
   // A local mirror is the durable recovery point until the Rust POST succeeds.
   // Writes remain ordered and failures are visible from error() and sync().
@@ -372,7 +392,11 @@ const ready=(async()=>{
  let fromServer=false, corruptMirror=false;
  let mirror=null;
  try{const saved=localStorage.getItem(STORAGE);lastPersisted=saved;if(saved){if(saved.length>LIMIT)throw Error('Stored disk exceeds capacity');const raw=JSON.parse(saved);mirror=validateDisk(raw);}}catch(e){corruptMirror=true;lastError='Saved disk is damaged: '+e.message;}
- try{const r=await fetch('/api/fs',{cache:'no-store'});
+ if(window.LatchAndroid){
+  mode='android';
+  try{const saved=window.LatchAndroid.readDisk();if(saved){const parsed=validateDisk(JSON.parse(saved));disk=parsed;fromServer=true;}}
+  catch(e){blockedRecovery=true;lastError='Android disk could not be loaded: '+e.message;}
+ }else try{const r=await fetch('/api/fs',{cache:'no-store'});
   if(r.ok&&r.headers.get('content-type')?.includes('application/json')){
    const raw=await r.json();try{disk=validateDisk(raw);fromServer=true;mode='rust';}catch(e){lastError='Rust disk image is invalid: '+e.message;}
   }else if(r.status===404&&r.headers.get('x-latch-backend')==='rust'){mode='rust';}
@@ -389,7 +413,7 @@ if(utilitiesNote?.kind==='text'&&utilitiesNote.data==='Latch 98 Utilities Disk, 
  utilitiesNote.data='Latch 98 Utilities Disk, Disk 1 of 1\n\nRun Setup.exe to install Character Map.\n\nTo change disks, open My Computer, select the floppy drive and choose Disk Tray.\n';
  if(disk.media.mounted==='utilities'&&disk.nodes['A:/README.TXT'])disk.nodes['A:/README.TXT'].data=utilitiesNote.data;
 }
-if(!blockedRecovery&&(JSON.stringify(disk)!==bootBackup||!lastPersisted||mode==='rust'))save();if(mode==='rust')await writeChain;
+if(!blockedRecovery&&(JSON.stringify(disk)!==bootBackup||!lastPersisted||mode==='rust'||mode==='android'))save();if(mode==='rust')await writeChain;
  }catch(e){
  // A failed migration/initialization must not destroy the previously stored image.
  disk=JSON.parse(bootBackup);lastError='Disk startup could not be saved: '+(e?.message||e);
@@ -451,5 +475,5 @@ disk=parsed;lastPersisted=raw;blockedRecovery=false;
  try{document.dispatchEvent(new CustomEvent('latchfsimport'));}catch{}return true;
 };
 const recoveryRaw=()=>blockedRecovery?localStorage.getItem(STORAGE):null;
-window.LatchFS={ready,get:inspect,list,display,canonical,parent,rootPaths:ROOTS,mkdir:atomic(mkdir),write:atomic(write),writeImage:atomic(writeImage),read,rename:atomic(rename),move:atomic(move),copy:atomic(copy),remove:atomic(remove),restore:atomic(restore),emptyBin:atomic(emptyBin),search,unique,createText:atomic(createText),mode:()=>mode,error:()=>lastError||pendingServerError,sync,importDisk:atomic(importDisk),export:exportDisk,recoveryRaw,reloadFromStorage,nornTransfer,setNornTransfer:atomic(setNornTransfer),mediaInfo,switchMedia:atomic(switchMedia),createBlankDisk:atomic(createBlankDisk),discInfo,mountDisc:atomic(mountDisc),ejectDisc:atomic(ejectDisc),saveNornTorrent:atomic(saveNornTorrent),torrentInfo,downloadNornDisc:atomic(downloadNornDisc),installedPrograms,installSoftware:atomic(installSoftware),uninstallSoftware:atomic(uninstallSoftware),createShortcut:atomic(createShortcut)};
+window.LatchFS={ready,get:inspect,list,display,canonical,parent,rootPaths:ROOTS,mkdir:atomic(mkdir),write:atomic(write),writeImage:atomic(writeImage),read,rename:atomic(rename),move:atomic(move),copy:atomic(copy),remove:atomic(remove),restore:atomic(restore),emptyBin:atomic(emptyBin),search,unique,createText:atomic(createText),mode:()=>mode,error:()=>lastError||pendingServerError,sync,importDisk:atomic(importDisk),export:exportDisk,recoveryRaw,reloadFromStorage,nornTransfer,setNornTransfer:atomic(setNornTransfer),mediaInfo,switchMedia:atomic(switchMedia),createBlankDisk:atomic(createBlankDisk),discInfo,mountDisc:atomic(mountDisc),ejectDisc:atomic(ejectDisc),saveNornTorrent:atomic(saveNornTorrent),torrentInfo,downloadNornDisc:atomic(downloadNornDisc),installedPrograms,createAppInstaller:atomic(createAppInstaller),installSoftware:atomic(installSoftware),uninstallSoftware:atomic(uninstallSoftware),createShortcut:atomic(createShortcut)};
 })();

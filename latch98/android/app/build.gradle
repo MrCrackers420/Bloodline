@@ -1,0 +1,19 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'com.latch98.mobile'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'com.latch98.mobile'
+        minSdk 26
+        targetSdk 35
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1') as Integer)  // rises with each CI build
+        versionName '0.9.1'
+    }
+    // A fixed debug key (committed on purpose: friends-only builds) so each new APK installs over
+    // the last one and keeps the phone's Latch disk. The default debug key changes per machine.
+    signingConfigs { debug { storeFile file('../latch98-debug.keystore'); storePassword 'android'; keyAlias 'latch98'; keyPassword 'android' } }
+    buildTypes { debug { signingConfig signingConfigs.debug }; release { minifyEnabled false } }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    sourceSets { main { jniLibs.srcDirs = ['src/main/jniLibs'] } }
+}
+dependencies { implementation 'androidx.webkit:webkit:1.12.1' }

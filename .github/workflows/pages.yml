@@ -1,9 +1,10 @@
-# Builds the installable web app from game/bloodline.html and publishes it to GitHub Pages on every change to the game.
-name: Deploy web app
+# Publishes Latch 98 at the Pages root and Bloodline (the installable web app) at /bloodline/.
+# localStorage belongs to the origin, not the path, so Bloodline saves carry over to /bloodline/.
+name: Deploy Latch 98 and Bloodline
 on:
   push:
     branches: [main]
-    paths: ['game/**', 'tools/build_web.py', '.github/workflows/pages.yml']
+    paths: ['game/**', 'latch98/**', 'tools/build_web.py', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,10 +21,29 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
       - run: pip install pillow
-      - name: Build the web app
+      - name: Build Bloodline web app at /bloodline/
         run: |
-          python tools/build_web.py game/bloodline.html site
-          rm site/HOSTING.md
+          python tools/build_web.py game/bloodline.html site/bloodline
+          rm -f site/bloodline/HOSTING.md
+          mkdir -p site/game
+          cp game/*.html site/game/
+          test -f site/bloodline/index.html
+      - name: Publish Latch 98 at the root
+        run: |
+          python latch98/tools/build_pages.py site
+          test -f site/index.html
+          test -f site/latch98/index.html
+          test -f site/game/bloodline.html
+          test -f site/apps/latchamp/index.html
+      - name: Retire the old root Bloodline service worker
+        # Bloodline used to be installed at the root with ./sw.js. This replacement unregisters
+        # itself so the root serves Latch 98 straight from the network. It deletes no caches
+        # (the /bloodline/ app keeps its own) and touches no saves.
+        run: |
+          cat > site/sw.js <<'EOF'
+          self.addEventListener('install', () => self.skipWaiting());
+          self.addEventListener('activate', e => e.waitUntil(self.registration.unregister().then(() => self.clients.matchAll({ type: 'window' })).then(cs => cs.forEach(c => c.navigate(c.url)))));
+          EOF
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: site }

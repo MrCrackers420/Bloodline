@@ -1,17 +1,19 @@
-# Deploy Latch 98 Round 5 + Norn World Lab Round 4
+# Latch 98 deployment
 
-This is a **repository overlay**, not a replacement repository. Extract into the existing `MrCrackers420/Bloodline` repo root. Preserve `game/`, original `tools/`, and the repository root `README.md`: they hold the authoritative Bloodline story source and the existing Bloodline web publisher.
+Latch 98 (LatchAmp 1.10 update) lives in `latch98/`. `.github/workflows/pages.yml` publishes it at the Pages root,
+Bloodline's installable web app at `/bloodline/`, the raw game pages at `/game/` and a copy of Latch at `/latch98/`.
+The old root Bloodline service worker is replaced by one that unregisters itself; saves (localStorage, per origin) are untouched.
 
-The Latch application copy is in `latch98/`. The `.github/workflows/pages.yml` entry publishes Latch at the Pages root and the repository's main Bloodline source at `/bloodline/`. Never replace `game/bloodline.html` with the older archived copy under `latch98/apps/bloodline/`.
+`.github/workflows/android.yml` builds the Android APK (`latch98/android/build_android.sh`) and replaces the APK on the
+`latch98-android` GitHub Release. The APK is signed with the fixed key `latch98/android/latch98-debug.keystore`
+so new builds install over old ones.
+
+Checks before pushing:
 
 ```sh
 python latch98/tools/release_check.py
-git status --short
-git add latch98 .github/workflows/pages.yml DEPLOY_LATCH98.md
-git commit -m "Integrate Norn World Lab Round 4 into Latch 98"
-git push origin main
+python tools/check_bloodline.py game/bloodline.html
 ```
 
-Verify GitHub Actions Pages deploy, then test the first-run Postbox → SwarmWire → virtual ISO → Setup.exe installation flow. Existing user saves remain untouched. The five Latch Round 5 specialist patches are not included.
-
+Never replace `game/bloodline.html` with the archived copy under `latch98/apps/bloodline/`.
 Norn app SHA-256: `3bc36a7992e7d4540a4afc93acbb3d6f2d8e26b639402b998bdb1d10e86b34db`.

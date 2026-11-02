@@ -34,6 +34,7 @@ MANDATORY_PAYLOADS = {
     'soundstudio': ROOT/'apps/soundstudio/index.html',
     'audacity': ROOT/'apps/audacity/index.html',
     'spritestudio': ROOT/'apps/sprite-studio/index.html',
+    'latchamp': ROOT/'apps/latchamp/index.html',
 }
 
 

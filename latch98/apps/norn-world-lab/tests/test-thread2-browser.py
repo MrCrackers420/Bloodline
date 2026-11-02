@@ -39,17 +39,15 @@ def check(page,modular=False):
     # The private letter must be where the torrent can be acquired.
     page.locator('#desktop-icons [data-app="browser"]').dblclick()
     page.evaluate("window.LatchNet.active.navigate('http://www.postbox.l98/')")
-    page.locator('.ln-viewport a.ln-message-link[href*="message=lab"]').click()
+    page.locator('.ln-viewport [data-ln-message="lab"]').click()
     assert page.locator('.ln-mail-body').inner_text().find('Don\'t go looking for this on the software sites')!=-1
     page.locator('.ln-viewport [data-ln-attachment="open"]').click()
     page.locator('.window[data-id="swarmwire"] [data-sw="start"]').click()
     page.wait_for_timeout(1300)
-    assert page.evaluate('LatchFS.nornTransfer().percent')>0
+    pct=page.evaluate('LatchFS.nornTransfer().percent')
+    assert pct>0, pct
     page.locator('.window[data-id="swarmwire"] [data-sw="pause"]').click()
     assert page.evaluate('LatchFS.nornTransfer().state')=='Stopped'
-    # Capture settled progress after Pause: one scheduled transfer tick can
-    # legally complete between reading the live counter and clicking Pause.
-    pct=page.evaluate('LatchFS.nornTransfer().percent')
     saved=page.evaluate('LatchFS.export()')
     # Page reload retains transfer state and the mailbox/torrent entry.
     storage=page.evaluate('window.__testStore')

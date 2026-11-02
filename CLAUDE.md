@@ -4,14 +4,17 @@ A browser card battler in three self-contained pages, `game/bloodline.html`, `ga
 script each, no network calls). The game opens the Catacombs and the Wilds in the same tab; all share the saves.
 It is shared with friends only, as an installable web app (GitHub Pages) and a Windows zip. Saves are in localStorage.
 
+The Pages root is **Latch 98** (`latch98/`, a Windows-98-style desktop that also launches Bloodline). Bloodline's web app is at `/bloodline/`, the raw pages at `/game/`. localStorage is per origin, so moving Bloodline under `/bloodline/` kept its saves.
+
 ## Layout
 - `game/bloodline.html`: the game. The source of truth for every platform.
 - `game/catacombs.html`: the Catacombs mode. Published next to the game (web: beside index.html; Windows: in www/).
 - `game/wilds.html`: the Wilds, a survival mode. Published the same way. Its Leave fallback (`WD_HOME_FALLBACK`) is rewritten by both builds.
+- `latch98/`: Latch 98 source (`web/`, `apps/`, its own tools and tests; `python latch98/tools/release_check.py`). `latch98/android/`: the Android APK project.
 - `tools/build_web.py`: turns the game into the web app (manifest, offline service worker, update banner, icons).
 - `tools/check_bloodline.py`: sanity checks (syntax, loads with several saved states, optional fight run).
 - `windows/`: the Electron shell for the Windows build.
-- `.github/workflows/`: `pages.yml` (web app, on every change to `game/`) and `windows.yml` (Windows zip, on a `v*` tag).
+- `.github/workflows/`: `pages.yml` (Latch 98 at the root + Bloodline at `/bloodline/`, on every change to `game/` or `latch98/`), `android.yml` (Latch 98 APK, attached to the `latch98-android` Release) and `windows.yml` (Windows zip, on a `v*` tag).
 
 ## Releasing
 When asked to "release" or given a new `bloodline.html`:
@@ -28,7 +31,7 @@ After pushing, watch the workflow run and report its result and the live address
     python tools/check_bloodline.py game/bloodline.html --fight 9    (also plays 15 s of that challenger)
 
 ## Rules
-- Never rename the repository or change the Pages address: saves belong to the address, and a new address loses them.
+- Never rename the repository or change the Pages address: saves belong to the address (origin), and a new address loses them.
 - Keep each page a single file with no network calls and no external assets.
 - Never commit `node_modules/`, `dist/`, `site/` or `windows/www/`.
 - The game's Test tools are hidden by the shells (`window.BLOODLINE.release`); do not remove them from the file.
