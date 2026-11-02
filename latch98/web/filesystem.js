@@ -20,7 +20,7 @@ const list=p=>{const key=canonical(p);if(key==='A:'&&!disk?.media?.mounted)throw
 const display=p=>{const k=canonical(p);if(ROOTS.includes(k))return k+'\\'; const parts=[],visited=new Set();let cur=k;while(cur&&!ROOTS.includes(cur)&&!visited.has(cur)){visited.add(cur);const n=get(cur);parts.unshift(n?.name||base(cur));cur=parent(cur);}return (cur||'C:')+'\\'+parts.join('\\');};
 const add=(path,kind,extra={})=>{const p=canonical(path),up=parent(p);assertWritable(p);if(!up||!isDir(up))throw Error('Parent folder does not exist');if(get(p))throw Error('A file or folder with that name already exists');if(Object.keys(disk.nodes).length>2000)throw Error('The disk has too many items');disk.nodes[p]={name:nameCheck(base(path.replaceAll('\\','/'))),parent:up,kind,modified:Date.now(),...extra};return p;};
 const defaults=()=>{disk={version:1,nodes:{'C:':{name:'Local Disk (C:)',parent:null,kind:'dir',modified:Date.now()},'A:':{name:'3½ Floppy (A:)',parent:null,kind:'dir',modified:Date.now()},'D:':{name:'CD-ROM (D:)',parent:null,kind:'dir',modified:Date.now()}}};
- for(const dir of ['C:/WINDOWS','C:/WINDOWS/Desktop','C:/WINDOWS/System','C:/WINDOWS/Start Menu','C:/Program Files','C:/Program Files/Accessories','C:/Program Files/Latch Browser','C:/My Documents','C:/Recycled','C:/Downloads'])add(dir,'dir');
+ for(const dir of ['C:/WINDOWS','C:/WINDOWS/Desktop','C:/WINDOWS/System','C:/WINDOWS/Start Menu','C:/Program Files','C:/Program Files/Accessories','C:/Program Files/Latch Browser','C:/My Documents','C:/My Documents/My Music','C:/Recycled','C:/Downloads'])add(dir,'dir');
  add('C:/My Documents/Welcome to Latch 98.txt','text',{data:'Welcome to Latch 98!\n\nYour files are stored on your computer.\n\nDouble-click My Computer to browse C: and A:.\nUse File > New Folder, New Text Document, or the right-click menu.\nYou can rename, copy, cut, paste, move, delete, and restore files.\n\nOpen text documents in Notepad. Save with Ctrl+S.\nVisit PixelShelf and the Norn Observer through Latch Browser!\n'});
  add('C:/My Documents/Journal.txt','text',{data:'November 1998\n\nThe new Latch computer is finally set up. I should explore the network later.\n'});
  add('C:/WINDOWS/Desktop/Norn Observer.url','shortcut',{target:'site:norn'});
@@ -38,6 +38,7 @@ const KNOWN_SOFTWARE={charmap:{name:'Character Map',dir:'C:/PROGRAM FILES/ACCESS
 function snapshotA(){const contents={};for(const [path,n] of Object.entries(disk.nodes))if(path.startsWith('A:/'))contents[path]={...n};return contents;}
 function ensureSystem(){
  ensureSwarmwire();
+ if(!get('C:/MY DOCUMENTS/MY MUSIC')&&isDir('C:/MY DOCUMENTS'))add('C:/My Documents/My Music','dir');
  if(!disk.installed||typeof disk.installed!=='object')disk.installed={};
  if(!disk.preinstalledBloodline){
    // Seed Bloodline into both brand-new and existing Latch 98 disks exactly once.
@@ -112,30 +113,30 @@ function createBlankDisk(name){
 }
 function createAppInstaller(id){
  if(id!=='latchamp')throw Error('This program cannot be downloaded by Latch Update');
- const path='C:/Downloads/LatchAmp-110.setup.exe';
+ const path='C:/Downloads/LatchAmp-114.setup.exe';
  const old=get(path);if(old){if(old.kind!=='installer'||old.program!==id)throw Error('The setup filename is already in use');return path;}
- add(path,'installer',{program:id,version:'1.10'});save();return path;
+ add(path,'installer',{program:id,version:'1.14'});save();return path;
 }
 function installSoftware(id){
  if(id==='charmap'&&(!disk.media?.mounted||get('A:/SETUP.EXE')?.program!=='charmap'))throw Error('Insert the Latch Utilities floppy and run A:\\Setup.exe first.');
  if(id==='nornlab'&&(!disk.cdrom?.mounted||get('D:/SETUP.EXE')?.program!=='nornlab'))throw Error('Insert the Norn World Lab disc into drive D: first.');
- if(id==='latchamp'&&get('C:/DOWNLOADS/LATCHAMP-110.SETUP.EXE')?.program!=='latchamp')throw Error('Download LatchAmp Setup from Latch Update first.');
+ if(id==='latchamp'&&get('C:/DOWNLOADS/LATCHAMP-114.SETUP.EXE')?.program!=='latchamp')throw Error('Download LatchAmp Setup from Latch Update first.');
  const def=KNOWN_SOFTWARE[id];if(!def)throw Error('This setup program is not compatible with Latch 98');
  if(disk.installed[id]){
-  if(id!=='latchamp'||disk.installed[id].version==='1.10')throw Error(def.name+' is already installed');
+  if(id!=='latchamp'||disk.installed[id].version==='1.14')throw Error(def.name+' is already installed');
   // Upgrade in place: retain existing virtual disk and shortcuts, and never delete user files.
-  disk.installed[id].version='1.10';disk.installed[id].updated=Date.now();
+  disk.installed[id].version='1.14';disk.installed[id].updated=Date.now();
   const readme=get(def.dir+'/README.TXT');if(readme?.kind==='text'){
-    readme.data='LatchAmp 1.10\nUpdated through Latch Setup.\nYour device-local music library is unchanged.\n';readme.modified=Date.now();
+    readme.data='LatchAmp 1.14\nUpdated through Latch Setup.\nYour device-local music library is unchanged.\n';readme.modified=Date.now();
   }
   save();return def;
  }
  const dir=def.dir;
  if(!isDir(dir))add(dir,'dir');
- add(dir+'/README.TXT','text',{data:id==='nornlab'?'Norn World Lab\n\nInstalled from NWLAB03.\nOriginal research application.\n':id==='latchamp'?'LatchAmp 1.10\nInstalled through Latch Setup.\n':''+def.name+'\nCopyright Latch Computer Co.\nInstalled using Latch Setup.\n'});
+ add(dir+'/README.TXT','text',{data:id==='nornlab'?'Norn World Lab\n\nInstalled from NWLAB03.\nOriginal research application.\n':id==='latchamp'?'LatchAmp 1.14\nInstalled through Latch Setup.\n':''+def.name+'\nCopyright Latch Computer Co.\nInstalled using Latch Setup.\n'});
  add(dir+'/'+id.toUpperCase()+'.EXE','shortcut',{target:id});
  add(def.menu,'shortcut',{target:id});
- disk.installed[id]={name:def.name,dir,menu:def.menu,installed:Date.now(),...(id==='latchamp'?{version:'1.10'}:{})};save();return def;
+ disk.installed[id]={name:def.name,dir,menu:def.menu,installed:Date.now(),...(id==='latchamp'?{version:'1.14'}:{})};save();return def;
 }
 function uninstallSoftware(id){
  const installed=disk.installed[id];if(!installed)throw Error('Program is not installed');
@@ -318,6 +319,25 @@ function metadataCheck(n){
   else if(!/^(?:site:[a-z0-9_-]+|[a-z][a-z0-9_-]{1,32})$/i.test(n.target))throw Error('Invalid shortcut target');
  }
  if(n.kind==='installer'&&!/^[a-z][a-z0-9_-]{1,48}$/i.test(n.program))throw Error('Invalid installer identifier');
+ if(n.kind==='media-local'){
+  if(typeof n.mediaId!=='string'||!/^[a-z0-9-]{8,85}$/i.test(n.mediaId))throw Error('Invalid media storage reference');
+  if(!Number.isSafeInteger(n.size)||n.size<0||n.size>512*1024*1024)throw Error('Invalid media size');
+  if(typeof n.mime!=='string'||n.mime.length>100||!/^(audio|video)\/[a-z0-9.+-]+$/i.test(n.mime))throw Error('Invalid media MIME type');
+ }
+ if(n.kind==='media-playlist'){
+  if(typeof n.data!=='string'||n.data.length>90000)throw Error('Invalid playlist size');
+  let list;try{list=JSON.parse(n.data);}catch{throw Error('Corrupted playlist');}
+  if(list?.format!=='latch-mixed-playlist-v1'||!Array.isArray(list.entries)||list.entries.length>500)throw Error('Invalid mixed playlist');
+  for(const e of list.entries){if(!e||!['local','youtube'].includes(e.type)||typeof e.title!=='string'||e.title.length>120)throw Error('Invalid playlist entry');
+   if(e.type==='local'&&(typeof e.mediaId!=='string'||!/^[a-z0-9-]{8,85}$/i.test(e.mediaId)))throw Error('Invalid local playlist reference');
+   if(e.type==='youtube'&&(typeof e.url!=='string'||e.url.length>1024||!/^https:\/\/(?:www\.)?(?:youtube\.com|music\.youtube\.com|youtu\.be)\//i.test(e.url)))throw Error('Invalid online playlist reference');
+  }
+ }
+ if(n.kind==='media-link'){
+  if(typeof n.url!=='string'||n.url.length>1024||!/^https:\/\/(?:www\.)?(?:youtube\.com|music\.youtube\.com|youtu\.be)\//i.test(n.url))throw Error('Invalid YouTube link');
+  if(n.label!==undefined&&(typeof n.label!=='string'||n.label.length>120))throw Error('Invalid media title');
+ }
+
 }
 function validateNodes(nodes,driveScope){
  if(!nodes||typeof nodes!=='object'||Array.isArray(nodes))throw Error('Backup has invalid file entries');
@@ -326,7 +346,7 @@ function validateNodes(nodes,driveScope){
  for(const key of keys){
   if(canonical(key)!==key||(driveScope&&(!key.startsWith('A:/'))))throw Error('Backup contains an invalid path');
   const n=nodes[key];
-  if(!n||typeof n!=='object'||Array.isArray(n)||!['dir','text','image','shortcut','installer','torrent','iso'].includes(n.kind)||typeof n.name!=='string')throw Error('Corrupted disk entry');
+  if(!n||typeof n!=='object'||Array.isArray(n)||!['dir','text','image','shortcut','installer','torrent','iso','media-local','media-link','media-playlist'].includes(n.kind)||typeof n.name!=='string')throw Error('Corrupted disk entry');
   if(ROOTS.includes(key)){
    if(driveScope||n.kind!=='dir'||n.parent!==null)throw Error('Backup has an invalid drive root');
   }else{
@@ -335,7 +355,7 @@ function validateNodes(nodes,driveScope){
    if(!nodes[n.parent]&&!((driveScope&&n.parent==='A:')))throw Error('Backup has a broken folder tree');
    if(nodes[n.parent]&&nodes[n.parent].kind!=='dir')throw Error('Backup has a broken folder tree');
   }
-  if(['text','image','torrent','iso'].includes(n.kind)&&typeof n.data!=='string')throw Error('Invalid file contents');
+  if(['text','image','torrent','iso','media-playlist'].includes(n.kind)&&typeof n.data!=='string')throw Error('Invalid file contents');
   if(n.kind==='shortcut'&&typeof n.target!=='string')throw Error('Invalid shortcut');
   if(n.kind==='installer'&&typeof n.program!=='string')throw Error('Invalid installer');
   metadataCheck(n);
@@ -421,6 +441,33 @@ if(!blockedRecovery&&(JSON.stringify(disk)!==bootBackup||!lastPersisted||mode===
 const mkdir=(where,name)=>{const p=add(canonical(where)+'/'+nameCheck(name),'dir');save();return p;};
 const write=(path,content)=>{const p=canonical(path);assertWritable(p);content=String(content);if(content.length>130000)throw Error('Text file is too large (130 KB limit)');let n=get(p);if(n){if(n.kind!=='text')throw Error('This is not a text document');n.data=content;n.modified=Date.now();}else add(path,'text',{data:content});save();return p;};
 const writeImage=(path,data)=>{const p=canonical(path);assertWritable(p);if(!/^data:image\/png;base64,[a-z0-9+/=]+$/i.test(data)||data.length>300000)throw Error('Only PNG images under 225 KB can be saved');let n=get(p);if(n){if(n.kind!=='image')throw Error('An item with that name already exists');n.data=data;n.modified=Date.now();}else add(path,'image',{data});save();return p;};
+// Media file entries live in the 2 MB virtual disk; binary bytes live in IndexedDB.
+// Copies share an immutable mediaId; a binary is only garbage-collected once
+// no remaining node (including Recycle Bin and folders) references it.
+const makeMedia=(folder,name,mediaId,size,mime)=>{
+ const path=canonical(folder)+'/'+nameCheck(name);if(!/^[a-z0-9-]{8,85}$/i.test(mediaId))throw Error('Invalid media identifier');
+ if(!Number.isSafeInteger(size)||size<0||size>512*1024*1024||! /^(audio|video)\/[a-z0-9.+-]+$/i.test(mime))throw Error('Unsupported media');
+ add(path,'media-local',{mediaId,size,mime});save();return path;
+};
+const makeMediaLink=(folder,name,url,label='')=>{
+ const source=new URL(url);if(source.protocol!=='https:'||!['youtube.com','www.youtube.com','music.youtube.com','youtu.be'].includes(source.hostname))throw Error('Use an HTTPS YouTube or YouTube Music URL');
+ if(!/^(?:\/watch|\/playlist|\/shorts\/|\/embed\/|\/[a-zA-Z0-9_-]{11})(?:\/|$)/.test(source.pathname))throw Error('Enter a video or playlist URL');
+ source.username='';source.password='';source.hash='';
+ const path=canonical(folder)+'/'+nameCheck(name);add(path,'media-link',{url:source.toString(),label:String(label).slice(0,120)});save();return path;
+};
+const mediaFiles=()=>Object.entries(disk.nodes).filter(([path,n])=>path.startsWith('C:/')&&['media-local','media-link','media-playlist'].includes(n.kind)).map(([path,n])=>({path,...n}));
+const makeMediaPlaylist=(folder,name,entries)=>{
+ if(!Array.isArray(entries)||entries.length>500)throw Error('Too many tracks');
+ const data=JSON.stringify({format:'latch-mixed-playlist-v1',entries});if(data.length>90000)throw Error('Playlist too large');
+ const path=canonical(folder)+'/'+nameCheck(name);const node=add(path,'media-playlist',{data});metadataCheck(node&&get(node));save();return path;
+};
+const mediaIds=()=>{const referenced=new Set();
+ const visit=n=>{if(n?.kind==='media-local')referenced.add(n.mediaId);
+  if(n?.kind==='media-playlist')try{for(const entry of JSON.parse(n.data).entries||[])if(entry.type==='local')referenced.add(entry.mediaId);}catch{};
+ };
+ Object.values(disk.nodes).forEach(visit);
+ for(const floppy of Object.values(disk.media?.disks||{}))Object.values(floppy.nodes||{}).forEach(visit);
+ return [...referenced];};
 const read=path=>{const n=requireNode(path);if(n.kind!=='text')throw Error('This file cannot be opened as text');return n.data||'';};
 const rename=(p,name)=>move(p,canonical(parent(p))+'/'+nameCheck(name));
 function copy(p,to,newName){const src=canonical(p),from=requireNode(src),copyName=nameCheck(newName||from.name),dst=canonical(to+'/'+copyName);assertWritable(dst);if(get(dst))throw Error('Destination already exists');if(from.kind==='dir'&&(dst===src||dst.startsWith(src+'/')))throw Error('Cannot copy a folder inside itself');
@@ -457,6 +504,7 @@ function createText(where,name='New Text Document.txt'){return write(canonical(w
 // shared disk data without going through a validated and persisted operation.
 const inspect=p=>{const n=get(p);return n?{...n}:null;};
 const sync=()=>writeChain.then(()=>{if(pendingServerError)throw Error(pendingServerError);});
+const validateBackup=raw=>{if(typeof raw!=='string'||raw.length>LIMIT*3)throw Error('Invalid disk metadata');const value=JSON.parse(raw);validateDisk(value);if(JSON.stringify(value).length>LIMIT)throw Error('Disk metadata exceeds capacity');return true;};
 const exportDisk=()=>{if(blockedRecovery)throw Error('Stored disk is damaged; use recoveryRaw() to preserve the original bytes, then import a valid backup.');
  // Verify exported state against the same validator used by import; do not label
  // an invalid in-memory disk a restorable backup.
@@ -475,5 +523,5 @@ disk=parsed;lastPersisted=raw;blockedRecovery=false;
  try{document.dispatchEvent(new CustomEvent('latchfsimport'));}catch{}return true;
 };
 const recoveryRaw=()=>blockedRecovery?localStorage.getItem(STORAGE):null;
-window.LatchFS={ready,get:inspect,list,display,canonical,parent,rootPaths:ROOTS,mkdir:atomic(mkdir),write:atomic(write),writeImage:atomic(writeImage),read,rename:atomic(rename),move:atomic(move),copy:atomic(copy),remove:atomic(remove),restore:atomic(restore),emptyBin:atomic(emptyBin),search,unique,createText:atomic(createText),mode:()=>mode,error:()=>lastError||pendingServerError,sync,importDisk:atomic(importDisk),export:exportDisk,recoveryRaw,reloadFromStorage,nornTransfer,setNornTransfer:atomic(setNornTransfer),mediaInfo,switchMedia:atomic(switchMedia),createBlankDisk:atomic(createBlankDisk),discInfo,mountDisc:atomic(mountDisc),ejectDisc:atomic(ejectDisc),saveNornTorrent:atomic(saveNornTorrent),torrentInfo,downloadNornDisc:atomic(downloadNornDisc),installedPrograms,createAppInstaller:atomic(createAppInstaller),installSoftware:atomic(installSoftware),uninstallSoftware:atomic(uninstallSoftware),createShortcut:atomic(createShortcut)};
+window.LatchFS={ready,get:inspect,makeMedia:atomic(makeMedia),makeMediaLink:atomic(makeMediaLink),makeMediaPlaylist:atomic(makeMediaPlaylist),mediaFiles,mediaIds,list,display,canonical,parent,rootPaths:ROOTS,mkdir:atomic(mkdir),write:atomic(write),writeImage:atomic(writeImage),read,rename:atomic(rename),move:atomic(move),copy:atomic(copy),remove:atomic(remove),restore:atomic(restore),emptyBin:atomic(emptyBin),search,unique,createText:atomic(createText),mode:()=>mode,error:()=>lastError||pendingServerError,sync,importDisk:atomic(importDisk),validateBackup,export:exportDisk,recoveryRaw,reloadFromStorage,nornTransfer,setNornTransfer:atomic(setNornTransfer),mediaInfo,switchMedia:atomic(switchMedia),createBlankDisk:atomic(createBlankDisk),discInfo,mountDisc:atomic(mountDisc),ejectDisc:atomic(ejectDisc),saveNornTorrent:atomic(saveNornTorrent),torrentInfo,downloadNornDisc:atomic(downloadNornDisc),installedPrograms,createAppInstaller:atomic(createAppInstaller),installSoftware:atomic(installSoftware),uninstallSoftware:atomic(uninstallSoftware),createShortcut:atomic(createShortcut)};
 })();

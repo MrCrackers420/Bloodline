@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build one self-contained Latch 98 HTML file from modular sources.
 
-Bundled games: Norn World Lab Step32, Solitaire, Minesweeper preview.
+Bundled games: Norn World Lab Round 7 (optional installation), Solitaire, Minesweeper preview.
 For offline Bloodline, supply the authoritative game/bloodline.html with --bloodline.
 No fake installation state is inserted; installation remains LatchFS-driven.
 """
@@ -37,8 +37,11 @@ if bloodline_path.exists():
 # Uncompressed support code is inserted once; compressed payloads are lazy-decoded.
 source=source.replace('<script src="latchnet.js"></script>',packed+'\n'+script_inline(read('web/latchnet.js')))
 source=source.replace('<script src="filesystem.js"></script>',script_inline(read('web/filesystem.js')))
+source=source.replace('<script src="latch-media.js"></script>',script_inline(read('web/latch-media.js')))
+source=source.replace('<script src="latch-media-backup.js"></script>',script_inline(read('web/latch-media-backup.js')))
 source=source.replace('<script src="swarmwire.js"></script>',script_inline(read('web/swarmwire.js')))
 source=source.replace('<script src="latch-update.js"></script>',script_inline(read('web/latch-update.js')))
+source=source.replace('<script src="latch-audio.js"></script>',script_inline(read('web/latch-audio.js')))
 source=source.replace('<script src="desktop.js"></script>',script_inline(read('web/standalone_runtime.js'))+'''\n<script>
 window.LATCH98_SOLITAIRE_B64=document.getElementById('l98-packed-solitaire').textContent.trim();
 window.LATCH98_MINESWEEPER_PREVIEW_B64=document.getElementById('l98-packed-minesweeper').textContent.trim();

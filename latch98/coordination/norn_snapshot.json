@@ -1,12 +1,16 @@
 {
   "policy": "Integrator-approved Norn release; Latch workers must not modify this app",
   "path": "apps/norn-world-lab/index.html",
-  "sha256": "3bc36a7992e7d4540a4afc93acbb3d6f2d8e26b639402b998bdb1d10e86b34db",
-  "baseline_id": "NWLAB-R4-INTEGRATED-2026-11-02",
+  "sha256": "b265f776c999309d78783506420baf4b3a66d362310ae2fabeb8db35a9d30d96",
+  "baseline_id": "NWLAB-R7-TRAINED-2026-11-02",
   "incoming_release": {
-    "source": "NornWorldLab-Round4-Latch-App.zip",
-    "release_sha256": "3bc36a7992e7d4540a4afc93acbb3d6f2d8e26b639402b998bdb1d10e86b34db",
-    "integration": "Norn World Lab Round 4 approved app-only release; user simulation unchanged by Latch updater",
-    "latchfs_bridge": "norn-disk-host and norn-files integration retained"
+    "source": "NornWorldLab-Round7-Trained-Complete.zip / NornWorldLab-Round7-Latch-App.zip",
+    "release_sha256": "b265f776c999309d78783506420baf4b3a66d362310ae2fabeb8db35a9d30d96",
+    "integration": "Approved Round 7 app-only release; two optional learned locomotion gaits added to Egg Maker; preserves default gait, Norn trust/language/social memory inheritance boundary, and Latch installation behavior.",
+    "latchfs_bridge": "norn-disk-host and norn-files integration retained",
+    "gait_names": [
+      "r7practice4213",
+      "r7practice8128"
+    ]
   }
 }

@@ -238,13 +238,16 @@ const modularGame=(()=>{
  function launchBloodlineFull(){if(opened())return;
    closeMenus();lastFocus=document.activeElement;
    frame.removeAttribute('src');host.classList.remove('hidden');
-   el.desktop.classList.add('hidden');gamePerformance.enter('modular-bloodline');startExitPoll();
+   pauseHiddenAmpVideo();el.desktop.classList.add('hidden');gamePerformance.enter('modular-bloodline');startExitPoll();
    frame.onerror=()=>{closeFullscreenGame();showDialog('Bloodline','<p>Bloodline could not be loaded. Check the game files and try again.</p>');};
    frame.onload=()=>{try{
      // Same-origin frames don't send key events to the parent window.
      frame.contentWindow.addEventListener('keydown',onGameKey,true);frame.focus({preventScroll:true});
    }catch{/* A remote host may disallow in-frame keyboard listeners. */}};
-   frame.src=bloodlinePage();frame.focus({preventScroll:true});
+   const gameUrl=bloodlinePage();
+   fetch(gameUrl).then(r=>{if(!r.ok)throw Error('Game missing');return r.text();})
+    .then(html=>{if(opened())frame.srcdoc=window.LatchAudioBus?.instrument(html,gameUrl)||html;})
+    .catch(()=>{if(opened())frame.src=gameUrl;});frame.focus({preventScroll:true});
  }
  function onGameKey(e){if(e.ctrlKey&&e.shiftKey&&e.key==='Escape'){
    e.preventDefault();e.stopImmediatePropagation();closeFullscreenGame();
@@ -264,7 +267,7 @@ const modularGame=(()=>{
  return {launchBloodlineFull,closeFullscreenGame,isOpen:opened};
 })();
 // Integration hook for browser-hosted builds; no conflict with LatchBundle.
-window.LatchDesktop={launchBloodlineFull:()=>modularGame?.launchBloodlineFull(),closeFullscreenGame:()=>modularGame?.closeFullscreenGame()};
+window.LatchDesktop={launchBloodlineFull:()=>modularGame?.launchBloodlineFull(),closeFullscreenGame:()=>modularGame?.closeFullscreenGame(),pauseAmpVideo:()=>pauseHiddenAmpVideo()};
 // Basic controller navigation of the shell (not game input). D-pad/stick selects
 // visible desktop icons, task buttons and menus; A opens, B backs out, Start opens Start.
 // When focus belongs to an app iframe, let that game handle its own controller.
@@ -316,7 +319,7 @@ function launch(id){
  const node=document.createElement('div');node.className='window';node.dataset.id=id;node.tabIndex=-1;node.setAttribute('role','region');node.setAttribute('aria-label',titleOf(id)+' window');node.style.width=Math.min(size[0],innerWidth-16)+'px';node.style.height=Math.min(innerWidth<=650&&id==='browser'?innerHeight-55:size[1],innerHeight-55)+'px';
  const left=Math.max(2,Math.min(innerWidth-size[0]-9,75+(n%7)*28));const top=Math.max(2,Math.min(innerHeight-size[1]-51,48+(n%7)*21));node.style.left=(innerWidth<=650?4:left)+'px';node.style.top=top+'px';
  node.innerHTML=`<div class="titlebar" data-drag="1">${icon(iconOf(id))}<span class="caption">${titleOf(id)}</span><div class="controls"><button class="ctrl" data-window-action="min" title="Minimize">_</button><button class="ctrl" data-window-action="max" title="Maximize">□</button><button class="ctrl" data-window-action="close" title="Close">×</button></div></div>${(['notepad','paint','computer','documents','network','bin','browser','terminal'].includes(id)||id.startsWith('explorer:'))?`<div class="window-menubar"><button data-window-menu="file">File</button><button data-window-menu="edit">Edit</button>${isExplorer(id)?`<button data-window-menu="view">View</button><button data-window-menu="go">Go</button>`:``}<button data-window-menu="help">Help</button></div>`:''}<div class="window-content">${appHtml(id)}</div>${(['computer','documents','network','bin','notepad','paint'].includes(id)||id.startsWith('explorer:'))?'<div class="statusbar"><span class="status-text">Ready</span></div>':''}`;
- el.layer.append(node);const w={id,node,minimized:false,maximized:false,previous:null,lastFocused:null};windows.set(id,w);restoreWindowLayout(w);
+ el.layer.append(node);const w={id,node,minimized:false,maximized:false,previous:null,lastFocused:null};windows.set(id,w);restoreWindowLayout(w);if(id==='latchamp')makeAmpMini();
  node.querySelectorAll('[data-window-action]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();const action=btn.dataset.windowAction;if(action==='close')closeWindow(id);if(action==='min')minimizeWindow(id);if(action==='max')maximizeWindow(id);}));
  node.querySelectorAll('[data-window-menu]').forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();const menu=btn.dataset.windowMenu;
   if(id==='paint'){if(menu==='file')showPaintFileMenu(btn);else if(menu==='help')launch('help');}
@@ -407,7 +410,7 @@ function setupDiskTray(node){
 }
 function showSoftwareSetup(program){
  const def={charmap:'Character Map',nornlab:'Norn World Lab',latchamp:'LatchAmp'}[program];if(!def){fsError('This setup file cannot be opened.');return;}
- const installed=fs.installedPrograms().find(p=>p.id===program);const upgrading=program==='latchamp'&&!!installed&&installed.version!=='1.10';
+ const installed=fs.installedPrograms().find(p=>p.id===program);const upgrading=program==='latchamp'&&!!installed&&installed.version!=='1.14';
  if(installed&&!upgrading){showDialog('Setup','<p>This program is already up to date.</p>');return;}
  showDialog(`${def} Setup`,`<div class="l98-installer-banner"><span class="l98-floppy">${icon('disc')}</span><div><strong>Welcome to the ${escapeHtml(def)} Setup program.</strong><p>This wizard will ${upgrading?'upgrade':'install'} ${escapeHtml(def)} on your computer.</p></div></div><p>Click Next to continue.</p>`,[{label:'Next >',action:()=>showDialog(`${def} Setup`,`<p>Setup will ${upgrading?'upgrade':'install'} ${escapeHtml(def)} in:</p><div class="l98-status">${program==='nornlab'?'C:\\Program Files\\Norn World Lab':program==='latchamp'?'C:\\Program Files\\LatchAmp':'C:\\Program Files\\Accessories\\Character Map'}</div><p>Click ${upgrading?'Upgrade':'Install'} to begin.</p>`,[{label:upgrading?'Upgrade':'Install',action:()=>{try{fs.installSoftware(program);showDialog('Setup Complete',`<p>${escapeHtml(def)} has been ${upgrading?'updated':'installed'} successfully.</p><p>You can find it in ${program==='nornlab'?'Start > Programs > Games':'Start > Programs > Accessories'}.</p>`,[{label:'Finish'}]);}catch(e){fsError(e);}}},{label:'Cancel'}])},{label:'Cancel'}]);
 }
@@ -443,7 +446,7 @@ async function setupBloodlineWindow(node){
  const start=(html,remote)=>{
    const iframe=document.createElement('iframe');iframe.className='bloodline-frame';
    iframe.title='Bloodline';
-   if(html)iframe.srcdoc=html;else iframe.src=remote||bloodlinePage();
+   if(html)iframe.srcdoc=window.LatchAudioBus?.instrument(html,bloodlinePage())||html;else iframe.src=remote||bloodlinePage();
    iframe.setAttribute('allow','fullscreen; gamepad');iframe.setAttribute('allowfullscreen','');
    holder.replaceChildren(iframe);
  };
@@ -459,8 +462,12 @@ function setupExtraWindow(node,id){
  frame.title=titleOf(id);frame.setAttribute('allow','fullscreen; gamepad; microphone');
  frame.setAttribute('allowfullscreen','');
  const source=window.LatchBundle?.get(id);
- if(source)frame.srcdoc=source;
- else frame.src=sourceAppPage(`${id==='spritestudio'?'sprite-studio':id}/index.html`);
+ const url=source?document.baseURI:sourceAppPage(`${id==='spritestudio'?'sprite-studio':id}/index.html`);
+ if(source)frame.srcdoc=id==='latchamp'?source:(window.LatchAudioBus?.instrument(source,url)||source);
+ else if(id==='latchamp')frame.src=url;
+ else fetch(url).then(r=>{if(!r.ok)throw Error('App unavailable');return r.text();})
+  .then(html=>{if(frame.isConnected)frame.srcdoc=window.LatchAudioBus?.instrument(html,url)||html;})
+  .catch(()=>{if(frame.isConnected)frame.src=url;});
  host.replaceChildren(frame);
  const w=windows.get(id);if(w)w.cleanup=()=>frame.remove();
 }
@@ -524,12 +531,12 @@ function showDesktopIconContext(item,x,y){
  {label:'Properties',action:()=>path?showPathProperties(path):showDialog(titleOf(app)+' Properties',`<p>${escapeHtml(titleOf(app))}</p><p>Type: Application</p>`)}
  ]);
 }
-function fsNodeSize(n){if(!n)return 0;if(n.kind==='image'){const payload=(n.data||'').split(',').pop(),pad=(payload.match(/=+$/)||[''])[0].length;return Math.max(0,Math.floor(payload.length*3/4)-pad);};if(n.kind==='text')return new Blob([n.data||'']).size;if(n.kind==='torrent'||n.kind==='iso')return n.displaySize||new Blob([n.data||'']).size;return 0;}
+function fsNodeSize(n){if(!n)return 0;if(n.kind==='media-local')return n.size||0;if(n.kind==='media-playlist'||n.kind==='media-link')return new Blob([n.data||n.url||'']).size;if(n.kind==='image'){const payload=(n.data||'').split(',').pop(),pad=(payload.match(/=+$/)||[''])[0].length;return Math.max(0,Math.floor(payload.length*3/4)-pad);};if(n.kind==='text')return new Blob([n.data||'']).size;if(n.kind==='torrent'||n.kind==='iso')return n.displaySize||new Blob([n.data||'']).size;return 0;}
 function fsTreeSize(path){const node=fs.get(path);if(node?.kind!=='dir')return fsNodeSize(node);let sum=0;const visit=(p,depth)=>{if(depth>16)return;for(const n of fs.list(p)){if(n.kind==='dir')visit(n.path,depth+1);else sum+=fsNodeSize(n);}};try{visit(path,0);}catch{}return sum;}
 function fsByteSize(size){return size<1024?size+' bytes':Math.max(1,Math.ceil(size/1024)).toLocaleString()+' KB';}
-function fsKindName(n){return ({dir:'File Folder',text:'Text Document',image:'PNG Image',shortcut:'Shortcut',installer:'Application',torrent:'SwarmWire Torrent',iso:'CD-ROM Disc Image',drive:'Disk Drive'})[n.kind]||'File';}
+function fsKindName(n){return ({dir:'File Folder',text:'Text Document',image:'PNG Image',shortcut:'Shortcut',installer:'Application',torrent:'SwarmWire Torrent',iso:'CD-ROM Disc Image',drive:'Disk Drive','media-local':'Media File (stored offline)','media-link':'Online Media Link (internet required)','media-playlist':'Latch Mixed Playlist'})[n.kind]||'File';}
 function showPathProperties(path){const n=fs.get(path);if(!n)return;const isFolder=n.kind==='dir',bytes=isFolder?fsTreeSize(path):fsNodeSize(n),location=fs.parent(path)?fs.display(fs.parent(path)):fs.display(path);
-const target=n.kind==='shortcut'?`<div class="l98-prop-row"><b>Target:</b> <span>${escapeHtml(n.target||'')}</span></div>`:'';
+const target=n.kind==='media-link'?`<div class="l98-prop-row"><b>Source:</b> <span>Online YouTube link (internet required)</span></div>`:n.kind==='media-local'?`<div class="l98-prop-row"><b>Storage:</b> <span>Locally stored bytes; use Complete Media Backup to transfer them</span></div>`:n.kind==='shortcut'?`<div class="l98-prop-row"><b>Target:</b> <span>${escapeHtml(n.target||'')}</span></div>`:'';
 showDialog(escapeHtml(n.name)+' Properties',`<div class="l98-properties"><div class="l98-prop-heading">${icon(iconForFS(n))}<strong>${escapeHtml(n.name)}</strong></div><hr><div class="l98-prop-row"><b>Type:</b> <span>${fsKindName(n)}</span></div><div class="l98-prop-row"><b>Location:</b> <span>${escapeHtml(location)}</span></div><div class="l98-prop-row"><b>Size:</b> <span>${fsByteSize(bytes)}</span></div><div class="l98-prop-row"><b>Modified:</b> <span>${escapeHtml(new Date(n.modified||Date.now()).toLocaleString())}</span></div>${target}</div>`);}
 
 function showDesktopContext(x,y){showPopupAt(x,y,[
@@ -575,15 +582,89 @@ function fsMakeText(id){const w=windows.get(id);if(!w)return;const folder=explor
 function fsRename(id){const s=selectionInfo(id);if(!s?.node)return;prompt98('Rename','Enter a new name:',s.node.name,name=>{const p=fs.rename(s.path,name);windows.get(id).fsSelected=p;refreshExplorer(id);});}
 function fsCopySelected(id,cut=false){const s=selectionInfo(id);if(!s?.node)return;fsClipboard={path:s.path,cut};const w=windows.get(id);w.node.querySelector('.status-text').textContent=cut?'Ready to move — choose Paste':'Copied — choose Paste';}
 function fsPaste(id){const w=windows.get(id);if(!w||!fsClipboard)return;try{const to=explorerCurrentDir(id),item=fs.get(fsClipboard.path);if(!item)throw Error('The source item no longer exists');const name=fs.unique(to,item.name),dest=to+'/'+name;const p=fsClipboard.cut?fs.move(fsClipboard.path,dest):fs.copy(fsClipboard.path,to,name);if(fsClipboard.cut)fsClipboard=null;w.fsSelected=p;refreshExplorer(id);}catch(e){fsError(e);}}
-function fsDeleteSelected(id){const s=selectionInfo(id);if(!s?.node)return;const permanent=windows.get(id)?.fsPath==='C:/RECYCLED';ask98(permanent?'Delete File':'Confirm File Delete',`Are you sure you want to ${permanent?'permanently delete':'send to the Recycle Bin'} "${s.node.name}"?`,()=>{try{fs.remove(s.path,permanent);windows.get(id).fsSelected=null;refreshExplorer(id);}catch(err){fsError(err);}});}
+function fsDeleteSelected(id){const s=selectionInfo(id);if(!s?.node)return;const permanent=windows.get(id)?.fsPath==='C:/RECYCLED';ask98(permanent?'Delete File':'Confirm File Delete',`Are you sure you want to ${permanent?'permanently delete':'send to the Recycle Bin'} "${s.node.name}"?`,()=>{try{fs.remove(s.path,permanent);if(permanent)window.LatchMedia.prune().catch(e=>console.warn('Media cleanup:',e));windows.get(id).fsSelected=null;refreshExplorer(id);}catch(err){fsError(err);}});}
 function fsRestoreSelected(id){const s=selectionInfo(id);if(!s?.node)return;try{fs.restore(s.path);windows.get(id).fsSelected=null;refreshExplorer(id);}catch(e){fsError(e);}}
 function openWithChoice(path){const n=fs.get(path);if(!n)return;if(n.kind==='image')showDialog('Open With',`<p>Choose the program you want to use to open <strong>${escapeHtml(n.name)}</strong>:</p>`,[{label:'Imaging',action:()=>launch('viewer:'+path)},{label:'Paint',action:()=>openPaintFromPath(path)},{label:'Cancel'}]);else if(n.kind==='text')showDialog('Open With',`<p>Choose the program you want to use to open <strong>${escapeHtml(n.name)}</strong>:</p>`,[{label:'Notepad',action:()=>openFilePath(path)},{label:'Cancel'}]);}
 function fsProperties(id){const s=selectionInfo(id);if(s?.node)showPathProperties(s.path);}
-function fsBackupDisk(){const blob=new Blob([fs.export()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Latch98-Backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function fsRestoreDisk(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{const f=input.files?.[0];if(!f)return;const raw=await f.text();ask98('Restore Disk Image','This will replace all current files and settings on this computer. Continue?',()=>{try{fs.importDisk(raw);}catch(e){fsError(e);}});});input.click();}
+async function fsBackupDisk(){
+ try{const b=window.LatchMediaBackup;const blob=await b.exportBundle();
+  b.download(blob,'Latch98-Complete-Media-Backup.l98backup');
+  showDialog('Complete Backup',`<p>Saved disk settings, online links, playlists, and imported media into one backup (${Math.ceil(blob.size/1024)} KB).</p><p>Keep this file safe. The backup is not encrypted.</p>`,[{label:'OK'}]);
+ }catch(e){fsError(e);}
+}
+function fsExportMetadataOnly(){
+ const b=new Blob([fs.export()],{type:'application/json'});
+ window.LatchMediaBackup.download(b,'Latch98-Metadata-Only.json');
+ if(fs.mediaIds().length)showDialog('Metadata-only Backup','<p>This JSON does not contain uploaded audio/video. For a portable copy including those files, choose <b>Back Up Complete Disk + Media</b>.</p>',[{label:'OK'}]);
+}
+async function fsMediaStorageStatus(){
+ try{const info=await window.LatchMedia.status();const fmt=n=>n==null?'unknown':(n/1024/1024).toFixed(1)+' MB';
+  const summary=`<p><b>Referenced local files:</b> ${info.referenced}<br><b>Stored media blobs:</b> ${info.stored}<br><b>Missing local media:</b> ${info.missing.length}<br><b>Browser storage:</b> ${fmt(info.used)} / ${fmt(info.quota)}<br><b>Protected from automatic eviction:</b> ${info.persistent===null?'Unknown':info.persistent?'Yes':'No'}</p>`+
+    (info.missing.length?'<p>Some media bytes are missing. Restore a complete .l98backup to recover them.</p>':'<p>All referenced local media bytes are present.</p>')+
+    '<p>Storage can be cleared by browser privacy tools. Keep a complete backup regardless of persistence status.</p>';
+  showDialog('Media Storage Status',summary,[{label:'Request Protected Storage',action:async()=>{try{const ok=await window.LatchMedia.requestPersistence();showDialog('Storage Request',`<p>${ok?'The browser granted persistent storage.':'The browser declined the request. Use complete backups to protect your files.'}</p>`,[{label:'OK'}]);}catch(e){fsError(e);}}},{label:'Close'}]);
+ }catch(e){fsError(e);}
+}
+function fsRestoreDisk(){
+ const input=document.createElement('input');input.type='file';input.accept='.l98backup,.json,application/json,application/octet-stream';
+ input.addEventListener('change',async()=>{
+  const f=input.files?.[0];if(!f)return;
+  try{
+   const isBundle=f.name.toLowerCase().endsWith('.l98backup');
+   const details=isBundle?await window.LatchMediaBackup.inspectBundle(f):null;
+   const warning='This will replace all current files and settings on this computer. Continue?';
+   const message=(isBundle?`Complete backup: ${details.files} stored media files (${Math.round(details.bytes/1024)} KB) plus disk data. `:
+    'Metadata-only JSON: filenames, settings, and links; no imported audio/video bytes. Media from another device may be missing. ')+warning;
+   ask98('Restore Latch 98 Backup',message,async()=>{
+    try{if(isBundle){await window.LatchMediaBackup.restoreBundle(f);}else{fs.importDisk(await f.text());await fs.sync();}
+      for(const [id,w] of windows)if(w?.fsPath)try{refreshExplorer(id);}catch{}
+      showDialog('Restore Complete',isBundle?'<p>The complete backup was restored, including its stored audio/video files.</p>':'<p>Metadata-only backup restored. Local audio/video bytes were not included.</p>',[{label:'OK'}]);
+    }catch(e){fsError(e);}
+   });
+  }catch(e){fsError(e);}
+ });input.click();
+}
 function fsExport(id){const s=selectionInfo(id);if(!s||s.node?.kind!=='text')return;const b=new Blob([fs.read(s.path)],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(b);const a=document.createElement('a');a.href=url;a.download=s.node.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function fsImport(id){const folder=explorerCurrentDir(id),input=document.createElement('input');input.type='file';input.accept='.txt,.md,.csv,.json,text/*';input.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;try{if(file.size>130000)throw Error('Only text files smaller than 130 KB can be imported');const name=fs.unique(folder,file.name.replace(/[\\/<>:"|?*]/g,'_'));fs.write(folder+'/'+name,await file.text());}catch(e){fsError(e);}});input.click();}
-function showExplorerFileMenu(id,btn){const w=windows.get(id);const recycle=w?.fsPath==='C:/RECYCLED';showPopup(btn,[{label:'3½ Floppy Disk Tray...',action:()=>launch('disktray')},null,{label:'New ► Folder',action:()=>fsMakeFolder(id),disabled:recycle},{label:'New ► Text Document',action:()=>fsMakeText(id),disabled:recycle},null,{label:'Import Text File...',action:()=>fsImport(id),disabled:recycle},{label:'Export Selected Text File...',action:()=>fsExport(id)},null,{label:'Back Up Disk Image...',action:fsBackupDisk},{label:'Restore Disk Image...',action:fsRestoreDisk},null,{label:'Rename',action:()=>fsRename(id)},{label:'Delete',action:()=>fsDeleteSelected(id)},{label:'Properties',action:()=>fsProperties(id)}]);}
+async function fsImportMedia(id){
+ const folder=explorerCurrentDir(id),input=document.createElement('input');input.type='file';input.multiple=true;input.accept='audio/*,video/*,.mp3,.flac,.wav,.ogg,.m4a,.mp4,.webm,.mov';
+ input.addEventListener('change',async()=>{let imported=0;for(const file of [...(input.files||[])])try{await window.LatchMedia.importFile(file,folder);imported++;}catch(e){fsError(e);break;}
+ if(imported)refreshExplorer(id);});input.click();
+}
+function fsCreateMediaLink(id){const folder=explorerCurrentDir(id);
+ prompt98('Create Online Media Link','Enter a YouTube or YouTube Music video/playlist URL:','https://www.youtube.com/watch?v=',url=>{
+ prompt98('Name Media File','File name (this is a link, not downloaded audio):','Online Track.l98music',name=>{
+  try{const path=fs.makeMediaLink(folder,fs.unique(folder,name),url,name);windows.get(id).fsSelected=path;refreshExplorer(id);}catch(e){fsError(e);}
+ });});
+}
+function fsCreateMixedPlaylist(id){const folder=explorerCurrentDir(id);
+ const media=fs.list(folder).filter(n=>['media-local','media-link'].includes(n.kind));
+ if(!media.length){fsError('Add audio/video files or YouTube links to this folder first.');return;}
+ const entries=media.map(n=>n.kind==='media-local'?{type:'local',mediaId:n.mediaId,title:n.name}:{type:'youtube',url:n.url,title:n.label||n.name});
+ prompt98('Mixed Playlist','Name this playlist:','My Playlist.l98mix',name=>{try{fs.makeMediaPlaylist(folder,fs.unique(folder,name),entries);refreshExplorer(id);}catch(e){fsError(e);}});
+}
+function fsExportMedia(id){const selected=selectionInfo(id);if(!selected||selected.node?.kind!=='media-local')return;
+ window.LatchMedia.exportFile(selected.path).catch(fsError);
+}
+async function showImportedVideo(path){try{
+ const n=fs.get(path),blob=await window.LatchMedia.blobFor(n.mediaId),src=URL.createObjectURL(blob);
+ showDialog('Latch Media Player',`<p>${escapeHtml(n.name)}</p><video controls autoplay style="max-width:min(75vw,560px);max-height:55vh;width:100%;background:#000"></video><p class="menu-tip">Stored locally — no internet needed.</p>`,[{label:'Close'}]);
+ const video=document.querySelector('.dialog-overlay:not(.hidden) video, .dialog-box video, .dialog video');if(!video){URL.revokeObjectURL(src);throw Error('Video player window unavailable');}
+ video.src=src;video.addEventListener('ended',()=>{}, {once:true}); // dialog cleanup is handled by release-on-close watcher below
+ const clear=()=>{if(!video.isConnected){URL.revokeObjectURL(src);clearInterval(tid);}};const tid=setInterval(clear,700);
+ }catch(e){fsError(e);}}
+window.addEventListener('message',e=>{
+ if(e.source!==ampFrame()?.contentWindow||e.data?.type!=='latchamp:open-local-video')return;
+ try{const p=fs.canonical(e.data.path),n=fs.get(p);if(n?.kind!=='media-local'||!n.mime.startsWith('video/'))throw Error('Video file not found');showImportedVideo(p);}catch(err){fsError(err);}
+});
+function fsOpenMedia(path){const n=fs.get(path);if(n?.kind==='media-local'&&n.mime.startsWith('video/')){showImportedVideo(path);return;}
+ const installed=fs.installedPrograms().some(i=>i.id==='latchamp');if(!installed){showDialog('LatchAmp is required','<p>This media file opens through LatchAmp, which is not installed.</p><p>Use Start > Latch Update to download and install it.</p>',[{label:'Latch Update',action:()=>launch('updates')},{label:'Cancel'}]);return;}
+ launch('latchamp');const frame=ampFrame();if(!frame){fsError('LatchAmp player unavailable');return;}
+ const deliver=()=>{try{frame.contentWindow.postMessage({type:'latch98:open-media',path},location.origin==='null'?'*':location.origin);}catch(e){fsError(e);}};
+ if(frame.contentDocument?.readyState==='complete'&&frame.contentDocument.getElementById('audio'))deliver();
+ else frame.addEventListener('load',deliver,{once:true});
+}
+function showExplorerFileMenu(id,btn){const w=windows.get(id);const recycle=w?.fsPath==='C:/RECYCLED';showPopup(btn,[{label:'3½ Floppy Disk Tray...',action:()=>launch('disktray')},null,{label:'New ► Folder',action:()=>fsMakeFolder(id),disabled:recycle},{label:'New ► Text Document',action:()=>fsMakeText(id),disabled:recycle},null,{label:'Import Text File...',action:()=>fsImport(id),disabled:recycle},{label:'Import Audio / Video...',action:()=>fsImportMedia(id),disabled:recycle},{label:'New YouTube Media Link...',action:()=>fsCreateMediaLink(id),disabled:recycle},{label:'Make Mixed Playlist from Folder...',action:()=>fsCreateMixedPlaylist(id),disabled:recycle},{label:'Export Selected Media File...',action:()=>fsExportMedia(id),disabled:fs.get(w?.fsSelected)?.kind!=='media-local'},{label:'Export Selected Text File...',action:()=>fsExport(id)},null,{label:'Back Up Complete Disk + Media...',action:fsBackupDisk},{label:'Restore Disk/Media Backup...',action:fsRestoreDisk},{label:'Media Storage Status...',action:fsMediaStorageStatus},{label:'Export Metadata-only JSON...',action:fsExportMetadataOnly},null,{label:'Rename',action:()=>fsRename(id)},{label:'Delete',action:()=>fsDeleteSelected(id)},{label:'Properties',action:()=>fsProperties(id)}]);}
 function explorerViewOptions(id){const w=windows.get(id);return ['large','small','list','details'].map((view,i)=>({label:(w.fsView===view?'● ':'   ')+['Large Icons','Small Icons','List','Details'][i],action:()=>setExplorerView(id,view)}));}
 function showExplorerViewMenu(id,btn){const w=windows.get(id);showPopup(btn,[...explorerViewOptions(id),null,{label:'Arrange Icons by Name',action:()=>setExplorerSort(id,'name')},{label:'Arrange Icons by Type',action:()=>setExplorerSort(id,'type')},{label:'Arrange Icons by Size',action:()=>setExplorerSort(id,'size')},{label:'Arrange Icons by Date',action:()=>setExplorerSort(id,'modified')},null,{label:(w.fsTreeVisible?'✓ ':'   ')+'Explorer Bar ► Folders',action:()=>{w.fsTreeVisible=!w.fsTreeVisible;refreshExplorer(id);}},{label:'Refresh',action:()=>refreshExplorer(id)}]);}
 function setExplorerView(id,view){const w=windows.get(id);if(!w||!['large','small','list','details'].includes(view))return;w.fsView=view;rememberExplorerPreferences(id);refreshExplorer(id);}
@@ -592,7 +673,7 @@ function rememberExplorerPreferences(id){const w=windows.get(id);if(!w)return;ex
 
 function showExplorerGoMenu(id,btn){showPopup(btn,[{label:'CD-ROM (D:)',action:()=>fsNavigate(id,'D:')},{label:'3½ Floppy (A:)',action:()=>fsNavigate(id,'A:')},{label:'Disk Tray...',action:()=>launch('disktray')},null,{label:'Back',action:()=>{const w=windows.get(id),p=w.fsHistory?.pop();if(p){w.fsPath=p;refreshExplorer(id);}}},{label:'Up One Level',action:()=>fsNavigate(id,fs.parent(windows.get(id).fsPath)||'computer')},null,{label:'My Computer',action:()=>fsNavigate(id,'computer')},{label:'My Documents',action:()=>fsNavigate(id,'C:/MY DOCUMENTS')},{label:'Recycle Bin',action:()=>fsNavigate(id,'C:/RECYCLED')}]);}
 function showExplorerEditMenu(id,btn){showPopup(btn,[{label:'Cut                 Ctrl+X',action:()=>fsCopySelected(id,true)},{label:'Copy             Ctrl+C',action:()=>fsCopySelected(id)},{label:'Paste             Ctrl+V',action:()=>fsPaste(id)},null,{label:'Move To Folder...',action:()=>explorerChooseDestination(id,false)},{label:'Copy To Folder...',action:()=>explorerChooseDestination(id,true)},null,{label:'Rename                    F2',action:()=>fsRename(id)},{label:'Delete                     Del',action:()=>fsDeleteSelected(id)}]);}
-function iconForFS(n){if(n.kind==='shortcut'&&['bloodline','bloodline-windowed'].includes(n.target))return 'bloodline';return n.kind==='torrent'?'network':n.kind==='iso'?'disc':n.kind==='dir'?'folder':n.kind==='installer'?'disc':n.kind==='shortcut'?'browser':n.kind==='text'?'notepad':n.kind==='image'?'paint':'documents';}
+function iconForFS(n){if(n.kind==='shortcut'&&['bloodline','bloodline-windowed'].includes(n.target))return 'bloodline';return n.kind==='torrent'?'network':n.kind==='iso'?'disc':n.kind==='dir'?'folder':n.kind==='installer'?'disc':n.kind==='shortcut'?'browser':n.kind==='text'?'notepad':n.kind==='image'?'paint':n.kind.startsWith('media-')?'disc':'documents';}
 const EXPLORER_PREFS_FILE='C:/WINDOWS/SYSTEM/EXPLORER.INI';let explorerPreferences={};let explorerDragActive=null;
 fs.ready.then(()=>{try{const node=fs.get(EXPLORER_PREFS_FILE);if(node?.kind==='text'){const saved=JSON.parse(node.data||'{}');if(saved&&typeof saved==='object'&&!Array.isArray(saved))explorerPreferences=saved;}}catch{}});
 function updateExplorerStatus(id,total){const w=windows.get(id);if(!w)return;const status=w.node.querySelector('.status-text');if(!status)return;const n=w.fsSelected?fs.get(w.fsSelected):null;status.textContent=`${total} object(s)${n?'     1 object selected   '+fsByteSize(n.kind==='dir'?fsTreeSize(w.fsSelected):fsNodeSize(n)):''}`;}
@@ -638,12 +719,12 @@ case 'disktray':launch('disktray');break;case 'newfolder':fsMakeFolder(id);break
 case 'newtext':fsMakeText(id);break;
 case 'folders':w.fsTreeVisible=!w.fsTreeVisible;refreshExplorer(id);break;
 case 'views':{const views=['large','small','list','details'];setExplorerView(id,views[(views.indexOf(w.fsView)+1)%4]);break;}
-case 'emptybin':ask98('Empty Recycle Bin','Delete all items permanently?',()=>{fs.emptyBin();refreshExplorer(id);});break;}}
+case 'emptybin':ask98('Empty Recycle Bin','Delete all items permanently?',()=>{fs.emptyBin();window.LatchMedia.prune().catch(e=>console.warn('Media cleanup:',e));refreshExplorer(id);});break;}}
 catch(err){fsError(err);}});
 shell.querySelector('.fs-address').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();fsNavigate(id,e.target.value);}});
 shell.addEventListener('dblclick',e=>{const item=e.target.closest('[data-fs-path]');if(item)fsOpenIn(id,item.dataset.fsPath);});
 shell.addEventListener('contextmenu',e=>{const item=e.target.closest('[data-fs-path]');if(!e.target.closest('.explorer-results'))return;e.preventDefault();e.stopPropagation();if(item)explorerSelect(id,item.dataset.fsPath);
-showPopupAt(e.clientX,e.clientY,[{label:'Open',action:()=>{if(w.fsSelected)fsOpenIn(id,w.fsSelected);},disabled:!w.fsSelected},{label:'Open With...',action:()=>{if(w.fsSelected)openWithChoice(w.fsSelected);},disabled:!w.fsSelected||!['text','image'].includes(fs.get(w.fsSelected)?.kind)},{label:'Set as Wallpaper',action:()=>{shellSettings.wallpaper=w.fsSelected;saveShellSettings();},disabled:fs.get(w.fsSelected)?.kind!=='image'},null,{label:'Cut',action:()=>fsCopySelected(id,true)},{label:'Copy',action:()=>fsCopySelected(id)},{label:'Paste',action:()=>fsPaste(id),disabled:!fsClipboard},{label:'Move To Folder...',action:()=>explorerChooseDestination(id,false),disabled:!w.fsSelected},{label:'Copy To Folder...',action:()=>explorerChooseDestination(id,true),disabled:!w.fsSelected},null,{label:'New Folder',action:()=>fsMakeFolder(id)},{label:'New Text Document',action:()=>fsMakeText(id)},null,{label:w.fsPath==='C:/RECYCLED'?'Restore':'Rename',action:()=>w.fsPath==='C:/RECYCLED'?fsRestoreSelected(id):fsRename(id)},{label:'Delete',action:()=>fsDeleteSelected(id)},{label:'Properties',action:()=>fsProperties(id)}]);});
+showPopupAt(e.clientX,e.clientY,[{label:'Open',action:()=>{if(w.fsSelected)fsOpenIn(id,w.fsSelected);},disabled:!w.fsSelected},{label:'Open With...',action:()=>{if(w.fsSelected)openWithChoice(w.fsSelected);},disabled:!w.fsSelected||!['text','image'].includes(fs.get(w.fsSelected)?.kind)},{label:'Set as Wallpaper',action:()=>{shellSettings.wallpaper=w.fsSelected;saveShellSettings();},disabled:fs.get(w.fsSelected)?.kind!=='image'},null,{label:'Cut',action:()=>fsCopySelected(id,true)},{label:'Copy',action:()=>fsCopySelected(id)},{label:'Paste',action:()=>fsPaste(id),disabled:!fsClipboard},{label:'Move To Folder...',action:()=>explorerChooseDestination(id,false),disabled:!w.fsSelected},{label:'Copy To Folder...',action:()=>explorerChooseDestination(id,true),disabled:!w.fsSelected},null,{label:'New Folder',action:()=>fsMakeFolder(id)},{label:'New Text Document',action:()=>fsMakeText(id)},{label:'Import Audio / Video...',action:()=>fsImportMedia(id)},{label:'New YouTube Media Link...',action:()=>fsCreateMediaLink(id)},{label:'Make Mixed Playlist from Folder...',action:()=>fsCreateMixedPlaylist(id)},{label:'Export Selected Media File...',action:()=>fsExportMedia(id),disabled:fs.get(w?.fsSelected)?.kind!=='media-local'},null,{label:w.fsPath==='C:/RECYCLED'?'Restore':'Rename',action:()=>w.fsPath==='C:/RECYCLED'?fsRestoreSelected(id):fsRename(id)},{label:'Delete',action:()=>fsDeleteSelected(id)},{label:'Properties',action:()=>fsProperties(id)}]);});
 // Native drag and drop only moves or copies files already on the Latch disk.
 // The host OS is never modified, nor is a physical device pretended to be connected.
 shell.addEventListener('dragstart',e=>{const source=e.target.closest('[data-fs-path]');if(!source)return;w.fsDragging=source.dataset.fsPath;explorerDragActive=w.fsDragging;e.dataTransfer.effectAllowed='copyMove';e.dataTransfer.setData('text/plain',source.dataset.fsPath);explorerSelect(id,w.fsDragging);});
@@ -653,7 +734,7 @@ shell.addEventListener('dragend',()=>{w.fsDragging=null;explorerDragActive=null;
 shell.addEventListener('keydown',e=>{if(e.target.matches('input'))return;if(e.key==='Enter'&&w.fsSelected){fsOpenIn(id,w.fsSelected);e.preventDefault();}if(e.key==='F2'){fsRename(id);e.preventDefault();}if(e.key==='Delete'){fsDeleteSelected(id);e.preventDefault();}if(e.ctrlKey&&e.key.toLowerCase()==='c'){fsCopySelected(id);e.preventDefault();}if(e.ctrlKey&&e.key.toLowerCase()==='x'){fsCopySelected(id,true);e.preventDefault();}if(e.ctrlKey&&e.key.toLowerCase()==='v'){fsPaste(id);e.preventDefault();}});
 fs.ready.then(()=>refreshExplorer(id));}
 
-function openFilePath(path){fs.ready.then(()=>{try{const p=fs.canonical(path);if(p==='A:'&&!fs.mediaInfo().mounted){showDiskTrayPrompt();return;}if(p==='D:'&&!fs.discInfo().mounted){launch('cdrom');return;}const n=fs.get(p);if(!n)throw Error('File or folder not found');if(n.kind==='dir'){launch('explorer:'+p);return;}if(n.kind==='shortcut'){if(/^[cad]:/i.test(n.target))openFilePath(n.target);else launch(n.target);return;}if(n.kind==='installer'){showSoftwareSetup(n.program);return;}if(n.kind==='torrent'){openSwarmTorrent(p);return;}if(n.kind==='iso'){mountNornDisc(p);return;}if(n.kind==='image'){recordRecentDocument(p);launch('viewer:'+p);return;}if(n.kind==='text'){recordRecentDocument(p);if(windows.has('notepad')&&noteDirty){ask98('Notepad','Discard unsaved changes?',()=>loadTextInNotepad(p));}else loadTextInNotepad(p);return;}throw Error('No program is associated with this file');}catch(e){fsError(e);}});}
+function openFilePath(path){fs.ready.then(()=>{try{const p=fs.canonical(path);if(p==='A:'&&!fs.mediaInfo().mounted){showDiskTrayPrompt();return;}if(p==='D:'&&!fs.discInfo().mounted){launch('cdrom');return;}const n=fs.get(p);if(!n)throw Error('File or folder not found');if(n.kind==='dir'){launch('explorer:'+p);return;}if(n.kind==='shortcut'){if(/^[cad]:/i.test(n.target))openFilePath(n.target);else launch(n.target);return;}if(n.kind==='installer'){showSoftwareSetup(n.program);return;}if(n.kind==='torrent'){openSwarmTorrent(p);return;}if(n.kind==='iso'){mountNornDisc(p);return;}if(n.kind==='image'){recordRecentDocument(p);launch('viewer:'+p);return;}if(['media-local','media-link','media-playlist'].includes(n.kind)){recordRecentDocument(p);fsOpenMedia(p);return;}if(n.kind==='text'){recordRecentDocument(p);if(windows.has('notepad')&&noteDirty){ask98('Notepad','Discard unsaved changes?',()=>loadTextInNotepad(p));}else loadTextInNotepad(p);return;}throw Error('No program is associated with this file');}catch(e){fsError(e);}});}
 function syncFilesystemDesktop(){const old=desktopIcons.querySelectorAll('.desktop-icon.fs-dynamic');old.forEach(x=>x.remove());try{for(const item of fs.list('C:/WINDOWS/Desktop')){const d=document.createElement('div');d.className='desktop-icon fs-dynamic';d.dataset.path=item.path;d.tabIndex=0;d.setAttribute('role','button');d.innerHTML=`<svg class="pixel-icon"><use href="#ico-${iconForFS(item)}"></use></svg><span class="icon-label">${escapeHtml(item.name.replace(/\.(url|lnk)$/i,''))}</span>`;desktopIcons.append(d);}}catch{}}
 function loadTextInNotepad(p){launch('notepad');const w=windows.get('notepad');if(!w)return;notePath=p;noteText=fs.read(p);noteDirty=false;w.node.querySelector('textarea').value=noteText;updateNoteStatus();updateNotepadTitle();}
 function updateNotepadTitle(){const w=windows.get('notepad');if(w){const label=(notePath?fs.get(notePath)?.name:'Untitled')||'Untitled';w.node.querySelector('.titlebar .caption').textContent=label+' - Notepad';updateTaskbar();}}
@@ -882,13 +963,48 @@ function activateWindow(id){const w=windows.get(id);if(!w)return;
  activeId=id;w.node.style.zIndex=++topZ;windows.forEach(x=>x.node.classList.toggle('inactive',x.id!==id));updateTaskbar();
 }
 function topVisibleWindow(){return [...windows.values()].filter(w=>!w.minimized).sort((a,b)=>(+b.node.style.zIndex)-(+a.node.style.zIndex))[0]||null;}
-function closeWindow(id){const w=windows.get(id);if(!w)return;saveWindowLayout(w);try{w.cleanup?.();}catch(error){console.warn('App cleanup failed',error);}w.node.remove();windows.delete(id);if(id==='notepad'){noteDirty=false;}if(id==='paint')paintPath=null;
+function closeWindow(id){const w=windows.get(id);if(!w)return;if(id==='latchamp')removeAmpMini();saveWindowLayout(w);try{w.cleanup?.();}catch(error){console.warn('App cleanup failed',error);}w.node.remove();windows.delete(id);if(id==='notepad'){noteDirty=false;}if(id==='paint')paintPath=null;
  if(activeId===id){const next=topVisibleWindow();activeId=null;if(next){activateWindow(next.id);focusWindow(next);}else{windows.forEach(x=>x.node.classList.add('inactive'));updateTaskbar();focusDesktop();}}
  else{updateTaskbar();if(!document.activeElement?.isConnected)focusWindow(windows.get(activeId));}
 }
 function closeAll(){[...windows.keys()].forEach(closeWindow);hideDialog();closeMenus();}
-function minimizeWindow(id){const w=windows.get(id);if(!w)return;saveWindowLayout(w);w.minimized=true;w.node.classList.add('minimized');if(activeId===id){activeId=null;const other=topVisibleWindow();if(other){activateWindow(other.id);focusWindow(other);}else{windows.forEach(x=>x.node.classList.add('inactive'));updateTaskbar();focusDesktop();}}else updateTaskbar();}
+function minimizeWindow(id){const w=windows.get(id);if(!w)return;if(id==='latchamp')pauseHiddenAmpVideo();saveWindowLayout(w);w.minimized=true;w.node.classList.add('minimized');if(activeId===id){activeId=null;const other=topVisibleWindow();if(other){activateWindow(other.id);focusWindow(other);}else{windows.forEach(x=>x.node.classList.add('inactive'));updateTaskbar();focusDesktop();}}else updateTaskbar();}
 function maximizeWindow(id){const w=windows.get(id);if(!w)return;if(!w.maximized)saveWindowLayout(w);w.maximized=!w.maximized;w.node.classList.toggle('maximized',w.maximized);if(!w.maximized){restoreWindowLayout(w);boundWindow(w);}activateWindow(id);focusWindow(w);}
+// A single persistent instance of LatchAmp supplies the taskbar controls.
+// The mini-player never creates a second audio player, so minimizing retains local playback.
+let ampMini=null,ampState={title:'LatchAmp',playing:false,active:false,volume:80,mode:'local'};
+function ampFrame(){return windows.get('latchamp')?.node.querySelector('.l98-extra-frame')||null;}
+function ampCommand(command,value){const frame=ampFrame();if(!frame?.contentWindow)return;
+ if(ampState.mode==='video'){
+  // YouTube's official player must remain visible while playing.
+  activateWindow('latchamp');focusWindow(windows.get('latchamp'));
+ }
+ try{frame.contentWindow.postMessage({type:'latch98:latchamp-command',command,value},location.origin==='null'?'*':location.origin);}catch{}
+}
+function pauseHiddenAmpVideo(){if(ampState.mode!=='video'||!ampState.playing)return;
+ const frame=ampFrame();try{frame?.contentWindow?.postMessage({type:'latch98:latchamp-command',command:'pause'},location.origin==='null'?'*':location.origin);}catch{}
+}
+function removeAmpMini(){ampMini?.remove();ampMini=null;ampState={title:'LatchAmp',playing:false,active:false,volume:80,mode:'local'};}
+function makeAmpMini(){if(ampMini)return;
+ ampMini=document.createElement('div');ampMini.className='l98-amp-mini';ampMini.title='LatchAmp media controls';
+ ampMini.innerHTML='<span class="l98-amp-mini-title" title="Open LatchAmp">LatchAmp</span><button type="button" data-amp-cmd="previous" title="Previous">◀◀</button><button type="button" data-amp-cmd="toggle" title="Play/Pause">▶</button><button type="button" data-amp-cmd="next" title="Next">▶▶</button><input type="range" min="0" max="100" value="80" aria-label="LatchAmp volume" title="LatchAmp volume">';
+ ampMini.querySelector('.l98-amp-mini-title').addEventListener('click',()=>{activateWindow('latchamp');focusWindow(windows.get('latchamp'));});
+ ampMini.querySelectorAll('[data-amp-cmd]').forEach(button=>button.addEventListener('click',()=>ampCommand(button.dataset.ampCmd)));
+ ampMini.querySelector('input').addEventListener('input',e=>ampCommand('volume',Number(e.target.value)));
+ document.querySelector('.taskbar').insertBefore(ampMini,document.querySelector('.tray'));
+}
+function refreshAmpMini(){if(!ampMini)return;
+ ampMini.querySelector('.l98-amp-mini-title').textContent=ampState.title||'LatchAmp';
+ ampMini.querySelector('[data-amp-cmd="toggle"]').textContent=ampState.playing?'❚❚':'▶';
+ ampMini.querySelector('input').value=Math.round(Number(ampState.volume)||0);
+ ampMini.dataset.mode=ampState.mode||'local';
+}
+window.addEventListener('message',e=>{
+ const frame=ampFrame();if(!frame||e.source!==frame.contentWindow||(location.origin!=='null'&&e.origin!==location.origin))return;
+ const msg=e.data;if(msg?.type!=='latchamp:transport-state')return;
+ ampState={title:String(msg.title||'LatchAmp').slice(0,120),playing:!!msg.playing,active:!!msg.active,volume:Math.max(0,Math.min(100,Number(msg.volume)*100||0)),mode:['local','video','remote'].includes(msg.mode)?msg.mode:'local'};
+ makeAmpMini();refreshAmpMini();
+});
 function updateTaskbar(){const focusId=document.activeElement?.dataset?.task;
  el.taskbar.innerHTML=[...windows.values()].map(w=>`<button type="button" class="task-btn ${activeId===w.id&&!w.minimized?'active':''}" data-task="${escapeHtml(w.id)}" aria-label="${escapeHtml(titleOf(w.id))}${w.minimized?' (minimized)':''}" aria-pressed="${activeId===w.id&&!w.minimized}" title="${escapeHtml(titleOf(w.id))}">${icon(iconOf(w.id))}<span>${escapeHtml(titleOf(w.id))}</span></button>`).join('');
  el.taskbar.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.task,w=windows.get(id);if(!w)return;if(activeId===id&&!w.minimized)minimizeWindow(id);else{activateWindow(id);focusWindow(w);}}));
