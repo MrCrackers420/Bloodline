@@ -4,7 +4,7 @@
    Logical file paths are case-insensitive, as in Windows 98. */
 (()=>{'use strict';
 const STORAGE='latch98.virtual_disk.v1', LEGACY_SWARM='latch98.swarmwire.v1', LIMIT=2*1024*1024, ROOTS=['C:','A:','D:'];
-let disk=null, mode='browser', writeChain=Promise.resolve(), lastError='', pendingServerError='', transactionDepth=0, blockedRecovery=false;
+let disk=null, mode='browser', writeChain=Promise.resolve(), lastError='', pendingServerError='', transactionDepth=0, blockedRecovery=false, lastPersisted=null;
 const canonical=p=>{if(typeof p!=='string')throw Error('Invalid path');p=p.trim().replaceAll('\\','/').replace(/\/+$/,'');
  if(/^([cad]):$/i.test(p))return p.toUpperCase();
  if(!/^[cad]:\//i.test(p))throw Error('The specified drive does not exist');
@@ -244,6 +244,15 @@ function atomic(fn){return (...args)=>{
 function save(){
  if(transactionDepth)return; // only the outermost action may persist
  if(blockedRecovery){lastError='The saved disk is damaged. Import a valid backup before writing; the damaged image has not been overwritten.';throw Error(lastError);}
+ // Compare the exact saved bytes, not only revision numbers: another tab may
+ // import a different disk with the same revision. localStorage has atomic
+ // individual setItem operations, but offers no cross-tab compare-and-swap.
+ let existing;
+ try{existing=localStorage.getItem(STORAGE);}catch(e){lastError='Cannot read saved disk before writing: '+(e?.message||e);throw Error(lastError);}
+ if(existing!==lastPersisted){
+  lastError='The disk was changed in another window. This file was not saved. Back up any unsaved work, then reopen the disk.';
+  throw Error(lastError);
+ }
  const oldRev=revision(disk);
  // Construct a commit candidate; no modification to the live disk until
  // localStorage has acknowledged the serialized record.
@@ -254,10 +263,12 @@ function save(){
   candidate.media={...disk.media,disks};
  }
  let data;
- try{data=JSON.stringify(candidate);}catch(e){lastError='Unable to serialize virtual disk: '+e.message;throw Error(lastError);}
- if(data.length>LIMIT){lastError='The virtual disk is full (2 MB image limit). No changes were saved.';throw Error(lastError);}
- try{localStorage.setItem(STORAGE,data);}catch(e){lastError='Unable to save the virtual disk (browser quota/storage): '+(e?.message||e)+'. No changes were saved.';throw Error(lastError);}
+ try{data=JSON.stringify(candidate);}catch(e){lastError='Unable to prepare disk contents: '+e.message;throw Error(lastError);}
+ validateDisk(candidate);
+ if(data.length>LIMIT){lastError='The disk is full (2 MB capacity). No changes were saved.';throw Error(lastError);}
+ try{localStorage.setItem(STORAGE,data);}catch(e){lastError='Unable to save changes to the disk: '+(e?.message||e)+'. No changes were saved.';throw Error(lastError);}
  disk=candidate;
+ lastPersisted=data;
  lastError='';
  if(mode==='rust'){
   // A local mirror is the durable recovery point until the Rust POST succeeds.
@@ -274,6 +285,20 @@ function save(){
 // Validate all imported keys and parent relationships before changing the
 // current disk. JSON backups are untrusted; a reparse/broken media tree must
 // never become executable D:\Setup.exe or overwrite user-owned data.
+// No metadata can cross a backup boundary if it would be unsafe for other
+// applications consuming LatchFS.get/list. Older snapshots may lack timestamps.
+function metadataCheck(n){
+ if(Object.keys(n).some(k=>['__proto__','prototype','constructor'].includes(k)))throw Error('Unsafe disk-entry metadata');
+ if(n.modified!==undefined&&(!Number.isSafeInteger(n.modified)||n.modified<0))throw Error('Invalid file modification time');
+ if(n.displaySize!==undefined&&(!Number.isSafeInteger(n.displaySize)||n.displaySize<0))throw Error('Invalid file size metadata');
+ if(n.original!==undefined){if(typeof n.original!=='string'||canonical(n.original)!==n.original)throw Error('Invalid original file path');}
+ if(n.kind==='shortcut'){
+  if(n.target.length>260)throw Error('Invalid shortcut target');
+  if(/^[cad]:/i.test(n.target)){if(canonical(n.target)!==n.target)throw Error('Invalid shortcut target path');}
+  else if(!/^(?:site:[a-z0-9_-]+|[a-z][a-z0-9_-]{1,32})$/i.test(n.target))throw Error('Invalid shortcut target');
+ }
+ if(n.kind==='installer'&&!/^[a-z][a-z0-9_-]{1,48}$/i.test(n.program))throw Error('Invalid installer identifier');
+}
 function validateNodes(nodes,driveScope){
  if(!nodes||typeof nodes!=='object'||Array.isArray(nodes))throw Error('Backup has invalid file entries');
  const keys=Object.keys(nodes);
@@ -293,6 +318,7 @@ function validateNodes(nodes,driveScope){
   if(['text','image','torrent','iso'].includes(n.kind)&&typeof n.data!=='string')throw Error('Invalid file contents');
   if(n.kind==='shortcut'&&typeof n.target!=='string')throw Error('Invalid shortcut');
   if(n.kind==='installer'&&typeof n.program!=='string')throw Error('Invalid installer');
+  metadataCheck(n);
  }
  return keys;
 }
@@ -300,6 +326,8 @@ function validateDisk(value){
  if(!value||typeof value!=='object'||Array.isArray(value)||value.version!==1)throw Error('Not a Latch 98 disk image');
  const keys=validateNodes(value.nodes,false);
  if(!value.nodes['C:']||!value.nodes['A:'])throw Error('Not a Latch 98 disk image');
+ if(value.revision!==undefined&&(!Number.isSafeInteger(value.revision)||value.revision<0))throw Error('Invalid disk revision');
+ if(Object.keys(value).some(k=>['__proto__','prototype','constructor'].includes(k)))throw Error('Unsafe disk image metadata');
  if(value.media!==undefined){
   const media=value.media;
   if(!media||typeof media!=='object'||!media.disks||typeof media.disks!=='object'||Array.isArray(media.disks))throw Error('Invalid floppy disk box');
@@ -309,8 +337,8 @@ function validateDisk(value){
   for(const id of disks){
    if(!/^[a-z0-9_-]{1,48}$/i.test(id))throw Error('Invalid floppy disk identifier');
    const entry=media.disks[id];
-   if(!entry||typeof entry!=='object'||typeof entry.name!=='string'||typeof entry.readOnly!=='boolean')throw Error('Invalid floppy disk');
-   nameCheck(entry.name);validateNodes(entry.nodes,true);
+   if(!entry||typeof entry!=='object'||Array.isArray(entry)||typeof entry.name!=='string'||typeof entry.readOnly!=='boolean')throw Error('Invalid floppy disk');
+   nameCheck(entry.name);if(entry.name!==entry.name.trim()||Object.keys(entry).some(k=>['__proto__','prototype','constructor'].includes(k)))throw Error('Invalid floppy metadata');validateNodes(entry.nodes,true);
   }
  }
  if(value.cdrom!==undefined){
@@ -318,7 +346,7 @@ function validateDisk(value){
   if(mounted!==null&&mounted!==undefined){
    if(typeof mounted!=='string'||canonical(mounted)!==mounted)throw Error('Mounted disc path is invalid');
    let info;try{info=JSON.parse(value.nodes[mounted]?.data);}catch{}
-   if(value.nodes[mounted]&&(value.nodes[mounted].kind!=='iso'||info?.format!=='latch-disc-v1'||info?.release!=='nwlab03'))throw Error('Mounted disc image is invalid');
+   if(!value.nodes[mounted]||value.nodes[mounted].kind!=='iso'||info?.format!=='latch-disc-v1'||info?.release!=='nwlab03')throw Error('Mounted disc image is missing or invalid');
    const expected={'D:/SETUP.EXE':'installer','D:/README.TXT':'text','D:/DATA':'dir','D:/DATA/ARCHIVE.TXT':'text'};
    if(keys.filter(k=>k.startsWith('D:/')).length!==4||Object.entries(expected).some(([k,kind])=>value.nodes[k]?.kind!==kind)||value.nodes['D:/SETUP.EXE'].program!=='nornlab')throw Error('Mounted CD-ROM contents are invalid');
   }else if(keys.some(k=>k.startsWith('D:/')))throw Error('Unmounted CD-ROM contains unexpected files');
@@ -328,13 +356,14 @@ function validateDisk(value){
   for(const [id,entry] of Object.entries(value.installed)){
    if(!/^[a-z0-9_-]{1,48}$/i.test(id)||!entry||typeof entry!=='object'||typeof entry.name!=='string')throw Error('Invalid installed program');
    if(typeof entry.dir!=='string'||typeof entry.menu!=='string'||canonical(entry.dir)!==entry.dir||canonical(entry.menu)!==entry.menu||!entry.dir.startsWith('C:/')||!entry.menu.startsWith('C:/'))throw Error('Invalid installation path');
+   if(entry.installed!==undefined&&(!Number.isSafeInteger(entry.installed)||entry.installed<0))throw Error('Invalid installation time');
   }
  }
  if(value.swarmwire!==undefined){
   if(!value.swarmwire||typeof value.swarmwire!=='object'||value.swarmwire.version!==1||!Object.hasOwn(value.swarmwire,'job'))throw Error('Invalid transfer index');
   const job=value.swarmwire.job;
   if(job!==null){
-   if(!job||typeof job!=='object'||typeof job.path!=='string'||canonical(job.path)!==job.path||!Number.isFinite(job.percent)||job.percent<0||job.percent>100||!['Stopped','Downloading','Finished','Error'].includes(job.state))throw Error('Invalid transfer state');
+   if(!job||typeof job!=='object'||Array.isArray(job)||typeof job.path!=='string'||canonical(job.path)!==job.path||!Number.isFinite(job.percent)||job.percent<0||job.percent>100||!['Stopped','Downloading','Finished','Error'].includes(job.state)||job.error!==undefined&&(typeof job.error!=='string'||job.error.length>240))throw Error('Invalid transfer state');
   }
  }
  return value;
@@ -342,7 +371,7 @@ function validateDisk(value){
 const ready=(async()=>{
  let fromServer=false, corruptMirror=false;
  let mirror=null;
- try{const saved=localStorage.getItem(STORAGE);if(saved){const raw=JSON.parse(saved);mirror=validateDisk(raw);}}catch(e){corruptMirror=true;lastError='Saved disk is damaged: '+e.message;}
+ try{const saved=localStorage.getItem(STORAGE);lastPersisted=saved;if(saved){if(saved.length>LIMIT)throw Error('Stored disk exceeds capacity');const raw=JSON.parse(saved);mirror=validateDisk(raw);}}catch(e){corruptMirror=true;lastError='Saved disk is damaged: '+e.message;}
  try{const r=await fetch('/api/fs',{cache:'no-store'});
   if(r.ok&&r.headers.get('content-type')?.includes('application/json')){
    const raw=await r.json();try{disk=validateDisk(raw);fromServer=true;mode='rust';}catch(e){lastError='Rust disk image is invalid: '+e.message;}
@@ -354,13 +383,14 @@ const ready=(async()=>{
  if(!disk){disk=mirror;if(!disk)defaults();}
  if(corruptMirror&&!fromServer){blockedRecovery=true;lastError='The saved disk is corrupt; it was not overwritten. Restore a valid disk backup to resume saving.';}
  const bootBackup=JSON.stringify(disk);
- const welcome=disk.nodes['C:/MY DOCUMENTS/WELCOME TO LATCH 98.TXT'];if(welcome?.kind==='text'&&welcome.data==='Welcome to Latch 98!\n\nThis computer has a working virtual disk.\n\nDouble-click My Computer to browse C: and A:.\nUse File > New Folder, New Text Document, or the right-click menu.\nYou can rename, copy, cut, paste, move, delete, and restore files.\n\nOpen text documents in Notepad. Save with Ctrl+S.\nThe Rust edition saves the disk image to data/virtual_disk.json.\nThe standalone HTML stores it in this browser.\n\nVisit PixelShelf and the other fictional sites through Latch Browser!\n')welcome.data='Welcome to Latch 98!\n\nYour files are stored on your computer.\n\nDouble-click My Computer to browse C: and A:.\nUse File > New Folder, New Text Document, or the right-click menu.\nYou can rename, copy, cut, paste, move, delete, and restore files.\n\nOpen text documents in Notepad. Save with Ctrl+S.\nVisit PixelShelf and the Norn Observer through Latch Browser!\n';ensureSystem();
+ try{const welcome=disk.nodes['C:/MY DOCUMENTS/WELCOME TO LATCH 98.TXT'];if(welcome?.kind==='text'&&welcome.data==='Welcome to Latch 98!\n\nThis computer has a working virtual disk.\n\nDouble-click My Computer to browse C: and A:.\nUse File > New Folder, New Text Document, or the right-click menu.\nYou can rename, copy, cut, paste, move, delete, and restore files.\n\nOpen text documents in Notepad. Save with Ctrl+S.\nThe Rust edition saves the disk image to data/virtual_disk.json.\nThe standalone HTML stores it in this browser.\n\nVisit PixelShelf and the other fictional sites through Latch Browser!\n')welcome.data='Welcome to Latch 98!\n\nYour files are stored on your computer.\n\nDouble-click My Computer to browse C: and A:.\nUse File > New Folder, New Text Document, or the right-click menu.\nYou can rename, copy, cut, paste, move, delete, and restore files.\n\nOpen text documents in Notepad. Save with Ctrl+S.\nVisit PixelShelf and the Norn Observer through Latch Browser!\n';ensureSystem();
 const utilitiesNote=disk.media?.disks?.utilities?.nodes?.['A:/README.TXT'];
 if(utilitiesNote?.kind==='text'&&utilitiesNote.data==='Latch 98 Utilities Disk, Disk 1 of 1\n\nRun Setup.exe to install Character Map.\n\nTo change disks, open My Computer, select the floppy drive and choose Disk Tray. No physical disk is required.\n'){
  utilitiesNote.data='Latch 98 Utilities Disk, Disk 1 of 1\n\nRun Setup.exe to install Character Map.\n\nTo change disks, open My Computer, select the floppy drive and choose Disk Tray.\n';
  if(disk.media.mounted==='utilities'&&disk.nodes['A:/README.TXT'])disk.nodes['A:/README.TXT'].data=utilitiesNote.data;
 }
-try{if(!blockedRecovery)save();if(mode==='rust')await writeChain;}catch(e){
+if(!blockedRecovery&&(JSON.stringify(disk)!==bootBackup||!lastPersisted||mode==='rust'))save();if(mode==='rust')await writeChain;
+ }catch(e){
  // A failed migration/initialization must not destroy the previously stored image.
  disk=JSON.parse(bootBackup);lastError='Disk startup could not be saved: '+(e?.message||e);
  }emit();})();
@@ -389,7 +419,7 @@ function importDisk(raw){
  let parsed;
  try{parsed=JSON.parse(raw);}catch{throw Error('This is not a valid disk backup');}
  validateDisk(parsed);
- if(JSON.stringify(parsed).length>LIMIT)throw Error('Disk backup exceeds the virtual disk capacity');
+ if(JSON.stringify(parsed).length>LIMIT)throw Error('Disk backup exceeds capacity');
  const previous=disk, recovery=blockedRecovery;
  disk=parsed;
  disk.revision=Math.max(revision(previous),revision(disk));
@@ -403,7 +433,23 @@ function createText(where,name='New Text Document.txt'){return write(canonical(w
 // shared disk data without going through a validated and persisted operation.
 const inspect=p=>{const n=get(p);return n?{...n}:null;};
 const sync=()=>writeChain.then(()=>{if(pendingServerError)throw Error(pendingServerError);});
-const exportDisk=()=>{if(blockedRecovery)throw Error('Stored disk is damaged; use recoveryRaw() to preserve the original bytes, then import a valid backup.');return JSON.stringify(disk,null,2);};
+const exportDisk=()=>{if(blockedRecovery)throw Error('Stored disk is damaged; use recoveryRaw() to preserve the original bytes, then import a valid backup.');
+ // Verify exported state against the same validator used by import; do not label
+ // an invalid in-memory disk a restorable backup.
+ const compact=JSON.stringify(disk);if(compact.length>LIMIT)throw Error('Disk backup exceeds capacity');
+ validateDisk(JSON.parse(compact));return JSON.stringify(disk,null,2);};
+// Explicit recovery for multi-tab conflicts; never silently clobber an active
+// instance after a storage event. A caller can export first if desired.
+const reloadFromStorage=()=>{let raw;try{raw=localStorage.getItem(STORAGE);}catch(e){throw Error('Cannot read saved disk: '+e.message);}
+ if(!raw)throw Error('No saved disk was found');
+ if(raw.length>LIMIT)throw Error('The saved disk exceeds capacity');
+ let parsed;try{parsed=validateDisk(JSON.parse(raw));}catch(e){throw Error('Saved disk is damaged: '+e.message);}
+ const backup=disk,prior=lastPersisted,blocked=blockedRecovery;
+disk=parsed;lastPersisted=raw;blockedRecovery=false;
+ try{const original=JSON.stringify(disk);ensureSystem();if(JSON.stringify(disk)!==original)save();else {lastError='';emit();}}
+ catch(e){disk=backup;lastPersisted=prior;blockedRecovery=blocked;throw e;}
+ try{document.dispatchEvent(new CustomEvent('latchfsimport'));}catch{}return true;
+};
 const recoveryRaw=()=>blockedRecovery?localStorage.getItem(STORAGE):null;
-window.LatchFS={ready,get:inspect,list,display,canonical,parent,rootPaths:ROOTS,mkdir:atomic(mkdir),write:atomic(write),writeImage:atomic(writeImage),read,rename:atomic(rename),move:atomic(move),copy:atomic(copy),remove:atomic(remove),restore:atomic(restore),emptyBin:atomic(emptyBin),search,unique,createText:atomic(createText),mode:()=>mode,error:()=>lastError||pendingServerError,sync,importDisk:atomic(importDisk),export:exportDisk,recoveryRaw,nornTransfer,setNornTransfer:atomic(setNornTransfer),mediaInfo,switchMedia:atomic(switchMedia),createBlankDisk:atomic(createBlankDisk),discInfo,mountDisc:atomic(mountDisc),ejectDisc:atomic(ejectDisc),saveNornTorrent:atomic(saveNornTorrent),torrentInfo,downloadNornDisc:atomic(downloadNornDisc),installedPrograms,installSoftware:atomic(installSoftware),uninstallSoftware:atomic(uninstallSoftware),createShortcut:atomic(createShortcut)};
+window.LatchFS={ready,get:inspect,list,display,canonical,parent,rootPaths:ROOTS,mkdir:atomic(mkdir),write:atomic(write),writeImage:atomic(writeImage),read,rename:atomic(rename),move:atomic(move),copy:atomic(copy),remove:atomic(remove),restore:atomic(restore),emptyBin:atomic(emptyBin),search,unique,createText:atomic(createText),mode:()=>mode,error:()=>lastError||pendingServerError,sync,importDisk:atomic(importDisk),export:exportDisk,recoveryRaw,reloadFromStorage,nornTransfer,setNornTransfer:atomic(setNornTransfer),mediaInfo,switchMedia:atomic(switchMedia),createBlankDisk:atomic(createBlankDisk),discInfo,mountDisc:atomic(mountDisc),ejectDisc:atomic(ejectDisc),saveNornTorrent:atomic(saveNornTorrent),torrentInfo,downloadNornDisc:atomic(downloadNornDisc),installedPrograms,installSoftware:atomic(installSoftware),uninstallSoftware:atomic(uninstallSoftware),createShortcut:atomic(createShortcut)};
 })();

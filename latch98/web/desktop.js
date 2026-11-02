@@ -5,6 +5,58 @@ const icon=id=>`<svg class="small-icon" aria-hidden="true"><use href="#ico-${id}
 const el={startup:$('startup'),desktop:$('desktop'),start:$('start-menu'),submenu:$('submenu'),nested:$('nested-menu'),taskbar:$('task-buttons'),layer:$('window-layer'),overlay:$('dialog-overlay')};
 const windows=new Map();let topZ=120,activeId=null,serial=0,startOpen=false,booting=false,audioContext=null,menuHoverTimer=null;
 let submenuOwner=null,nestedOwner=null,dialogFocus=null,altTabCycle=null;
+
+// Only Latch-owned shell jobs are stopped in fullscreen. Game/iframe clocks,
+// audio, SwarmWire transfers and the virtual disk are NEVER globally patched.
+const gamePerformance=(()=>{
+ const owners=new Set(), jobs=new Map(), deferred=new Map(), cooperative=new Map();
+ let transitions=0;
+ const active=()=>owners.size>0;
+ function startJob(job){if(job.timer!==null||active())return;
+   job.timer=setInterval(()=>{const t=performance.now();try{job.run();}finally{job.calls++;job.hostMs+=performance.now()-t;}},job.period);
+ }
+ function stopJob(job){if(job.timer!==null){clearInterval(job.timer);job.timer=null;}}
+ function shellInterval(name,run,period){if(jobs.has(name))throw Error('Duplicate Latch shell job: '+name);
+   const job={run,period,timer:null,calls:0,hostMs:0};jobs.set(name,job);startJob(job);return job;
+ }
+ function resumeApp(item){if(item.state!=='paused')return;
+   item.state='resuming';Promise.resolve().then(()=>item.hooks.resume({reason:'bloodline-fullscreen'})).catch(e=>{
+     console.warn('Latch cooperative app resume failed:',item.id,e);
+   }).finally(()=>{item.state='running';if(active()&&!item.disposed)pauseApp(item);});
+ }
+ function pauseApp(item){if(!active()||item.state!=='running')return;
+   item.state='requesting';Promise.resolve().then(()=>item.hooks.pause({reason:'bloodline-fullscreen'})).then(result=>{
+     // A pause is not assumed: only explicit acknowledgements mean suspended.
+     item.state=(result===true||result?.paused===true)?'paused':'running';
+     if(item.state==='paused'&&(!active()||item.disposed))resumeApp(item);
+   }).catch(e=>{item.state='running';console.warn('Latch cooperative app pause failed:',item.id,e);});
+ }
+ function enter(owner){if(!owner||owners.has(owner))return;
+   const wasActive=active();owners.add(owner);if(wasActive)return;
+   transitions++;for(const job of jobs.values())stopJob(job);
+   for(const item of cooperative.values())pauseApp(item);
+ }
+ function exit(owner){if(!owners.delete(owner)||active())return;
+   transitions++;for(const job of jobs.values())startJob(job);
+   // Filesystem events may continue during play; only hidden shell UI is coalesced.
+   for(const action of deferred.values())try{action();}catch(e){console.warn('Latch shell refresh failed',e);}
+   deferred.clear();for(const item of cooperative.values())resumeApp(item);
+   // Interval resumption cannot leave the tray clock displaying an old time.
+   setClock();
+ }
+ function defer(key,refresh){if(!active())return false;deferred.set(key,refresh);return true;}
+ function registerCooperativeApp(id,hooks){if(!id||typeof hooks?.pause!=='function'||typeof hooks?.resume!=='function')throw Error('A cooperative app requires explicit pause/resume functions');
+   if(cooperative.has(id))throw Error('Cooperative app is already registered: '+id);
+   const item={id,hooks,state:'running'};cooperative.set(id,item);if(active())pauseApp(item);
+   return ()=>{if(cooperative.get(id)!==item)return;cooperative.delete(id);item.disposed=true;if(item.state==='paused')resumeApp(item);};
+ }
+ function stats(){return {active:active(),owners:[...owners],transitions,deferred:[...deferred.keys()],
+   jobs:Object.fromEntries([...jobs].map(([name,j])=>[name,{calls:j.calls,hostMs:Number(j.hostMs.toFixed(3)),scheduled:j.timer!==null,period:j.period}])),
+   cooperative:Object.fromEntries([...cooperative].map(([id,item])=>[id,item.state]))};}
+ return Object.freeze({enter,exit,defer,shellInterval,registerCooperativeApp,stats,isActive:active});
+})();
+window.LatchGamePerformance=gamePerformance;
+
 const WINDOW_LAYOUT_KEY='latch98.desktop.window-layout.v1';
 const savedWindowLayouts=(()=>{try{const data=JSON.parse(localStorage.getItem(WINDOW_LAYOUT_KEY)||'{}');return data&&typeof data==='object'&&!Array.isArray(data)?data:{};}catch{return {};}})();
 function persistWindowLayouts(){try{localStorage.setItem(WINDOW_LAYOUT_KEY,JSON.stringify(savedWindowLayouts));}catch{/* Full or unavailable browser storage must not break windows or saved files. */}}
@@ -40,7 +92,7 @@ function focusWindow(w){if(!w)return;const target=w.lastFocused?.isConnected&&w.
 function focusDesktop(){if(!el.desktop.classList.contains('hidden'))$('start-button').focus({preventScroll:true});}
 let noteText='';let noteDirty=false;let notePath=null,fsClipboard=null;
 function setClock(){const date=new Date();$('clock').textContent=date.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});$('clock').title=date.toLocaleString();}
-setClock();setInterval(setClock,15000);
+setClock();gamePerformance.shellInterval('clock',setClock,15000);
 function restoreSavedWallpaper(){try{const saved=localStorage.getItem('latch98.wallpaper');if(['teal','blue','green','plum','gray'].includes(saved))el.desktop.dataset.wallpaper=saved;}catch{}}
 restoreSavedWallpaper();
 function playStartupChime(){
@@ -174,19 +226,20 @@ function bloodlinePage(){
 // Kept independent of LatchBundle, which is supplied by the single-file build.
 const modularGame=(()=>{
  const host=$('l98-modular-game');if(!host)return null;
- const frame=host.querySelector('iframe');let lastFocus=null,comboSince=0;
+ const frame=host.querySelector('iframe');let lastFocus=null,comboSince=0,exitPoll=null;
  const opened=()=>!host.classList.contains('hidden');
  function closeFullscreenGame(){if(!opened())return;
-   frame.removeAttribute('src');frame.onload=null;host.classList.add('hidden');
+   frame.removeAttribute('src');frame.onload=null;frame.onerror=null;host.classList.add('hidden');
    // Windows, taskbar and virtual filesystem are intentionally not recreated.
-   el.desktop.classList.remove('hidden');comboSince=0;
+   el.desktop.classList.remove('hidden');comboSince=0;stopExitPoll();gamePerformance.exit('modular-bloodline');
    if(lastFocus?.isConnected&&lastFocus.getClientRects().length&&!lastFocus.closest('.hidden'))lastFocus.focus({preventScroll:true});
    else focusDesktop();
  }
  function launchBloodlineFull(){if(opened())return;
    closeMenus();lastFocus=document.activeElement;
    frame.removeAttribute('src');host.classList.remove('hidden');
-   el.desktop.classList.add('hidden');
+   el.desktop.classList.add('hidden');gamePerformance.enter('modular-bloodline');startExitPoll();
+   frame.onerror=()=>{closeFullscreenGame();showDialog('Bloodline','<p>Bloodline could not be loaded. Check the game files and try again.</p>');};
    frame.onload=()=>{try{
      // Same-origin frames don't send key events to the parent window.
      frame.contentWindow.addEventListener('keydown',onGameKey,true);frame.focus({preventScroll:true});
@@ -199,13 +252,15 @@ const modularGame=(()=>{
  host.querySelector('[data-l98-modular-return]').addEventListener('click',closeFullscreenGame);
  document.addEventListener('keydown',e=>{if(opened())onGameKey(e);},true);
  // Match the single-file build's console Back + Start hold shortcut.
- setInterval(()=>{if(!opened()){comboSince=0;return;}
+ function pollGameExit(){if(!opened()){comboSince=0;return;}
    const pads=navigator.getGamepads?.()||[];
    const pressed=[...pads].some(p=>p&&p.buttons?.[8]?.pressed&&p.buttons?.[9]?.pressed);
    if(!pressed){comboSince=0;return;}
    if(!comboSince)comboSince=performance.now();
    else if(performance.now()-comboSince>1100){comboSince=0;closeFullscreenGame();}
- },130);
+ }
+ function startExitPoll(){if(exitPoll===null)exitPoll=setInterval(pollGameExit,130);}
+ function stopExitPoll(){if(exitPoll!==null){clearInterval(exitPoll);exitPoll=null;}}
  return {launchBloodlineFull,closeFullscreenGame,isOpen:opened};
 })();
 // Integration hook for browser-hosted builds; no conflict with LatchBundle.
@@ -230,7 +285,7 @@ window.LatchDesktop={launchBloodlineFull:()=>modularGame?.launchBloodlineFull(),
    }else if(target?.matches('button'))target.click();
    else move(1);
  }
- setInterval(()=>{
+ gamePerformance.shellInterval('desktop-controller',()=>{
    if(!usable()||document.activeElement?.tagName==='IFRAME'){lastStep=0;wasA=wasB=wasStart=false;return;}
    const pad=[...(navigator.getGamepads?.()||[])].find(p=>p?.connected);if(!pad)return;
    const down=i=>!!pad.buttons?.[i]?.pressed;
@@ -364,7 +419,7 @@ function setupCharMap(node){const grid=node.querySelector('.l98-chars'),output=n
  font.onchange=()=>{grid.querySelectorAll('button').forEach(b=>b.style.fontFamily=font.value);};
  grid.onclick=e=>{const b=e.target.closest('[data-codepoint]');if(!b)return;chosen=String.fromCharCode(+b.dataset.codepoint);grid.querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));};
  node.querySelector('[data-charmap-select]').onclick=()=>{output.value+=chosen;output.focus();};
- node.querySelector('[data-copy-chars]').onclick=async()=>{try{await navigator.clipboard.writeText(output.value);}catch{output.focus();output.select();showDialog('Character Map','<p>Select the characters and use Copy from your keyboard or browser menu.</p>');}};
+ node.querySelector('[data-copy-chars]').onclick=async()=>{try{await navigator.clipboard.writeText(output.value);}catch{output.focus();output.select();showDialog('Character Map','<p>Select the characters and press Ctrl+C to copy.</p>');}};
 }
 // Mail attachment -> SwarmWire -> installed disc workflow.
 function saveMailAttachment(action){fs.ready.then(()=>{try{
@@ -521,7 +576,7 @@ function fsRestoreSelected(id){const s=selectionInfo(id);if(!s?.node)return;try{
 function openWithChoice(path){const n=fs.get(path);if(!n)return;if(n.kind==='image')showDialog('Open With',`<p>Choose the program you want to use to open <strong>${escapeHtml(n.name)}</strong>:</p>`,[{label:'Imaging',action:()=>launch('viewer:'+path)},{label:'Paint',action:()=>openPaintFromPath(path)},{label:'Cancel'}]);else if(n.kind==='text')showDialog('Open With',`<p>Choose the program you want to use to open <strong>${escapeHtml(n.name)}</strong>:</p>`,[{label:'Notepad',action:()=>openFilePath(path)},{label:'Cancel'}]);}
 function fsProperties(id){const s=selectionInfo(id);if(s?.node)showPathProperties(s.path);}
 function fsBackupDisk(){const blob=new Blob([fs.export()],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='Latch98-Backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function fsRestoreDisk(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{const f=input.files?.[0];if(!f)return;const raw=await f.text();ask98('Restore Disk Image','This will replace the entire current virtual disk. Continue?',()=>{try{fs.importDisk(raw);}catch(e){fsError(e);}});});input.click();}
+function fsRestoreDisk(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{const f=input.files?.[0];if(!f)return;const raw=await f.text();ask98('Restore Disk Image','This will replace all current files and settings on this computer. Continue?',()=>{try{fs.importDisk(raw);}catch(e){fsError(e);}});});input.click();}
 function fsExport(id){const s=selectionInfo(id);if(!s||s.node?.kind!=='text')return;const b=new Blob([fs.read(s.path)],{type:'text/plain;charset=utf-8'}),url=URL.createObjectURL(b);const a=document.createElement('a');a.href=url;a.download=s.node.name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function fsImport(id){const folder=explorerCurrentDir(id),input=document.createElement('input');input.type='file';input.accept='.txt,.md,.csv,.json,text/*';input.addEventListener('change',async()=>{const file=input.files?.[0];if(!file)return;try{if(file.size>130000)throw Error('Only text files smaller than 130 KB can be imported');const name=fs.unique(folder,file.name.replace(/[\\/<>:"|?*]/g,'_'));fs.write(folder+'/'+name,await file.text());}catch(e){fsError(e);}});input.click();}
 function showExplorerFileMenu(id,btn){const w=windows.get(id);const recycle=w?.fsPath==='C:/RECYCLED';showPopup(btn,[{label:'3½ Floppy Disk Tray...',action:()=>launch('disktray')},null,{label:'New ► Folder',action:()=>fsMakeFolder(id),disabled:recycle},{label:'New ► Text Document',action:()=>fsMakeText(id),disabled:recycle},null,{label:'Import Text File...',action:()=>fsImport(id),disabled:recycle},{label:'Export Selected Text File...',action:()=>fsExport(id)},null,{label:'Back Up Disk Image...',action:fsBackupDisk},{label:'Restore Disk Image...',action:fsRestoreDisk},null,{label:'Rename',action:()=>fsRename(id)},{label:'Delete',action:()=>fsDeleteSelected(id)},{label:'Properties',action:()=>fsProperties(id)}]);}
@@ -605,7 +660,8 @@ function openNotepadChooser(){fileChooser98({title:'Open',type:'text',save:false
 function saveNotepad(as=false){const w=windows.get('notepad');if(!w)return;if(!notePath||as){const initial=notePath?fs.display(notePath):'C:\\My Documents\\Untitled.txt';fileChooser98({title:'Save As',type:'text',save:true,initial:notePath||'C:/MY DOCUMENTS/Untitled.txt',callback:saveNotepadTo});}else saveNotepadTo(notePath);}
 function saveNotepadTo(path){try{const p=fs.canonical(path),current=fs.get(p);if(current&&p!==notePath){ask98('Save As',`Replace existing file "${current.name}"?`,()=>writeText(p));}else writeText(p);}catch(e){fsError(e);}}
 function writeText(p){try{const w=windows.get('notepad');if(!w)return;noteText=w.node.querySelector('textarea').value;notePath=fs.write(p,noteText);noteDirty=false;updateNoteStatus();updateNotepadTitle();}catch(e){fsError(e);}}
-document.addEventListener('latchfschange',()=>{syncFilesystemDesktop();for(const id of ['disktray','addremove'])windows.get(id)?.node._l98Refresh?.();for(const [id] of windows)if(isExplorer(id))refreshExplorer(id);});
+function refreshFilesystemShell(){syncFilesystemDesktop();for(const id of ['disktray','addremove'])windows.get(id)?.node._l98Refresh?.();for(const [id] of windows)if(isExplorer(id))refreshExplorer(id);}
+document.addEventListener('latchfschange',()=>{if(!gamePerformance.defer('filesystem-ui',refreshFilesystemShell))refreshFilesystemShell();});
 fs.ready.then(syncFilesystemDesktop);
 // Desktop's right-click New entries create actual files under C:\WINDOWS\Desktop.
 function desktopMake(kind){const dir='C:/WINDOWS/Desktop';if(kind==='folder')prompt98('New Folder','New folder name:','New Folder',name=>fs.mkdir(dir,fs.unique(dir,name)));else prompt98('New Text Document','New file name:','New Text Document.txt',name=>fs.write(dir+'/'+fs.unique(dir,name),''));}
@@ -760,7 +816,7 @@ function setupDisplayProperties(node){
   node.querySelectorAll('[data-display-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.displayTab===tab);b.setAttribute('aria-selected',String(b.dataset.displayTab===tab));});
   let html='';
   if(tab==='Background')html=`<div class="l98-monitor"><div class="l98-monitor-desktop"><div class="l98-monitor-window"><b>Latch 98</b><p>My Computer</p></div></div></div><div class="l98-panel-fields"><label>Wallpaper:<select data-setting="wallpaper"><option value="">(None)</option>${images().map(n=>`<option value="${escapeHtml(n.path)}" ${stage.wallpaper===n.path?'selected':''}>${escapeHtml(n.name)}</option>`).join('')}</select></label><label>Display:<select data-setting="wallpaperMode">${[['center','Center'],['tile','Tile'],['stretch','Stretch']].map(([v,l])=>`<option value="${v}" ${stage.wallpaperMode===v?'selected':''}>${l}</option>`).join('')}</select></label><div class="l98-color-picker">${Object.entries(wallpaperColors).map(([v,c])=>`<button type="button" style="background:${c}" title="${v}" aria-label="${v}" class="${stage.tone===v?'selected':''}" data-tone="${v}"></button>`).join('')}</div></div>`;
-  if(tab==='Screen Saver')html=`<div class="l98-monitor"><div class="l98-monitor-desktop l98-saver-thumbnail ${stage.saver==='starfield'?'stars':''}" style="background:${stage.saver==='blank'?'#000':'#008080'}"></div></div><div class="l98-panel-fields"><label>Screen saver:<select data-setting="saver">${[['none','(None)'],['blank','Blank Screen'],['starfield','Starfield Simulation']].map(([v,l])=>`<option value="${v}" ${stage.saver===v?'selected':''}>${l}</option>`).join('')}</select></label><label>Wait: <input type="number" min="1" max="60" data-setting="wait" value="${stage.wait}" style="width:65px"> minutes</label><button type="button" class="classic-btn" data-preview-saver="1">Preview</button></div>`;
+  if(tab==='Screen Saver')html=`<div class="l98-monitor"><div class="l98-monitor-desktop l98-saver-thumbnail ${stage.saver==='starfield'?'stars':''}" style="background:${stage.saver==='blank'?'#000':'#008080'}"></div></div><div class="l98-panel-fields"><label>Screen saver:<select data-setting="saver">${[['none','(None)'],['blank','Blank Screen'],['starfield','Starfield']].map(([v,l])=>`<option value="${v}" ${stage.saver===v?'selected':''}>${l}</option>`).join('')}</select></label><label>Wait: <input type="number" min="1" max="60" data-setting="wait" value="${stage.wait}" style="width:65px"> minutes</label><button type="button" class="classic-btn" data-preview-saver="1">Preview</button></div>`;
   if(tab==='Appearance')html=`<div class="l98-appearance-sample"><div class="l98-preview-title">Active Window <span>□ ×</span></div><div class="l98-preview-body">Window text <button class="classic-btn" type="button">OK</button></div></div><div class="l98-panel-fields"><label>Scheme:<select data-setting="scheme">${[['standard','Windows Standard'],['slate','Slate'],['contrast','High Contrast']].map(([v,l])=>`<option value="${v}" ${stage.scheme===v?'selected':''}>${l}</option>`).join('')}</select></label></div>`;
   if(tab==='Effects')html=`<div class="l98-panel-fields l98-settings-checks"><label><input type="checkbox" data-setting="animations" ${stage.animations?'checked':''}> Animate windows, menus, and lists</label><p>Turn off animation effects for faster display.</p></div>`;
   if(tab==='Web')html=`<div class="l98-panel-fields l98-settings-checks"><label><input type="checkbox" data-setting="singleClick" ${stage.singleClick?'checked':''}> Single-click to open desktop items</label><label><input type="checkbox" data-setting="showBrowser" ${stage.showBrowser?'checked':''}> Show Latch Browser on the desktop</label></div>`;
@@ -786,13 +842,13 @@ function startScreenSaver(mode=shellSettings.saver,preview=false){
  el.desktop.append(overlay);saverActive=true;overlay.focus({preventScroll:true});
 }
 ['pointermove','pointerdown','keydown','touchstart'].forEach(name=>document.addEventListener(name,()=>{if(saverActive)stopScreenSaver();else lastActivity=Date.now();},{capture:true,passive:true}));
-setInterval(()=>{if(shellSettings.saver!=='none'&&!saverActive&&!el.desktop.classList.contains('hidden')&&Date.now()-lastActivity>=shellSettings.wait*60000)startScreenSaver();},9000);
+gamePerformance.shellInterval('screen-saver',()=>{if(shellSettings.saver!=='none'&&!saverActive&&!el.desktop.classList.contains('hidden')&&Date.now()-lastActivity>=shellSettings.wait*60000)startScreenSaver();},9000);
 fs.ready.then(()=>{
  const file=fs.get(SHELL_FILE);
  if(file?.kind==='text'){try{const loaded=JSON.parse(file.data);if(loaded&&typeof loaded==='object')Object.assign(shellSettings,loaded);}catch{}}
  applyShellSettings();
 });
-document.addEventListener('latchfschange',()=>{if(shellSettings.wallpaper)applyShellSettings();});
+document.addEventListener('latchfschange',()=>{if(shellSettings.wallpaper&&!gamePerformance.defer('wallpaper-ui',applyShellSettings))applyShellSettings();});
 async function setupNotepad(node){await fs.ready;node.querySelector('textarea').value=noteText;
  node.querySelector('textarea').addEventListener('input',()=>{noteText=node.querySelector('textarea').value;noteDirty=true;updateNoteStatus();});updateNotepadTitle();updateNoteStatus();}
 function updateNoteStatus(){const w=windows.get('notepad');if(!w)return;const count=w.node.querySelector('.status-text');if(count)count.textContent=`${noteDirty?'Modified — ':''}${noteText.length} characters | ${notePath?fs.display(notePath):'Unsaved'} | Ctrl+S`;}

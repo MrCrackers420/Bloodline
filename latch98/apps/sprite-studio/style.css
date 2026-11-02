@@ -8,3 +8,7 @@
 .layerNudges{margin-top:7px;justify-content:center;align-items:center;flex-wrap:wrap}
 .layerNudges span{font-size:11px}
 .layerNudges button{min-width:29px;min-height:26px}
+/* Round 4: added frame clipboard and FPS controls wrap on narrow screens.
+   Let the timeline grow inside the vertically scrollable mobile workspace rather
+   than allowing the frame strip to overlap the color/layer panels. */
+@media(max-width:600px){.timeline{max-height:none;height:auto}.timeline-head{flex:none}.frames{flex:none;min-height:72px}}

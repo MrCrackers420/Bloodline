@@ -1,120 +1,54 @@
-> **Round 3 coordination:** See `coordination/R3_README.md`. Norn World Lab simulation is now owned by a separate Norn-only development group. No Latch worker modifies its source.
+# Latch 98 — Round 5 baseline (immersion polish)
 
-# Latch 98 — standalone all-games edition (Norn Step 32)
+**Starting point for the next five independent development threads:** Round 4 merged release, approved Norn World Lab version unchanged, plus the integrator's first player-facing immersion-copy repairs. Read `SHARED_RULES.md` and `coordination/R5_README.md` for assignments. This is **not** the result of five Round 5 patches; those have not been developed or merged yet.
 
-**Current shared source:** Latch 98 Round 2 baseline, based on the merged Threads 1–5 build plus the visible Postbox Mail/Sprite Studio shortcuts. New parallel work instructions: `coordination/ROUND2_SHARED_INSTRUCTIONS.md`.
+**Automated copy regression:** `python tools/immersion_audit.py`. Source-level checks prevent known out-of-world phrases from returning; a full human inspection is still required.
 
-Open the HTML file in a modern browser; it contains Latch 98's desktop,
-websites, email, filesystem, the games below and audio tools. It does not
-need a server, a Rust build, or adjoining folders for its bundled apps.
+---
 
-## Included program files
+# Latch 98 — Round 4 merged release
 
-- Bloodline story mode — embedded original `bloodline.html` (Git blob
-  `76d513d421c627c7ecf6a2225891e4706d8a3d6c`, matching the inspected
-  GitHub repository source), preinstalled with two shortcuts.
-- Bloodline: Wilds — standalone WebGL build from the 2026-10-31 archive.
-- Bloodline: Catacombs — standalone archived browser edition.
-- Weed Warrior — standalone archived browser edition.
-- Norn World Lab Step 32 (Thread 4 corrected Doozer hearing locations) — installed only via the in-world torrent/ISO/setup.
-- Solitaire — integrated self-contained Klondike.
-- Minesweeper — browser JS preview engine (no Rust/WASM required).
-- Latch Sound Studio v0.7 — time-stretch build, separate app window.
-- Audacity for Latch 98 v2 — separate editor window.
+**Latest release:** November 2, 2026. All five Round 4 Latch development patches are merged on the approved Norn World Lab release. See `coordination/R4_FINAL_INTEGRATION_REPORT.md` for the change list, test results, and limitations.
 
-The available Golden Acre farming-game artifacts could not be exported as raw
-source into this build, so this release does **not** claim to include it.
-Archived versions of side games may lag their ongoing development threads.
-All bundled game source is preserved without altering gameplay logic.
+Latch 98 is a Windows-98-style desktop and application collection. Open the generated standalone HTML in a browser to run everything from one file, or publish the modular `web/` and `apps/` tree. A Rust host is optional; browsers run the bundled preview engines without a native build.
 
-## First boot and fullscreen
+## Included applications
 
-- Check **Start in fullscreen** on the startup screen (checked by default),
-  then click/tap **Power On**. Browsers require a user gesture for fullscreen;
-  the computer still boots if the browser refuses fullscreen.
-- Use the normal **Bloodline** shortcut for a viewport-filling game without
-  Latch chrome. **Bloodline (Windowed)** runs the same bundled story game in
-  a movable desktop window.
-- From Bloodline fullscreen mode, press `Ctrl+Shift+Esc`, click the small
-  top-right return control, or hold gamepad **Select/Back + Start** together
-  for more than a second. The game is not restarted when merely minimizing
-  the browser window, but switching launch modes opens a new game instance.
+- Bloodline in fullscreen and movable windowed modes, with a visible **Return to Latch 98** control.
+- Bloodline Wilds, Catacombs and Weed Warrior.
+- Norn World Lab (the approved multi-specialist simulation update, kept frozen in this integration).
+- Minesweeper, Solitaire, Sound Studio, Audacity, and Sprite Studio.
+- Postbox WebMail, LatchNet, SwarmWire, Explorer, Notepad and other Latch system tools.
 
-## Norn World Lab: the installation sequence is intentionally mandatory
+## First boot and Norn installation
 
-On a **fresh Latch virtual disk**, the Norn World Lab program is *not*
-installed, despite its program bytes being bundled into the HTML:
+The initial profile has no Norn World Lab installation. Use the desktop **Postbox Mail** shortcut or Latch Browser to find M. Vale's email titled **“that program I told you about.”** Open `NWLAB03.torrent` in SwarmWire, complete its download, mount `NornWorldLab.iso`, and run `D:\Setup.exe`. Norn Lab is then available in Start → Programs → Games. Virtual files, install state, and transfer progress persist together in the Latch file system. Export disk backups for important save data.
 
-1. Start Latch 98, open **Latch Browser**, then **Postbox WebMail**.
-2. Read M. Vale's message **"that program I told you about"**.
-3. Open or save the attachment `NWLAB03.torrent`.
-4. Use **SwarmWire** to finish downloading `NornWorldLab.iso`.
-5. Mount the ISO in CD-ROM `D:` and run `D:\Setup.exe`.
-6. Complete the wizard, then run Norn World Lab through Start > Programs > Games.
+SwarmWire's 186.4 MB archive and disc are in-world representations, **not external BitTorrent transfers**. This technical note belongs in documentation, not inside the application. The release also removes misleading UI text like “simulated offline” without changing the transfer behavior.
 
-SwarmWire transfer progress is now stored **inside the same virtual disk**
-as the Norn installation and saved Norn files (`latch98.virtual_disk.v1`).
-Existing installations can migrate the old `latch98.swarmwire.v1` transfer
-record when its associated torrent is present. Exporting or importing the
-virtual disk includes transfer progress and installed-program state; a fresh
-or unrelated imported disk cannot inherit an old torrent transfer. Reloading
-the same page in the same browser/profile preserves this state where browser
-storage is available.
-Do not clear the browser's site/file storage. File:// storage behavior varies
-by browser and can change when the standalone file is moved or renamed.
-Export your disk backup through Latch's Explorer tools for important saves.
-The `.torrent` and `.iso` are **fictional virtual files**; they do not invoke
-real BitTorrent networking or mount a physical disc.
+## Performance Mode
 
-## Build and test
+Fullscreen Bloodline automatically suspends three recurring desktop shell tasks and defers certain hidden window refreshes. Returning to Latch restores those tasks and window state. Background Norn and SwarmWire execution is **not** globally suspended. FPS benefits depend on workload and device; they have not been benchmarked on physical hardware.
 
-Use `python tools/build_standalone.py output.html` to rebuild the single file
-from this source tree. The builder packs the apps as UTF-8 base64 data and
-inlines shell CSS/JS; content is decoded only when each app opens.
-
-Run `node tools/test-norn-install.cjs`, `node tools/test-filesystem.cjs`,
-`node tools/test-step32-bloodline.cjs`, and the remaining test scripts.
-Browser smoke tests in `tools/test-first-run-ui.py` and
-`tools/test-games-in-one-html.py` exercise the in-world installation and
-app launchers. Local browser navigation can be blocked by sandbox policy;
-the tests use Playwright's `set_content` fixture in that environment.
-
-A modular Latch 98 Pages/Rust build is still possible with the independent
-app files. `tools/build_pages.py` preserves the GitHub-hosted original
-Bloodline source when a `../game/bloodline.html` file is supplied.
-
-## Parallel development and safe merging
-
-This edition includes `coordination/THREADS.md`, `coordination/OWNERSHIP.json`,
-`coordination/base_manifest.json`, and `tools/parallel_merge.py` for managing
-five independent development threads. Each thread changes only its assigned
-paths and returns a ZIP of changed files, not a complete replacement game.
-
-To check or apply a returned patch:
+## Build and validation
 
 ```bash
-python tools/parallel_merge.py status
-python tools/parallel_merge.py check --thread desktop --zip Thread-1-Changes.zip
-python tools/parallel_merge.py apply --thread desktop --zip Thread-1-Changes.zip
-python tools/release_check.py
+python tools/build_standalone.py Latch98-Standalone.html
+python tools/release_check.py --output Latch98-Standalone.html
+node tests/round4/desktop/performance.test.cjs
+node tests/round4/disk/fault-matrix.test.cjs
+python tests/round4/latchnet/test_shell.py
+python tools/test_norn_boundary.py
 ```
 
-The release gate rebuilds the standalone HTML, checks each embedded game
-payload byte-for-byte against modular sources, and runs the existing Node
-filesystem/install/shortcut tests. Add `--browser` to exercise the more
-expensive Playwright smoke tests. If a source file has changed since this
-baseline, the merger rejects a second differing patch instead of silently
-replacing it. `--thread norn` and `--thread apps` handle the other teams.
+Round 4 automated tests are in `tests/round4/` and `apps/tests/`. Tests requiring direct localhost or file navigation can be blocked by managed browser policies; others operate with in-memory HTML.
 
-## Prior integration history: Threads 1–5 merged
+GitHub repository overlay deployment is described in `DEPLOY_LATCH98.md` in the separate GitHub-ready ZIP. Preserve the existing repository's `game/bloodline.html`, `tools/`, and root `README.md` when extracting the overlay.
 
-The prior five-thread work and the Postbox/Sprite Studio discoverability fix are
-already merged. Round 2 has a **fresh baseline manifest** and unique ownership
-for all five threads. Do not use the first-round baseline to check new patches.
-Do not replace `apps/norn-world-lab/index.html` with an older full copy;
-it includes the tested Doozer teaching-location fix.
+## Development boundaries
 
+Norn simulation development is owned by its **separate Norn integrator**. This Latch release must not change `apps/norn-world-lab/index.html`. Bloodline gameplay source remains owned by its own development line. The Round 4 ownership map, original baseline manifest, and safe patch merging utilities are preserved in `coordination/` and `tools/`. **Do not treat the Round 4 baseline manifest as a fresh Round 5 baseline.** Refresh hashes and ownership before commissioning a new parallel development round.
 
-### Latch Sprite Studio (integrated)
+## Norn World Lab Round 4 application update
 
-Open from Start → Programs → Accessories → Latch Sprite Studio, or open `apps/sprite-studio/index.html` by itself in a browser. The standalone editor is a single independent HTML file and supports local `.lss.json` projects, transparent PNGs and sprite sheets. The transparency checkerboard and grid are synchronized to the same pixel size at every zoom; grid visibility is optional. In the Latch-hosted edition, Disk Save/Open uses the virtual C: drive with browser download fallback.
+The optional integrator checkpoint now packages the Norn-only Round 4 app SHA-256 `3bc36a7992e7d4540a4afc93acbb3d6f2d8e26b639402b998bdb1d10e86b34db`. The existing Round 5 specialist baseline is unchanged; see `NORN_WORLD_LAB_HANDOFF.md`.

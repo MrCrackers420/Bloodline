@@ -1,59 +1,70 @@
 {
-  "base_release": "Latch98-Round3-Shared-Base.zip",
-  "baseline_id": "LATCH-R3-2026-11-01",
-  "source_checkpoint": "Latch98-Round2-Shared-Base.zip",
+  "base_release": "Latch98-Round5-Shared-Base-With-Rules.zip",
+  "baseline_id": "LATCH-R5-2026-11-02-R4-IMMERSION-POLISH",
+  "source_checkpoint": "Latch98-Round4-AllThreads-Merged-Source.zip",
   "threads": {
     "desktop": {
-      "description": "Round 3 Thread 1: desktop, window management, responsive layout and launch UX; no application internals",
+      "description": "R5 T1 desktop UI, game launcher and shell lifecycle",
       "files": [
         "web/index.html",
-        "web/desktop.css",
         "web/desktop.js",
+        "web/desktop.css",
         "web/shell_v07.css",
         "web/explorer_v08.css",
         "web/standalone_runtime.js"
+      ],
+      "directories": [
+        "tests/round5/desktop/"
       ]
     },
     "disk": {
-      "description": "Round 3 Thread 2: virtual filesystem, backup, removable media, SwarmWire transfer state and installation; no Postbox content or Norn simulation",
+      "description": "R5 T2 filesystem, SwarmWire, disk and ISO statuses",
       "files": [
         "web/filesystem.js",
         "web/swarmwire.js",
         "web/swarmwire.css"
+      ],
+      "directories": [
+        "tests/round5/disk/"
       ]
     },
     "apps": {
-      "description": "Round 3 Thread 3: independent non-Norn games, music studio, Audacity; excludes story Bloodline and Sprite Studio",
-      "directories": [
-        "apps/"
+      "description": "R5 T3 music studio and Audacity, audio tests",
+      "files": [
+        "apps/soundstudio/index.html",
+        "apps/audacity/index.html"
       ],
-      "excludes": [
-        "apps/bloodline/",
-        "apps/norn-world-lab/",
-        "apps/sprite-studio/"
+      "directories": [
+        "apps/tests/",
+        "tests/round5/audio/"
       ]
     },
     "network": {
-      "description": "Round 3 Thread 4: fictional LatchNet websites, browser content, Postbox mail UI and hidden clues; no virtual disk or SwarmWire behavior",
+      "description": "R5 T4 LatchNet and Postbox",
       "files": [
         "web/latchnet.js",
         "web/latchnet.css"
+      ],
+      "directories": [
+        "tests/round5/latchnet/"
       ]
     },
     "sprite": {
-      "description": "Round 3 Thread 5: standalone Sprite Studio drawing, animation, formats and offline Flipnote compatibility",
+      "description": "R5 T5 pixel editor and formats",
       "directories": [
-        "apps/sprite-studio/"
+        "apps/sprite-studio/",
+        "tests/round5/sprite/"
       ]
     },
     "integrator": {
-      "description": "Latch-only release coordinator: packaging, interfaces, tests, merge and source integration",
+      "description": "Exclusive integration, release test tools and deployment, Norn handoffs",
       "directories": [
         "tools/",
         "coordination/"
       ],
       "files": [
         "README.md",
+        "SHARED_RULES.md",
         "GITHUB_PAGES.md",
         "DISCOVERABILITY_FIX.md",
         "NORN_WORLD_LAB_HANDOFF.md",
@@ -70,7 +81,10 @@
   "reserved": [
     "apps/norn-world-lab/",
     "apps/bloodline/",
+    "apps/wilds/",
+    "apps/catacombs/",
+    "apps/weedwarrior/",
     ".github/"
   ],
-  "merge_policy": "Workers submit only owned UTF-8 paths; Norn simulation/code is maintained solely by Norn World Lab integrator. Latch integrator alone imports a separately validated Norn release; no worker modifies Norn or the Bloodline story. One baseline, no cross-thread file edits."
+  "merge_policy": "R5: Worker ZIPs UTF-8 source only, in owned files/dirs, with specific tests and copy audit. Existing Norn source is frozen; integrator merges approved new Norn handoffs separately."
 }

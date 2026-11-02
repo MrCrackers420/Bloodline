@@ -1005,8 +1005,11 @@ function compileWorld(def) {
     slabs.push({ x0: g.a, x1: g.b, tx: sx.slice(), ty: sx.map(() => g.y), bx: sx.slice(), by: sx.map(() => g.y - (g.th || 7)), mat: 'gate', gate: g.id });
   }
   for (const deck of def.decks || []) {
-    slabs.push({x0:deck.a,x1:deck.b,tx:[deck.a,deck.b],ty:[deck.y,deck.y],
-      bx:[deck.a,deck.b],by:[deck.y-8,deck.y-8],mat:'soil',gate:-1});
+    // A deck may incline between measured landings; its upper and lower faces
+    // are the same real collidable slab, not a painted/synthetic route.
+    const endY = deck.y1 ?? deck.y, depth = deck.depth ?? 8;
+    slabs.push({x0:deck.a,x1:deck.b,tx:[deck.a,deck.b],ty:[deck.y,endY],
+      bx:[deck.a,deck.b],by:[deck.y-depth,endY-depth],mat:deck.mat || 'soil',gate:-1});
   }
   return finishGeo({ W, slabs, regions: def.regions || {}, gates: (def.gates || []).map(g => ({ ...g })), lifts: def.lifts || [], meta: def.meta || {} });
 }
@@ -1059,10 +1062,56 @@ function geoTopAt(x, G = GEO) {
   for (const i of geoBucket(G, x)) { const s = G.slabs[i]; if (x < s.x0 || x > s.x1 || !slabSolid(G, s)) continue; const t = slabTop(s, x); if (t > h) h = t; }
   return h;
 }
-// a straight line through air only (sight, sound): sampled every 8 px
+// Sight and sound must cross no solid terrain. Exact interval clipping against
+// each piecewise-linear slab prevents thin hatch/deck roofs disappearing between
+// the old 8-pixel ray samples. Tangential surface contact alone is not blocking.
 function geoClear(x0, y0, x1, y1, G = GEO) {
-  const d = Math.hypot(x1 - x0, y1 - y0), n = Math.max(1, Math.ceil(d / 8));
-  for (let i = 1; i < n; i++) { const t = i / n; if (geoSolidAt(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, G)) return false; }
+  const dx = x1 - x0, dy = y1 - y0;
+  if (!Number.isFinite(x0 + y0 + x1 + y1)) return false;
+  if (dx === 0 && dy === 0) return true;
+  const EPS = 1e-9;
+  const minX = Math.min(x0, x1), maxX = Math.max(x0, x1);
+  for (const s of G.slabs) {
+    if (!slabSolid(G, s) || maxX < s.x0 || minX > s.x1) continue;
+    // Find the first relevant edge by binary search. Long meadow slabs may
+    // contain hundreds of sampled terrain segments, but short rays cross few.
+    const from = Math.max(minX, s.x0), to = Math.min(maxX, s.x1);
+    let left = 0, right = s.tx.length - 1;
+    while (left < right) {
+      const mid = (left + right) >> 1;
+      if (s.tx[mid] < from) left = mid + 1; else right = mid;
+    }
+    for (let i = Math.max(0, left - 1); i + 1 < s.tx.length && s.tx[i] <= to; i++) {
+      const xa = s.tx[i], xb = s.tx[i + 1];
+      let lo = 0, hi = 1;
+      if (Math.abs(dx) < EPS) { if (x0 < xa || x0 > xb) continue; }
+      else {
+        const a = (xa - x0) / dx, b = (xb - x0) / dx;
+        lo = Math.max(0, Math.min(a, b)); hi = Math.min(1, Math.max(a, b));
+        if (hi - lo <= EPS) continue;
+      }
+      const topSlope = (s.ty[i + 1] - s.ty[i]) / (xb - xa);
+      const top0 = s.ty[i] + topSlope * (x0 + lo * dx - xa) - (y0 + lo * dy);
+      const top1 = s.ty[i] + topSlope * (x0 + hi * dx - xa) - (y0 + hi * dy);
+      // Restrict [lo,hi] to the part below the top surface (strict interior).
+      if (top0 <= EPS && top1 <= EPS) continue;
+      if (top0 <= EPS || top1 <= EPS) {
+        const cross = lo + (hi - lo) * (EPS - top0) / (top1 - top0);
+        if (top0 <= EPS) lo = cross; else hi = cross;
+      }
+      if (s.bx) {
+        const bottomSlope = (s.by[i + 1] - s.by[i]) / (xb - xa);
+        const bot0 = y0 + lo * dy - (s.by[i] + bottomSlope * (x0 + lo * dx - xa));
+        const bot1 = y0 + hi * dy - (s.by[i] + bottomSlope * (x0 + hi * dx - xa));
+        if (bot0 <= EPS && bot1 <= EPS) continue;
+        if (bot0 <= EPS || bot1 <= EPS) {
+          const cross = lo + (hi - lo) * (EPS - bot0) / (bot1 - bot0);
+          if (bot0 <= EPS) lo = cross; else hi = cross;
+        }
+      }
+      if (hi - lo > EPS) return false;
+    }
+  }
   return true;
 }
 // covered: rock or soil somewhere above (a burrow, a tunnel, a cave): no sky
@@ -1156,6 +1205,12 @@ function buildWorldDef() {
   const chuteF = easedRamp(D.hatch[1], D.chuteFloor, D.plateauEnd, 0, 50);
   const pockets = [
     { name: 'nursery-tunnel', a: 2900, b: 3130, f: flat(113), c: flat(209), mat: 'soil' },
+    // Distinct low passage: starts at meadow height on each side, dips 24 px,
+    // and always leaves >=96 px of air below the intact upper-tunnel floor.
+    // The compiler stacks the 113..low-roof solid band between the tunnels.
+    { name: 'nursery-ditch', a: 2900, b: 3130,
+      f: x => -24 * Math.sin(Math.PI * (x - 2900) / 230) ** 2,
+      c: x => 96 - 24 * Math.sin(Math.PI * (x - 2900) / 230) ** 2, mat: 'soil' },
     { name: 'burrow', a: D.burrowRoom[0], b: D.mouth[0], f: burrowF, c: x => burrowF0(x) + D.burrowCeil, mat: 'soil' },
     { name: 'burrow-mouth', a: D.mouth[0], b: D.mouth[1], f: easedRamp(D.mouth[0], D.mouthTop, D.mouth[1], 0, 90), c: null, mat: 'soil' },
     { name: 'underpass', a: D.ridge[0], b: D.ridge[1], f: dip, c: x => dip(x) + D.underpassCeil, mat: 'rock' },
@@ -1168,6 +1223,9 @@ function buildWorldDef() {
   const gates = [{ id: 0, name: 'plateau-hatch', a: D.hatch[0], b: D.hatch[1], y: D.plateau, th: 7 }];
   const regions = {
     'nursery-tunnel': { x0: 2880, x1: 3150, y0: 108, y1: 209, label: 'Nursery hill tunnel' },
+    'nursery-ditch': { x0: 2900, x1: 3130, y0: -27, y1: 96, label: 'Lower nursery ditch' },
+    'nursery-orchard': { x0: 4000, x1: 4120, y0: 305, y1: 380, label: 'High orchard shelf' },
+    'nursery-skyway': { x0: 3270, x1: 4620, y0: 110, y1: 325, label: 'Upper nursery skyway' },
     'burrow-room': { x0: D.burrowRoom[0], x1: D.burrowRoom[1], y0: D.burrowFloor - 5, y1: D.burrowFloor + D.burrowCeil, label: 'Family burrow' },
     burrow: { x0: D.burrowRoom[0], x1: D.mouth[0] + 120, y0: D.burrowFloor - 5, y1: D.mouthTop + D.burrowCeil + 40, label: 'Burrow tunnel' },
     meadow: { x0: D.mouth[1], x1: D.ridge[0], y0: -10, y1: 400, label: 'Meadow' },
@@ -1197,7 +1255,21 @@ function buildWorldDef() {
     lift.passing = false; lift.name = 'nursery tunnel lift'; lift.high = 113;
     lift.lowDwell = 8; lift.highDwell = 10;
   }
-  return { W, surface, pockets, gates, regions, lifts, decks:[{a:2880,b:2900,y:113},{a:3130,b:3150,y:113}], meta: { name: 'Norn Valley', dev: WORLD_DEV } };
+  // Landing begins at the east edge of the existing x=3210 nursery lift
+  // (120 px wide, high=113). Continuous ramp, rest landing, high orchard
+  // shelf, and descent to the old ridge give a second physical east/west
+  // route without adding automatic transportation or a one-way dead end.
+  // Decks are 8 px thick and remain 2-sided colliders for paws and objects.
+  const ridgeAt = x => D.ridgeTop + bumps(8, 3.3)(x);
+  const decks = [
+    {a:2880,b:2900,y:113}, {a:3130,b:3150,y:113},
+    {a:3270,b:3470,y:113,y1:173,mat:'wood'},
+    {a:3470,b:3590,y:173,mat:'wood'},
+    {a:3590,b:4000,y:173,y1:315,mat:'wood'},
+    {a:4000,b:4120,y:315,mat:'wood'},
+    {a:4120,b:4620,y:315,y1:ridgeAt(4620),mat:'wood'},
+  ];
+  return { W, surface, pockets, gates, regions, lifts, decks, meta: { name: 'Norn Valley', dev: WORLD_DEV } };
 }
 let GEO = compileWorld(buildWorldDef());
 // For tests and future editors: install another world (compiled or a description). Physics engines are told.
@@ -1291,11 +1363,11 @@ BONES.push(
 const N_MOTOR = 12, BODY_IN = 5 + 12 + 4 + 12; // four hip/shoulder, four knee/elbow, four ankle/wrist motors
 const GAIT_IN = BODY_IN + 4 + 4; // body, the ground ahead and the target's height, hunger, bias
 const REACH_UP = 8, REACH_DOWN = 40; // how far above / below its shoulders a mouth can take a berry
-const MAX_BERRIES = 24, MAX_BLOCKS = 28, CRATE_HOLDS = 4;
+const MAX_BERRIES = 48, MAX_BLOCKS = 28, CRATE_HOLDS = 4; // R4: preserve two-fruit regrowth on 22 planted bushes
 // Bushes grow food. A bush grows whatever food the hand last put on it, holds up to BUSH_HOLDS at a time, and takes
 // BUSH_GROW seconds to grow each one. Headless runs with food always out (demand.js) show a norn eats about one food
 // every 80 s, so a full world of 4 norns eats one every 20 s; 7 bushes at one food per 140 s each match that.
-const BUSH_GROW = 140, BUSH_HOLDS = 2, MAX_BUSHES = 20;
+const BUSH_GROW = 140, BUSH_HOLDS = 2, MAX_BUSHES = 24; // R4: 18 default + 4 optional orchard + 2 user plants
 const wrap = a => (a > Math.PI ? a - 2 * Math.PI : a < -Math.PI ? a + 2 * Math.PI : a);
 
 // ---------- stance: on all fours, or upright on two legs ----------
@@ -3065,10 +3137,32 @@ function makeWorld(seed, pers, opts) {
   // WORLD-2D: who can see, hear or reach whom is decided by the ground between them (a clear line), not by lanes
   const eyeOf = n => { const h = n.body.p[HEAD_I] || n.body.p[1]; return { x: h.x, y: h.y + 3 }; };
   const midOf = b => ({ x: (b.p[0].x + b.p[1].x) / 2, y: (b.p[0].y + b.p[1].y) / 2 + 4 });
-  const inTouch = (n, o) => { if (!n?.body || !o?.body) return true; const a = eyeOf(n), b = midOf(o.body); return geoClear(a.x, a.y, b.x, b.y); };
-  const lineTo = (n, x, y) => { const a = eyeOf(n); return geoClear(a.x, a.y, x, y); };
+  // A visually opaque movable block must obscure other targets just like
+  // solid fixed terrain. Clip the eye ray against the block's true AABB;
+  // tangential surface contact is not an obstruction, and a block is allowed
+  // to be seen itself (skip the target block, not obstacles in front of it).
+  const clearBetween = (x0, y0, x1, y1, skipBlock = null) => {
+    if (!geoClear(x0, y0, x1, y1)) return false;
+    const dx=x1-x0, dy=y1-y0, EPS=1e-7;
+    for (const k of w.blocks) {
+      if (k === skipBlock) continue;
+      const xlo=k.x-k.w/2+EPS, xhi=k.x+k.w/2-EPS;
+      const ylo=k.y0+EPS, yhi=k.y0+k.h-EPS;
+      if (xlo >= xhi || ylo >= yhi) continue;
+      let lo=0, hi=1, missed=false;
+      for (const [p,v,a,z] of [[x0,dx,xlo,xhi],[y0,dy,ylo,yhi]]) {
+        if (Math.abs(v)<EPS) { if(p<=a||p>=z)missed=true; continue; }
+        const t0=(a-p)/v, t1=(z-p)/v;
+        lo=Math.max(lo,Math.min(t0,t1));hi=Math.min(hi,Math.max(t0,t1));
+      }
+      if (!missed && hi-lo>EPS && lo<1-EPS && hi>EPS) return false;
+    }
+    return true;
+  };
+  const inTouch = (n, o) => { if (!n?.body || !o?.body) return true; const a = eyeOf(n), b = midOf(o.body); return clearBetween(a.x, a.y, b.x, b.y); };
+  const lineTo = (n, x, y) => { const a = eyeOf(n); return clearBetween(a.x, a.y, x, y); };
   const dyOf = (n, o) => Math.abs(midOf(n.body).y - midOf(o.body).y);
-  w.inTouch = inTouch; w.geo = () => GEO;
+  w.inTouch = inTouch; w.clearBetween=clearBetween; w.geo = () => GEO;
   w.den = { ...DEN, floorAt:denFloor, roofAt:denRoof, inside:denInside, room:denRoom,
     canSee(a,b,la=0,lb=0,aUnderground=false,bUnderground=false){
       const aIn=la===DEN.lane&&aUnderground&&denInside(a),
@@ -3484,6 +3578,10 @@ function makeWorld(seed, pers, opts) {
   }
   for (const s of specs) w.norns.push(makeNorn(s, rng));
   const ns = w.norns;
+  // Each individual keeps a unique name for this world's entire lifetime.
+  // Reusing a dead Norn's name would silently retarget other Norns' learned
+  // relations, grief and spoken identity references to a newborn stranger.
+  const usedNornNames = new Set(ns.map(n => n.name.toLowerCase()));
   let multi = ns.length > 1 || !!opts.eggs; // speech carries names once there can be more than one
   for (const n of ns) for (const o of ns) if (o !== n) n.rel[o.name] = freshRel(o.name);
   if(opts.familyPreset && ns.length===3) {
@@ -4973,7 +5071,7 @@ function makeWorld(seed, pers, opts) {
     if (typeof seedArg === 'string') { const p = parseSeed(seedArg, w.gaits); seedArg = p.seed; kit = kit || p.kit; }
     if (w.eggs.length >= MAX_EGGS) return null;
     const sd = seedArg == null ? Math.floor(rng() * 100000) : seedArg >>> 0;
-    const egg = { id: ++w.eggId, seed: sd, kit: kit || null, genome: genomeOf(sd, kit), x: w.eggLayer.x + 34 + (w.eggs.filter(e => !e.inc).length % 3) * 16, y: 0, vy: 0, inc: false, warmth: 0 };
+    const egg = { id: ++w.eggId, seed: sd, kit: kit || null, genome: genomeOf(sd, kit), x: w.eggLayer.x + 34 + (w.eggs.filter(e => !e.inc).length % 3) * 16, y: 0, vy: 0, inc: false, warmth: 0, laidAt: w.time };
     w.eggs.push(egg); w.laid++;
     w.eggLayer.busy = 0.8;
     return egg;
@@ -4998,7 +5096,7 @@ function makeWorld(seed, pers, opts) {
     if(a.hunger>0.8 || b.hunger>0.8 || a.asleep || b.asleep) return 'Parents must be awake and fed.';
     if(w.eggs.length>=MAX_EGGS) return 'The egg nursery is full.';
     const egg=w.layEgg(); egg.genome=crossGenome(a.genome,b.genome,egg.seed);
-    egg.parentNames=[a.name,b.name]; a.breedReady=b.breedReady=w.time+300;
+    egg.parentNames=[a.name,b.name]; egg.lineageSource='bred'; a.breedReady=b.breedReady=w.time+300;
     a.chem.glycogen=Math.max(0,a.chem.glycogen-0.05); b.chem.glycogen=Math.max(0,b.chem.glycogen-0.05);
     w.note(a.name+' + '+b.name+': generation '+egg.genome.generation+' egg, '+egg.genome.mutations+' mutations');
     return egg;
@@ -5022,13 +5120,24 @@ function makeWorld(seed, pers, opts) {
     return best;
   };
   function nameFor() {
-    for (const k of NAMES) if (!ns.some(o => o.name.toLowerCase() === k.toLowerCase())) return k;
-    let i = 2; while (ns.some(o => o.name.toLowerCase() === (NAMES[0] + i).toLowerCase())) i++;
-    return NAMES[0] + i;
+    let name = NAMES.find(k => !usedNornNames.has(k.toLowerCase()));
+    if(!name){let i = 2;
+      while(usedNornNames.has((NAMES[0] + i).toLowerCase())) i++;
+      name = NAMES[0] + i;
+    }
+    usedNornNames.add(name.toLowerCase());
+    return name;
   }
   function hatch(egg) {
     const g = egg.genome, name = nameFor();
     const n = makeNorn({ name, pers: g.pers, x: clamp(egg.x + (egg.inc ? 40 : 0), 40, W - 40), genome: g, bornFromEgg: true, lane: egg.inc || egg.lane == null ? null : egg.lane }, rngf(g.seed));
+    // Record only observed hatchery data. Genetic parent seeds are not learned family bonds.
+    n.birthRecord={eggId:egg.id,seed:egg.seed,laidAt:Number.isFinite(egg.laidAt)?egg.laidAt:null,
+      hatchedAt:w.time,parents:Array.isArray(g.parents)?g.parents.slice():[],
+      parentNames:Array.isArray(egg.parentNames)?egg.parentNames.slice():[],
+      source:egg.lineageSource||null,cloneSource:egg.cloneSource||null,
+      cloneGenomeMatch:typeof egg.cloneGenomeMatch==='boolean'?egg.cloneGenomeMatch:null,
+      incubated:!!egg.inc};
     for (const o of ns) { n.rel[o.name] = freshRel(o.name); o.rel[name] = freshRel(name); }
     ns.push(n); multi = true; placeBody(n);
     if (!w.norn) { w.norn = n; w.stats = n.stats; }
@@ -5041,6 +5150,13 @@ function makeWorld(seed, pers, opts) {
   // Death leaves a persistent, cleanable body. Survivors react according to their
   // individual relationship: relief and even pleasure are possible for a resented Norn.
   function witnessDeath(other, corpse, proximity) {
+    // Seeing a body is not equivalent to being nearby. A Norn cannot acquire
+    // grief, corpse comfort, or eyewitness testimony through opaque terrain,
+    // behind its visual field, or while asleep. Re-evaluate on later visits.
+    const dx = corpse.x-cxOf(other.body);
+    const relative = dx*other.body.dir;
+    if(other.asleep || relative < -75 || relative > 235 ||
+       !inTouch(other,corpse)) return;
     if(other.deathSeen?.includes(corpse.name)) return;
     (other.deathSeen ||= []).push(corpse.name);
     const r=other.rel[corpse.name], trust=r?.trust||0, attachment=r?.attachment||0;
@@ -5102,7 +5218,9 @@ function makeWorld(seed, pers, opts) {
     if(Math.abs(c.x-w.incinerator.x)>=w.incinerator.radius)return false;
     w.corpses.splice(i,1);
     w.note(c.name+' remains incinerated');
-    for(const n of ns){const d=Math.abs(cxOf(n.body)-c.x);if(d>240)continue;
+    for(const n of ns){const dx=c.x-cxOf(n.body),d=Math.abs(dx);
+      if(d>240 || n.asleep || dx*n.body.dir < -75 ||
+         dx*n.body.dir > 235 || !inTouch(n,c))continue;
       const r=n.rel[c.name],affection=clamp((r?.trust||0)*.5+(r?.attachment||0)*.65-(r?.anger||0)*.8,-1,1);
       const valence=clamp(-affection*.8-.08+(r?.fear||0)*.25,-1,1);
       observeEvent(n,{kind:'incineration',other:c.name,valence,novelty:.85,arousal:(1-d/240)*.45,socialWeight:.25});
@@ -5394,6 +5512,31 @@ function makeWorld(seed, pers, opts) {
       const best = favouriteFood(n);
       if (best) return { x: best.x, y: best.y + 5, kind: 'berry', food: best.food, reach: 26, berry: best };
     }
+    if (v === 'retreat' && n.verb.yield && n.verb.yieldMethod && n.verb.toLift == null) {
+      const v=n.verb, other=byName(v.for), ax=cxOf(n.body);
+      // The other creature must really pass the actor's torso. Neither merely
+      // crouching nor moving away is awarded a passing success.
+      const crossed=other && (cxOf(other.body)-ax)*v.initialSide < -Math.max(28, 0.5*(bodyExtent(n.body).x1-bodyExtent(n.body).x0));
+      if(crossed && !v.passed){
+        v.passed=true;v.passedAt=w.time;
+        n.stats.yieldCleared=(n.stats.yieldCleared||0)+1;w.social.passes++;
+        if(v.yieldBlockLesson)mannerLearn(n.manners.block,v.yieldBlockLesson.x,v.yieldBlockLesson.a,1,MANNERS_LR);
+        if(v.yieldEp && n.eps.includes(v.yieldEp)){v.yieldEp.r+=.85;closeEp(n,v.yieldEp,.4);}
+        passingLesson(n,v.yieldMethod,true);
+        w.telemetryEvent?.({type:'passing-clear',strategy:v.yieldMethod,norn:n.name,other:v.for,x:+ax.toFixed(1)});
+      }
+      if(v.passed){endVerb(n);return null;}
+      if(v.yieldMethod==='queue')return {x:v.x,ly:v.ly,kind:'away',reach:18,still:Math.abs(ax-v.x)<18};
+      if(!v.crouch){
+        // Walk to the measured hollow using ordinary muscular movement.
+        // No automatic relocation, collision exemption or forced speed.
+        if(Math.abs(ax-v.x)<20 && Math.abs(n.body.floor-v.ly)<15){
+          v.crouch=true;v.crouchAt=w.time;
+          w.telemetryEvent?.({type:'passing-crouch-arrived',strategy:v.yieldMethod,norn:n.name,x:+ax.toFixed(1)});
+        } else return {x:v.x,ly:v.ly,kind:'away',reach:12};
+      }
+      return null; // physically lie down; the other body still collides with us
+    }
     if (v === 'retreat' && n.verb.yield && n.verb.toLift != null) {
       const lf = w.lifts[n.verb.toLift], k = lf?.block, other = byName(n.verb.for);
       if (!lf || !k) return null;
@@ -5409,7 +5552,7 @@ function makeWorld(seed, pers, opts) {
         if (n.verb.yieldBlockLesson)
           mannerLearn(n.manners.block, n.verb.yieldBlockLesson.x, n.verb.yieldBlockLesson.a, 1.0, MANNERS_LR);
         w.social.passes++;
-        w.telemetryEvent?.({type:'passing-clear', norn:n.name, other:n.verb.for, x:Math.round(k.x)});
+        w.telemetryEvent?.({type:'passing-clear', strategy:'lift', norn:n.name, other:n.verb.for, x:Math.round(k.x)});
         if (n.verb.yieldEp && n.eps.includes(n.verb.yieldEp)) {
           n.verb.yieldEp.r += 0.85;
           closeEp(n, n.verb.yieldEp, 0.4);
@@ -5735,7 +5878,7 @@ function makeWorld(seed, pers, opts) {
       const d = (x - cx) * f;
       if (!(d < SIGHT && d > -SIGHT_BACK)) return;
       if (y == null) y = yOf(kind, ref, x);
-      if (Math.abs(y - eye.y) > SIGHT * 0.7 || !geoClear(eye.x, eye.y, x, y)) return;
+      if (Math.abs(y - eye.y) > SIGHT * 0.7 || !clearBetween(eye.x, eye.y, x, y, kind==='toy'?ref:null)) return;
       out.push({ kind, key, x, y, word, ref, dist: Math.hypot(x - cx, (y - eye.y) * 0.8) });
     };
     // Physical booth rooms block sight of unrelated outdoor objects. The
@@ -6215,6 +6358,14 @@ function makeWorld(seed, pers, opts) {
         salience:+(n.handInvitation?.salience||0).toFixed(3)});
     }
     const ended=n.verb;
+    // A failed / interrupted maneuver must also teach its own choice, not only
+    // fully timed-out attempts. A verified crossing has already taught success.
+    if(ended.yieldMethod && !ended.passed && !ended.yieldOutcomeRecorded){
+      ended.yieldOutcomeRecorded=true;
+      passingLesson(n,ended.yieldMethod,false);
+      w.telemetryEvent?.({type:'passing-yield-failed',strategy:ended.yieldMethod,
+        norn:n.name,other:ended.for,reason:ended.interruptReason||'interrupted-or-expired'});
+    }
     n.verb = null; n.dr = 0;
     // A social sidestep is a temporary subgoal, not amnesia about a Hand instruction.
     // Resume only while the original attention window remains and physical needs allow it.
@@ -6251,8 +6402,13 @@ function makeWorld(seed, pers, opts) {
     for (const k in fx) if (fx[k]) shift(n, k, fx[k], false);
     shift(n, 'pain', -0.05 * dt / (1 + 2 * (n.chem.inflammation || 0)), false);
     const soma=somaOf(n);
-    const healing=Math.max(0,dt)*.00011*(n.traits?.tissueResilience||1)*
-      clamp((n.chem?.energy||.7),.2,1);
+    // PHYS-AUDIT-04: `chem.energy` is not a stored chemical, so the old
+    // fallback healed completely depleted Norns at exactly the fed rate.
+    // Use measured circulating/stored fuel plus vitamins. Preserve the old
+    // 0.7 coefficient in a well-nourished Norn; 0.2 floors are DEV assumptions.
+    const fuel=clamp((n.chem.glucose||0)*2+(n.chem.glycogen||0),.2,1);
+    const nutrition=clamp((n.chem.vitamins||0)*2,.2,1);
+    const healing=Math.max(0,dt)*.00011*(n.traits?.tissueResilience||1)*.7*fuel*nutrition;
     soma.integrity=clamp(soma.integrity+healing,0,1);soma.damage=clamp(1-soma.integrity,0,1);
     soma.painSignal=Math.max(0,soma.painSignal-dt*.045);
     soma.injuryAlarm=Math.max(0,soma.injuryAlarm-dt*.008);
@@ -6798,6 +6954,13 @@ function makeWorld(seed, pers, opts) {
         // CLOCK-01: well into the dark (active) phase, a sleeper that has had at least a nap may wake on its own
         const circWake = v === 'sleep' && n.asleep && act > 1.25 && n.slept > RAT_SLEEP.napMin && w.rng() < Math.min(1,dt * w.sleepTimeRate() * (act - 1.25) / 45);
         const noFood = v === 'eat' && (!edible(n) || n.chem.bulk >= CHEM.full || (n.verb.food && (!w.berries.includes(n.verb.food) || skipped(n, n.verb.food))));
+        if(n.verb.yieldMethod && !n.verb.passed && over){
+          passingLesson(n,n.verb.yieldMethod,false);
+          n.verb.yieldOutcomeRecorded=true;
+          w.telemetryEvent?.({type:'passing-yield-failed',strategy:n.verb.yieldMethod,
+            norn:n.name,other:n.verb.for,reason:'time-limit'});
+          if(n.verb.yieldBlockLesson)mannerLearn(n.manners.block,n.verb.yieldBlockLesson.x,n.verb.yieldBlockLesson.a,-.35,MANNERS_LR);
+        }
         if (urgentCome || (!n.verb.cognitive && over) || doneSocial || rested || notSleeping || hungryWake || circWake || noFood || n.verb.done) endVerb(n);
       }
       // a creature that will not sleep drops off anyway once it is exhausted, as young norns do
@@ -7222,8 +7385,13 @@ function makeWorld(seed, pers, opts) {
     const sx = cxOf(target.body);
     for (const observer of ns) {
       if (observer === target || observer.dead || observer.asleep) continue;
-      const distance = Math.abs(cxOf(observer.body) - sx);
-      if (distance > 240) continue;
+      const dx = sx-cxOf(observer.body),distance=Math.abs(dx);
+      // This is a visually inferred distress cue, not access to the target's
+      // private sensation. Even a peripheral cue needs an unobstructed view
+      // inside the observer's visual field; proximity alone is insufficient.
+      const relative = dx*observer.body.dir;
+      if (distance > 240 || relative < -75 || relative > 235 ||
+          !inTouch(observer,target)) continue;
       const visibility = clamp(1 - distance / 280, 0, 1);
       const r = observer.rel[target.name];
       const trust = r?.trust || 0, attachment = r?.attachment || 0;
@@ -7503,7 +7671,7 @@ function makeWorld(seed, pers, opts) {
         } else if (tg.kind === 'away') {
           // Arriving at a passing siding is not the end of yielding: remain aboard
           // until the other creature has passed, then descend again.
-          if (!(n.verb && n.verb.yield && n.verb.toLift != null)) { done = true; if(n.verb)n.verb.done = true; }
+          if (!(n.verb && n.verb.yield)) { done = true; if(n.verb)n.verb.done = true; }
         }
         else if (tg.kind === 'toy') { pushToy(n, tg.block, d); done = true; if (n.verb) n.verb.done = true; }
         else if (tg.kind === 'flee') { setMode(n, 'idle'); done = true; }
@@ -7970,6 +8138,14 @@ function makeWorld(seed, pers, opts) {
     const dir = going ? Math.sign(tg.x - cx) : 0;
     const same = going ? bodyAhead(n, dir, GAP + 1.5) : null;
     if (!same) { n.press = 0; if (bk) endBlock(n, dir === bk.dir); return; }
+    // A yielding, physically crouched Norn is a real low obstacle. Allow the
+    // walker's own gait to try climbing it ONLY when the actual ceiling permits.
+    // No passing credit is given here: side-order reversal is checked separately.
+    if(same.verb?.yield && same.verb.crouch && passingHeadroom(cx, b.floor)>=48){
+      if(bk)endBlock(n,false);
+      n.press=0;
+      return;
+    }
     // a Norn lying low in front can be climbed over: keep walking for a while before calling it a block
     const low = !bandsMeet(b, same.body);
     // the one in the way lay down (it made way, or it rests): the way is open to a climber, so stop standing and try
@@ -8048,37 +8224,86 @@ function makeWorld(seed, pers, opts) {
     const ep = o.eps[o.eps.length - 1];
     startYield(o, n, dir, ep && ep.kind === 'asked' ? ep : null);
   }
-  // Give another creature physical space. The actor must first travel to an actual
-  // elevated siding; neither creature receives a collision exemption or free motion.
-  // `passingDir` is the direction the other creature needs to travel through us.
+  // PASS-04: a creature can learn whether low-step yielding, a measured
+  // ground hollow, retreating to create a queue, or a lift works for it.
+  // Counts update from observed outcomes, never from the choice itself.
+  const passingHeadroom=(x, floor)=>geoCeil(x,floor+15)-floor;
+  function passingLesson(n,kind,success){
+    const mem=n.passingExperience||(n.passingExperience={});
+    const entry=mem[kind]||(mem[kind]={success:0,failure:0});
+    entry[success?'success':'failure']++;
+    entry.last=w.time;
+  }
+  // Geometry is sampled from compiled floors, not a baked list of bay coordinates.
+  // The sampled hollow must be on this actor's connected topological floor, 
+  // shallow enough to walk into, deep enough to lower its solid trunk, and not
+  // already occupied by another torso. The requester's approach stays behind.
+  function findPassingBay(actor,other,dir){
+    const ax=cxOf(actor.body),floor=actor.body.floor,place=placeOf(ax,floor+3);
+    let result=null,score=Infinity;
+    for(let d=0;d<=235;d+=4){
+      const x=ax+dir*d;
+      if(x<65||x>GEO.W-65)continue;
+      const low=geoFloor(x,floor+30);
+      const edgeA=geoFloor(x-46,floor+30),edgeB=geoFloor(x+46,floor+30);
+      const depth=Math.min(edgeA-low,edgeB-low);
+      if(depth<3.1||depth>19||Math.abs(low-floor)>21 ||
+         passingHeadroom(x,low)<48 || placeOf(x,low+3)!==place)continue;
+      if(ns.some(o=>o!==actor&&o!==other&&!o.dead&&Math.abs(cxOf(o.body)-x)<65))continue;
+      const slope=Math.max(Math.abs(geoFloor(x-22,floor+30)-low),Math.abs(geoFloor(x+22,floor+30)-low));
+      if(slope>12)continue;
+      const sc=d-depth*2;
+      if(sc<score){score=sc;result={x,ly:low,depth};}
+    }
+    return result;
+  }
+  function passingStrategy(actor,other,dir){
+    const ax=cxOf(actor.body),floor=actor.body.floor;
+    const bay=findPassingBay(actor,other,dir);
+    const clear=passingHeadroom(ax,floor)>=55;
+    // Historical success/failure modifies method preference, but does not
+    // erase temperament, agency, exploration or occasional poor choices.
+    const experience=actor.passingExperience||{};
+    const rate=kind=>{const e=experience[kind]||{};return ((e.success||0)+1)/((e.success||0)+(e.failure||0)+2);};
+    const urgency=clamp((actor.drive.hunger||0)*.55+(actor.drive.pain||0)*.45,0,1);
+    const candidates=[];
+    if(bay)candidates.push({method:'bay',x:bay.x,ly:bay.ly,weight:(1.3+.9*rate('bay'))*(1-urgency*.65)});
+    if(clear)candidates.push({method:'step',x:ax,ly:floor,weight:(.6+.9*rate('step'))*(1-urgency*.7)});
+    const siding=w.lifts.map((lf,i)=>({lf,i})).filter(({lf,i})=>
+      (actor.failedSidings?.[i]||0)<w.time && lf.spec.passing &&
+      (lf.spec.x-ax)*dir>42 && (lf.spec.x-ax)*dir<710 &&
+      Math.abs(lf.spec.low-floor)<19 && placeOf(lf.spec.x,lf.spec.low+3)===chartOf(actor).at)
+      .sort((a,b)=>Math.abs(a.lf.spec.x-ax)-Math.abs(b.lf.spec.x-ax))[0];
+    if(siding)candidates.push({method:'lift',siding,weight:.6+.7*rate('lift')});
+    // Queue/retreat is useful when passage cannot physically happen. It does
+    // not claim to reverse either creature's order or clear the entire corridor.
+    candidates.push({method:'queue',x:clamp(ax+dir*155,60,GEO.W-60),ly:floor,weight:.24+.42*rate('queue')});
+    const sum=candidates.reduce((v,c)=>v+c.weight,0);
+    let roll=w.rng()*sum;
+    return candidates.find(c=>(roll-=c.weight)<=0)||candidates.at(-1);
+  }
+  // Give another creature real space. Crouching occurs only in physically
+  // traversable headroom; the solver keeps both bodies solid throughout.
   function startYield(actor, other, passingDir, askedEp = null, blockLesson = null) {
     if(actor.verb?.command==='come'){
       actor.suspendedCommand={...actor.verb};actor.verb.interruptReason='yielding-to-peer';
     }
     endVerb(actor);
-    const ax = cxOf(actor.body), sidings = w.lifts.map((lf, i) => ({lf, i})).filter(({lf,i}) =>
-      (actor.failedSidings?.[i]||0)<w.time && lf.spec.passing && (lf.spec.x - ax) * passingDir > 42 &&
-      (lf.spec.x - ax) * passingDir < 710 &&
-      Math.abs(lf.spec.low - actor.body.floor) < 19 &&
-      placeOf(lf.spec.x, lf.spec.low + 3) === chartOf(actor).at);
-    sidings.sort((a,b) => Math.abs(a.lf.spec.x-ax)-Math.abs(b.lf.spec.x-ax));
-    const choice = sidings[0];
-    if (choice) {
-      actor.verb = {name:'retreat', t0:w.time, limit:78, x:choice.lf.spec.x,
-        ly:choice.lf.spec.low, yield:true, toLift:choice.i, nochoice:true,
-        for:other.name, passingDir, kind:null, yieldBlockLesson:blockLesson};
-      if (askedEp) {askedEp.until = w.time + 75; actor.verb.yieldEp = askedEp;}
-      w.telemetryEvent?.({type:'passing-yield-start', norn:actor.name, other:other.name, x:choice.lf.spec.x});
-      w.say(other.name + ' ok . make space', 0, actor);
-    } else {
-      // Back away if no reachable siding can be perceived. This may help with
-      // congestion, but is not falsely scored as having passed the other creature.
-      const target = clamp(ax + passingDir * 180, 60, W - 60);
-      actor.verb = {name:'retreat', t0:w.time, limit:10, x:target, ly:actor.body.floor,
-        yield:true, nochoice:true, for:other.name, passingDir, kind:null};
-      w.say(other.name + ' ok . back away', 0, actor);
-    }
-    w.social.yields++; actor.stats.yields = (actor.stats.yields || 0) + 1;
+    const ax=cxOf(actor.body),choice=passingStrategy(actor,other,passingDir);
+    const v={name:'retreat',t0:w.time,limit:choice.method==='lift'?78:23,
+      x:choice.x??choice.siding?.lf.spec.x,ly:choice.ly??choice.siding?.lf.spec.low,
+      yield:true, nochoice:true,for:other.name,passingDir,kind:null,
+      initialSide:Math.sign(cxOf(other.body)-ax)||-passingDir,
+      yieldBlockLesson:blockLesson,yieldMethod:choice.method};
+    if(choice.method==='lift')v.toLift=choice.siding.i;
+    if(choice.method==='step')v.crouch=true;
+    actor.verb=v;
+    if(askedEp){askedEp.until=w.time+v.limit;v.yieldEp=askedEp;}
+    w.telemetryEvent?.({type:'passing-yield-start',strategy:choice.method,
+      norn:actor.name,other:other.name,x:+v.x.toFixed(1)});
+    w.say(other.name+(choice.method==='bay'?' ok . find hollow':choice.method==='step'?' ok . lie low':
+      choice.method==='lift'?' ok . make space':' ok . back away'),0,actor);
+    w.social.yields++;actor.stats.yields=(actor.stats.yields||0)+1;
   }
   // an episode is judged by how its drives moved meanwhile, touches it felt, and, when stuck, whether the way opened
   function closeEp(n, ep, bonus) {
@@ -8116,9 +8341,9 @@ function makeWorld(seed, pers, opts) {
       const p = ns[i], q = ns[j];
       // WORLD-2D: only bodies whose torsos are at the same height push each other sideways; one climbing over a
       // lying one does not (their contact is the climb itself, handled by the body blocks in the physics)
-      // and one lying low to make way is braced on all fours: it is climbed over, not shoved along
-      const low = o => !!(o.verb && o.verb.crouch);
-      if (!bandsMeet(p.body, q.body) || low(p) || low(q) || !inTouch(p,q)) continue;
+      // Even a deliberately crouching Norn remains a solid torso. It can be
+      // climbed over only if the normal solver obtains real vertical clearance.
+      if (!bandsMeet(p.body, q.body) || !inTouch(p,q)) continue;
       if (cxOf(p.body) <= cxOf(q.body)) shove(p.body, q.body); else shove(q.body, p.body);
     }
   }
@@ -9410,7 +9635,10 @@ function newWorld(family=false) {
   // Faithful empty-world start: the player operates the egg maker to begin a population.
   // nine bushes to start, more than enough to keep a full world of four norns fed, with a ripe crop on each
   // WORLD-2D: twelve starting bushes in three patches along the meadow (solid bodies crowding one patch block each other from food), and three further on
-  [[2080,'berry'],[2140,'carrot'],[2200,'nut'],[2260,'berry'],[2660,'cheese'],[2720,'lemon'],[2780,'berry'],[2840,'honey'],[3280,'mango'],[3340,'beanpod'],[3400,'berry'],[3700,'nut'],[5420,'berry'],[5480,'nut'],[7320,'carrot']].forEach(([x, k]) => { const b = world.addBush(x, k); if (b) b.grow = 1; });
+  [[2080,'berry'],[2140,'carrot'],[2200,'nut'],[2260,'berry'],[2660,'cheese'],[2720,'lemon'],[2780,'berry'],[2840,'honey'],[3280,'mango'],[3340,'beanpod'],[3400,'berry'],[3700,'nut'],[5420,'berry'],[5480,'nut'],[7320,'carrot'],
+    // These three ordinary regrowing bushes live on the 315 px skyway shelf.
+    // Mango + avocado + bean pod use their existing complementary nutrients.
+    [4015,'mango'],[4055,'avocado'],[4095,'beanpod']].forEach(([x, k]) => { const b = world.addBush(x, k); if (b) b.grow = 1; });
   world.spawnFood(1080, 'mushroom', -60); world.spawnFood(8250, 'mushroom', -60); // DREAMCAP: mushrooms grow in the burrow tunnel and the gallery
   basket = 5; lastRegen = 0; lastBush = 0; camX = 2000; camY = 60; fxs = []; press = null; watch = 0; follow = true; school = null;
   loadStoredGaits();
@@ -9730,8 +9958,14 @@ function slabSpan(s, x0, x1) { // the slab's polyline points inside [x0, x1] (pl
 function drawTerrain(gyW, HW, VW, st) {
   const G = C.GEO, x0 = Math.max(0, camX - 16), x1 = Math.min(G.W, camX + VW + 16), bottom = HW + 20;
   // 1) the earth behind the caves: everything below the outdoor surface, dark, with soft strata
+  // Anchor the sampled earth silhouette to WORLD x. Sampling from x0 (the
+  // moving camera margin) shifted every ridge vertex during fractional pans;
+  // in a cave mouth that exposed an oscillating dirt/stone boundary.
   ctx.beginPath(); ctx.moveTo(x0, bottom);
-  for (let x = x0; x <= x1 + 8; x += 8) ctx.lineTo(Math.min(x, x1), gyW - C.geoTopAt(Math.min(x, x1)));
+  ctx.lineTo(x0, gyW - C.geoTopAt(x0));
+  for (let x = Math.ceil(x0 / 8) * 8; x < x1; x += 8)
+    ctx.lineTo(x, gyW - C.geoTopAt(x));
+  ctx.lineTo(x1, gyW - C.geoTopAt(x1));
   ctx.lineTo(x1, bottom); ctx.closePath();
   const back = ctx.createLinearGradient(0, gyW - 120, 0, gyW + 320);
   back.addColorStop(0, '#3a2c20'); back.addColorStop(.5, '#2a2018'); back.addColorStop(1, '#1b1612');
@@ -10820,8 +11054,25 @@ function drawNorn(i, pos, gy0, corpseNorn=null) {
   const mx = (hip.x + sh.x) / 2, my = (hip.y + sh.y) / 2;
   const TX = (a, k) => mx + ux * a + nx * k, TY = (a, k) => my + uy * a + ny * k;
 
-  // a soft shadow on its lane
-  ctx.fillStyle = 'rgba(10,25,20,0.28)'; ctx.beginPath(); ctx.ellipse(mx, gy + 1, L / 2 + 16, 3.4, 0, 0, 7); ctx.fill();
+  // A shadow belongs to the support UNDER THIS BODY, not to world height 0.
+  // Torso floor comes from the physics solver (including moving lifts and
+  // other Norns). When a contacting paw reaches a different ledge, prefer
+  // that physical support; do not change body.floor or contact state.
+  const toes = C.LEGS.map(l => P[l.toe] || P[l.foot]);
+  const pawFloors = toes.flatMap((p, k) => {
+    if (!p || !b.contact?.[k]) return [];
+    const footY = gy - p.y;
+    const surface = C.surfaceAt(world.blocks, p.x, null, footY + 8);
+    return Number.isFinite(surface) && Math.abs(footY - surface) < 14 * sb ? [surface] : [];
+  });
+  const floor = Math.max(Number.isFinite(b.floor) ? b.floor : -Infinity, ...pawFloors);
+  if (Number.isFinite(floor) && floor > -1000) {
+    const lowestFoot = Math.min(...toes.filter(Boolean).map(p => gy - p.y));
+    const clearance = Math.max(0, lowestFoot - floor);
+    const opacity = .28 / (1 + Math.max(0, clearance - 10) / 40);
+    ctx.fillStyle = `rgba(10,25,20,${opacity})`;
+    ctx.beginPath(); ctx.ellipse(mx, gy - floor + 1, L / 2 + 16, 3.4, 0, 0, 7); ctx.fill();
+  }
 
   // legs, and upright the front pair as arms, drawn on the real hip, knee and foot points
   function limb(k, far) {
@@ -11203,10 +11454,12 @@ function drawNorn(i, pos, gy0, corpseNorn=null) {
     ctx.strokeStyle = 'rgba(244,236,216,0.8)'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(ex2, ey2, 5, 6.5, 0, 0, 7); ctx.stroke();
     ctx.strokeStyle = '#3a1d16'; ctx.lineWidth = 1.8;
   }
-  // name tag under the body
+  // The name is anchored to the actual rendered torso and paws. In tunnels,
+  // on lifts and during falls it travels with the Norn in both axes.
+  const labelBottom = Math.max(hip.y, sh.y, ...toes.filter(Boolean).map(p => p.y));
   ctx.font = (i === watch ? '500' : '400') + ' 11px "DM Mono", monospace'; ctx.textAlign = 'center';
   ctx.fillStyle = i === watch ? K.belly : 'rgba(233,241,236,0.55)';
-  ctx.fillText(n.name + (corpseNorn ? ' †' : ' ' + sexMark(n.genome)), mx, gy + 18);
+  ctx.fillText(n.name + (corpseNorn ? ' †' : ' ' + sexMark(n.genome)), mx, labelBottom + 14 * Math.max(.7, sb));
   return !corpseNorn && n.bubble ? { text: n.bubble.text, hx, hy: hy - 10 * sz } : null;
 }
 
@@ -11312,8 +11565,23 @@ const eggText = e => C.seedText(e.seed) + (C.kitText(C.kitOf(e.genome)) ? ' ' + 
 function layEgg(seed, kit) {
   const e = world.layEgg(seed, kit === undefined ? pickedKit() : kit);
   if (!e) { showToast('Only ' + C.MAX_EGGS + ' eggs at once'); return null; }
+  e.lineageSource='egg-maker'; // explicit creation route; imported eggs keep unknown provenance
   world.note('egg maker: egg ' + sexMark(e.genome) + ' ' + eggText(e));
   return e;
+}
+// Clone is a documented creation action, not inferred from matching DNA or names.
+function layClone(n) {
+  if(!n)return null;
+  const egg=layEgg(n.genome.seed,C.kitOf(n.genome));
+  if(egg){
+    egg.lineageSource='clone';egg.cloneSource=n.name;
+    // A seed-based clone command can diverge from a modified/bred source genome.
+    // Report this discrepancy rather than falsely promising identical DNA.
+    const key=g=>JSON.stringify({seed:g?.seed,sex:g?.sex,pers:g?.pers,hue:g?.hue,
+      dna:g?.dna,generation:g?.generation,parents:g?.parents,mutations:g?.mutations});
+    egg.cloneGenomeMatch=key(egg.genome)===key(n.genome);
+  }
+  return egg;
 }
 function nornAt(wx, wy) {
   let best=null, distance=Infinity;
@@ -11667,7 +11935,7 @@ function buildWatch() {
 }
 $('e-new').addEventListener('click', () => layEgg());
 $('family-preset').addEventListener('click',()=>{newWorld(true);watchKey='';syncFollow();updateUI();showToast('Bram, Mira and baby Pip are together.');});
-$('e-clone').addEventListener('click', () => { const n = watched(); if (n) layEgg(n.genome.seed, C.kitOf(n.genome)); });
+$('e-clone').addEventListener('click', () => { layClone(watched()); });
 function laySeed() {
   const p = C.parseSeed($('e-seed').value, world.gaits);
   if (p.bad.length) { showToast('Unknown word: ' + p.bad[0]); return; }
@@ -11938,7 +12206,7 @@ function updateLists() {
       '<button class="mini" data-clone="' + i + '">Clone</button></div>';
   }).join('') + (world.departed.length ? '<div class="empty"><b>Remembered Norns</b>: ' + world.departed.slice(-8).map(d=>esc(d.name)+' ('+esc(d.cause)+')').join(', ') + '</div>' : '');
 }
-$('family').addEventListener('click', e => { const b = e.target.closest('[data-clone]'); if (b) { const n = world.norns[+b.dataset.clone]; if (n) layEgg(n.genome.seed, C.kitOf(n.genome)); } });
+$('family').addEventListener('click', e => { const b = e.target.closest('[data-clone]'); if (b) { const n = world.norns[+b.dataset.clone]; if (n) layClone(n); } });
 
 function updateUI() {
   buildWatch();
@@ -12476,7 +12744,7 @@ html.xp #device-lab textarea,html.xp #device-link textarea {background:#fff!impo
 (function(){
 'use strict';
 const words=['seeds','food','eat','eats','eating','slap','slaps','slapping','pet','bite',
-'soft','hard','okay','cheese','carrot','nut','honey','lemon','starfruit','mango','avocado','beanpod','coconut','sweetpotato','guava','fig',
+'soft','hard','okay','grapes','cheese','carrot','nut','honey','lemon','starfruit','mango','avocado','beanpod','coconut','sweetpotato','guava','fig',
 'come','stop','push','rest','friend','play','do','left','right','yes','no','look','get','drop','sleep','hungry','happy','sad','norn','hand','berry','mushroom','dreamcap','colors','shapes','voices','shadow','vision','nightmare','strange','dizzy','confused','cube','egg','bush','why','what','who','where','how','is','are','or','because','and','but','the','a','maybe','think','know','not','can','should','wake','awake','asleep','dead','gone','move','moving','still','quiet','help','try','again','here','there','now','before','after','if','then','feel','seem','sure','unsure','hurt','scared','angry','safe','miss','remember','dream','body','breath','breathing','touch','please','could','would','want','need','you','me','it','they','something','wrong','okay','wait','long','very','little','much','sometimes','perhaps','question'];
 const records=new WeakMap();
 // Predictions are multidimensional: hearing a word does not directly cause injury.
@@ -12548,7 +12816,7 @@ function parseSpeechFor(n,phrase){const tokens=String(phrase).toLowerCase().matc
 // Compositional listening. Surface order is preserved; listeners may fail to
 // understand words, grammar and named individuals. Testimony never writes
 // directly into objective world facts or another Norn's physiology.
-const speechAliases={eats:'eat',eating:'eat',slaps:'slap',slapping:'slap',slept:'asleep',sleeping:'asleep',is:'is',are:'is',never:'no'};
+const speechAliases={grape:'grapes',eats:'eat',eating:'eat',slaps:'slap',slapping:'slap',slept:'asleep',sleeping:'asleep',is:'is',are:'is',never:'no'};
 // Grammar assistance for the HUMAN Hand only. No inflection rules or extra
 // vocabulary are taught to Norns, and their own utterances are untouched.
 // Match complete words: never strip suffixes from Norn names or food nouns.
@@ -12568,9 +12836,9 @@ const handInflectionGroups={
 const handInflections=Object.fromEntries(Object.entries(handInflectionGroups)
  .flatMap(([root,forms])=>forms.map(form=>[form,root])));
 function normalizeHandSpeech(phrase){
- return String(phrase||'').replace(/[a-z]+/gi,token=>handInflections[token.toLowerCase()]||token);
+ return String(phrase||'').replace(/[a-z]+/gi,token=>token.toLowerCase()==='grape'?'grapes':(handInflections[token.toLowerCase()]||token));
 }
-const foodNouns=new Set(['berry','cheese','carrot','nut','honey','lemon','starfruit','mango','avocado','beanpod','coconut','sweetpotato','guava','fig','mushroom']);
+const foodNouns=new Set(['grapes','berry','cheese','carrot','nut','honey','lemon','starfruit','mango','avocado','beanpod','coconut','sweetpotato','guava','fig','mushroom']);
 const speechGrammar=new Set(['is','are','the','a','an','and','but','to','please']);
 const stateWords=new Set(['dead','asleep','awake','sleep','hurt','scared','happy','sad','hungry','safe','gone','angry']);
 const speakActions=new Set(['eat','slap','pet','bite','come','stop','get','drop','play','rest','look','sleep','push','move','help','wait','wake']);
@@ -12640,7 +12908,14 @@ function parseClause(n,tokens){
  const unknown=body.filter(t=>!t.understood).map(t=>t.raw);
  if(vocative&&!vocative.understood)unknown.push(vocative.raw);
  if(prefix&&!prefix.understood)unknown.push(prefix.raw);
- const addressee=(vocative?.understood?vocative.name:null)||(prefix?.understood?prefix.name:null);
+ // A trailing name after an explicitly recognized food can address a Norn:
+ // 'eat grapes Pip'. Without the food, 'eat Pip' remains a predation thought.
+ // A preceding actor ('Bram eat grapes Pip') is not silently overridden.
+ const trailingFood= !prefix && body[0]?.kind!=='name' && body[0]?.word!=='hand' &&
+  body[body.length-1]?.kind==='name' && body.some(t=>foodNouns.has(t.word));
+ const trailingAddress=trailingFood?body[body.length-1]:null;
+ const addressee=(vocative?.understood?vocative.name:null)||(prefix?.understood?prefix.name:null)||
+  (trailingAddress?.understood?trailingAddress.name:null);
  // Courtesy is allowed as optional syntax, not silently taught as vocabulary.
  // The original tokens are still passed to the normal learning system.
  const conflictingVocatives=!!(prefix&&vocative&&prefix.name!==vocative.name);
@@ -12650,7 +12925,7 @@ function parseClause(n,tokens){
  if(unknown.length)ambiguities.push('unknown words: '+unknown.join(' '));
  if(unrecognizedNegation)ambiguities.push('negation not understood');
  const subject=firstName?first.name:first?.word==='hand'?'hand':null;
- const nameAfterVerb=actionVerb?nameTokens.find(t=>index(t)>index(actionVerb)):null;
+ const nameAfterVerb=actionVerb?nameTokens.find(t=>index(t)>index(actionVerb) && t!==trailingAddress):null;
  const foodAfterVerb=actionVerb?known.find(t=>index(t)>index(actionVerb) && t.kind==='word' && foodNouns.has(t.word)):null;
  let kind='unresolved',predicate=null,object=null,actor=subject,polarity=negation?-1:1;
  // Subject-predicate must never be mistaken for a verb-object phrase.
@@ -12775,6 +13050,12 @@ function applyUtterance(n,parsed,world){
     if(wm){wm.questions||=[];wm.questions.push({...question});if(wm.questions.length>50)wm.questions.shift();}
     actions.push('may investigate '+c.subject+' (uncertain testimony)');
    }else actions.push('tentatively considers '+reportClause(c));
+  }else if(c.kind==='subject-action'&&c.predicate==='eat'&&c.subject && c.polarity===-1){
+   // A negated statement about someone's eating is never an eat instruction.
+   actions.push('heard a negated eating statement; did not request food');
+  }else if(c.kind==='subject-action'&&c.predicate==='eat'&&c.subject===n.name&&foodNouns.has(c.object)){
+   const accepted=!!world.groundCommand?.(n,'eat',Math.max(.35,c.confidence),{food:c.object});
+   actions.push(accepted?'understands own name and tries to eat '+c.object:'knows what was requested, but does not see reachable '+c.object);
   }else if(c.kind==='subject-action'&&c.predicate==='eat'&&c.subject){
    const self=String(n.name)===c.subject;
    n.languageFocus={at:now,until:now+25,kind:'food-and-hunger',subject:c.subject,source:'hand',priority:cap(c.confidence*(self? .8:.4))};
@@ -12811,9 +13092,6 @@ function applyUtterance(n,parsed,world){
    actions.push(accepted?'tries to '+c.predicate+(requestedFood?' '+requestedFood:''):
      requestedFood?'understood '+requestedFood+' but cannot currently reach/see it or is full':'heard '+c.predicate+' but did not act');
    if(accepted){const r=getRecord(n);change(r,c.predicate,2);if(c.predicate==='get')r.pendingCarry={at:now,word:'get'};}
-  }else if(c.kind==='subject-action'&&c.predicate==='eat'&&c.subject===n.name&&foodNouns.has(c.object)){
-   const accepted=!!world.groundCommand?.(n,'eat',Math.max(.35,c.confidence),{food:c.object});
-   actions.push(accepted?'understands own name and tries to eat '+c.object:'knows what was requested, but does not see reachable '+c.object);
   }else if(c.kind==='subject-action')actions.push('imagines '+reportClause(c)+'; not treated as a command');
   else actions.push('uncertain: '+reportClause(c));
  }
@@ -12869,8 +13147,10 @@ panel.innerHTML=`<details id="learned-words-menu" open><summary>Learned words �
 const handPanel=document.createElement('section');handPanel.className='panel xp-win';handPanel.id='hand-speech-lab';
 handPanel.innerHTML=`<details id="hand-speak-menu" open><summary>Hand Speak — conversation & interpretation</summary>
 <label for="lang-hand-input">Say an entire phrase</label><input id="lang-hand-input" maxlength="240" placeholder="Eat cheese, Pip. Bram no slap Pip. No slap Pip, Bram." style="width:100%;padding:10px">
-<div class="pair"><button id="lang-hand-say" class="solo">Speak to all Norns</button><button id="lang-mic" class="solo">🎙 Start microphone</button></div>
-<p class="hint" id="lang-mic-status">Microphone requires browser permission; speech recognition may use an online service.</p>
+<div class="pair"><button id="lang-hand-say" class="solo">Speak to all Norns</button><button id="lang-mic" class="solo" aria-pressed="false">🎙 Start microphone</button></div>
+<p class="hint" id="lang-mic-status" role="status" aria-live="polite">Microphone off. Speech recognition may use a browser-provided online service; permission and a supported secure context are required.</p>
+<label style="display:flex;align-items:center;gap:8px;margin:5px 0"><input type="checkbox" id="lang-tone"> React to voice tone (stylized game behavior; Off by default)</label>
+<p class="hint" id="lang-tone-status" role="status" aria-live="polite">Voice tone off. Optional local audio analysis; quiet high-pitched speech may reassure, low-pitched speech or loud bursts may startle. Pitch is not a measure of kindness or aggression.</p>
 <p class="hint">Hand Speak understands human word forms such as “slap”, “slaps”, “slapped”, and “slapping” as the same base word. Norns still need to learn that base word. Try “eat cheese” with cheese in sight, “no slap Pip” to address everyone, or “no slap Pip, Bram” to address Bram alone. Bram and Mira begin with a few household words; Pip must learn. Unknown words and negations are not guessed. Use Learned Words to teach vocabulary, and repeat rules to reinforce them. Norns may refuse when upset.</p>
 <p class="status" id="lang-state">Hatch Norns to begin.</p>
 <div class="language-log" id="lang-log" aria-live="polite"></div>
@@ -12973,17 +13253,179 @@ function handSpeak(phrase){
  render();
  return {heard:understoodCount,message:results.join(' · ')};
 }
+// A user-requested listening session is independent of the Language Applet's
+// visibility. Browser engines can suspend microphones in background tabs.
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-let recognizer=null, listening=false;
-$('lang-mic').onclick=()=>{
- if(!SR){$('lang-mic-status').textContent='Speech recognition unavailable in this browser.';return;}
- if(listening){recognizer.stop();return;}
- recognizer=new SR();recognizer.lang=navigator.language||'en-US';recognizer.continuous=true;recognizer.interimResults=false;
- recognizer.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal){const phrase=e.results[i][0].transcript;$('lang-hand-input').value=phrase;handSpeak(phrase);}};
- recognizer.onerror=e=>$('lang-mic-status').textContent='Microphone: '+e.error;
- recognizer.onend=()=>{listening=false;$('lang-mic').textContent='🎙 Start microphone';};
- try{recognizer.start();listening=true;$('lang-mic').textContent='■ Stop listening';$('lang-mic-status').textContent='Listening: every Norn hears recognized phrases.';}catch(e){$('lang-mic-status').textContent=e.message;}
-};
+let speechSession=null, speechEpoch=0;
+function microphoneStatus(session, message){
+ if(session && speechSession!==session)return;
+ const active=!!speechSession?.wanted;
+ $('lang-mic').textContent=active?'■ Stop listening':'🎙 Start microphone';
+ $('lang-mic').setAttribute('aria-pressed',String(active));
+ $('lang-mic-status').textContent=message;
+}
+function stopHandspeak(reason='Microphone stopped.'){
+ const s=speechSession;
+ speechEpoch++;
+ speechSession=null;
+ if(s){s.wanted=false;clearTimeout(s.timer);s.timer=null;try{s.rec.abort?.();}catch(_){try{s.rec.stop();}catch(_){}}}
+ microphoneStatus(null,reason);
+}
+function handspeakRetry(s){
+ if(speechSession!==s||!s.wanted)return;
+ if(s.failures>=5){stopHandspeak('Microphone stopped after repeated interruptions. Press Start to try again. Last error: '+(s.lastError||'speech service ended'));return;}
+ const delay=Math.min(5000,350*Math.pow(2,s.failures));
+ microphoneStatus(s,'Listening requested; speech service reconnecting'+(s.lastError?' ('+s.lastError+')':'')+'.');
+ clearTimeout(s.timer);
+ s.timer=setTimeout(()=>{s.timer=null;startHandspeakEngine(s);},delay);
+}
+function startHandspeakEngine(s){
+ if(speechSession!==s||!s.wanted)return;
+ if(s.starting)return;
+ s.starting=true;
+ s.errorThisRun=false;
+ s.completed=new Set();
+ try{s.rec.start();microphoneStatus(s,'Listening for final phrases. This continues while other game applets are open; the browser may pause background tabs.');}
+ catch(e){s.starting=false;s.lastError=e?.message||'start failed';s.failures++;handspeakRetry(s);}
+}
+function beginHandspeak(){
+ if(speechSession?.wanted){stopHandspeak();return;}
+ if(!SR){microphoneStatus(null,'Speech recognition unavailable in this browser. Typed Handspeak still works.');return;}
+ let rec;
+ try{rec=new SR();}catch(e){microphoneStatus(null,'Speech recognition could not start: '+e.message);return;}
+ const s={rec,wanted:true,epoch:++speechEpoch,starting:false,failures:0,lastError:'',timer:null,completed:new Set()};
+ speechSession=s;
+ rec.lang=navigator.language||'en-US';rec.continuous=true;rec.interimResults=true;
+ rec.onstart=()=>{if(speechSession!==s)return;s.starting=false;microphoneStatus(s,'Listening. Final recognized phrases are spoken to awake Norns; interim phrases are ignored.');};
+ rec.onresult=e=>{
+  if(speechSession!==s||!s.wanted)return;
+  for(let i=e.resultIndex||0;i<e.results.length;i++){
+   const result=e.results[i];
+   if(!result?.isFinal||s.completed.has(i))continue;
+   s.completed.add(i);
+   const phrase=String(result[0]?.transcript||'').trim();
+   if(!phrase)continue;
+   s.failures=0;s.lastError='';
+   $('lang-hand-input').value=phrase;
+   window.nornHandSpeak(phrase); // identical public entry point as typed Handspeak
+  }
+ };
+ rec.onerror=e=>{
+  if(speechSession!==s||!s.wanted)return;
+  const code=String(e?.error||'unknown error');s.errorThisRun=true;s.lastError=code;
+  if(['not-allowed','service-not-allowed','audio-capture','language-not-supported'].includes(code)){
+   stopHandspeak('Microphone stopped: '+code+'. Check browser permissions or use typed Handspeak.');return;
+  }
+  if(code!=='aborted')s.failures++;
+  microphoneStatus(s,'Speech service: '+code+'. '+(s.failures>=5?'Retry limit reached.':'Waiting for service recovery.'));
+ };
+ rec.onend=()=>{
+  if(speechSession!==s||!s.wanted)return;
+  s.starting=false;
+  if(!s.errorThisRun){s.failures++;s.lastError='service ended';} // non-error engine loss
+  handspeakRetry(s);
+ };
+ startHandspeakEngine(s);
+}
+$('lang-mic').onclick=beginHandspeak;
+
+// Optional independent microphone analysis. No samples or raw audio are stored.
+// RMS = amplitude (shouting); autocorrelation estimates voiced pitch only when
+// sufficiently periodic. Neither measure purports to diagnose aggression.
+function voiceFeatures(samples,rate){
+ if(!samples||samples.length<256||!Number.isFinite(rate)||rate<8000)return {rms:0,pitch:null,confidence:0};
+ let e=0,mean=0;for(const v of samples)mean+=v;mean/=samples.length;
+ for(const v of samples)e+=(v-mean)*(v-mean);
+ const rms=Math.sqrt(e/samples.length);
+ if(rms<.012)return {rms,pitch:null,confidence:0};
+ const minLag=Math.max(1,Math.floor(rate/500)),maxLag=Math.min(Math.floor(rate/95),Math.floor(samples.length/2));
+ let best=-1,bestLag=0;
+ for(let lag=minLag;lag<=maxLag;lag++){
+  let cross=0,a=0,b=0;
+  for(let i=0;i<samples.length-lag;i++){const x=samples[i]-mean,y=samples[i+lag]-mean;cross+=x*y;a+=x*x;b+=y*y;}
+  const corr=cross/Math.sqrt(Math.max(1e-15,a*b));
+  if(corr>best){best=corr;bestLag=lag;}
+ }
+ // A weak/ambiguous periodic signal supplies no pitch cue. Reject shouting
+ // artifacts: loudness is still considered separately from any pitch estimate.
+ return {rms,pitch:best>.83&&bestLag?rate/bestLag:null,confidence:Math.max(0,best)};
+}
+let voiceTone=null, toneEpoch=0;
+function voiceToneStatus(message){$('lang-tone-status').textContent=message;}
+function stopVoiceTone(message='Voice tone off.'){
+ toneEpoch++;const s=voiceTone;voiceTone=null;
+ if(s){clearInterval(s.timer);for(const track of s.stream?.getTracks?.()||[])track.stop();try{s.source?.disconnect();s.analyser?.disconnect();}catch(_){}try{s.ctx?.close();}catch(_){}}
+ $('lang-tone').checked=false;voiceToneStatus(message);
+}
+function toneHears(w,n){
+ if(!n?.body||n.dead||n.asleep||n.boothInside)return false;
+ const head=n.body.p?.[window.NornCore?.HEAD_I]||n.body.p?.[1],hand=w.hand;
+ if(!head||!hand||!Number.isFinite(head.x)||!Number.isFinite(head.y)||!Number.isFinite(hand.x))return false;
+ const handY=Number.isFinite(hand.y)?hand.y:w.surfaceAt?.(hand.x);
+ if(!Number.isFinite(handY))return false;
+ if(Math.hypot(head.x-hand.x,head.y-handY)>240)return false;
+ return !!(w.clearBetween ? w.clearBetween(hand.x,handY,head.x,head.y) : window.NornCore?.geoClear?.(hand.x,handY,head.x,head.y));
+}
+function applyVoiceTone(w,features,simElapsed=.25){
+ if(!$('lang-tone')?.checked||!w||features.rms<.012)return 0;
+ const loud=features.rms>.16;
+ const pitch=features.pitch;
+ const low=!loud&&pitch!==null&&pitch<150;
+ const high=!loud&&pitch!==null&&pitch>240&&pitch<510;
+ if(!loud&&!low&&!high)return 0;
+ const duration=Math.min(.35,Math.max(0,simElapsed));let affected=0;
+ for(const n of w.norns||[]){
+  if(!toneHears(w,n))continue;
+  const chem=n.chem||{};
+  if(!Number.isFinite(chem.stress))continue;
+  const amount=loud?Math.min(.005,.001+.009*(features.rms-.16)):low?.0012:-.0013;
+  chem.stress=cap(chem.stress+amount*duration/.25);
+  if(high&&Number.isFinite(chem.endorphins))chem.endorphins=cap(chem.endorphins+.0005*duration/.25);
+  affected++;
+ }
+ return affected;
+}
+async function startVoiceTone(){
+ const epoch=++toneEpoch;
+ if(!navigator.mediaDevices?.getUserMedia || !(window.AudioContext||window.webkitAudioContext)){
+  stopVoiceTone('Local voice-tone processing unavailable. This option remains off.');return;
+ }
+ voiceToneStatus('Requesting optional microphone permission for local tone analysis…');
+ let stream,ctx;
+ try{
+  stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false},video:false});
+  if(epoch!==toneEpoch||!$('lang-tone').checked){stream.getTracks().forEach(t=>t.stop());return;}
+  ctx=new (window.AudioContext||window.webkitAudioContext)();
+  const source=ctx.createMediaStreamSource(stream),analyser=ctx.createAnalyser();analyser.fftSize=2048;
+  source.connect(analyser);const buffer=new Float32Array(analyser.fftSize);
+  const s={stream,ctx,source,analyser,timer:null,lastWorldTime:null};voiceTone=s;
+  s.timer=setInterval(()=>{
+   if(voiceTone!==s)return;
+   const w=window.nornLab?.world;
+   if(!w)return;
+   const t=w.time||0;
+   if(s.lastWorldTime===null){s.lastWorldTime=t;return;}
+   const dt=Math.max(0,t-s.lastWorldTime);s.lastWorldTime=t;
+   if(!dt)return; // pause and suspended simulation have no physiological effect
+   analyser.getFloatTimeDomainData(buffer);
+   const raw=voiceFeatures(buffer,ctx.sampleRate);
+   // Smooth loudness and voiced pitch independently; silence stops effects
+   // immediately, rather than mistaking a decaying RMS for a new shout.
+   if(raw.rms<.012){s.smoothRms=0;s.smoothPitch=null;return;}
+   s.smoothRms=s.smoothRms==null?raw.rms:.72*s.smoothRms+.28*raw.rms;
+   s.smoothPitch=raw.pitch===null?null:(s.smoothPitch==null?raw.pitch:.65*s.smoothPitch+.35*raw.pitch);
+   applyVoiceTone(w,{rms:s.smoothRms,pitch:s.smoothPitch,confidence:raw.confidence},dt);
+  },250);
+  voiceToneStatus('Tone on: local signal processing only; loud bursts may startle, clear high/low pitch is a stylized cue. No audio saved.');
+ }catch(e){
+  if(stream)stream.getTracks().forEach(t=>t.stop());if(ctx)try{await ctx.close();}catch(_){}
+  if(epoch===toneEpoch)stopVoiceTone('Tone unavailable: '+(e?.message||'permission or device error')+'. Typed speech remains available.');
+ }
+}
+$('lang-tone').onchange=()=>{if($('lang-tone').checked)startVoiceTone();else stopVoiceTone();};
+window.addEventListener('pagehide',()=>{stopHandspeak('Microphone stopped (game page left).');stopVoiceTone();});
+window.addEventListener('beforeunload',()=>{stopHandspeak();stopVoiceTone();});
+window.nornVoiceDebug={features:voiceFeatures,apply:applyVoiceTone,heard:toneHears,state:()=>({speech:!!speechSession?.wanted,tone:!!voiceTone})};
 window.nornHandSpeak=handSpeak; window.nornLanguageDebug.normalizeHand=normalizeHandSpeech; $('lang-hand-say').onclick=()=>handSpeak($('lang-hand-input').value);$('lang-hand-input').addEventListener('keydown',e=>{if(e.key==='Enter')handSpeak(e.target.value)});
 function render(){const n=getNorn();$('lang-selected').textContent=chosen;for(const b of $('lang-words').children){const r=n?getRecord(n):null;b.textContent=b.dataset.word||b.textContent.split(' · ')[0];b.dataset.word=b.textContent;b.textContent+=' · '+Math.round(r?score(r,b.dataset.word):0)+'%';b.setAttribute('aria-pressed',String(b.dataset.word===chosen));}if(!n){$('lang-age').textContent='—';$('lang-known').textContent='0';return;}if(n.languageInterpretation)$('lang-interpretation').textContent=n.languageInterpretation.summary;const r=getRecord(n),time=window.nornLab.world.time;if(r.pendingCarry){if(n.pawFood){change(r,'get',12);change(r,'food',5);log(n.name+' learned GET by successfully lifting food.');r.pendingCarry=null;}else if(time-r.pendingCarry.at>20){r.pendingCarry=null;}}const delta=Math.max(0,time-r.last);if(delta>0){for(const w of words)if(r.words[w]&&!r.fluentPreset)r.words[w]*=Math.exp(-delta/8656.17);r.last=time;}$('lang-age').textContent=((time-r.birth)/1200).toFixed(2);$('lang-known').textContent=words.filter(w=>score(r,w)>=65).length;const m=memories(n),p=m.words.get(chosen);$('lang-state').title=p?'Learned physiological prediction for '+chosen+': '+p.prediction.map(v=>v.toFixed(2)).join(', ')+' ('+p.samples+' experiences)':'No physiological prediction for '+chosen+' yet';if(lastId!==n){lastId=n;$('lang-state').textContent='Teaching '+n.name+'. Select a word.';}}
 // Social speech uses physical proximity, not global lessons. Vocabulary and social
@@ -13023,8 +13465,17 @@ function socialStep(){
   if(!Number.isFinite(d.lessonAt))d.lessonAt=t+Math.random()*5;
   if(t<d.lessonAt)continue;
   d.lessonAt=t+4+Math.random()*6;
-  const listeners=ns.filter(n=>n.body && Number.isFinite(window.NornCore.cxOf(n.body)) &&
-    Math.abs(window.NornCore.cxOf(n.body)-d.x)<180 && (d.lane==null||n.lane==null||d.lane===n.lane));
+  // Doozer speech travels from the Doozer's CURRENT physical position to
+  // an awake listener's actual ear. A wall/rock slab or sealed booth prevents
+  // teaching: horizontal screen proximity alone is not audible exposure.
+  const listeners=ns.filter(n=>{
+    if(!n.body||n.dead||n.asleep||n.boothInside)return false;
+    const ear=n.body.p?.[window.NornCore.HEAD_I]||n.body.p?.[1];
+    if(!ear||!Number.isFinite(ear.x)||!Number.isFinite(ear.y))return false;
+    const sx=d.x,sy=d.y+10;
+    return Math.hypot(ear.x-sx,ear.y-sy)<180 &&
+      (world.clearBetween ? world.clearBetween(sx,sy,ear.x,ear.y) : window.NornCore.geoClear(sx,sy,ear.x,ear.y));
+  });
   if(!listeners.length)continue;
   const word=doozerWords[Math.floor(Math.random()*doozerWords.length)];
   for(const n of listeners)hear(n,word,4.5,d);
@@ -15043,6 +15494,179 @@ html.c2desktop #c2-top-tabs>button[aria-selected=true]{background:#ffffe1!import
  D.definitions.set('Hatchery',{element:panel});delete D.placeholderNames.Hatchery;
  refresh();setInterval(()=>{if(!D.windows.get('Hatchery')?.hidden)refresh();},250);
 })();
+</script>
+
+<style id="birth-lineage-applet-style">
+#nw-birth-lineage{font:12px Tahoma,'MS Sans Serif',Arial,sans-serif;min-width:0;color:#000}
+#nw-birth-lineage label{display:block;margin:5px 0 2px;font-weight:bold}
+#nw-birth-lineage select{width:100%;box-sizing:border-box;min-height:28px}
+#nw-birth-lineage fieldset{border:2px groove #fff;padding:7px;margin:9px 0;min-width:0}
+#nw-birth-lineage legend{font-weight:bold}
+#nw-birth-lineage .nw-lineage-data{display:grid;grid-template-columns:minmax(110px,41%) minmax(0,1fr);column-gap:7px;row-gap:4px;word-break:break-word}
+#nw-birth-lineage .nw-lineage-data dt{font-weight:bold}
+#nw-birth-lineage .nw-lineage-data dd{margin:0;overflow-wrap:anywhere}
+#nw-birth-lineage progress{width:100%;height:16px;display:block}
+#nw-birth-lineage [data-status]{font-size:11px;min-height:1.5em}
+#nw-birth-lineage button{min-height:28px;margin:3px 3px 3px 0}
+#nw-birth-lineage .nw-note{font-size:11px;line-height:1.4}
+#nw-birth-lineage .nw-history{white-space:pre-wrap;overflow-wrap:anywhere}
+</style>
+<script id="norn-birth-lineage-applet">
+(function(root){'use strict';
+  // No separate birth simulation: reports query the live world. Old egg files
+  // legitimately have no creation provenance. No family memories are copied.
+  const unknown='unknown';
+  const number=v=>Number.isFinite(v)?String(v):unknown;
+  const clock=v=>Number.isFinite(v)?(Math.max(0,v).toFixed(1)+' s'):unknown;
+  const names=a=>Array.isArray(a)&&a.length?a.map(String).join(', '):unknown;
+  const genes=['metabolism','resilience','learning','memoryRetention','social','attachment',
+    'aggression','touchSensitivity','motorControl','emotionClarity'];
+  const dnaRows=(g,labels)=>{
+    if(!g||!g.dna||typeof g.dna!=='object')return [];
+    const keys=Object.keys(g.dna).filter(k=>Array.isArray(g.dna[k])&&g.dna[k].length===2);
+    return keys.map(k=>{
+      const pair=g.dna[k],a=pair[0],b=pair[1];
+      return {key:k,label:labels?.[k]||k,alleles:pair.map(number).join(' / '),
+        mean:Number.isFinite(a)&&Number.isFinite(b)?((a+b)/2).toFixed(3):unknown};
+    });
+  };
+  function individuals(w){
+    if(!w)return [];
+    return [
+      ...(w.eggs||[]).map(e=>({key:'e:'+e.id,label:'Egg '+e.id+' · seed '+number(e.seed)})),
+      ...(w.norns||[]).map(n=>({key:'n:'+n.name,label:n.name+' · alive'})),
+      ...(w.departed||[]).map(d=>({key:'d:'+d.name,label:d.name+' · deceased'}))
+    ];
+  }
+  function report(w,key){
+    if(!w)return null;
+    const [kind,...idParts]=String(key||'').split(':'),id=idParts.join(':');
+    let egg=null,n=null,dead=null,record=null,g=null,subject='';
+    if(kind==='e'){egg=(w.eggs||[]).find(e=>String(e.id)===id);if(!egg)return null;g=egg.genome;subject='Egg '+egg.id;}
+    else if(kind==='n'){n=(w.norns||[]).find(c=>c.name===id);if(!n)return null;g=n.genome;record=n.birthRecord||null;subject=n.name;}
+    else if(kind==='d'){dead=(w.departed||[]).find(c=>c.name===id);if(!dead)return null;
+      const corpse=(w.corpses||[]).find(c=>c.name===id);
+      n=corpse?.original||null;g=n?.genome||null;record=n?.birthRecord||null;subject=dead.name;
+    }else return null;
+    const full=(w.norns?.length||0)>=(w.populationLimit||Infinity);
+    const parents=egg?.parentNames||record?.parentNames;
+    const ancestorSeeds=egg?.genome?.parents||record?.parents||g?.parents;
+    const source=egg?.lineageSource||record?.source||null;
+    const cloneFrom=egg?.cloneSource||record?.cloneSource||null;
+    const match=egg?.cloneGenomeMatch??record?.cloneGenomeMatch;
+    let origin=unknown;
+    if(source==='clone')origin='Clone command of '+(cloneFrom||unknown)+
+      '; full recorded genome match '+(match===true?'yes':match===false?'no':unknown);
+    else if(source==='bred')origin='Two-parent breeding (recorded)';
+    else if(source==='egg-maker')origin='Egg Maker (no recorded parents)';
+    else if(g?.generation===0 && Array.isArray(g?.parents)&&g.parents.length===0)
+      origin='Founder-generation genome; creation method '+unknown;
+    const stage=egg?(egg.warmth>=1?(full?'Ready; population limit reached':'Ready; pending simulation tick'):
+      (egg.inc?'Warming in incubator':'Warming in world')):
+      dead?'Deceased':n?(record?'Hatched':'Present at world initialization; hatch not recorded'):unknown;
+    const rows=[
+      ['Subject',subject],['State',stage],['Seed',number(egg?.seed??g?.seed)],
+      ['Sex',g?.sex||unknown],['Origin evidence',origin],
+      ['Parent identities (recorded)',names(parents)],
+      ['Genetic parent seeds',Array.isArray(ancestorSeeds)&&ancestorSeeds.length?ancestorSeeds.map(number).join(', '):unknown],
+      ['Generation',number(g?.generation)],['Mutation count',number(g?.mutations)],
+      ['Genome engineered',g?.editorDesigned===true?'yes':g?.editorDesigned===false?'no':unknown],
+      ['Inbreeding coefficient',number(g?.inbreeding)],
+      ['Temperament preset',g?.preset||g?.pers||unknown],
+      ['Laid at world time',clock(egg?.laidAt??record?.laidAt)],
+      ['Hatched at world time',clock(record?.hatchedAt)],
+      ['Hatched from',record?record.incubated?'incubator':'world':unknown],
+      ['Born / spawned at',clock(n?.born)],
+      ['Time since birth / spawn',n?clock((dead?.time??w.time)-n.born):unknown],
+      ['Biological age',n?clock(n.lived):unknown],
+      ['Death time',clock(dead?.time)],['Death cause',dead?.cause||unknown]
+    ];
+    if(egg)rows.push(['Egg ID',number(egg.id)],['Egg warmth',Number.isFinite(egg.warmth)?Math.round(egg.warmth*100)+'%':unknown],
+      ['Incubator occupancy',egg.inc?'inside':w.incubator?.egg?'occupied by another egg':'free'],
+      ['Population',w.norns.length+'/'+w.populationLimit],
+      ['Hatch allowed at capacity',full?'no':'yes (once warm)']);
+    const allDNA=dnaRows(g,w.geneLabels),summary=genes.map(k=>allDNA.find(a=>a.key===k)).filter(Boolean);
+    return {key,subject,kind,rows,allDNA,summary,eggId:egg?.id??record?.eggId??null,
+      warmth:egg?egg.warmth:null,origin,stage,hasEgg:!!egg,death:dead||null,
+      events:egg?[['Egg laid',egg.laidAt]]:
+        record?[['Egg laid',record.laidAt],['Hatched',record.hatchedAt],...(dead?[['Died',dead.time]]:[])]:
+        [['World initialized / spawned',n?.born],...(dead?[['Died',dead.time]]:[])]};
+  }
+  const api=Object.freeze({individuals,report,dnaRows});root.nornBirthLineage=api;
+  const D=root.nornC2Desktop;
+  if(!D||!root.NornCore||!root.nornLab||!root.document)return;
+  const panel=document.createElement('div');panel.id='nw-birth-lineage';
+  panel.innerHTML=`<h3>Birth &amp; Lineage</h3>
+    <p class="nw-note">Creatures 2–inspired laboratory applet. Every field comes from this world's eggs, genomes, Norns and death records. Genetic parentage is <strong>not</strong> a remembered relationship.</p>
+    <label for="nw-lineage-subject">Egg or creature</label><select id="nw-lineage-subject" aria-label="Inspect an egg or creature"></select>
+    <fieldset><legend>Birth record</legend><dl class="nw-lineage-data" data-facts></dl>
+      <label for="nw-lineage-warmth">Egg development</label><progress id="nw-lineage-warmth" max="1" value="0"></progress>
+      <p class="nw-note">Hatching occurs only on the normal world tick, after incubation and when population capacity permits.</p></fieldset>
+    <fieldset><legend>DNA allele pairs</legend><dl class="nw-lineage-data" data-summary></dl>
+      <details><summary>All recorded DNA genes</summary><dl class="nw-lineage-data" data-genes></dl></details></fieldset>
+    <fieldset><legend>Recorded life events</legend><div class="nw-history" data-events></div></fieldset>
+    <button type="button" data-save-egg>Save selected egg…</button><button type="button" data-save-report>Save lineage report…</button>
+    <p class="nw-note">Old egg files do not record clone origin or hatch history. Missing evidence is shown as unknown.</p>
+    <p data-status role="status" aria-live="polite"></p>`;
+  const selector=panel.querySelector('#nw-lineage-subject');
+  const factDL=panel.querySelector('[data-facts]');
+  const sumDL=panel.querySelector('[data-summary]');
+  const geneDL=panel.querySelector('[data-genes]');
+  const status=panel.querySelector('[data-status]');
+  const warmth=panel.querySelector('#nw-lineage-warmth');
+  const saveEgg=panel.querySelector('[data-save-egg]');
+  const saveReport=panel.querySelector('[data-save-report]');
+  let bound=null,signature='',selected='',activeReport=null;
+  const populate=(dl,items)=>{dl.replaceChildren();if(!items.length){dl.textContent='unknown';return;}
+    for(const [label,value] of items){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;dl.append(dt,dd);}};
+  function refresh(){const w=root.nornLab?.world;if(!w)return;
+    if(w!==bound){bound=w;signature='';selected='';}
+    const subjects=individuals(w),sig=subjects.map(a=>a.key).join('|');
+    if(sig!==signature){
+      const previous=selector.value||selected,previousEgg=previous.startsWith('e:')?Number(previous.slice(2)):null;
+      selector.replaceChildren();for(const a of subjects){const opt=document.createElement('option');opt.value=a.key;opt.textContent=a.label;selector.append(opt);}
+      let next=subjects.some(s=>s.key===previous)?previous:null;
+      if(!next&&previousEgg!==null){const h=w.norns.find(n=>n.birthRecord?.eggId===previousEgg);
+        if(h)next='n:'+h.name;}
+      if(!next&&previous.startsWith('n:')&&subjects.some(s=>s.key==='d:'+previous.slice(2)))next='d:'+previous.slice(2);
+      selected=next||subjects[0]?.key||'';selector.value=selected;signature=sig;
+    }
+    const x=report(w,selector.value);activeReport=x;
+    if(!x){populate(factDL,[]);populate(sumDL,[]);populate(geneDL,[]);panel.querySelector('[data-events]').textContent='No egg or creature selected.';warmth.value=0;saveEgg.disabled=saveReport.disabled=true;return;}
+    populate(factDL,x.rows);populate(sumDL,x.summary.map(g=>[g.label,g.alleles+' (mean '+g.mean+')']));
+    populate(geneDL,x.allDNA.map(g=>[g.label,g.alleles+' (mean '+g.mean+')']));
+    warmth.value=Number.isFinite(x.warmth)?x.warmth:0;warmth.hidden=!x.hasEgg;
+    panel.querySelector('label[for=nw-lineage-warmth]').hidden=!x.hasEgg;
+    panel.querySelector('[data-events]').textContent=x.events.map(([type,at])=>type+' — '+clock(at)).join('\n');
+    saveEgg.disabled=!x.hasEgg;saveReport.disabled=false;
+  }
+  selector.addEventListener('change',()=>{selected=selector.value;refresh();});
+  saveEgg.addEventListener('click',async()=>{try{const w=root.nornLab.world,egg=w.eggs.find(e=>'e:'+e.id===selector.value);
+    if(!egg)throw Error('That egg has already hatched or disappeared.');
+    const result=await NornFiles.saveJSON(NornFiles.eggRecord(egg,w),'egg-'+egg.seed+'.nwegg','Eggs');
+    status.textContent=result?'Egg copy saved; original remains in the world.':'Save cancelled.';
+  }catch(err){status.textContent=err.message;}});
+  saveReport.addEventListener('click',async()=>{try{refresh();if(!activeReport)throw Error('No birth record selected.');
+    const x=activeReport;const data={format:'NornLab-LineageReport',version:1,subject:x.subject,
+      observedAt:root.nornLab.world.time,fields:Object.fromEntries(x.rows),
+      genes:x.allDNA,events:x.events.map(([type,at])=>({type,at:Number.isFinite(at)?at:null}))};
+    const result=await NornFiles.saveJSON(data,'lineage-'+x.subject.replace(/[^a-z0-9_-]/gi,'_')+'.json','Research');
+    status.textContent=result?'Observed record saved.':'Save cancelled.';
+  }catch(err){status.textContent=err.message;}});
+  D.definitions.set('Birth & Lineage',{element:panel});
+  const reopen=document.createElement('button');reopen.type='button';
+  reopen.innerHTML='<span class="c2-ico" aria-hidden="true">🥚</span><span>Birth &amp; Lineage</span>';
+  reopen.setAttribute('aria-label','Open Birth and Lineage applet');reopen.title='Open Birth & Lineage';
+  reopen.addEventListener('click',()=>{D.open('Birth & Lineage');refresh();});
+  document.getElementById('c2-tools')?.append(reopen);
+  const eggMaker=document.getElementById('egg-genetics-slot');
+  if(eggMaker){const button=document.createElement('button');button.type='button';button.textContent='Open Birth & Lineage Applet';
+    button.className='solo';button.addEventListener('click',()=>{D.open('Birth & Lineage');refresh();});
+    eggMaker.parentNode.insertBefore(button,eggMaker);}
+  refresh();
+  // One timer per applet; never attach additional listeners on window reopening.
+  setInterval(()=>{const e=D.windows.get('Birth & Lineage');if(e&&!e.hidden)refresh();},400);
+})(typeof window!=='undefined'?window:globalThis);
 </script>
 
 <script id="step32-files-applet">

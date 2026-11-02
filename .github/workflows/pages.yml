@@ -1,10 +1,9 @@
-# Place this workflow at .github/workflows/pages.yml in the Bloodline repo.
-# Latch 98 becomes the default web page; Bloodline is separately addressable.
-name: Deploy Latch 98 and Bloodline
+# Builds the installable web app from game/bloodline.html and publishes it to GitHub Pages on every change to the game.
+name: Deploy web app
 on:
   push:
     branches: [main]
-    paths: ['game/**', 'latch98/**', 'tools/build_web.py', '.github/workflows/pages.yml']
+    paths: ['game/**', 'tools/build_web.py', '.github/workflows/pages.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,22 +19,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: '3.12' }
-      - name: Install build dependencies
-        run: pip install pillow
-      - name: Build Bloodline standalone web app
+      - run: pip install pillow
+      - name: Build the web app
         run: |
-          python tools/build_web.py game/bloodline.html site/bloodline
-          rm -f site/bloodline/HOSTING.md
-          mkdir -p site/game
-          cp game/*.html site/game/
-          test -f site/bloodline/index.html
-      - name: Publish Latch 98 root and modular applications
-        run: |
-          python latch98/tools/build_pages.py site
-          test -f site/index.html
-          test -f site/latch98/index.html
-          test -f site/game/bloodline.html
-          test -f site/apps/sprite-studio/index.html
+          python tools/build_web.py game/bloodline.html site
+          rm site/HOSTING.md
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with: { path: site }

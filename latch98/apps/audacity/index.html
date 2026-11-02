@@ -82,6 +82,24 @@ function rebuild(){ui.tracks.innerHTML='';ui.empty.style.display=tracks.length?'
  canvas.addEventListener('pointerup',e=>{if(!drag)return;if(drag.tool==='move'&&Math.abs(t.offset-drag.initialOffset)>.001){const moved=t.offset;t.offset=drag.initialOffset;remember();t.offset=moved;changed()}drag=null;selInfo()});canvas.addEventListener('pointercancel',()=>drag=null);
  }
  render();}
+// Peak envelopes are computed for EVERY source sample. The old overview skipped
+// samples when a pixel covered >1000 frames, hiding isolated clicks/transients.
+const peakCache=new WeakMap(),PEAK_BLOCK=256;
+function samplePeaks(arr,start,finish){
+ let lo=Infinity,hi=-Infinity,first=clamp(start,0,arr.length),last=clamp(finish,first,arr.length);
+ let cached=peakCache.get(arr);
+ if(!cached){const size=Math.ceil(arr.length/PEAK_BLOCK),min=new Float32Array(size),max=new Float32Array(size);
+  for(let block=0;block<size;block++){
+   let a=Infinity,b=-Infinity;for(let j=block*PEAK_BLOCK;j<Math.min(arr.length,(block+1)*PEAK_BLOCK);j++){
+    const v=arr[j];if(v<a)a=v;if(v>b)b=v;
+   }min[block]=a;max[block]=b;
+  }cached={min,max};peakCache.set(arr,cached);
+ }
+ while(first<last&&first%PEAK_BLOCK){const v=arr[first++];if(v<lo)lo=v;if(v>hi)hi=v;}
+ while(first+PEAK_BLOCK<=last){const block=first/PEAK_BLOCK;lo=Math.min(lo,cached.min[block]);hi=Math.max(hi,cached.max[block]);first+=PEAK_BLOCK;}
+ while(first<last){const v=arr[first++];if(v<lo)lo=v;if(v>hi)hi=v;}
+ return lo===Infinity?[0,0]:[lo,hi];
+}
 function drawWave(t,c){const g=c.getContext('2d'),w=c.width,h=c.height,scroll=ui.area.scrollLeft;g.clearRect(0,0,w,h);g.fillStyle='#fff';g.fillRect(0,0,w,h);
  const [a,b]=orderedSel();if(selectedId===t.id&&b>a){g.fillStyle='#b9c7ee';g.fillRect(Math.round(a*zoom-scroll),0,Math.round((b-a)*zoom),h);}
  const channelCount=t.data.length, topPad=5, chH=(h-topPad*2)/channelCount;for(let ci=0;ci<channelCount;ci++){const arr=t.data[ci],mid=topPad+chH*(ci+.5),amp=chH*.45;g.strokeStyle='#dadada';g.beginPath();g.moveTo(0,mid+.5);g.lineTo(w,mid+.5);g.stroke();if(ci){g.strokeStyle='#bbb';g.beginPath();g.moveTo(0,topPad+chH*ci);g.lineTo(w,topPad+chH*ci);g.stroke()}
@@ -104,9 +122,7 @@ function drawWave(t,c){const g=c.getContext('2d'),w=c.width,h=c.height,scroll=ui
    for(let x=x0;x<x1;x++){
      const s0=clamp(Math.floor(((x+scroll)/zoom-t.offset)*t.rate),0,arr.length);
      const s1=clamp(Math.ceil(((x+scroll+1)/zoom-t.offset)*t.rate),s0+1,arr.length);
-     let lo=1,hi=-1;
-     const step=Math.max(1,Math.floor((s1-s0)/1000));
-     for(let j=s0;j<s1;j+=step){const v=arr[j];if(v<lo)lo=v;if(v>hi)hi=v;}
+     const [lo,hi]=samplePeaks(arr,s0,s1);
      g.fillRect(x,Math.round(mid-hi*amp),1,Math.max(1,Math.round((hi-lo)*amp)));
    }
  }
@@ -188,9 +204,48 @@ function copy(){const t=selected(),[a,b]=orderedSel();if(!t||b<=a)return status(
 function deleteSelection(collapse=true){const t=selected(),[a,b]=orderedSel();if(!t||b<=a)return status('Select a range on a track first');const [l,r]=sampleBounds(t,a,b);if(l>=r)return status('Selection outside this track');remember();t.data=t.data.map(ch=>{if(!collapse){const o=new Float32Array(ch);o.fill(0,l,r);return o}const out=new Float32Array(ch.length-(r-l));out.set(ch.subarray(0,l));out.set(ch.subarray(r),l);return out});if(collapse){selA=selB=cursor=t.offset+l/t.rate}changed();status(collapse?'Deleted selection':'Silenced selection')}
 function cut(){const t=selected(),[a,b]=orderedSel();if(!t||b<=a)return status('Select a range on a track first');copy();deleteSelection()}
 function trim(){const t=selected(),[a,b]=orderedSel();if(!t||b<=a)return status('Select a range on a track first');const [l,r]=sampleBounds(t,a,b);if(r<=l)return status('Selection does not contain any source frames');remember();t.data=t.data.map(ch=>ch.slice(l,r));t.offset+=l/t.rate;selA=selB=cursor=t.offset;changed();status('Trimmed outside selection')}
-function paste(){if(!clipboard)return status('Clipboard is empty');let t=selected();if(!t){remember();t=addTrack('Pasted Audio',clipboard.data,clipboard.rate,cursor);status('Pasted into new track');return}if(clipboard.rate!==t.rate)return status('Clipboard sample rates differ: use same-rate tracks');remember();const at=clamp(Math.round((cursor-t.offset)*t.rate),0,t.data[0].length),len=clipboard.data[0].length;t.data=t.data.map((ch,i)=>{const add=clipboard.data[Math.min(i,clipboard.data.length-1)],out=new Float32Array(ch.length+len);out.set(ch.subarray(0,at));out.set(add,at);out.set(ch.subarray(at),at+len);return out});cursor=t.offset+(at+len)/t.rate;selA=selB=cursor;changed();status('Pasted '+timeFmt(len/t.rate))}
+// Paste is aligned to the timeline, not clamped to the nearest track edge.
+// Cross-rate clipboard PCM is linearly interpolated; stereo -> mono is averaged.
+function clipboardForTrack(clip,t){
+ const length=Math.max(1,Math.round(clip.data[0].length*t.rate/clip.rate));
+ const output=[];
+ for(let c=0;c<t.data.length;c++){
+  const sources=t.data.length===1&&clip.data.length===2?clip.data:[clip.data[Math.min(c,clip.data.length-1)]];
+  const out=new Float32Array(length);
+  for(let i=0;i<length;i++){
+   const at=Math.min(clip.data[0].length-1,i*clip.rate/t.rate),j=Math.floor(at),frac=at-j;
+   let v=0;for(const src of sources)v+=((src[j]||0)*(1-frac)+(src[Math.min(j+1,src.length-1)]||0)*frac)/sources.length;
+   out[i]=v;
+  }
+  output.push(out);
+ }
+ return output;
+}
+function paste(){
+ if(!clipboard)return status('Clipboard is empty');
+ let t=selected();if(!t){remember();t=addTrack('Pasted Audio',clipboard.data,clipboard.rate,cursor);status('Pasted into new track');return}
+ const pieces=clipboardForTrack(clipboard,t),len=pieces[0].length;
+ const timelineFrame=Math.round((cursor-t.offset)*t.rate),oldLength=t.data[0].length;
+ // An early paste moves the track start back; a later one fills the intervening gap with silence.
+ const prefix=Math.max(0,-timelineFrame),at=Math.max(0,timelineFrame);
+ const count=Math.max(at,oldLength+prefix)+len;
+ if(count>MAX_FRAMES)throw Error('Paste exceeds maximum track length');
+ remember();t.data=t.data.map((ch,i)=>{
+  const out=new Float32Array(count);const target=at+prefix;
+  out.set(ch.subarray(0,Math.min(ch.length,Math.max(0,at))),prefix);
+  // Before-track insertions need a leading silent section after the pasted audio.
+  if(prefix)out.set(ch,prefix+len);
+  else if(at<ch.length)out.set(ch.subarray(at),at+len);
+  out.set(pieces[i],prefix?0:at);
+  return out;
+ });
+ if(prefix)t.offset-=prefix/t.rate;
+ cursor=t.offset+(prefix?len:at+len)/t.rate;selA=selB=cursor;changed();
+ status('Pasted '+len+' frames at '+t.rate+' Hz'+(clipboard.rate!==t.rate?' (resampled from '+clipboard.rate+' Hz)':''));
+}
 function effect(name,param=0){const t=selected(),[a,b]=orderedSel();if(!t)return status('Select a track');let [l,r]=sampleBounds(t,a,b);if(b<=a){l=0;r=t.data[0].length}if(l>=r)return status('No audio samples in the selection');remember();let peak=0;if(name==='normalize'){for(const ch of t.data)for(let i=l;i<r;i++)peak=Math.max(peak,Math.abs(ch[i]));param=peak?0.95/peak:1;}for(const ch of t.data){if(name==='reverse'){let i=l,j=r-1;while(i<j){const v=ch[i];ch[i]=ch[j];ch[j]=v;i++;j--}continue}if(name==='echo'){const delay=Math.max(1,Math.round(.24*t.rate)),orig=ch.slice(l,r);for(let i=l;i<r;i++){const wet=i-l>=delay?orig[i-l-delay]*.38:0;ch[i]=clamp(ch[i]+wet,-1,1)}continue}for(let i=l;i<r;i++){const p=(i-l)/Math.max(1,r-l-1);if(name==='amplify'||name==='normalize')ch[i]=clamp(ch[i]*param,-1,1);else if(name==='fadein')ch[i]*=p;else if(name==='fadeout')ch[i]*=1-p;else if(name==='invert')ch[i]=-ch[i];else if(name==='lowpass'){/* Per-channel low pass processed below */}}
  if(name==='lowpass'){const hz=Math.max(60,param||1000),rc=1/(2*Math.PI*hz),dt=1/t.rate,alpha=dt/(rc+dt);let prev=ch[l];for(let i=l;i<r;i++){prev+=alpha*(ch[i]-prev);ch[i]=prev}}}
+ for(const ch of t.data)peakCache.delete(ch);
  changed();status('Applied '+name+' to '+(b>a?'selection':'whole track'))}
 // Tape speed changes frequency as well as duration. WSOLA changes duration while
 // attempting to preserve pitch; transient smears and phasing remain possible.
@@ -258,7 +313,60 @@ function speedDialog(mode){showDialog(mode==='tempo'?'Change Tempo (pitch-preser
  {name:'percent',label:'Playback speed (%)',type:'number',value:100,min:25,max:400,step:1}
  ],v=>changeDuration(mode,Number(v.percent)/100));}
 function generated(kind,p){const rate=+ui.rate.value||44100,seconds=clamp(Number(p.duration)||2,.01,120),freq=clamp(Number(p.frequency)||440,1,rate/2),ampl=clamp(Number(p.amplitude)||.55,0,1),count=Math.floor(seconds*rate),ch=new Float32Array(count);for(let i=0;i<count;i++){const ph=i/rate*freq*2*Math.PI;ch[i]=kind==='silence'?0:kind==='noise'?(Math.random()*2-1)*ampl:kind==='square'?(Math.sin(ph)>=0?1:-1)*ampl:kind==='sawtooth'?(((i/rate*freq)%1)*2-1)*ampl:Math.sin(ph)*ampl}remember();addTrack(kind[0].toUpperCase()+kind.slice(1)+' '+(kind==='silence'?'':Math.round(freq)+'Hz'),[ch],rate,0);status('Generated '+seconds+' seconds of '+kind)}
-async function importFiles(list){if(!list?.length)return;for(const f of [...list]){try{status('Decoding '+f.name+'...');const arr=await f.arrayBuffer();const ac=getCtx();const decoded=await ac.decodeAudioData(arr.slice(0));if(decoded.length>MAX_FRAMES)throw Error('Audio longer than the 18-minute per-track limit');remember();const audio=Array.from({length:Math.min(2,decoded.numberOfChannels)},(_,i)=>decoded.getChannelData(i).slice());addTrack(f.name.replace(/\.[^.]+$/,''),audio,decoded.sampleRate);status('Imported '+f.name+' · '+timeFmt(decoded.duration));}catch(e){alert('Could not import '+f.name+'\n'+e.message);status('Import failed: '+f.name)}}ui.file.value=''}
+// Read conventional PCM / floating point WAV directly to preserve its source rate,
+// source channels and exact frame count. Other containers use browser decoding;
+// MP4/MOV, M4A and compressed formats depend on installed browser codecs.
+function readPCMwav(bytes){
+ const d=new DataView(bytes),u=new Uint8Array(bytes);
+ const tag=p=>String.fromCharCode(...u.subarray(p,p+4));
+ if(bytes.byteLength<12||tag(0)!=='RIFF'||tag(8)!=='WAVE')return null;
+ if(d.getUint32(4,true)>bytes.byteLength-8)throw Error('Truncated WAV RIFF data');
+ let fmt=null,pcm=null,p=12;
+ const limit=8+d.getUint32(4,true);
+ while(p+8<=limit){
+  const size=d.getUint32(p+4,true),next=p+8+size+(size%2);
+  if(next>limit)throw Error('Truncated WAV chunk');
+  if(tag(p)==='fmt '){
+   if(size<16)throw Error('Invalid WAV fmt chunk');
+   fmt={type:d.getUint16(p+8,true),channels:d.getUint16(p+10,true),rate:d.getUint32(p+12,true),
+    bytesPerSecond:d.getUint32(p+16,true),stride:d.getUint16(p+20,true),bits:d.getUint16(p+22,true)};
+  }else if(tag(p)==='data'&&!pcm)pcm={start:p+8,size};
+  p=next;
+ }
+ if(!fmt||!pcm)throw Error('Missing WAV audio data or format');
+ const {type,channels,rate,stride,bits}=fmt;
+ if(![1,2].includes(channels)||rate<8000||rate>192000)throw Error('Unsupported WAV channels or sample rate');
+ if(!(type===1&&[8,16,24,32].includes(bits)||type===3&&bits===32))throw Error('WAV encoding not supported: requires PCM 8/16/24/32 or float 32');
+ const width=bits/8;
+ if(stride!==width*channels||pcm.size%stride)throw Error('Invalid WAV block alignment');
+ const frames=pcm.size/stride;
+ if(!frames||frames>MAX_FRAMES)throw Error('WAV is empty or exceeds track frame limit');
+ const out=Array.from({length:channels},()=>new Float32Array(frames));
+ for(let i=0;i<frames;i++)for(let c=0;c<channels;c++){
+  const pos=pcm.start+i*stride+c*width;let x;
+  if(type===3)x=d.getFloat32(pos,true);
+  else if(bits===8)x=(d.getUint8(pos)-128)/128;
+  else if(bits===16)x=d.getInt16(pos,true)/32768;
+  else if(bits===24){let value=d.getUint8(pos)|(d.getUint8(pos+1)<<8)|(d.getUint8(pos+2)<<16);if(value&0x800000)value-=0x1000000;x=value/8388608;}
+  else x=d.getInt32(pos,true)/2147483648;
+  if(!Number.isFinite(x))throw Error('WAV contains non-finite PCM samples');out[c][i]=clamp(x,-1,1);
+ }
+ return {data:out,rate};
+}
+async function importFiles(list){
+ if(!list?.length)return;
+ for(const f of [...list])try{
+  status('Decoding '+f.name+'...');const arr=await f.arrayBuffer();
+  let result=readPCMwav(arr);
+  if(!result){const decoded=await getCtx().decodeAudioData(arr.slice(0));
+   if(decoded.length>MAX_FRAMES)throw Error('Audio longer than the 18-minute per-track limit');
+   result={data:Array.from({length:Math.min(2,decoded.numberOfChannels)},(_,i)=>decoded.getChannelData(i).slice()),rate:decoded.sampleRate};
+  }
+  remember();addTrack(f.name.replace(/\.[^.]+$/,''),result.data,result.rate);
+  status('Imported '+f.name+' · '+result.data[0].length+' frames at '+result.rate+' Hz');
+ }catch(e){alert('Could not import '+f.name+'\n'+e.message+'\nCompressed and video codecs depend on your browser.');status('Import failed: '+f.name)}
+ ui.file.value='';
+}
 function bytesWav(channels,sampleRate){const count=channels[0]?.length||0;const n=channels.length,out=new ArrayBuffer(44+count*n*2),d=new DataView(out),u=new Uint8Array(out);const str=(at,s)=>{for(let i=0;i<s.length;i++)u[at+i]=s.charCodeAt(i)};str(0,'RIFF');d.setUint32(4,36+count*n*2,true);str(8,'WAVE');str(12,'fmt ');d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,n,true);d.setUint32(24,sampleRate,true);d.setUint32(28,sampleRate*n*2,true);d.setUint16(32,n*2,true);d.setUint16(34,16,true);str(36,'data');d.setUint32(40,count*n*2,true);for(let i=0;i<count;i++)for(let c=0;c<n;c++){let v=clamp(channels[c][i]||0,-1,1);d.setInt16(44+(i*n+c)*2,v<0?v*32768:v*32767,true)}return new Blob([out],{type:'audio/wav'})}
 function fileDownload(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000)}
 function mixRange(rate,from,to){
@@ -273,7 +381,7 @@ function mixRange(rate,from,to){
   for(let i=begin;i<finish;i++){
    const pos=(from+i/rate-t.offset)*t.rate,base=Math.floor(pos),fract=pos-base;
    const lch=t.data[0],rch=t.data[Math.min(1,t.data.length-1)];
-   const interp=ch=>((ch[base]||0)*(1-fract)+(ch[base+1]||0)*fract)*t.gain;
+   const interp=ch=>((ch[clamp(base,0,ch.length-1)]||0)*(1-fract)+(ch[clamp(base+1,0,ch.length-1)]||0)*fract)*t.gain;
    channels[0][i]+=interp(lch)*(t.pan>0?1-t.pan:1);
    channels[1][i]+=interp(rch)*(t.pan<0?1+t.pan:1);
   }
@@ -359,7 +467,7 @@ async function loadProject(file){
  }catch(e){status('Open failed: '+e.message);alert('Cannot open project: '+e.message);}
 }
 function showDialog(title,fields,callback){const root=$('dialogShade'),body=$('dialogContent');$('dialogTitle').textContent=title;body.replaceChildren();for(const f of fields){const label=document.createElement('label');label.textContent=f.label+': ';const x=document.createElement(f.options?'select':'input');x.name=f.name;if(f.options)for(const o of f.options){const el=document.createElement('option');el.textContent=o;el.value=o;x.append(el)}else{x.type=f.type||'text';x.value=f.value===undefined?'':f.value;x.step=f.step||'any';if(f.min!==undefined)x.min=f.min;if(f.max!==undefined)x.max=f.max;}label.append(x);body.append(label)}const actions=document.createElement('div');actions.className='actions';const ok=document.createElement('button'),cancel=document.createElement('button');ok.className=cancel.className='a-btn';ok.textContent='OK';cancel.textContent='Cancel';actions.append(ok,cancel);body.append(actions);root.style.display='flex';const hide=()=>root.style.display='none';cancel.addEventListener('click',hide);ok.addEventListener('click',()=>{try{const values={};for(const el of body.querySelectorAll('input,select'))values[el.name]=el.value;callback(values);hide()}catch(e){alert(e.message)}});root.onclick=e=>{if(e.target===root)hide()};body.querySelector('input,select')?.focus();}
-async function startRecord(){if(recording){stopRecord();return}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){status('Recording requires localhost/HTTPS and a supported browser');return alert('Microphone recording requires a secure context. Open Latch 98 using START_LATCH98.bat or the Rust launcher, allow microphone access in your browser, then try again. Audio importing and editing work without it.')}if(playing)stop();try{recStream=await navigator.mediaDevices.getUserMedia({audio:true});recChunks=[];const recCtx=getCtx();await recCtx.resume();recAnalyser=recCtx.createAnalyser();recAnalyser.fftSize=512;recSource=recCtx.createMediaStreamSource(recStream);recSource.connect(recAnalyser);const silent=recCtx.createGain();silent.gain.value=0;recAnalyser.connect(silent);silent.connect(recCtx.destination);recorder=new MediaRecorder(recStream);recorder.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data)};recorder.onstop=async()=>{const blob=new Blob(recChunks,{type:recorder.mimeType||'audio/webm'});recStream?.getTracks().forEach(t=>t.stop());recStream=null;recSource?.disconnect();recSource=null;recAnalyser?.disconnect();recAnalyser=null;recording=false;$('recMeter').style.width='0%';try{const ac=getCtx(),buffer=await ac.decodeAudioData(await blob.arrayBuffer()),arrays=Array.from({length:Math.min(2,buffer.numberOfChannels)},(_,i)=>buffer.getChannelData(i));remember();addTrack('Audio Recording '+new Date().toLocaleTimeString(),arrays,buffer.sampleRate);status('Recorded '+timeFmt(buffer.duration));}catch(e){status('Recording decode failed: '+e.message)}};recorder.start(250);recStarted=Date.now();recording=true;status('Recording... press Stop to finish');requestAnimationFrame(animateRecording)}catch(e){recStream?.getTracks().forEach(t=>t.stop());recStream=null;recSource?.disconnect();recSource=null;recAnalyser?.disconnect();recAnalyser=null;recording=false;status('Microphone unavailable: '+e.message);alert('Cannot start recording: '+e.message)}}
+async function startRecord(){if(recording){stopRecord();return}if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){status('Recording is unavailable. Check your microphone and recording permissions.');return alert('Microphone input could not be opened. Check recording permissions and your input device, or use File > Import Audio to work with an existing recording.')}if(playing)stop();try{recStream=await navigator.mediaDevices.getUserMedia({audio:true});recChunks=[];const recCtx=getCtx();await recCtx.resume();recAnalyser=recCtx.createAnalyser();recAnalyser.fftSize=512;recSource=recCtx.createMediaStreamSource(recStream);recSource.connect(recAnalyser);const silent=recCtx.createGain();silent.gain.value=0;recAnalyser.connect(silent);silent.connect(recCtx.destination);recorder=new MediaRecorder(recStream);recorder.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data)};recorder.onstop=async()=>{const blob=new Blob(recChunks,{type:recorder.mimeType||'audio/webm'});recStream?.getTracks().forEach(t=>t.stop());recStream=null;recSource?.disconnect();recSource=null;recAnalyser?.disconnect();recAnalyser=null;recording=false;$('recMeter').style.width='0%';try{const ac=getCtx(),buffer=await ac.decodeAudioData(await blob.arrayBuffer()),arrays=Array.from({length:Math.min(2,buffer.numberOfChannels)},(_,i)=>buffer.getChannelData(i));remember();addTrack('Audio Recording '+new Date().toLocaleTimeString(),arrays,buffer.sampleRate);status('Recorded '+timeFmt(buffer.duration));}catch(e){status('Recording decode failed: '+e.message)}};recorder.start(250);recStarted=Date.now();recording=true;status('Recording... press Stop to finish');requestAnimationFrame(animateRecording)}catch(e){recStream?.getTracks().forEach(t=>t.stop());recStream=null;recSource?.disconnect();recSource=null;recAnalyser?.disconnect();recAnalyser=null;recording=false;status('Microphone unavailable: '+e.message);alert('Cannot start recording: '+e.message)}}
 function animateRecording(){if(!recording)return;if(recAnalyser){const levels=new Float32Array(recAnalyser.fftSize);recAnalyser.getFloatTimeDomainData(levels);let power=0;for(const v of levels)power+=v*v;$('recMeter').style.width=clamp(Math.sqrt(power/levels.length)*260,0,100)+'%'}status('Recording '+timeFmt((Date.now()-recStarted)/1000)+' · press Stop to finish');requestAnimationFrame(animateRecording)}
 function stopRecord(){if(recording&&recorder?.state==='recording'){recorder.stop();status('Processing recording...')}}
 const actions={
@@ -374,7 +482,7 @@ const actions={
  amplify:()=>showDialog('Amplify',[{name:'db',label:'Amplification (dB)',type:'number',value:3,min:-60,max:36}],v=>effect('amplify',Math.pow(10,clamp(+v.db,-60,36)/20))),normalize:()=>effect('normalize'),fadein:()=>effect('fadein'),fadeout:()=>effect('fadeout'),reverse:()=>effect('reverse'),invert:()=>effect('invert'),echo:()=>effect('echo'),speed:()=>speedDialog('speed'),tempo:()=>speedDialog('tempo'),lowpass:()=>showDialog('Low-Pass Filter',[{name:'hz',label:'Cutoff Frequency (Hz)',type:'number',value:1000,min:60,max:18000}],v=>effect('lowpass',Number(v.hz))),
  stats:()=>{const t=selected();if(!t)return status('Select a track to analyze');let peak=0,sum=0,n=0;const [a,b]=orderedSel();for(const ch of t.data){const [l,r]=b>a?sampleBounds(t,a,b):[0,ch.length];for(let i=l;i<r;i++){peak=Math.max(peak,Math.abs(ch[i]));sum+=ch[i]*ch[i];n++}}const rms=Math.sqrt(sum/Math.max(1,n));showDialog('Audio Statistics',[{name:'peak',label:'Peak amplitude',value:peak.toFixed(5)},{name:'rms',label:'RMS amplitude',value:rms.toFixed(5)},{name:'samples',label:'Samples analyzed',value:n}],()=>{})},
  about:()=>showDialog('About Audacity for Latch 98',[{name:'info',label:'Edition',value:'Latch 98 · Original retro editor'},{name:'info2',label:'Project format',value:'.l98aud · multitrack floats'},{name:'info3',label:'Export format',value:'16-bit PCM stereo WAV'}],()=>{}),
- help:()=>alert('AUDACITY FOR LATCH 98\n\n• File > Import Audio: open WAV, MP3, OGG, etc.\n• Click and drag across a waveform to select audio.\n• Choose View > Wave Detail to see individual cycles of tones.\n• Edit > Cut/Copy/Paste/Trim and Exact Selection Frames for sample-accurate cuts.\n• Effect > Change Speed changes pitch; Change Tempo uses approximate WSOLA time stretch (can smear transients).\n• Loop selection checkbox repeats the selected time region seamlessly.\n• Effect: Normalize, Amplify, Fade, Reverse, Echo, Low Pass.\n• Generate: Tone, Silence, White Noise.\n• Track panel: Mute, Solo, Gain, Pan.\n• File > Save Project: save editable .l98aud\n• File > Export as WAV: mix down audio to a stereo WAV.\n• Red Record: use microphone with localhost or HTTPS.\n\nKeyboard: Space play/stop, Ctrl+Z undo, Ctrl+Y redo, Ctrl+X/C/V, F1 select, F2 move, + or - zoom.\n\nThis is an original lightweight editor inspired by the early Audacity interface, not the official Audacity distribution.')
+ help:()=>alert('AUDACITY FOR LATCH 98\n\n• File > Import Audio: open WAV, MP3, OGG, etc.\n• Click and drag across a waveform to select audio.\n• Choose View > Wave Detail to see individual cycles of tones.\n• Edit > Cut/Copy/Paste/Trim and Exact Selection Frames for sample-accurate cuts.\n• Effect > Change Speed changes pitch; Change Tempo uses approximate WSOLA time stretch (can smear transients).\n• Loop selection checkbox repeats the selected time region seamlessly.\n• Effect: Normalize, Amplify, Fade, Reverse, Echo, Low Pass.\n• Generate: Tone, Silence, White Noise.\n• Track panel: Mute, Solo, Gain, Pan.\n• File > Save Project: save editable .l98aud\n• File > Export as WAV: mix down audio to a stereo WAV.\n• Red Record: capture audio from a connected microphone.\n\nKeyboard: Space play/stop, Ctrl+Z undo, Ctrl+Y redo, Ctrl+X/C/V, F1 select, F2 move, + or - zoom.\n\nFor additional commands, choose a menu above.')
 };
 const menus={
  File:[['New Project','new','Ctrl+N'],['Open Project...','openProject','Ctrl+O'],['Import Audio...','import','Ctrl+I'],null,['Save Project...','saveProject','Ctrl+S'],['Export as WAV...','exportWAV','Ctrl+E'],null,['Project Name...','name']],

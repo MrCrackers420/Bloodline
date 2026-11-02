@@ -88,6 +88,7 @@ def main():
         run(['node', ROOT/'apps/norn-world-lab/tests/test-thread2-disk.cjs'])
         run([sys.executable, ROOT/'tools/test_parallel_merge.py'])
         run([sys.executable, ROOT/'tools/test_norn_boundary.py'])
+        run([sys.executable, ROOT/'tools/immersion_audit.py'])
         run(['node', ROOT/'apps/sprite-studio/tests/model.test.cjs'])
         run(['node', ROOT/'apps/sprite-studio/tests/png.test.cjs'])
         run([sys.executable, ROOT/'apps/sprite-studio/tests/grid_alignment.test.py'])

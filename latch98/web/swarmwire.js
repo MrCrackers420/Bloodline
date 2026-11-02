@@ -5,8 +5,11 @@
 const ISO='C:/Downloads/NornWorldLab.iso';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function mount(root,{fs,showError=()=>{},openFolder=()=>{},mountDisc=()=>{},pickTorrent=()=>{}}){
- let timer=null,dead=false,activePath=null,lastPct=0,suspended=false;
- root.innerHTML=`<div class="sw-wrap"><div class="sw-header"><b>SwarmWire 1.1</b><span>Local archive transfer</span></div><div class="sw-toolbar"><button data-sw="add">Add Torrent...</button><button data-sw="start">▶ Start / Resume</button><button data-sw="pause">❚❚ Pause</button><button data-sw="folder">Open Downloads</button></div><div class="sw-table-wrap"><table class="sw-table"><thead><tr><th>Name</th><th>Virtual size</th><th>Done</th><th>Status</th></tr></thead><tbody class="sw-jobs"></tbody></table></div><div class="sw-detail"><div class="sw-status" role="status" aria-live="polite">No transfers.</div><div class="sw-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Simulated transfer progress"><div></div></div><p class="sw-detail-note"></p><button data-sw="disc" disabled>Mount Downloaded Disc...</button></div><div class="sw-foot">Simulated archive: 186.4 MB in-world · Real downloaded bytes: 0 · No network or BitTorrent peers needed</div></div>`;
+ // Only one transfer engine may advance a particular virtual disk. Opening a
+ // second SwarmWire window must not double the transfer speed/progress.
+ if(window.SwarmWire?.active)window.SwarmWire.active.destroy();
+ let timer=null,dead=false,activePath=null,lastPct=0,suspended=false,lastFailure='';
+ root.innerHTML=`<div class="sw-wrap"><div class="sw-header"><b>SwarmWire 1.1</b><span>Local archive transfer</span></div><div class="sw-toolbar"><button data-sw="add">Add Torrent...</button><button data-sw="start">▶ Start / Resume</button><button data-sw="pause">❚❚ Pause</button><button data-sw="folder">Open Downloads</button></div><div class="sw-table-wrap"><table class="sw-table"><thead><tr><th>Name</th><th>Size</th><th>Done</th><th>Status</th></tr></thead><tbody class="sw-jobs"></tbody></table></div><div class="sw-detail"><div class="sw-status" role="status" aria-live="polite">No transfers.</div><div class="sw-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Transfer progress"><div></div></div><p class="sw-detail-note"></p><button data-sw="disc" disabled>Mount Downloaded Disc...</button></div><div class="sw-foot">Archive: 186.4 MB · Destination: C:\\Downloads</div></div>`;
  const jobs=root.querySelector('.sw-jobs'),status=root.querySelector('.sw-status'),progress=root.querySelector('.sw-progress'),bar=progress.querySelector('div'),note=root.querySelector('.sw-detail-note'),mountBtn=root.querySelector('[data-sw="disc"]');
  const getJob=()=>fs.nornTransfer();
  const isoReady=()=>fs.get(ISO)?.kind==='iso';
@@ -17,18 +20,18 @@ function mount(root,{fs,showError=()=>{},openFolder=()=>{},mountDisc=()=>{},pick
   const title=meta?.name||'NornWorldLab.iso',pct=Math.max(0,Math.min(100,Number(job.percent)||0)),done=iso&&pct>=100;
   const interrupted=job.state==='Downloading'&&activePath!==job.path;
   const state=suspended?'Save error — paused':done?'Finished':interrupted?'Interrupted':job.state==='Finished'?'Disc image missing':job.state;
-  jobs.innerHTML=`<tr class="sw-current"><td>${esc(title)}</td><td>186.4 MB (sim.)</td><td>${pct.toFixed(1)}%</td><td>${esc(state)}</td></tr>`;
+  jobs.innerHTML=`<tr class="sw-current"><td>${esc(title)}</td><td>186.4 MB</td><td>${pct.toFixed(1)}%</td><td>${esc(state)}</td></tr>`;
   status.textContent=state==='Error'?`Transfer error: ${job.error||'Unknown error'}`:`${title} — ${pct.toFixed(1)}% — ${state}`;
   bar.style.width=pct+'%';progress.setAttribute('aria-valuenow',String(pct));
-  note.textContent=done?'Virtual ISO complete in C:\\Downloads. Mount it, then open D:\\Setup.exe to install.':
-   suspended?`Progress is safe on disk at ${pct.toFixed(1)}%. Free storage or restore saving, then choose Start / Resume.`:
+  note.textContent=done?'Disc image saved in C:\\Downloads. Mount it, then open D:\\Setup.exe to install.':
+   suspended?`Transfer paused after a save failure (${lastFailure||'storage unavailable'}). Saved progress: ${pct.toFixed(1)}%. Resolve the error before resuming.`:
    interrupted?'Saved progress recovered after interruption. Choose Start / Resume; no progress was reset.':
    !meta?'Torrent file missing. Restore the attachment to resume.':
-   `Offline simulated transfer from ${meta.source}. No actual torrent data or network bytes are downloaded.`;
+   `Archive source: ${meta.source}. Destination: C:\\Downloads.`;
   mountBtn.disabled=!done;
  }
  function failed(e,job){
-  suspended=true;activePath=null; // stop the 300 ms timer from repeatedly reporting quota errors
+  suspended=true;lastFailure=String(e?.message||e).slice(0,220);activePath=null; // stop the 300 ms timer from repeatedly reporting quota errors
   if(job){try{fs.setNornTransfer(job.path,job.percent,'Error',e.message||String(e));}catch{}}
   render();showError(e);
  }
@@ -46,13 +49,13 @@ function mount(root,{fs,showError=()=>{},openFolder=()=>{},mountDisc=()=>{},pick
   const job=getJob();
   if(job&&job.path!==path&&job.state!=='Finished')throw Error('Finish the current transfer first.');
   if(!job||job.path!==path){const exists=isoReady();fs.setNornTransfer(path,exists?100:0,exists?'Finished':'Stopped');}
-  activePath=null;suspended=false;render(); // Existing partial progress is preserved.
+  activePath=null;suspended=false;lastFailure='';render(); // Existing partial progress is preserved.
  }catch(e){showError(e);render();}}
  function start(){const job=getJob();if(!job)return showError('Open a torrent file first.');
   try{fs.torrentInfo(job.path);
    if(isoReady()&&job.percent>=100){fs.setNornTransfer(job.path,100,'Finished');activePath=null;suspended=false;return render();}
    if(job.percent>=100)return complete();
-   fs.setNornTransfer(job.path,job.percent,'Downloading');activePath=job.path;lastPct=job.percent;suspended=false;render();
+   fs.setNornTransfer(job.path,job.percent,'Downloading');activePath=job.path;lastPct=job.percent;suspended=false;lastFailure='';render();
   }catch(e){failed(e,job);}
  }
  function tick(){if(dead||suspended||!activePath)return;
@@ -72,7 +75,7 @@ function mount(root,{fs,showError=()=>{},openFolder=()=>{},mountDisc=()=>{},pick
  // Importing another backup refreshes UI immediately. Only an explicit Start
  // in this window is permitted to advance a saved 'Downloading' job.
  const onDiskChange=()=>{if(!dead)render();};
- const onDiskImport=()=>{activePath=null;suspended=false;if(!dead)render();};
+ const onDiskImport=()=>{activePath=null;suspended=false;lastFailure='';if(!dead)render();};
  document.addEventListener('latchfschange',onDiskChange);
  document.addEventListener('latchfsimport',onDiskImport);
  render();timer=setInterval(tick,300);

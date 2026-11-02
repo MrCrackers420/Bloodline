@@ -34,6 +34,6 @@ test('Sound Studio splice uses integer half-open frame boundaries',()=>{
  let stored;
  const ctx={createBuffer:(n,len,sr)=>({numberOfChannels:n,length:len,sampleRate:sr,duration:len/sr,getChannelData:()=>stored??=(new Float32Array(len))})};
  const state={original:fake,start:.01,end:.035,name:'test'};
- const func=new Function('clamp','sampleState','window','audio','sampleView','$','rebuildSample','status','dialog',`const SAMPLE_MAX_SECONDS=10;let sampleUndo=null;${code};return spliceSelection;`)(clamp,state,{AudioContext:class {createBuffer(...args){return ctx.createBuffer(...args)}}},null,{},()=>({}),()=>{},()=>{},()=>{throw Error('Unexpected dialog')});
+ const func=new Function('clamp','sampleState','window','audio','sampleView','$','rebuildSample','status','dialog',`const SAMPLE_MAX_SECONDS=10;let sampleUndoStack=[],sampleRedoStack=[];function sampleSnapshot(){return {original:sampleState.original,start:sampleState.start,end:sampleState.end,name:sampleState.name};}function sampleHistoryButtons(){}${code};return spliceSelection;`)(clamp,state,{AudioContext:class {createBuffer(...args){return ctx.createBuffer(...args)}}},null,{},()=>({}),()=>{},()=>{},()=>{throw Error('Unexpected dialog')});
  func('crop');assert.equal(state.original.length,25);assert(Math.abs(stored[0]-.1)<1e-7);assert(Math.abs(stored[24]-.34)<1e-7);
 });

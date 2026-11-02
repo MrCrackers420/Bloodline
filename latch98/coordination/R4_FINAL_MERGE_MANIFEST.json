@@ -1,0 +1,76 @@
+{
+  "release": "LATCH-R4-2026-11-02-FIVE-THREADS-MERGED",
+  "date": "2026-11-02",
+  "base_id": "LATCH-R4-2026-11-01-R3-NORN-MERGED",
+  "norn_sha256": "a99c92ad18b5a40cb75d7b3d50772b6626fbbd16a7b8f5ac81dedb73398dcc29",
+  "threads": {
+    "1": {
+      "archive_name": "Latch98-R4-Thread-1-Changes.zip",
+      "sha256": "8222d56eb991ea884df302b5d6f6f0daee24242bd4145a864d7fed7d1599c4a3",
+      "applied_files": [
+        "web/desktop.js",
+        "web/standalone_runtime.js",
+        "tests/round4/desktop/performance.test.cjs",
+        "tests/round4/desktop/browser_smoke.py",
+        "tests/round4/desktop/RESULTS.md"
+      ]
+    },
+    "2": {
+      "archive_name": "Latch98-R4-Thread-2-Changes.zip",
+      "sha256": "874718add9885e4b22839f353d5a5c239c7d5f02a5bef3a65c9ed56a1923dcbc",
+      "applied_files": [
+        "web/filesystem.js",
+        "web/swarmwire.js",
+        "tests/round4/disk/fault-matrix.test.cjs",
+        "tests/round4/disk/swarmwire-browser.test.py",
+        "tests/round4/disk/RESULTS.md"
+      ]
+    },
+    "3": {
+      "archive_name": "Latch98-R4-Thread-3-Changes.zip",
+      "sha256": "0d0812003c28d0132df9bac24f11e279ff31de47459911b801b44ce6d4d36ab7",
+      "applied_files": [
+        "apps/audacity/index.html",
+        "apps/soundstudio/index.html",
+        "apps/tests/audio-accuracy.test.cjs",
+        "apps/tests/r4-audio-fidelity.test.cjs",
+        "tests/round4/audio/browser.py",
+        "tests/round4/audio/RESULTS.md"
+      ]
+    },
+    "4": {
+      "archive_name": "Latch98-R4-Thread-4-Changes.zip",
+      "sha256": "441c2310facdcd35cbf1cd1b6fe1b7cf04ed266b972022b3d1af06f80976046d",
+      "applied_files": [
+        "web/latchnet.js",
+        "web/latchnet.css",
+        "tests/round4/latchnet/test_browser.py",
+        "tests/round4/latchnet/test_shell.py"
+      ]
+    },
+    "5": {
+      "archive_name": "Latch98-R4-Thread-5-Changes.zip",
+      "sha256": "eda2215138beb2366d1ebe88ccd151768b349c70961fd5fde663afcc8d641693",
+      "applied_files": [
+        "apps/sprite-studio/FLIPNOTE_REVIEW.md",
+        "apps/sprite-studio/README.md",
+        "apps/sprite-studio/ROUND4_CHANGES.md",
+        "apps/sprite-studio/app.js",
+        "apps/sprite-studio/index.html",
+        "apps/sprite-studio/index.template.html",
+        "apps/sprite-studio/model.js",
+        "apps/sprite-studio/style.css",
+        "tests/round4/sprite/RESULTS.md",
+        "tests/round4/sprite/browser_round4.test.py",
+        "tests/round4/sprite/model_round4.test.cjs"
+      ]
+    }
+  },
+  "integrator_text_audit": [
+    "web/swarmwire.js",
+    "web/latchnet.js",
+    "web/desktop.js",
+    "web/filesystem.js"
+  ],
+  "git_push_performed": false
+}

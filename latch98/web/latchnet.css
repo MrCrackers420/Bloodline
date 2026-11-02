@@ -36,3 +36,29 @@
 .ln-page .ln-terminal{font:12px/1.4 'Courier New',monospace;color:#d6ffbd;background:#090f13;border:3px inset #bdbdbd;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}
 .ln-page .ln-retro-table a{display:inline-block;min-height:18px}.ln-page button:focus-visible,.ln-page a:focus-visible,.ln-shell button:focus-visible,.ln-shell input:focus-visible{outline:2px solid #002db3;outline-offset:1px}
 @media(max-width:460px){.ln-page .ln-mail-table{display:block;overflow-x:auto}.ln-page .ln-mail-table td{padding:5px 3px}.ln-page .ln-mail-search{gap:5px}.ln-page .ln-mail-search input{width:100%;min-width:0}.ln-page .ln-forum-post{padding:6px}.ln-page .ln-compose textarea{width:100%!important}}
+/* Round 4: keyboard focus, clearer mail links, and narrow-screen reading. */
+.ln-shell .ln-viewport:focus-visible{outline:2px solid #003399;outline-offset:-3px}
+.ln-page .ln-message-link{display:inline-block;min-height:26px;padding:3px 1px;line-height:1.45}
+.ln-page .ln-mail-table td[data-label="Subject"]{min-width:160px}
+.ln-page .ln-mail-table td[data-label="Date"],.ln-page .ln-mail-table td[data-label="Saved"]{white-space:nowrap}
+.ln-page .ln-mail-table td[data-label="Subject"] a:focus-visible{outline:2px solid #003399;outline-offset:1px}
+.ln-page .ln-message .ln-retro-table{width:auto;max-width:100%}
+.ln-page .ln-message .ln-retro-table td:last-child{word-break:break-word}
+.ln-shell .ln-tool{min-height:30px}
+.ln-shell .ln-address input{min-height:30px}
+.ln-page .ln-mail-table{table-layout:auto}
+@media(max-width:520px){
+ .ln-shell .ln-toolbar{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;padding:3px}
+ .ln-shell .ln-tool{font-size:11px;padding:5px 2px;white-space:normal;min-width:0;min-height:37px}
+ .ln-page .ln-mail-table{display:block;background:transparent;border:0}
+ .ln-page .ln-mail-table tbody{display:block}
+ .ln-page .ln-mail-table tr{display:block;margin:7px 0;border:1px solid #818da9;background:#fff;padding:5px}
+ .ln-page .ln-mail-table tr:first-child:not(:has(td)){display:none}
+ .ln-page .ln-mail-table td{display:flex;align-items:flex-start;gap:8px;border:0;padding:5px 6px;white-space:normal!important;min-width:0!important}
+ .ln-page .ln-mail-table td::before{content:attr(data-label);font:bold 11px Tahoma,Arial,sans-serif;color:#444;flex:0 0 58px}
+ .ln-page .ln-mail-table td[data-label="Subject"]{align-items:center}
+ .ln-page .ln-mail-table a{min-height:28px}
+ .ln-page .ln-message{padding:8px}
+ .ln-page .ln-mail-body{padding:9px 1px}
+ .ln-page .ln-attachment button{margin-top:4px;min-height:34px}
+}

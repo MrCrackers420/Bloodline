@@ -1,4 +1,4 @@
-# Flipnote interoperability: honest Round 3 status
+# Flipnote interoperability: Round 4 status (not implemented)
 
 **Status: not implemented; no `.ppm` or `.kwz` import/export offered.**
 
@@ -19,3 +19,7 @@ The Thread 5 instructions refer to a user-supplied `Flipnote-Toolkit-JS-main.zip
 ### Proposed validation before enabling a future importer
 
 Obtain the exact supplied toolkit source archive and at least one explicitly licensed genuine `.ppm` and `.kwz` sample with known frame count, dimensions, timing and palette behavior. Parse them without network access or proprietary signing keys; test all frames and composite RGBA against an independent reference; reject truncated/corrupted data; log any palette, animation-rate, layer and audio losses. Export must remain disabled without fully tested format writers. Do not replace or rebuild other applications as part of this work.
+
+### Round 4 investigation outcome
+
+The Round 4 shared source contains **no real Nintendo Flipnote PPM or KWZ fixtures** and the separate `Flipnote-Toolkit-JS-main.zip` was not provided. No proprietary sample, signing key, or third-party code was introduced. No PPM/KWZ menu entry, decoder, writer or capability claim has been added. The original Sprite Studio `.lss.json` and PNG + JSON sprite-sheet workflows remain independent of Flipnote formats. There is no audio-track model in Sprite Studio, so future Flipnote import cannot promise audio preservation without an explicit new model and user-facing loss warning.

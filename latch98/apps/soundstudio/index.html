@@ -122,14 +122,15 @@ SOFTWARE.
  <div class="win-menu"><small>Instrument &gt; WaveSampler · Record or import a real sound</small><span style="flex:1"></span><span class="pill" id="samplerIndicator">NO SAMPLE</span></div>
  <div class="win-body">
   <fieldset><legend>Source sound</legend>
-   <div class="controls-row"><button id="sampleOpen">📁 Load audio/video</button><button id="sampleMic">● Record microphone</button><button id="samplePhoneRecord" title="Ask Android to open a sound recorder without granting this webpage microphone access">📱 Phone recorder</button><button id="sampleMicHelp">❔ Mic help</button><button id="sampleClear">Clear</button></div><p id="sampleMicNotice" class="tip" role="status" aria-live="polite">Checking recording options…</p>
+   <div class="controls-row"><button id="sampleOpen">📁 Load audio/video</button><button id="sampleMic">● Record microphone</button><button id="samplePhoneRecord" title="Open an external sound recorder">📱 Phone recorder</button><button id="sampleMicHelp">❔ Mic help</button><button id="sampleClear">Clear</button></div><p id="sampleMicNotice" class="tip" role="status" aria-live="polite">Checking recording options…</p>
    <p id="sampleStatus" class="sampler-status">No audio loaded. Import WAV, MP3, M4A, MP4 or MOV (audio track only), or record your own sound.</p>
    <p class="tip">Drag the yellow or cyan handles to trim. Touch or pen works directly on the waveform; zoom in for fine cuts.</p>
    <canvas id="sampleWave" class="sample-wave" width="960" height="188" aria-label="Drag waveform edges to select an exact trim region in milliseconds"></canvas>
    <div class="sampler-time"><span id="sampleStartTime">0.000s</span><span id="sampleDuration">0.000s sample</span><span id="sampleEndTime">0.000s</span></div>
    <div class="controls-row sample-precision"><label>Start (seconds) <input id="sampleStart" type="number" min="0" step="0.001" value="0.000" inputmode="decimal"></label><label>End (seconds) <input id="sampleEnd" type="number" min="0.005" step="0.001" value="0.000" inputmode="decimal"></label><span>Selection <output id="sampleSelectionLength">0.000 s</output></span></div>
+   <div class="controls-row sample-precision"><label>Start frame <input id="sampleFrameStart" type="number" min="0" step="1" value="0" inputmode="numeric" style="width:110px"></label><label>End frame (exclusive) <input id="sampleFrameEnd" type="number" min="1" step="1" value="0" inputmode="numeric" style="width:110px"></label><output id="sampleFrameInfo">PCM frame boundaries</output></div>
    <div class="controls-row sample-precision"><button id="sampleZoomIn" title="Zoom into the selection">🔎 + Zoom</button><button id="sampleZoomOut">🔎 − Zoom</button><button id="sampleViewLeft">◀ Scroll</button><button id="sampleViewRight">Scroll ▶</button><button id="sampleFullView">Full view</button></div>
-   <div class="controls-row"><button id="sampleCrop" title="Keep the selected region">✂ Keep Selection</button><button id="sampleCut" title="Remove the selected region and join remaining sound">✂ Cut Region</button><button id="sampleUndoCut" disabled>↶ Undo edit</button></div>
+   <div class="controls-row"><button id="sampleCrop" title="Keep the selected region">✂ Keep Selection</button><button id="sampleCut" title="Remove the selected region and join remaining sound">✂ Cut Region</button><button id="sampleUndoCut" disabled>↶ Undo edit</button><button id="sampleRedoCut" disabled>↷ Redo edit</button></div>
    <div class="controls-row sample-precision"><label>Speed <input id="sampleSpeed" type="range" min="25" max="400" step="1" value="100"></label><label><input id="sampleSpeedNumber" type="number" min="25" max="400" step="1" value="100" inputmode="numeric" style="width:70px"> %</label><label><input id="sampleReverse" type="checkbox"> Reverse</label><button id="sampleSpeedReset">Reset speed</button><button id="sampleExportWav">💾 Export edited WAV</button></div>
    <div class="controls-row sample-precision"><label>Speed method <select id="sampleSpeedMode" aria-label="Sample speed method"><option value="stretch" selected>Time stretch — preserve pitch</option><option value="tape">Tape speed — change pitch</option></select></label><label>Target length <input type="number" id="sampleTargetLength" min="0.005" max="45" step="0.001" inputmode="decimal" value="0.000" style="width:85px"> s</label><button id="sampleStretchReset" title="Return playback to normal length">Original length (100%)</button><output id="sampleOutputInfo">Output 0.000 s</output></div>
    <p class="tip" id="sampleEditHint">Time stretch creates new, longer or shorter audio while roughly keeping the original pitch (best for speech and loops). Tape speed changes pitch. Both affect the exported sound, and the processed waveform is shown below.</p>
@@ -143,14 +144,14 @@ SOFTWARE.
   </fieldset>
   <fieldset><legend>Envelope &amp; volume</legend><div class="controls-row"><label>Attack <input id="sampleAttack" type="range" min="0" max="300" value="5"><output id="sampleAttackOut">5 ms</output></label><label>Release <input id="sampleRelease" type="range" min="5" max="600" value="65"><output id="sampleReleaseOut">65 ms</output></label><label>Level <input id="sampleLevel" type="range" min="0" max="100" value="75"><output id="sampleLevelOut">75%</output></label></div></fieldset>
   <p class="tip">Sample a voice, tapping glass, an instrument, or audio from an MP4/MOV video. Only the audio is imported; no video is kept. Choose the note it was recorded at as Root Note, then play the same recording chromatically. For best results use a short, isolated sound with clear pitch. Select precisely with waveform handles or millisecond fields; crop or cut regions, reverse, change tape speed, or stretch time while preserving pitch. Maximum playable selection is 10 seconds. Recorded notes go onto Sample Lab's own arrangement track. Saves embed the sample into your project JSON.</p>
-  <p class="tip"><b>Phone microphone:</b> Direct microphone access is most reliable when Sound Studio is opened as an HTTPS site (not a downloaded HTML file). <b>Phone recorder</b> asks Android to create an audio file using an installed recorder when supported; otherwise use your phone recorder separately, then <b>Load sound</b>. Audio stays on your device unless you choose to share or upload files.</p>
+  <p class="tip"><b>Recording:</b> If the microphone cannot be opened, check its connection and recording permissions. You can also use <b>Phone recorder</b> or <b>Load sound</b> to import an existing recording.</p>
  </div><div class="win-footer"><span>WaveSampler · single-sample, chromatic</span><span>Pitch-shift playback · local recording · WAV export</span></div>
 </section>
 <section class="window hidden" data-win="vocal" aria-label="Vocal Synth tool">
  <div class="win-title"><span>🎤</span><span class="winname">Latch Vocal Synthesizer</span><button data-min="vocal" aria-label="Minimize vocal synthesizer">_</button><button data-close="vocal" aria-label="Close vocal synthesizer">×</button></div>
  <div class="win-menu"><small>Instrument &gt; Vocal Synthesizer</small><span style="flex:1"></span><button id="vocalReset" style="min-height:23px">Reset voice</button></div>
  <div class="win-body"><div class="synthgrid"><div><fieldset><legend>Vocal controller — hold and drag</legend><div class="vocal-lcd" id="vocalDisplay">C4 261.6 Hz · VOWEL 50%</div><div id="xy" class="xy-pad" role="slider" tabindex="0" aria-label="Vocal pitch and vowel pad" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"><div id="xyDot" class="xy-dot"></div></div><div class="axis-labels"><span>LOW PITCH</span><span>↑ VOWEL ↓</span><span>HIGH PITCH</span></div></fieldset><fieldset><legend>Note keyboard</legend><div class="piano" id="piano" aria-label="Vocal keyboard"></div><div class="controls-row"><button id="vOctDown">◀ Lower</button><span id="vOctLabel">C3–C4</span><button id="vOctUp">Higher ▶</button></div></fieldset></div>
- <div><fieldset><legend>Voice settings</legend><div class="sliders"><label>Vowel <input id="vVowel" type="range" min="0" max="100" value="50"><output id="vVowelOut">50%</output></label><label>Voice <input id="vVoice" type="range" min="0" max="100" value="50"><output id="vVoiceOut">50%</output></label><label>Glide <input id="vGlide" type="range" min="0" max="100" value="30"><output id="vGlideOut">30%</output></label><label>Vibrato <input id="vVibrato" type="range" min="0" max="100" value="10"><output id="vVibratoOut">10%</output></label><label>Echo <input id="vDelay" type="range" min="0" max="100" value="12"><output id="vDelayOut">12%</output></label><label>Level <input id="vLevel" type="range" min="0" max="100" value="75"><output id="vLevelOut">75%</output></label></div></fieldset><p class="tip">Touch the XY pad: left/right changes pitch, up/down changes vowel. The keyboard plays separate notes. Audio is a standalone browser-based formant approximation of the earlier vocal prototype, not the MonkSynth C engine.</p><p class="tip"><b>Recording:</b> XY slides are captured as semitone steps with current vowel; the continuous glide itself isn't yet recorded as automation.</p></div></div></div>
+ <div><fieldset><legend>Voice settings</legend><div class="sliders"><label>Vowel <input id="vVowel" type="range" min="0" max="100" value="50"><output id="vVowelOut">50%</output></label><label>Voice <input id="vVoice" type="range" min="0" max="100" value="50"><output id="vVoiceOut">50%</output></label><label>Glide <input id="vGlide" type="range" min="0" max="100" value="30"><output id="vGlideOut">30%</output></label><label>Vibrato <input id="vVibrato" type="range" min="0" max="100" value="10"><output id="vVibratoOut">10%</output></label><label>Echo <input id="vDelay" type="range" min="0" max="100" value="12"><output id="vDelayOut">12%</output></label><label>Level <input id="vLevel" type="range" min="0" max="100" value="75"><output id="vLevelOut">75%</output></label></div></fieldset><p class="tip">Touch the XY pad: left/right changes pitch, up/down changes vowel. The keyboard plays separate notes. This instrument uses formant synthesis to shape vowel sounds.</p><p class="tip"><b>Recording:</b> XY slides are captured as semitone steps with current vowel; the continuous glide itself isn't yet recorded as automation.</p></div></div></div>
  <div class="win-footer"><span>Formant voice · No external plugins required</span><span>Two or more fingers supported · ● Rec records chords</span></div>
 </section>
 
@@ -211,7 +212,7 @@ const liveVoices=new Map();
 const MAX_LIVE_VOICES=12;
 const pointerTokens=(instrument,id)=>instrument+':pointer:'+id;
 const sampleState={original:null,playBuffer:null,outputPreview:null,speedMode:'stretch',wav:'',name:'',root:60,loop:false,attack:.005,release:.065,level:.75,start:0,end:0,speed:1,reverse:false};
-let sampleWavSelectionKey='';const sampleView={start:0,end:1};let samplePointer=null,sampleUndo=null,videoImportCancel=null;
+let sampleWavSelectionKey='';const sampleView={start:0,end:1};let samplePointer=null,sampleUndoStack=[],sampleRedoStack=[],videoImportCancel=null;
 const st={tone:'classic',vibrato:true,pressure:false,tune:0,rate:6,level:.72};const vo={vowel:.5,voice:.5,glide:.3,vibrato:.1,delay:.12,level:.75};
 function status(s){$('footerStatus').textContent=s;}
 function dialog(message){$('dialogText').textContent=message;$('dialog').classList.add('open');}
@@ -229,7 +230,7 @@ $('openVocal').onclick=()=>openWin('vocal');$('openStylo').onclick=()=>openWin('
 $('startButton').onclick=()=>$('startMenu').classList.toggle('open');$('startHelp').onclick=()=>{$('startMenu').classList.remove('open');showHelp();};
 $('menuTools').onclick=()=>openWin(front==='stylophone'?'sampler':front==='sampler'?'beatlab':front==='beatlab'?'vocal':front==='vocal'?'arrange':'stylophone');
 $('menuFile').onclick=()=>openFiles('open');$('menuHelp').onclick=showHelp;
-function showHelp(){dialog('Latch 98 Sound Studio v0.7 · phone and desktop.\n\nOpen instruments using Start or taskbar. Play chords by holding multiple metal keys with two or more fingers (or keyboard keys) at once; dragging a finger changes only its own note. Compatible pen and touch combinations depend on hardware. The Vocal tool has an XY pad and keyboard. Sample Lab records/imports short real sounds and plays them across pitches. Tap ● Rec then perform; use ▶ Play for playback. Projects export as JSON (including recorded samples), and arrangements render as WAV.\n\nThis is not an exact Stylophone circuit or MonkSynth native DSP port; both browser instruments are independently synthesized. Save a project before reloading; small samples are also preserved in this browser when possible.');}
+function showHelp(){dialog('Latch 98 Sound Studio v0.7 · phone and desktop.\n\nOpen instruments using Start or taskbar. Play chords by holding multiple metal keys with two or more fingers (or keyboard keys) at once; dragging a finger changes only its own note. Compatible pen and touch combinations depend on hardware. The Vocal tool has an XY pad and keyboard. Sample Lab records/imports short real sounds and plays them across pitches. Tap ● Rec then perform; use ▶ Play for playback. Projects export as JSON (including recorded samples), and arrangements render as WAV.\n\nUse WaveSampler to edit a recording or create your own sound pack. Save a project before reloading; small samples can be recovered when temporary storage is available.');}
 // Move desktop windows only via title-bar, but never turn mobile swipe into window drag.
 document.querySelectorAll('.window[data-win] .win-title').forEach(bar=>{let moving=null;bar.addEventListener('pointerdown',e=>{if(isMobile()||e.target.closest('button'))return;const w=bar.closest('.window'),r=w.getBoundingClientRect();openWin(w.dataset.win);moving={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};bar.setPointerCapture(e.pointerId);});bar.addEventListener('pointermove',e=>{if(!moving||moving.id!==e.pointerId)return;const w=bar.closest('.window'),ws=$('workspace').getBoundingClientRect();w.style.left=clamp(moving.left-ws.left+e.clientX-moving.x,0,Math.max(0,ws.width-90))+'px';w.style.top=clamp(moving.top-ws.top+e.clientY-moving.y,0,Math.max(0,ws.height-30))+'px';});for(const evt of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(evt,()=>moving=null);});
 
@@ -257,6 +258,10 @@ function makeSampleNote(ctx,dest,note,start,duration,velocity=1,snap={}){
 function sampleSec(s){return Number(s).toFixed(3);}
 function updateSampleMarkers(){
  $('sampleStart').value=sampleSec(sampleState.start);$('sampleEnd').value=sampleSec(sampleState.end);
+ const sr=sampleState.original?.sampleRate||SAMPLE_RATE;
+ $('sampleFrameStart').value=Math.round(sampleState.start*sr);
+ $('sampleFrameEnd').value=Math.round(sampleState.end*sr);
+ $('sampleFrameInfo').textContent=(sampleState.original?.length??0)+' source frames · '+sr+' Hz (sampler output 22050 Hz)';
  $('sampleStartTime').textContent=sampleSec(sampleState.start)+'s';$('sampleEndTime').textContent=sampleSec(sampleState.end)+'s';
  $('sampleSelectionLength').textContent=sampleSec(Math.max(0,sampleState.end-sampleState.start))+' s';
  $('sampleDuration').textContent=sampleSec(Math.max(0,sampleState.end-sampleState.start)/sampleState.speed)+'s played';
@@ -287,9 +292,8 @@ function drawSampleWave(){
  ctx.strokeStyle='#6fdfb3';ctx.beginPath();
  for(let x=0;x<w;x++){
   let i0=Math.floor((a+x/w*span)*sr),i1=Math.min(channel.length,Math.ceil((a+(x+1)/w*span)*sr));
-  let lo=1,hi=-1,step=Math.max(1,Math.floor((i1-i0)/28));
-  for(let j=i0;j<i1;j+=step){const v=channel[j]||0;if(v<lo)lo=v;if(v>hi)hi=v;}
-  if(hi>=lo){ctx.moveTo(x,mid-hi*(mid-23));ctx.lineTo(x,mid-lo*(mid-23));}
+  const [lo,hi]=exactWavePeak(channel,i0,i1);
+  if(i1>i0){ctx.moveTo(x,mid-hi*(mid-23));ctx.lineTo(x,mid-lo*(mid-23));}
  }ctx.stroke();
  const sx=(sampleState.start-a)/span*w,ex=(sampleState.end-a)/span*w;
  ctx.fillStyle='#090c16aa';ctx.fillRect(0,18,Math.max(0,Math.min(w,sx)),h-18);ctx.fillRect(clamp(ex,0,w),18,Math.max(0,w-ex),h-18);
@@ -300,11 +304,11 @@ function drawSampleWave(){
  }
 }
 function sampleBufferWavBase64(buf){
- const frames=buf.length,out=new ArrayBuffer(44+frames*2),v=new DataView(out);
+ const frames=buf.length,rate=buf.sampleRate,out=new ArrayBuffer(44+frames*2),v=new DataView(out);
  let pos=0;for(const str of ['RIFF'])for(const ch of str)v.setUint8(pos++,ch.charCodeAt(0));v.setUint32(pos,out.byteLength-8,true);pos+=4;
  for(const str of ['WAVEfmt '])for(const ch of str)v.setUint8(pos++,ch.charCodeAt(0));
  v.setUint32(pos,16,true);pos+=4;v.setUint16(pos,1,true);pos+=2;v.setUint16(pos,1,true);pos+=2;
- v.setUint32(pos,SAMPLE_RATE,true);pos+=4;v.setUint32(pos,SAMPLE_RATE*2,true);pos+=4;v.setUint16(pos,2,true);pos+=2;v.setUint16(pos,16,true);pos+=2;
+ v.setUint32(pos,rate,true);pos+=4;v.setUint32(pos,rate*2,true);pos+=4;v.setUint16(pos,2,true);pos+=2;v.setUint16(pos,16,true);pos+=2;
  for(const str of ['data'])for(const ch of str)v.setUint8(pos++,ch.charCodeAt(0));v.setUint32(pos,frames*2,true);pos+=4;
  const a=buf.getChannelData(0);for(let i=0;i<a.length;i++){const q=clamp(a[i],-1,1);v.setInt16(pos,q<0?q*32768:q*32767,true);pos+=2;}
  const bytes=new Uint8Array(out);let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(binary);
@@ -362,6 +366,24 @@ function createMonoBuffer(arr){
  const ctx=audio?.ctx||new C(),out=ctx.createBuffer(1,arr.length,SAMPLE_RATE);
  out.getChannelData(0).set(arr);return out;
 }
+// Reusable exact min/max envelopes: every source frame contributes, even a one-
+// sample transient in a 4-second clip. Decimating by a stride can erase clicks.
+const wavePeaks=new WeakMap(),WAVE_BLOCK=128;
+function exactWavePeak(signal,begin,end){
+ begin=clamp(begin,0,signal.length);end=clamp(end,begin,signal.length);
+ let cached=wavePeaks.get(signal);
+ if(!cached){const count=Math.ceil(signal.length/WAVE_BLOCK),low=new Float32Array(count),high=new Float32Array(count);
+  for(let k=0;k<count;k++){let lo=Infinity,hi=-Infinity;
+   for(let i=k*WAVE_BLOCK;i<Math.min(signal.length,(k+1)*WAVE_BLOCK);i++){const x=signal[i];lo=Math.min(lo,x);hi=Math.max(hi,x);}
+   low[k]=lo;high[k]=hi;
+  }cached={low,high};wavePeaks.set(signal,cached);
+ }
+ let lo=Infinity,hi=-Infinity;
+ while(begin<end&&begin%WAVE_BLOCK){const x=signal[begin++];lo=Math.min(lo,x);hi=Math.max(hi,x);}
+ while(begin+WAVE_BLOCK<=end){const b=begin/WAVE_BLOCK;lo=Math.min(lo,cached.low[b]);hi=Math.max(hi,cached.high[b]);begin+=WAVE_BLOCK;}
+ while(begin<end){const x=signal[begin++];lo=Math.min(lo,x);hi=Math.max(hi,x);}
+ return lo===Infinity?[0,0]:[lo,hi];
+}
 function drawProcessedWave(){
  const c=$('sampleOutputWave');if(!c)return;
  const ctx=c.getContext('2d'),w=c.width,h=c.height,buf=sampleState.outputPreview;
@@ -373,9 +395,8 @@ function drawProcessedWave(){
  ctx.strokeStyle='#edce70';ctx.beginPath();
  for(let x=0;x<w;x++){
   const a=Math.floor(x*signal.length/w),b=Math.min(signal.length,Math.ceil((x+1)*signal.length/w));
-  let lo=1,hi=-1,step=Math.max(1,Math.floor((b-a)/25));
-  for(let i=a;i<b;i+=step){const y=signal[i];if(y<lo)lo=y;if(y>hi)hi=y;}
-  if(hi>=lo){ctx.moveTo(x,mid-hi*(mid-20));ctx.lineTo(x,mid-lo*(mid-20));}
+  const [lo,hi]=exactWavePeak(signal,a,b);
+  if(b>a){ctx.moveTo(x,mid-hi*(mid-20));ctx.lineTo(x,mid-lo*(mid-20));}
  }
  ctx.stroke();
  ctx.fillStyle='#81dcff';ctx.fillRect(w-7,20,6,h-22);
@@ -386,7 +407,7 @@ function drawProcessedWave(){
 function rebuildSample(){
  if(!sampleState.original)return;
  const src=sampleState.original,duration=src.duration,a=sampleState.start,b=sampleState.end;
- const frames=Math.max(1,Math.round(Math.min(SAMPLE_MAX_SECONDS,Math.max(.005,b-a))*SAMPLE_RATE));
+ const frames=Math.max(1,Math.round(Math.min(SAMPLE_MAX_SECONDS,Math.max(0,b-a))*SAMPLE_RATE));
  const C=window.AudioContext||window.webkitAudioContext,newBuffer=(audio?.ctx||new C()).createBuffer(1,frames,SAMPLE_RATE);
  const target=newBuffer.getChannelData(0),channels=Array.from({length:src.numberOfChannels},(_,i)=>src.getChannelData(i));
  for(let j=0;j<frames;j++){
@@ -422,7 +443,7 @@ function rebuildSample(){
 function clearSample(persist=true){
  if([...liveVoices.values()].some(v=>v.instrument==='sampler'||(v.instrument==='stylophone'&&v.params.tone==='sample')))stopLive();
  sampleWavSelectionKey='';sampleState.original=null;sampleState.playBuffer=null;sampleState.outputPreview=null;sampleState.wav='';sampleState.name='';sampleState.start=0;sampleState.end=0;sampleState.speed=1;sampleState.speedMode='stretch';sampleState.reverse=false;
- sampleView.start=0;sampleView.end=1;sampleUndo=null;samplePointer=null;$('sampleUndoCut').disabled=true;
+ sampleView.start=0;sampleView.end=1;sampleUndoStack=[];sampleRedoStack=[];samplePointer=null;sampleHistoryButtons();
  $('sampleSpeed').value=100;$('sampleSpeedNumber').value=100;$('sampleSpeedMode').value='stretch';sampleState.speedMode='stretch';$('sampleReverse').checked=false;
  $('sampleStatus').textContent='No audio loaded — import an audio/video file or record your own sound.';
  $('samplerIndicator').textContent='NO SAMPLE';updateSampleMarkers();drawSampleWave();drawProcessedWave();if(persist)saveLocal();
@@ -434,7 +455,7 @@ async function loadSampleBytes(bytes,name){
  if(!Number.isFinite(buf.duration)||buf.duration<=0||buf.duration>180)throw Error('Choose audio up to 3 minutes; trim it to 10 seconds in Sample Lab.');
  sampleWavSelectionKey='';sampleState.original=buf;sampleState.name=name;sampleState.start=0;sampleState.end=Math.min(SAMPLE_MAX_SECONDS,buf.duration);
  sampleState.speed=1;sampleState.speedMode='stretch';sampleState.reverse=false;$('sampleSpeed').value=100;$('sampleSpeedNumber').value=100;$('sampleSpeedMode').value='stretch';sampleState.speedMode='stretch';$('sampleReverse').checked=false;
- sampleView.start=0;sampleView.end=buf.duration;sampleUndo=null;$('sampleUndoCut').disabled=true;
+ sampleView.start=0;sampleView.end=buf.duration;sampleUndoStack=[];sampleRedoStack=[];sampleHistoryButtons();
  rebuildSample();status('Imported audio from '+name);
 }
 function makeEditedSampleWav(){
@@ -448,13 +469,24 @@ function sampleZoom(dir){
  sampleView.start=clamp(center-n/2,0,Math.max(0,max-n));sampleView.end=sampleView.start+n;drawSampleWave();
 }
 function samplePan(direction){if(!sampleState.original)return;const max=sampleState.original.duration,span=sampleView.end-sampleView.start;sampleView.start=clamp(sampleView.start+direction*span*.55,0,Math.max(0,max-span));sampleView.end=sampleView.start+span;drawSampleWave();}
+function sampleHistoryButtons(){
+ $('sampleUndoCut').disabled=!sampleUndoStack.length;
+ $('sampleRedoCut').disabled=!sampleRedoStack.length;
+}
+function sampleSnapshot(){return {original:sampleState.original,start:sampleState.start,end:sampleState.end,name:sampleState.name};}
+function restoreSampleSnapshot(s){
+ sampleWavSelectionKey='';sampleState.original=s.original;sampleState.name=s.name;
+ sampleState.start=s.start;sampleState.end=s.end;
+ sampleView.start=0;sampleView.end=s.original.duration;
+ sampleHistoryButtons();rebuildSample();
+}
 function spliceSelection(mode){
  const buf=sampleState.original;if(!buf)return dialog('Load a sample first.');
  const a=clamp(Math.round(sampleState.start*buf.sampleRate),0,buf.length),b=clamp(Math.round(sampleState.end*buf.sampleRate),a,buf.length);
  const n=mode==='crop'?b-a:buf.length-(b-a);
  if(n<Math.round(.02*buf.sampleRate))return dialog('The resulting sound must be at least 20 milliseconds long.');
  if(n>180*buf.sampleRate)return dialog('The resulting audio is over 3 minutes.');
- sampleUndo={original:buf,start:sampleState.start,end:sampleState.end,name:sampleState.name};
+ sampleUndoStack.push(sampleSnapshot());if(sampleUndoStack.length>8)sampleUndoStack.shift();sampleRedoStack=[];
  const C=window.AudioContext||window.webkitAudioContext,out=(audio?.ctx||new C()).createBuffer(buf.numberOfChannels,n,buf.sampleRate);
  for(let ch=0;ch<buf.numberOfChannels;ch++){
   const src=buf.getChannelData(ch),dst=out.getChannelData(ch);
@@ -466,7 +498,7 @@ function spliceSelection(mode){
   }
  }
  sampleWavSelectionKey='';sampleState.original=out;sampleState.start=0;sampleState.end=Math.min(SAMPLE_MAX_SECONDS,out.duration);
- sampleView.start=0;sampleView.end=out.duration;$('sampleUndoCut').disabled=false;rebuildSample();status(mode==='crop'?'Cropped sample to selection':'Removed selected section and joined the sound');
+ sampleView.start=0;sampleView.end=out.duration;sampleHistoryButtons();rebuildSample();status(mode==='crop'?'Cropped sample to selection':'Removed selected section and joined the sound');
 }
 function b64ToBuffer(b64){const str=atob(b64),out=new Uint8Array(str.length);for(let i=0;i<str.length;i++)out[i]=str.charCodeAt(i);return out.buffer;}
 async function restoreEmbeddedSample(raw){
@@ -479,15 +511,13 @@ async function restoreEmbeddedSample(raw){
 function setupSampleRoot(){const e=$('sampleRoot');for(let n=36;n<=84;n++){const op=document.createElement('option');op.value=n;op.textContent=`${noteName(n)} (${n})`;if(n===60)op.selected=true;e.appendChild(op);}}
 function buildSampleKeyboard(){const root=$('sampleKeyboard');root.innerHTML='';const start=sampleOct*12,whites=[];for(let n=start;n<=start+12;n++){if([1,3,6,8,10].includes(n%12))continue;const e=document.createElement('div');e.className='pkey';e.dataset.note=n;e.innerHTML=`<small>${noteName(n)}</small>`;root.appendChild(e);whites.push(n);}for(let n=start;n<=start+12;n++){if(![1,3,6,8,10].includes(n%12))continue;const e=document.createElement('div');e.className='pkey sharp';e.dataset.note=n;const ix=whites.indexOf(n-1);e.style.left=`calc(${100*(ix+1)/whites.length}% - 4.5%)`;root.appendChild(e);} $('sampleOctLabel').textContent=`C${sampleOct-1}–C${sampleOct}`;setKeyHighlights();}
 function microphoneHelpText(){
- const details=location.protocol==='file:'?'This page is opened as a downloaded file. Android may block direct microphone permissions here.':!window.isSecureContext?'This page is not in a secure context. Open it over HTTPS to use Record microphone.':'This page can request mic access, but Chrome and Android must both allow it.';
- return `Microphone troubleshooting\n\n${details}\n\n1. For an offline file: try Phone recorder below, or open your phone's Voice Recorder and import the audio with Load sound.\n2. For live recording inside the studio: upload the provided HTTPS package to an HTTPS hosting service, then open its link in Chrome.\n3. Check Android Settings > Apps > Chrome > Permissions > Microphone. Also check Chrome > Settings > Site settings > Microphone and any Blocked sites.\n\nPhone recorder uses the Android file-capture picker if supported; availability depends on your device and installed recording apps.`;
+ return `Microphone troubleshooting\n\n1. Check that a microphone is connected and recording permission is allowed.\n2. If live input is unavailable, choose Phone recorder or Load sound to import a recording.\n3. Try a standard WAV recording if your sound file cannot be opened.\n\nYour recordings stay in your project unless you choose to export them.`;
 }
 function updateMicrophoneNotice(){
  const e=$('sampleMicNotice');
- if(location.protocol==='file:')e.textContent='Downloaded file detected. Android may deny direct mic access. Try 📱 Phone recorder, or use an HTTPS-hosted copy.';
- else if(!window.isSecureContext)e.textContent='Direct mic blocked: this page is not HTTPS/localhost. Use 📱 Phone recorder or host Sound Studio over HTTPS.';
- else if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)e.textContent='Browser direct recording unavailable. Try 📱 Phone recorder or 📁 Load sound.';
- else e.textContent='Microphone recording available to request. Tap ● Record microphone, then allow the permission prompt.';
+ if(location.protocol==='file:'||!window.isSecureContext)e.textContent='Live microphone input may be unavailable. Try Phone recorder or Load sound.';
+ else if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)e.textContent='No compatible microphone recorder was found. Try Phone recorder or Load sound.';
+ else e.textContent='Microphone ready. Choose Record microphone to begin.';
 }
 async function importPickedSound(e){
  const file=e.target.files?.[0];if(!file)return;
@@ -511,15 +541,15 @@ async function extractPlayableVideoAudio(file){
  // Real-time browser fallback. Uses only a hidden video element's audio output;
  // no video frames are stored, exported or put in project JSON.
  const C=window.AudioContext||window.webkitAudioContext;
- if(!C||!window.MediaRecorder)throw Error('Real-time media decoding is unavailable in this browser.');
+ if(!C||!window.MediaRecorder)throw Error('Audio decoding is unavailable.');
  const ctx=new C(),video=document.createElement('video'),url=URL.createObjectURL(file);
  video.playsInline=true;video.preload='auto';video.style.cssText='position:fixed;width:1px;height:1px;left:-100px;top:-100px;opacity:0;pointer-events:none';
  video.src=url;document.body.appendChild(video);
  let rec=null,timer=null,source=null,finished=false;
  try{
-  await new Promise((resolve,reject)=>{if(video.readyState>=1)return resolve();const t=setTimeout(()=>reject(Error('Timed out reading the video codec.')),8000);video.addEventListener('loadedmetadata',()=>{clearTimeout(t);resolve();},{once:true});video.addEventListener('error',()=>{clearTimeout(t);reject(Error('Video codec/container is not playable in this browser.'));},{once:true});});
+  await new Promise((resolve,reject)=>{if(video.readyState>=1)return resolve();const t=setTimeout(()=>reject(Error('Timed out reading the video codec.')),8000);video.addEventListener('loadedmetadata',()=>{clearTimeout(t);resolve();},{once:true});video.addEventListener('error',()=>{clearTimeout(t);reject(Error('This video format cannot be opened.'));},{once:true});});
   if(!Number.isFinite(video.duration)||video.duration<=0)throw Error('Video duration is unknown.');
-  if(!ctx.createMediaElementSource||!ctx.createMediaStreamDestination)throw Error('Cannot capture decoded audio in this browser.');
+  if(!ctx.createMediaElementSource||!ctx.createMediaStreamDestination)throw Error('Audio could not be extracted from this file.');
   source=ctx.createMediaElementSource(video);const target=ctx.createMediaStreamDestination();source.connect(target);
   if(!target.stream.getAudioTracks().length)throw Error('No audio track was exposed by the browser.');
   const type=['audio/webm;codecs=opus','audio/webm','audio/mp4'].find(x=>MediaRecorder.isTypeSupported?.(x))||'';
@@ -576,7 +606,20 @@ function sampleControlsSetup(){
  $('sampleViewLeft').onclick=()=>samplePan(-1);$('sampleViewRight').onclick=()=>samplePan(1);
  $('sampleFullView').onclick=()=>{if(!sampleState.original)return;sampleView.start=0;sampleView.end=sampleState.original.duration;drawSampleWave();};
  $('sampleCrop').onclick=()=>spliceSelection('crop');$('sampleCut').onclick=()=>spliceSelection('cut');
- $('sampleUndoCut').onclick=()=>{if(!sampleUndo)return;const old=sampleUndo;sampleUndo=null;sampleWavSelectionKey='';sampleState.original=old.original;sampleState.name=old.name;sampleView.start=0;sampleView.end=old.original.duration;sampleState.start=old.start;sampleState.end=old.end;$('sampleUndoCut').disabled=true;rebuildSample();};
+ $('sampleUndoCut').onclick=()=>{if(!sampleUndoStack.length)return;sampleRedoStack.push(sampleSnapshot());restoreSampleSnapshot(sampleUndoStack.pop());};
+ $('sampleRedoCut').onclick=()=>{if(!sampleRedoStack.length)return;sampleUndoStack.push(sampleSnapshot());restoreSampleSnapshot(sampleRedoStack.pop());};
+ for(const [id,which] of [['sampleFrameStart','start'],['sampleFrameEnd','end']])$(id).addEventListener('change',e=>{
+  const buf=sampleState.original;if(!buf)return;
+  const value=Number(e.target.value);if(!Number.isSafeInteger(value)||value<0||value>buf.length){updateSampleMarkers();dialog('Select a whole source PCM frame between 0 and '+buf.length);return;}
+  const start=which==='start'?value:Math.round(sampleState.start*buf.sampleRate);
+  const end=which==='end'?value:Math.round(sampleState.end*buf.sampleRate);
+  if(end<=start||end-start>Math.round(SAMPLE_MAX_SECONDS*buf.sampleRate)){
+   updateSampleMarkers();dialog('The end frame must be greater than the start, and a selection cannot exceed 10 seconds.');return;
+  }
+  // Exact integer frames are canonical; do not round-trip through millisecond inputs.
+  sampleState.start=start/buf.sampleRate;sampleState.end=end/buf.sampleRate;
+  updateSampleMarkers();drawSampleWave();rebuildSample();
+ });
  let stretchPending=null;
  function syncSampleSpeed(percent,immediate=false){
   const x=clamp(Number(percent)||100,25,400);sampleState.speed=x/100;
@@ -653,9 +696,9 @@ function sampleControlsSetup(){
   }catch(err){
    sampleMicStream?.getTracks().forEach(t=>t.stop());sampleMicStream=null;
    const denied=['NotAllowedError','PermissionDeniedError','SecurityError'].includes(err.name);
-   const first=denied?'Microphone access was denied by Chrome or Android.':`Could not record microphone (${err.name||'error'}): ${err.message||'Unavailable'}.`;
+   const first=denied?'Microphone access was denied.':`Could not record microphone (${err.name||'error'}): ${err.message||'Unavailable'}.`;
    dialog(first+'\n\n'+microphoneHelpText());
-   $('sampleMicNotice').textContent='Direct microphone recording failed. Try 📱 Phone recorder or 📁 Load sound, or open an HTTPS-hosted version.';
+   $('sampleMicNotice').textContent='Microphone recording failed. Try Phone recorder or Load sound.';
   }
  };
 }
@@ -741,7 +784,7 @@ function makeNote(ctx,dest,instrument,note,start,duration,velocity=.8,snap={}){
  oscillators.forEach(o=>{o.start(t);o.stop(end+.13);});if(lfo){lfo.start(t);lfo.stop(end+.13);}
  return {oscillators,lfo,gain,filters,started:t,stop(at=ctx.currentTime){const n=Math.max(at,ctx.currentTime);gain.gain.cancelScheduledValues(n);gain.gain.setTargetAtTime(0,n,.012);oscillators.forEach(o=>{try{o.stop(n+.09)}catch(e){}});if(lfo){try{lfo.stop(n+.09)}catch(e){}}}};
 }
-function ensureAudio(){try{if(!audio){const C=window.AudioContext||window.webkitAudioContext;if(!C)throw Error('Web Audio unavailable in this browser');const ctx=new C({latencyHint:'interactive'});const comp=ctx.createDynamicsCompressor();comp.threshold.value=-8;comp.ratio.value=5;comp.connect(ctx.destination);const master=ctx.createGain();master.gain.value=program.master;master.connect(comp);const live=ctx.createGain();live.connect(master);audio={ctx,master,live};}audio.ctx.resume().catch(()=>status('Tap again to enable audio.'));return true;}catch(e){dialog('Could not start browser audio: '+e.message);return false;}}
+function ensureAudio(){try{if(!audio){const C=window.AudioContext||window.webkitAudioContext;if(!C)throw Error('Audio playback is unavailable');const ctx=new C({latencyHint:'interactive'});const comp=ctx.createDynamicsCompressor();comp.threshold.value=-8;comp.ratio.value=5;comp.connect(ctx.destination);const master=ctx.createGain();master.gain.value=program.master;master.connect(comp);const live=ctx.createGain();live.connect(master);audio={ctx,master,live};}audio.ctx.resume().catch(()=>status('Tap again to enable audio.'));return true;}catch(e){dialog('Could not start browser audio: '+e.message);return false;}}
 function beatNow(){if(!audio||!playing)return 0;return scheduledFrom+(audio.ctx.currentTime-playStart)*program.bpm/60;}
 function totalBeats(){return program.bars*4;}
 function snapValue(x){return program.quant?Math.round(x*4)/4:x;}
@@ -1060,7 +1103,7 @@ async function diskWriteSong(path,raw){
   await fs.sync?.();return;
  }
  const count=Math.ceil(text.length/SONG_CHUNK_SIZE);
- if(count>50)throw Error('The song is too large for the virtual disk. Export project JSON to your device.');
+ if(count>50)throw Error('Not enough room on drive C: for this song. Save a project file instead.');
  // A/B staging: never overwrite chunks referenced by the saved manifest.
  const dir=oldParts===base+'.r3a'?base+'.r3b':oldParts===base+'.r3b'?base+'.r3a':(!fs.get(SONG_DIR+'/'+base)?base:base+'.r3a');
  const temp=SONG_DIR+'/'+dir;

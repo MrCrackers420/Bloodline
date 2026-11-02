@@ -18,6 +18,7 @@ const sites={
 const siteUrl=id=>'http://'+sites[id].host+'/';
 const pageUrl=(id,path='')=>siteUrl(id)+String(path).replace(/^\/+/, '');
 const pageLink=(id,path,label)=>`<a href="${esc(pageUrl(id,path))}" data-ln-url="${esc(pageUrl(id,path))}">${esc(label)}</a>`;
+const messageLink=(path,subject,label)=>`<a class="ln-message-link" href="${esc(pageUrl('postbox',path))}" data-ln-url="${esc(pageUrl('postbox',path))}" aria-label="${esc(label)}">${esc(subject)}</a>`;
 const link=(id,label)=>`<a href="${siteUrl(id)}" data-ln-url="${siteUrl(id)}">${label||sites[id].title}</a>`;
 const foot=(id)=>`<div class="ln-site-foot">© 2003 ${sites[id].title.replace(/ — .*/, '')}<br>${link('latchnet','Return to the LatchNet directory')}</div>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -43,14 +44,14 @@ function portal(query=''){
 }
 function pixelShelf(){return `<div class="ln-page">
  <div class="ln-site-head"><div><strong>💾 PixelShelf</strong><br><span class="ln-small">Shareware, freeware, and useful things since 2001</span></div><span style="font:12px monospace">56K FRIENDLY!</span></div>
- <div class="ln-nav">Home | <a href="#games" data-ln-anchor="games">Games</a> | <a href="#utilities" data-ln-anchor="utilities">Utilities</a> | ${pageLink('pixelshelf','archive/2001','2001 Archive')} | ${link('savepoint','Game Reviews')} | ${link('latchnet','Directory')}</div>
+ <div class="ln-nav">Home | <a href="#games" data-ln-anchor="games">Games</a> | <a href="#utilities" data-ln-anchor="utilities">Utilities</a> | ${pageLink('pixelshelf','notes','2003 Notes')} | ${pageLink('pixelshelf','archive/2001','2001 Archive')} | ${link('savepoint','Game Reviews')} | ${link('latchnet','Directory')}</div>
  <h2>Latest downloads</h2><p>Welcome to the shelf. We test the software so you don't have to.</p>
  <h3 id="games">Games</h3><table class="ln-retro-table"><tr><th>Title</th><th>Rating</th><th>Get it</th></tr>
  <tr><td><b>Minesweeper for Latch 98</b><br><span class="ln-small">A timeless test of luck and logic. Beginner, Intermediate, Expert.</span></td><td>★★★★★<br>Freeware</td><td><button type="button" data-ln-app="minesweeper">▶ Play installed copy</button></td></tr>
  <tr><td><b>Solitaire for Latch 98</b><br><span class="ln-small">Klondike cards with Windows-style scoring, Draw One / Draw Three, and Undo.</span></td><td>★★★★★<br>Freeware</td><td><button type="button" data-ln-app="solitaire">▶ Play installed copy</button></td></tr>
  <tr><td><b>Harvest Days</b><br><span class="ln-small">Rumored farming sim with bread, water pumps, and some very industrious cats.</span></td><td>Preview</td><td><span class="ln-small">Not yet released</span></td></tr>
  <tr><td><b>Bloodline</b><br><span class="ln-small">The borderlands don't stay quiet for long.</span></td><td>Rumor</td><td>${link('bloodline','Read dossier')}</td></tr></table>
- <h3 id="utilities">Utilities</h3><div class="ln-card"><b>Notepad</b> — Your dependable writing machine. <button type="button" data-ln-app="notepad">Open installed app</button></div>
+ <h3 id="utilities">Utilities</h3><div class="ln-card"><b>Notepad</b> — Your dependable writing machine. <button type="button" data-ln-app="notepad">Open installed app</button></div><p>Local creative tools: ${pageLink('pixelshelf','notes/sound','Sound Studio')} • ${pageLink('pixelshelf','notes/audio','Audacity')} • ${pageLink('pixelshelf','notes/sprites','Sprite Studio')}. Read the notes before opening them from Start.</p>
  <p class="ln-note">Please do not download mystery files from strangers. We once installed a dancing toaster and the computer hasn't been the same since.</p>
  <p class="ln-small">Need a driver from a dead mirror? Check ${pageLink('pixelshelf','archive/2001','our historical catalogue')} before following any old links.</p><div style="font:12px Arial">Editors' picks: ${link('norn','Norn Observer')} • ${link('grain','Grain Exchange')}</div>${foot('pixelshelf')}</div>`;}
 function nornObserver(){return `<div class="ln-page ln-green"><div class="ln-site-head"><div><strong>🥚 The Norn Observer</strong><br>Independent reporting on unusual animal research</div><span>EST. 1999</span></div>
@@ -90,17 +91,19 @@ function postbox(message=null,query='',folder='inbox',outId=null){
  const saved=out.map((m,i)=>({...m,index:i})).filter(matches);
  const validOut=outId!==null&&Number.isSafeInteger(Number(outId))&&String(Number(outId))===String(outId)&&Number(outId)>=0&&Number(outId)<out.length;
  const m=message&&Object.prototype.hasOwnProperty.call(inbox,message)?inbox[message]:null;
- const letter=m?`<div class="ln-panel ln-message"><p><button type="button" data-ln-mail-back="1">◀ Back to Inbox</button></p><table class="ln-retro-table"><tr><td><b>From:</b></td><td>${esc(m.from)}</td></tr><tr><td><b>Date:</b></td><td>${esc(m.date)}</td></tr><tr><td><b>Subject:</b></td><td>${esc(m.subject)}</td></tr></table><div class="ln-mail-body">${esc(m.body).replace(/\n/g,'<br>')}</div>${m.attachment?`<div class="ln-panel ln-attachment"><b>Attachment:</b> 📎 ${esc(m.attachment)}<br><span class="ln-small">SwarmWire torrent file · 1.5 KB</span><p><button type="button" data-ln-attachment="save">Save Attachment...</button> <button type="button" data-ln-attachment="open">Open</button></p><p class="ln-small">Save or Open will call the system file handler. The message alone will never start a transfer or install a program.</p></div>`:''}</div>`:'';
+ const backQuery=q?'?q='+encodeURIComponent(clip(query,80)):'?folder=inbox';
+ const outQuery=q?'?folder=outbox&q='+encodeURIComponent(clip(query,80)):'?folder=outbox';
+ const letter=m?`<div class="ln-panel ln-message"><p><button type="button" data-ln-mail-back="${esc(backQuery)}">◀ Back to Inbox${q?' results':''}</button></p><table class="ln-retro-table"><tr><td><b>From:</b></td><td>${esc(m.from)}</td></tr><tr><td><b>Date:</b></td><td>${esc(m.date)}</td></tr><tr><td><b>Subject:</b></td><td>${esc(m.subject)}</td></tr></table><div class="ln-mail-body">${esc(m.body).replace(/\n/g,'<br>')}</div>${m.attachment?`<div class="ln-panel ln-attachment"><b>Attachment:</b> 📎 ${esc(m.attachment)}<br><span class="ln-small">SwarmWire torrent file · 1.5 KB</span><p><button type="button" data-ln-attachment="save">Save Attachment...</button> <button type="button" data-ln-attachment="open">Open</button></p><p class="ln-small">Save or Open will call the system file handler. The message alone will never start a transfer or install a program.</p></div>`:''}</div>`:'';
  const selected=validOut?out[Number(outId)]:null;
- const sentLetter=selected?`<div class="ln-panel ln-message"><p><button type="button" data-ln-mail-folder="outbox">◀ Back to Outbox</button></p><p><b>To:</b> ${esc(selected.to)}<br><b>Subject:</b> ${esc(selected.subject)}<br><b>Saved:</b> ${esc(selected.when)}</p><div class="ln-mail-body">${esc(selected.body).replace(/\n/g,'<br>')}</div></div>`:'';
+ const sentLetter=selected?`<div class="ln-panel ln-message"><p><button type="button" data-ln-mail-folder="${esc(outQuery)}">◀ Back to Outbox${q?' results':''}</button></p><p><b>To:</b> ${esc(selected.to)}<br><b>Subject:</b> ${esc(selected.subject)}<br><b>Saved:</b> ${esc(selected.when)}</p><div class="ln-mail-body">${esc(selected.body).replace(/\n/g,'<br>')}</div></div>`:'';
  const isOut=folder==='outbox'||Boolean(selected);
  return `<div class="ln-page"><div class="ln-site-head ln-mail-banner"><div><strong>✉ Postbox WebMail</strong><br><span class="ln-small">Local mailbox • Oct 2003</span></div><b>YOU'VE GOT MAIL!</b></div>
  <div class="ln-nav">${pageLink('postbox','?folder=inbox','Inbox')} | ${pageLink('postbox','?folder=outbox','Outbox')} | <a href="#compose" data-ln-anchor="compose">Compose</a> | ${link('latchnet','Directory')}</div>
  <form id="ln-mail-search" class="ln-form-row ln-mail-search"><label>Find mail <input name="query" maxlength="80" value="${esc(query)}" placeholder="From, subject or message..."></label><input type="hidden" name="folder" value="${isOut?'outbox':'inbox'}"><button type="submit">Find</button>${q?pageLink('postbox',isOut?'?folder=outbox':'?folder=inbox','Clear search'):''}</form>
  ${letter||sentLetter}
- ${isOut?`<h2 id="sent">Outbox (${saved.length}${q?' matching':''})</h2><p class="ln-small">Messages here are saved locally; they are not sent to a real address.</p>${saved.length?`<table class="ln-retro-table ln-mail-table"><tr><th>To</th><th>Subject</th><th>Saved</th></tr>${saved.map(x=>`<tr><td>${esc(x.to)}</td><td>${pageLink('postbox','?folder=outbox&out='+x.index,clip(x.subject,100)||'(no subject)')}</td><td>${esc(x.when)}</td></tr>`).join('')}</table>`:'<p>No saved messages match this folder/search.</p>'}`:
- `<h2 id="inbox">Inbox (${entries.length}${q?' matching':' messages'})</h2><p class="ln-small">Browse by sender or subject, or open a letter to read it. Paperclip indicates an attachment.</p>${entries.length?`<table class="ln-retro-table ln-mail-table"><tr><th>From</th><th>Subject</th><th>Date</th></tr>${entries.map(([id,x])=>`<tr><td>${esc(x.from)}</td><td>${pageLink('postbox','?message='+encodeURIComponent(id),x.subject)} ${x.attachment?'📎':''}</td><td>${esc(x.date)}</td></tr>`).join('')}</table>`:`<p>No inbox messages match this search. ${pageLink('postbox','','Show all messages')}.</p>`}`}
- <details id="compose" class="ln-compose" ${folder==='compose'?'open':''}><summary><b>Compose a message</b> (save to Outbox)</summary><form id="ln-mail-form"><div class="ln-form-row"><label>To: <input name="to" maxlength="80" required placeholder="friend@postbox.l98" style="width:240px"></label></div><div class="ln-form-row"><label>Subject: <input name="subject" maxlength="100" required style="width:300px"></label></div><textarea name="body" rows="5" maxlength="2000" style="width:min(500px,100%)" aria-label="Message body" required></textarea><p><button type="submit">Save to Outbox</button> <span class="ln-small">Nothing is transmitted over the internet.</span></p></form></details>
+ ${isOut?`<h2 id="sent">Outbox (${saved.length}${q?' matching':''})</h2><p class="ln-small">Messages here are saved locally; they are not sent to a real address.</p>${saved.length?`<table class="ln-retro-table ln-mail-table"><tr><th>To</th><th>Subject</th><th>Saved</th></tr>${saved.map(x=>`<tr><td data-label="To">${esc(x.to)}</td><td data-label="Subject">${messageLink('?folder=outbox&out='+x.index+(q?'&q='+encodeURIComponent(clip(query,80)):''),clip(x.subject,100)||'(no subject)','Open saved message to '+x.to)}</td><td data-label="Saved">${esc(x.when)}</td></tr>`).join('')}</table>`:'<p>No saved messages match this folder/search.</p>'}`:
+ `<h2 id="inbox">Inbox (${entries.length}${q?' matching':' messages'})</h2><p class="ln-small">Browse by sender or subject, or open a letter to read it. Paperclip indicates an attachment.</p>${entries.length?`<table class="ln-retro-table ln-mail-table"><tr><th>From</th><th>Subject</th><th>Date</th></tr>${entries.map(([id,x])=>`<tr><td data-label="From">${esc(x.from)}</td><td data-label="Subject">${messageLink('?message='+encodeURIComponent(id)+(q?'&q='+encodeURIComponent(clip(query,80)):''),x.subject,'Open message from '+x.from+': '+x.subject)} ${x.attachment?'<span aria-label="Has attachment" title="Has attachment">📎</span>':''}</td><td data-label="Date">${esc(x.date)}</td></tr>`).join('')}</table>`:`<p>No inbox messages match this search. ${pageLink('postbox','','Show all messages')}.</p>`}`}
+ <details id="compose" class="ln-compose" ${folder==='compose'?'open':''}><summary><b>Compose a message</b> (save to Outbox)</summary><form id="ln-mail-form"><div class="ln-form-row"><label>To: <input name="to" maxlength="80" required placeholder="friend@postbox.l98" style="width:240px"></label></div><div class="ln-form-row"><label>Subject: <input name="subject" maxlength="100" required style="width:300px"></label></div><textarea name="body" rows="5" maxlength="2000" style="width:min(500px,100%)" aria-label="Message body" required></textarea><p><button type="submit">Save to Outbox</button> <span class="ln-small">Messages are saved in your Outbox.</span></p></form></details>
  ${foot('postbox')}</div>`;
 }
 function townWire(){return `<div class="ln-page ln-paper"><div style="text-align:center;border-top:5px double #444;border-bottom:5px double #444;padding:7px"><div class="ln-small">Serving Latch County since 1974</div><h1 style="font-family:Georgia,serif;margin:3px">THE TOWNWIRE</h1><div class="ln-small">VOL. 29 • OCTOBER 2003 • YOUR DAILY INTERNET EDITION</div></div>
@@ -117,6 +120,15 @@ function aster(){return `<div class="ln-page ln-purple" style="text-align:center
  <h2 id="guestbook">★ Guestbook ★</h2><form id="ln-guestbook-form"><div class="ln-form-row" style="justify-content:center"><label>Name <input name="name" maxlength="30" required placeholder="Your name"></label></div><div class="ln-form-row" style="justify-content:center"><label>Message <input name="message" maxlength="250" required style="width:min(350px,90vw)" placeholder="Your message"></label><button type="submit">Sign!</button></div></form>
  <div id="ln-guestbook-list" style="text-align:left;max-width:540px;margin:auto">${localPosts('guestbook')}</div><hr><span class="ln-small">This page has been visited <span class="ln-counter">001337</span> times. Best viewed on a computer.</span>${foot('guestbook')}</div>`;}
 // A small, fully local web directory. Every link is a LatchNet route: no fetches or CDNs.
+function pixelNotes(which=''){
+ const articles={
+ sound:{title:'Sound Studio: The Pocket Tone Bench',date:'Oct 14, 2003',body:'A compact music workstation with a stylus-friendly metal-key instrument, tape samples, a song arranger, loops and a metronome. The sample bench also offers cutting, reversing and tempo changes. The room can get loud: start with the output level turned down.',tip:'The arranger can save a song locally. Make a fresh project before beginning a second composition.'},
+ audio:{title:'Audacity: A Closer Look at the Waveform',date:'Oct 13, 2003',body:'This local audio editor gives precise time selections and individual tracks. Its effects include normalize, reverse and low-pass filtering. Tape speed alters pitch; Change Tempo aims to preserve pitch on longer material.',tip:'For an accurate edit, select a short section of the waveform first, then use the effect menu.'},
+ sprites:{title:'Sprite Studio: Frames in a Tiny Window',date:'Oct 11, 2003',body:'A pixel-art editor with layers, frame-by-frame animation, onion-skin preview and PNG sprite-sheet export. Save the editable project separately if you intend to revise layers later.',tip:'A flattened sprite sheet cannot preserve the original independent layers; save the editable project too.'}
+ };
+ if(which&&articles[which]){const a=articles[which];return `<div class="ln-page"><div class="ln-site-head"><strong>💾 PixelShelf / Field Notes</strong><span class="ln-small">Local programs • ${esc(a.date)}</span></div><div class="ln-nav">${pageLink('pixelshelf','notes','All Notes')} | ${link('pixelshelf','Software Library')} | ${link('latchnet','Directory')}</div><h2>${esc(a.title)}</h2><p>${esc(a.body)}</p><div class="ln-note"><b>Editor's notebook:</b> ${esc(a.tip)}</div><p class="ln-small">These notes are not downloads. Find the program in Latch 98's Start menu or desktop if it is present.</p>${pageLink('pixelshelf','notes','◀ All notes')}${foot('pixelshelf')}</div>`;}
+ return `<div class="ln-page"><div class="ln-site-head"><strong>💾 PixelShelf / Field Notes</strong><span class="ln-small">October 2003</span></div><div class="ln-nav">${link('pixelshelf','Software Library')} | ${link('savepoint','Game Reviews')} | ${link('relic','Older Catalogues')}</div><h2>From the local software desk</h2><p>Three practical write-ups from the same computer. These are program notes, not mirrors or installers.</p><table class="ln-retro-table"><tr><th>Entry</th><th>Date</th></tr>${Object.entries(articles).map(([id,a])=>`<tr><td>${pageLink('pixelshelf','notes/'+id,a.title)}</td><td>${esc(a.date)}</td></tr>`).join('')}</table><p>Old utilities that no longer have working publishers are recorded in the ${pageLink('pixelshelf','archive/2001','2001 archive')}.</p>${foot('pixelshelf')}</div>`;
+}
 function pixelArchive(){return `<div class="ln-page"><div class="ln-site-head"><strong>💾 PixelShelf / Archive / 2001</strong><span class="ln-small">Catalogue scanned 10/04/03</span></div><div class="ln-nav">${link('pixelshelf','Current Shelf')} | ${link('savepoint','Reviews')} | ${link('relic','Old Links')}</div>
 <h2>Software rescued from floppy disks</h2><p>These are historical catalogue cards, not active downloads. The original servers went away. Installed Latch 98 programs can still be opened from the current shelf.</p>
 <table class="ln-retro-table"><tr><th>Catalogue ID</th><th>Program / notes</th><th>Status</th></tr>
@@ -170,7 +182,7 @@ function renderPage(url){
  const params=p.params||new URLSearchParams(),path=p.path||'/',sub=path.replace(/^\//,'');let html=null;
  switch(p.id){
   case 'latchnet':if(path==='/')html=portal(clip(params.get('q')||'',80));else if(path==='/favorites')html=favoritePage();break;
-  case 'pixelshelf':if(path==='/')html=pixelShelf();else if(path==='/archive/2001')html=pixelArchive();break;
+  case 'pixelshelf':if(path==='/')html=pixelShelf();else if(path==='/archive/2001')html=pixelArchive();else if(path==='/notes')html=pixelNotes();else if(/^\/notes\/(sound|audio|sprites)$/.test(path))html=pixelNotes(path.split('/')[2]);break;
   case 'norn':if(path==='/')html=nornObserver();else if(path==='/archive/entry-13')html=secret();break;
   case 'grain':if(path==='/')html=grainExchange();break;
   case 'bloodline':if(path==='/')html=ironwire();break;
@@ -186,41 +198,48 @@ function renderPage(url){
 }
 function mount(host,{openApp=()=>{},saveAttachment=()=>{}}={}){
  const wrap=document.createElement('div');wrap.className='ln-shell';
- wrap.innerHTML=`<div class="ln-toolbar"><button type="button" class="ln-tool" data-ln-control="back" title="Back">◀ Back</button><button type="button" class="ln-tool" data-ln-control="forward" title="Forward">Forward ▶</button><button type="button" class="ln-tool" data-ln-control="stop" title="Stop">■ Stop</button><button type="button" class="ln-tool" data-ln-control="reload" title="Refresh">↻ Refresh</button><button type="button" class="ln-tool" data-ln-control="home" title="Home">⌂ Home</button><button type="button" class="ln-tool" data-ln-control="favorites" title="Favorites">★ Favorites</button></div><form class="ln-address"><label for="ln-location">Address</label><input id="ln-location" name="address" aria-label="Website address" spellcheck="false" autocomplete="off" maxlength="2048" value="${HOME}"><button type="submit">Go</button></form><div class="ln-viewport" aria-label="Website contents" tabindex="0"></div><div class="ln-status"><span data-ln-status>LatchNet — Ready</span><span>🌐 LatchNet</span></div>`;
+ wrap.innerHTML=`<div class="ln-toolbar"><button type="button" class="ln-tool" data-ln-control="back" title="Back">◀ Back</button><button type="button" class="ln-tool" data-ln-control="forward" title="Forward">Forward ▶</button><button type="button" class="ln-tool" data-ln-control="reload" title="Refresh">↻ Refresh</button><button type="button" class="ln-tool" data-ln-control="home" title="Home">⌂ Home</button><button type="button" class="ln-tool" data-ln-control="favorites" title="Favorites">★ Favorites</button></div><form class="ln-address"><label for="ln-location">Address</label><input id="ln-location" name="address" aria-label="Website address" spellcheck="false" autocomplete="off" maxlength="2048" value="${HOME}"><button type="submit">Go</button></form><div class="ln-viewport" aria-label="Website contents" tabindex="0"></div><div class="ln-status"><span data-ln-status role="status" aria-live="polite">LatchNet — Ready</span><span>🌐 LatchNet</span></div>`;
  host.replaceChildren(wrap);
  const view=wrap.querySelector('.ln-viewport'),address=wrap.querySelector('[name="address"]'),status=wrap.querySelector('[data-ln-status]');
- let hist=[HOME],at=0,destroyed=false;
- function show(url,{record=true}={}){
+ const persisted=storeRead('browserHistory',null);
+ const historyOk=persisted&&Array.isArray(persisted.urls)&&persisted.urls.length>0&&persisted.urls.length<=40&&persisted.urls.every(u=>typeof u==='string'&&u.length<=2048)&&Number.isSafeInteger(persisted.at)&&persisted.at>=0&&persisted.at<persisted.urls.length;
+ let hist=historyOk?persisted.urls.filter(u=>typeof u==='string').map(u=>normalize(u)).slice(-40):[HOME];
+ if(!hist.length)hist=[HOME];
+ let at=historyOk?Math.min(hist.length-1,persisted.at):0,destroyed=false;
+ const persistHistory=()=>storeWrite('browserHistory',{urls:hist,at});
+ function show(url,{record=true,focus=false}={}){
   if(destroyed)return;
   const page=renderPage(url);
-  if(record&&hist[at]!==page.url){hist=hist.slice(0,at+1);hist.push(page.url);at=hist.length-1;}
+  if(record&&hist[at]!==page.url){hist=hist.slice(0,at+1);hist.push(page.url);if(hist.length>40)hist.shift();at=hist.length-1;}
+  persistHistory();
   address.value=page.url;view.innerHTML=page.html;view.scrollTop=0;
   status.textContent=`LatchNet — ${page.title}`;
+  if(focus)view.focus({preventScroll:true});
   wrap.querySelector('[data-ln-control="back"]').disabled=at<=0;
   wrap.querySelector('[data-ln-control="forward"]').disabled=at>=hist.length-1;
-  if(page.hash){try{const id=decodeURIComponent(page.hash.slice(1));const el=[...view.querySelectorAll('[id]')].find(x=>x.id===id);el?.scrollIntoView({block:'nearest'});}catch{ /* malformed fragment is harmless */ }}
+  if(page.hash){try{const id=decodeURIComponent(page.hash.slice(1));const el=[...view.querySelectorAll('[id]')].find(x=>x.id===id);if(el?.tagName==='DETAILS')el.open=true;el?.scrollIntoView({block:'nearest'});}catch{ /* malformed fragment is harmless */ }}
  }
- function go(url){show(url);}
+ function go(url,focus=false){show(url,{focus});}
  function back(){if(at>0){at--;show(hist[at],{record:false});}}
  function forward(){if(at<hist.length-1){at++;show(hist[at],{record:false});}}
  function failure(message){status.textContent='Not saved — '+message+' (your text is still in the form)';}
  function onClick(e){const ctl=e.target.closest('[data-ln-control]');if(ctl){
   const action=ctl.dataset.lnControl;
-  if(action==='back')back();else if(action==='forward')forward();else if(action==='reload')show(hist[at],{record:false});else if(action==='home')go(HOME);else if(action==='favorites')go(HOME+'favorites');else if(action==='stop')status.textContent='Stopped — all local pages are already loaded';return;
+  if(action==='back')back();else if(action==='forward')forward();else if(action==='reload')show(hist[at],{record:false});else if(action==='home')go(HOME);else if(action==='favorites')go(HOME+'favorites');return;
  }
  const add=e.target.closest('[data-ln-savefavorite]');if(add){const previous=hist.slice(0,at).reverse().find(x=>parse(x).id&&x!==HOME+'favorites');if(!previous){status.textContent='Visit a site first, then add it here';return;}const favorites=favoriteList();if(!favorites.includes(previous)){favorites.push(previous);if(!storeWrite('favorites',favorites.slice(0,32))){status.textContent='Not saved — Favorites storage is unavailable';return;}}show(hist[at],{record:false});return;}
  const remove=e.target.closest('[data-ln-removefavorite]');if(remove){const favorites=favoriteList().filter(f=>f!==remove.dataset.lnRemovefavorite);if(!storeWrite('favorites',favorites)){status.textContent='Could not remove favorite — storage unavailable';return;}show(hist[at],{record:false});return;}
- const backMail=e.target.closest('[data-ln-mail-back]');if(backMail){go(siteUrl('postbox'));return;}
- const mailFolder=e.target.closest('[data-ln-mail-folder]');if(mailFolder){go(pageUrl('postbox','?folder='+encodeURIComponent(mailFolder.dataset.lnMailFolder)));return;}
+ const backMail=e.target.closest('[data-ln-mail-back]');if(backMail){go(pageUrl('postbox',backMail.dataset.lnMailBack),true);return;}
+ const mailFolder=e.target.closest('[data-ln-mail-folder]');if(mailFolder){go(pageUrl('postbox',mailFolder.dataset.lnMailFolder),true);return;}
  const attachment=e.target.closest('[data-ln-attachment]');if(attachment){const action=attachment.dataset.lnAttachment;if(action==='save'||action==='open')saveAttachment(action);return;}
  const app=e.target.closest('[data-ln-app]');if(app){const allowed=['minesweeper','solitaire','notepad'];if(allowed.includes(app.dataset.lnApp))openApp(app.dataset.lnApp);return;}
- const anchor=e.target.closest('[data-ln-anchor]');if(anchor){e.preventDefault();const id=anchor.dataset.lnAnchor;const el=[...view.querySelectorAll('[id]')].find(n=>n.id===id);if(el){if(el.tagName==='DETAILS')el.open=true;el.scrollIntoView({block:'nearest'});}return;}
- const a=e.target.closest('a[data-ln-url]');if(a){e.preventDefault();go(a.dataset.lnUrl);return;}
+ const anchor=e.target.closest('[data-ln-anchor]');if(anchor){e.preventDefault();const id=anchor.dataset.lnAnchor;const el=[...view.querySelectorAll('[id]')].find(n=>n.id===id);if(el){go(hist[at].split('#')[0]+'#'+encodeURIComponent(id),true); }return;}
+ const a=e.target.closest('a[data-ln-url]');if(a){e.preventDefault();go(a.dataset.lnUrl,true);return;}
  }
  function onSubmit(e){
   if(e.target.matches('.ln-address')){e.preventDefault();go(address.value);return;}
   if(e.target.id==='ln-search-form'){e.preventDefault();const q=clip(new FormData(e.target).get('query'),80);go(HOME+'?q='+encodeURIComponent(q));return;}
-  if(e.target.id==='ln-mail-search'){e.preventDefault();const f=new FormData(e.target),q=clip(f.get('query'),80),folder=f.get('folder')==='outbox'?'outbox':'inbox';go(pageUrl('postbox','?folder='+folder+'&q='+encodeURIComponent(q)));return;}
+  if(e.target.id==='ln-mail-search'){e.preventDefault();const f=new FormData(e.target),q=clip(f.get('query'),80),folder=f.get('folder')==='outbox'?'outbox':'inbox';go(pageUrl('postbox','?folder='+folder+'&q='+encodeURIComponent(q)),true);return;}
   const map={'ln-guestbook-form':['guestbook','ln-guestbook-list'],'ln-market-form':['market','ln-market-list']};
   if(map[e.target.id]){
    e.preventDefault();const [key,containerId]=map[e.target.id],f=new FormData(e.target),name=clip(String(f.get('name')||'').trim(),key==='market'?28:30),message=clip(String(f.get('message')||'').trim(),key==='market'?160:250);
@@ -240,7 +259,7 @@ function mount(host,{openApp=()=>{},saveAttachment=()=>{}}={}){
  }
  wrap.addEventListener('click',onClick);wrap.addEventListener('submit',onSubmit);
  wrap.addEventListener('keydown',e=>{if(e.altKey&&e.key==='ArrowLeft'){e.preventDefault();back();}else if(e.altKey&&e.key==='ArrowRight'){e.preventDefault();forward();}});
- show(HOME,{record:false});
+ show(hist[at],{record:false});
  const instance={navigate:go,destroy(){destroyed=true;wrap.remove();if(window.LatchNet.active===instance)window.LatchNet.active=null;}};
  window.LatchNet.active=instance;return instance;
 }
