@@ -1,0 +1,18 @@
+[package]
+name = "latch98_minesweeper"
+version = "0.1.0"
+edition = "2021"
+description = "A Windows 98-style Minesweeper game for the Latch 98 desktop, with a Rust/WASM engine"
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"

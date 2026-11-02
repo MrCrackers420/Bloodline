@@ -1,0 +1,28 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const M=require('../model.js'),P=require('../png.js'),S=require('../sheet.js');
+(async()=>{
+  const base=path.join(__dirname,'fixtures');
+  const png=Buffer.from(fs.readFileSync(path.join(base,'three-frame-sheet.png.base64'),'utf8').trim(),'base64');
+  const data=fs.readFileSync(path.join(base,'three-frame-sheet.json'),'utf8');
+  const image=await P.decode(png,{maxDimension:4096,maxPixels:6*1024*1024});
+  const d=S.decode(data,image);
+  assert.equal(d.name,'Fixture timing');assert.equal(d.width,2);assert.equal(d.height,2);assert.equal(d.layers.length,1);
+  assert.deepEqual(d.frames.map(f=>f.duration),[80,180,530]);
+  assert.deepEqual(M.pixel(d,0,0,0,0),[30,50,70,20]);
+  assert.deepEqual(M.pixel(d,1,0,0,0),[80,50,70,110]);
+  assert.deepEqual(M.pixel(d,2,0,0,0),[130,50,70,200]);
+  assert.deepEqual(M.pixel(d,1,0,1,1),[100,0,30,255]);
+  assert.equal(M.serialize(M.deserialize(M.serialize(d))),M.serialize(d));
+  console.log('PASS actual PNG fixture + manifest, reverse input region order restored, exact RGBA/durations');
+  const meta=JSON.parse(data);meta.frames[1].index=2;
+  assert.throws(()=>S.decode(meta,image),/Invalid frame/);
+  meta.frames[1].index=0;meta.frames[1].duration=2;
+  assert.throws(()=>S.decode(meta,image),/Invalid frame/);
+  meta.frames[1].duration=80;meta.width=7;
+  assert.throws(()=>S.decode(meta,image),/do not match/);
+  assert.throws(()=>S.decode('{broken',image),/not valid JSON/);
+  const wide=P.encode(300,1,new Uint8Array(300*4));
+  await assert.rejects(()=>P.decode(wide),/allowed image/);
+  assert.equal((await P.decode(wide,{maxDimension:4096,maxPixels:6*1024*1024})).width,300);
+  console.log('PASS malformed sheets rejected without replacement; guarded large-sheet PNG decode');
+})().catch(e=>{console.error(e);process.exit(1)});

@@ -1,0 +1,44 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1,viewport-fit=cover"><title>Latch Sprite Studio</title>
+<style>/* @INLINE_STYLE@ */</style></head><body>
+<div id="app">
+ <header class="appname"><span>▣ Latch Sprite Studio</span><small>Pixel Art &amp; Animation Editor</small></header>
+ <nav class="menubar" aria-label="File and editor commands">
+  <button id="newDoc" title="New project">File: New</button><button id="openProject">Open…</button><button id="saveProject" title="Ctrl+S">Download Project</button><button id="diskOpen">Disk Open…</button><button id="diskSave">Disk Save…</button><button id="pngExport">PNG</button><button id="sheetExport">Sprite Sheet</button><button id="sheetImport" title="Import exported sheet PNG + JSON manifest">Import Sheet…</button>
+ </nav>
+ <div class="toolbar" aria-label="Editing options">
+  <button id="undo" title="Ctrl+Z">↶ Undo</button><button id="redo" title="Ctrl+Y">↷ Redo</button><span class="divide"></span>
+  <button id="zoomOut" title="Minus">−</button><label>Zoom <select id="zoom" aria-label="Zoom"><option value="1">100%</option><option value="1.5">150%</option><option value="2">200%</option><option value="2.5">250%</option><option value="3">300%</option><option value="4">400%</option><option value="5">500%</option><option value="6">600%</option><option value="8" selected>800%</option><option value="12">1200%</option><option value="16">1600%</option><option value="24">2400%</option><option value="32">3200%</option></select></label><button id="zoomIn" title="Plus">+</button>
+  <label><input type="checkbox" id="grid" checked> Grid</label><label><input type="checkbox" id="onion"> Onion skin</label><span class="divide"></span>
+  <button id="resize">Canvas Size…</button><label>W <output id="canvasW">32</output> × H <output id="canvasH">32</output></label>
+ </div>
+ <div class="main">
+  <aside class="panel tools"><h2>Tools</h2><div id="toolgrid" class="toolgrid" aria-label="Drawing tools">
+   <button data-tool="pencil" title="Pencil (B)" class="active"><b>✎</b>Pencil</button><button data-tool="eraser" title="Eraser (E)"><b>▧</b>Eraser</button>
+   <button data-tool="bucket" title="Bucket (G)"><b>▨</b>Fill</button><button data-tool="eyedropper" title="Eyedropper (I)"><b>♧</b>Picker</button>
+   <button data-tool="line" title="Line (L)"><b>╱</b>Line</button><button data-tool="rect" title="Rectangle (R)"><b>□</b>Rectangle</button>
+   <button data-tool="fillrect" title="Filled Rectangle (U)"><b>▣</b>Solid Rect</button><button data-tool="pan" title="Pan (H) or hold Space"><b>✥</b>Pan</button><button data-tool="select" title="Rectangular selection (S); drag inside to move"><b>▤</b>Select</button>
+  </div><div class="actions" id="selectionActions"><button id="selectAll" title="Select entire image">All</button><button id="copySelection">Copy</button><button id="cutSelection">Cut</button><button id="pasteSelection">Paste</button><button id="flipH">Flip ↔</button><button id="flipV">Flip ↕</button><button id="deselect">None</button></div><p class="hint toolhint">Select (S) then drag inside selection to move it. Copy/Paste uses an internal pixel clipboard. Right mouse: background color. Middle mouse / Space: pan. Touch: two fingers to pan and zoom.</p></aside>
+  <section class="workspace" aria-label="Canvas and frames">
+   <div class="stage" id="stage"><div id="pixelwrap" class="pixelwrap"><canvas id="canvas" width="32" height="32" aria-label="Editable sprite canvas"></canvas><div id="pixelgrid" class="pixelgrid"></div><div id="selectionOverlay" class="selectionOverlay" hidden></div></div></div>
+   <div class="panel timeline"><div class="timeline-head"><h2>Animation Frames</h2><div class="actions"><button id="addFrame">+ New</button><button id="dupFrame">Duplicate</button><button id="deleteFrame">Delete</button><button id="frameLeft" title="Move frame left">◀</button><button id="frameRight" title="Move frame right">▶</button></div><label>Duration <input id="duration" type="number" min="20" max="60000" step="10" value="120"> ms</label><label id="loopLabel"><input type="checkbox" id="loop" checked> Loop</label><button id="play">▶ Play</button></div><div class="frames" id="frames" role="list" aria-label="Animation frames"></div></div>
+  </section>
+  <aside class="side" aria-label="Colors and layers">
+   <div class="panel section"><h2 class="section-title">Color &amp; Palette</h2>
+    <div class="formrow"><span>FG</span><input type="color" id="fgPick" aria-label="Foreground RGB" value="#000000"><input id="fgHex" class="hex" aria-label="Foreground RGBA hex" value="#000000ff" maxlength="9"></div>
+    <div class="formrow"><span>Alpha</span><input type="range" id="fgAlpha" min="0" max="255" value="255" aria-label="Foreground alpha"><output id="alphaOut">255</output></div>
+    <div class="formrow"><span>BG</span><input type="color" id="bgPick" aria-label="Background RGB" value="#ffffff"><input id="bgHex" class="hex" aria-label="Background RGBA hex" value="#ffffffff" maxlength="9"></div>
+    <div class="formrow"><button id="swapColors">⇄ Swap</button><button id="updateSwatch" title="Save foreground color to selected swatch">Set Swatch</button></div>
+    <div class="palette" id="palette" aria-label="Persistent project palette"></div><small class="hint">Select a swatch to draw. Set Swatch writes FG to the selected slot.</small>
+   </div>
+   <div class="panel section"><h2 class="section-title">Layers (top above bottom)</h2><div class="list" id="layers" role="list" aria-label="Layers"></div>
+    <div class="actions"><button id="layerAdd">+ Layer</button><button id="layerDelete">Delete</button><button id="layerUp" title="Move layer above">▲</button><button id="layerDown" title="Move layer below">▼</button><button id="layerRename">Rename</button></div><div class="actions layerNudges"><span title="Move selected layer cel in this frame by one image pixel">Move cel:</span><button id="nudgeLeft" title="Move cel left">←</button><button id="nudgeUp" title="Move cel up">↑</button><button id="nudgeDown" title="Move cel down">↓</button><button id="nudgeRight" title="Move cel right">→</button><label title="Apply movement to every animation frame"><input type="checkbox" id="moveAllFrames"> All frames</label></div>
+    <label>Opacity <input type="range" id="layerOpacity" min="0" max="100" value="100"><output id="layerOpacityOut">100%</output></label></div>
+   <div class="panel previewBox"><canvas id="preview" width="64" height="64" aria-label="Animation preview"></canvas><div><h3>Actual frame timings</h3><p class="hint" id="previewLabel">Frame 1</p><p class="hint">Transparent PNG / RGBA.</p></div></div>
+  </aside>
+ </div>
+ <footer class="status"><span id="statusText" role="status">Ready · Pencil · 32 × 32</span><span id="coordText">(–, –) | 800%</span></footer>
+</div>
+<input id="projectFile" type="file" accept=".json,.lss.json,application/json" hidden><input id="pngFile" type="file" accept="image/png,.png" hidden><input id="sheetFiles" type="file" accept=".png,.json,image/png,application/json" multiple hidden>
+<div id="dialogBackdrop" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog-title" id="dialogTitle">Sprite Studio</div><div class="dialog-body" id="dialogBody"></div><div class="dialog-footer"><button id="dialogCancel">Cancel</button><button id="dialogOK">OK</button></div></div></div>
+<script>/* @INLINE_MODEL@ */</script><script>/* @INLINE_PNG@ */</script><script>/* @INLINE_SHEET@ */</script><script>/* @INLINE_APP@ */</script>
+</body></html>

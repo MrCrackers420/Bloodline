@@ -1,0 +1,11 @@
+[package]
+name = "latch98"
+version = "0.7.0"
+edition = "2021"
+description = "A retro Latch 98 desktop powered by Rust and an HTML frontend"
+license = "MIT"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true

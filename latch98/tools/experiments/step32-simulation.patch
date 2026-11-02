@@ -1,0 +1,12 @@
+--- a/Norn_World_Lab_Step32.html
++++ b/Norn_World_Lab_Step32_Simulation_Updated.html
+@@ -12798,7 +12798,8 @@
+   if(!Number.isFinite(d.lessonAt))d.lessonAt=t+Math.random()*5;
+   if(t<d.lessonAt)continue;
+   d.lessonAt=t+4+Math.random()*6;
+-  const listeners=ns.filter(n=>Math.abs((n.body?.x??n.x??0)-d.x)<180 && (d.lane==null||n.lane==null||d.lane===n.lane));
++  const listeners=ns.filter(n=>n.body && Number.isFinite(window.NornCore.cxOf(n.body)) &&
++    Math.abs(window.NornCore.cxOf(n.body)-d.x)<180 && (d.lane==null||n.lane==null||d.lane===n.lane));
+   if(!listeners.length)continue;
+   const word=doozerWords[Math.floor(Math.random()*doozerWords.length)];
+   for(const n of listeners)hear(n,word,4.5,d);

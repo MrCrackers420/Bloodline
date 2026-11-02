@@ -1,0 +1,38 @@
+/* LatchNet: classic hypertext styling. */
+.ln-shell{height:100%;min-height:0;display:flex;flex-direction:column;font:12px Tahoma,Arial,sans-serif;color:#111;background:#c0c0c0}
+.ln-toolbar{display:flex;flex-wrap:wrap;gap:2px;align-items:center;padding:3px 5px 4px;border-top:1px solid white;border-bottom:1px solid #808080;flex:none}
+.ln-tool{background:transparent;border:1px solid transparent;min-height:25px;padding:2px 7px;color:#111;white-space:nowrap}
+.ln-tool:not(:disabled):hover{border:1px outset #eee;background:#dadada}.ln-tool:disabled{color:#858585}
+.ln-address{display:flex;align-items:center;gap:5px;padding:4px 6px;flex:none}.ln-address label{color:#333}
+.ln-address input{background:#fff;border:2px inset #e3e3e3;padding:3px 5px;min-width:0;flex:1;font:12px Arial,sans-serif;height:26px}
+.ln-address button,.ln-tiny{background:#c0c0c0;border:2px outset white;padding:3px 8px;min-height:23px}
+.ln-address button:active,.ln-tiny:active{border-style:inset}
+.ln-viewport{background:white;border:2px inset #c0c0c0;overflow:auto;min-height:0;flex:1;overscroll-behavior:contain}
+.ln-page{min-height:100%;padding:14px 20px;font:14px/1.35 'Times New Roman',Georgia,serif;color:#101010;overflow-wrap:anywhere}
+.ln-page a{color:#00e;text-decoration:underline;cursor:pointer}.ln-page a:visited{color:#551a8b}.ln-page a:hover{text-decoration:underline;background:#ffffc1}
+.ln-page h1{font-size:30px;margin:10px 0}.ln-page h2{font-size:22px;margin:9px 0}.ln-page h3{font-size:17px;margin:12px 0 5px}.ln-page p{margin:8px 0}.ln-page hr{border:0;border-top:1px solid #888;margin:14px 0}.ln-page table{border-collapse:separate;border-spacing:2px;max-width:100%}.ln-page td,.ln-page th{padding:5px;vertical-align:top}.ln-page .ln-small{font-size:12px}.ln-page .ln-tiny-text{font:11px/1.35 Arial,sans-serif}.ln-page .ln-dim{color:#555}.ln-page .ln-counter{font:12px monospace;color:#0f0;background:#000;display:inline-block;padding:3px 8px;letter-spacing:2px;border:2px inset #aaa}.ln-page .ln-banner{padding:10px;border:3px ridge #bbb;text-align:center;background:linear-gradient(100deg,#11286f,#3955a7);color:#fff}.ln-page .ln-banner h1,.ln-page .ln-banner h2{margin:0;color:#fff;text-shadow:2px 2px #000}.ln-page .ln-panel{border:1px solid #777;background:#f5f5f5;padding:10px;margin:10px 0}.ln-page .ln-note{background:#ffffd9;border:1px dashed #9a8b35;padding:8px}.ln-page .ln-columns{display:grid;grid-template-columns:1fr 210px;gap:16px}.ln-page .ln-card{border:1px solid #bbb;padding:8px;margin:5px 0}.ln-page .ln-retro-table{width:100%;border:1px solid #888;background:#e9edf4}.ln-page .ln-retro-table th{background:#14266d;color:white;text-align:left;font:12px Arial}.ln-page .ln-retro-table tr:nth-child(odd) td{background:white}
+.ln-page .ln-site-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:8px;border:2px ridge #bbb;background:#e1edff}
+.ln-page .ln-site-head strong{font:700 22px Georgia,serif;color:#001d70}.ln-page .ln-nav{font:12px Arial,sans-serif;padding:6px 0;text-align:center;border-bottom:1px solid #bbb}
+.ln-page .ln-form-row{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:7px 0;font:12px Arial,sans-serif}.ln-page input,.ln-page textarea,.ln-page select{font:13px Arial,sans-serif;background:white;color:#111;border:2px inset #ddd;padding:4px;max-width:100%}.ln-page button{font:12px Arial,sans-serif;color:#111;background:#ddd;border:2px outset white;padding:4px 10px;cursor:pointer}.ln-page button:active{border-style:inset}.ln-page .ln-result{margin:5px 0 8px}.ln-page .ln-sign{font:italic 12px Georgia,serif;color:#515151}
+.ln-page.ln-green{background:#e8ffdb;color:#113f14}.ln-page.ln-green .ln-site-head{background:#b1d991;border-color:#557d4d}.ln-page.ln-green .ln-site-head strong{color:#1d511d}
+.ln-page.ln-purple{background:#f8edff;color:#340053}.ln-page.ln-purple .ln-site-head{background:#422278;color:white}.ln-page.ln-purple .ln-site-head strong{color:#ffffa1}.ln-page.ln-purple a{color:#3827ca}
+.ln-page.ln-dark{background:#080b19;color:#abd4b9;font:13px/1.5 'Courier New',monospace}.ln-page.ln-dark a{color:#7afccc}.ln-page.ln-dark h1,.ln-page.ln-dark h2{color:#ecbb6d}.ln-page.ln-dark .ln-panel{background:#15172d;color:#c0e6cc;border-color:#3c755d}
+.ln-page.ln-paper{background:#fffbe9;color:#30261e}.ln-page.ln-paper .ln-banner{background:#6f3928}
+.ln-site-foot{padding:16px 0 5px;margin-top:20px;border-top:1px solid #aaa;text-align:center;font:11px Arial,sans-serif;color:#666}
+.ln-status{display:flex;align-items:center;justify-content:space-between;gap:4px;border-top:1px solid white;min-height:21px;padding:1px 5px;font:11px Tahoma,Arial,sans-serif;flex:none}.ln-status span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.ln-siteicon{font-size:18px}
+@media(max-width:650px){.ln-page{padding:10px;font-size:13px}.ln-page .ln-columns{grid-template-columns:1fr}.ln-page h1{font-size:25px}.ln-page table{font-size:12px}.ln-toolbar{gap:0}.ln-tool{padding:2px 5px}.ln-address{gap:3px}.ln-address input{font-size:12px}.ln-page .ln-site-head strong{font-size:19px}}
+/* Round 3: functional mail, forum archives and catalogue layouts (no external assets). */
+.ln-page .ln-forum-post{border:1px solid #8c97ad;background:#eff2f7;margin:9px 0;padding:8px 10px;box-shadow:2px 2px #ddd}
+.ln-page .ln-forum-post>div{background:#d4dfef;border-bottom:1px solid #aeb6c4;padding:4px 6px;font:12px Tahoma,Arial,sans-serif}
+.ln-page .ln-forum-post p{white-space:pre-wrap;line-height:1.45;margin:9px 6px}
+.ln-page .ln-mail-banner{background:#fff1cb}.ln-page .ln-mail-search{border:1px solid #a7a7a7;background:#eef2f8;padding:8px;margin:12px 0}
+.ln-page .ln-mail-search label{flex:1;display:flex;align-items:center;flex-wrap:wrap;gap:6px}.ln-page .ln-mail-search input{min-width:155px;flex:1}
+.ln-page .ln-mail-table td{font:12px/1.4 Arial,sans-serif}.ln-page .ln-mail-table a{font-weight:bold}
+.ln-page .ln-mail-body{white-space:normal;overflow-wrap:anywhere;line-height:1.55;border-top:1px solid #bbb;padding:14px 6px;margin-top:14px;font-size:14px}
+.ln-page .ln-attachment{background:#eef4fa;border:2px ridge #c0c0c0}
+.ln-page .ln-compose{margin-top:16px;border:1px solid #999;padding:9px;background:#f5f4ee}
+.ln-page .ln-compose summary{cursor:pointer;font:13px Arial,sans-serif;min-height:24px}
+.ln-page .ln-compose form{margin-top:8px}.ln-page .ln-compose textarea{display:block;resize:vertical}
+.ln-page .ln-terminal{font:12px/1.4 'Courier New',monospace;color:#d6ffbd;background:#090f13;border:3px inset #bdbdbd;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.ln-page .ln-retro-table a{display:inline-block;min-height:18px}.ln-page button:focus-visible,.ln-page a:focus-visible,.ln-shell button:focus-visible,.ln-shell input:focus-visible{outline:2px solid #002db3;outline-offset:1px}
+@media(max-width:460px){.ln-page .ln-mail-table{display:block;overflow-x:auto}.ln-page .ln-mail-table td{padding:5px 3px}.ln-page .ln-mail-search{gap:5px}.ln-page .ln-mail-search input{width:100%;min-width:0}.ln-page .ln-forum-post{padding:6px}.ln-page .ln-compose textarea{width:100%!important}}

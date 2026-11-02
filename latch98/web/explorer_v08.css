@@ -1,0 +1,34 @@
+
+/* Windows 98 Explorer refinements, all inside its virtual desktop */
+.explorer-filepane{display:flex;flex:1;min-width:0;min-height:0;flex-direction:column;border:2px inset #ddd;background:white}
+.explorer-filepane .explorer-results{border:0;min-height:0;flex:1}
+.explorer-shell .explorer-headings{display:none;min-height:21px;flex:none;border-bottom:1px solid #999;background:#c0c0c0;grid-template-columns:minmax(150px,2fr) 73px minmax(80px,1fr) 105px}
+.explorer-shell.details-mode .explorer-headings{display:grid}
+.explorer-headings button{min-width:0;text-align:left;white-space:nowrap;border:2px solid;border-color:#fff #666 #666 #fff;background:#c0c0c0;font:11px Tahoma,Arial,sans-serif;padding:1px 5px}
+.explorer-shell .explorer-tree{padding:3px 0;gap:0}
+.tree-line{display:flex;min-height:21px;align-items:center;white-space:nowrap}
+.tree-expander{width:12px;height:12px;min-width:12px;padding:0;margin-right:2px;background:#fff;border:1px solid #777;font:12px/9px monospace;text-align:center}
+.tree-expander.tree-nochild{visibility:hidden}
+.tree-entry{min-height:19px;min-width:0;flex:1;gap:2px;padding:0 3px 0 0;text-overflow:ellipsis;overflow:hidden}
+.tree-entry span{overflow:hidden;text-overflow:ellipsis}
+.tree-line:hover{background:#e9e9e9}.tree-entry.current{background:#000080;color:#fff}
+.explorer-shell.tree-hidden .explorer-tree{display:none}
+.explorer-results{gap:5px 9px}
+.explorer-results .fs-item .fs-item-date{display:none}
+.explorer-results.small-view,.explorer-results.list-view{display:flex;flex-direction:column;align-items:stretch;flex-wrap:nowrap;gap:1px;padding:4px}
+.explorer-results.small-view .fs-item,.explorer-results.list-view .fs-item{width:auto;min-height:24px;height:24px;flex:none;display:flex;flex-direction:row;align-items:center;text-align:left;gap:7px;padding:1px 4px;word-break:normal}
+.explorer-results.small-view .fs-item .small-icon,.explorer-results.list-view .fs-item .small-icon{width:19px;height:19px;flex:none}
+.explorer-results.small-view .fs-item-name,.explorer-results.list-view .fs-item-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.explorer-results.details-view{padding:0;gap:0;flex-direction:column;flex-wrap:nowrap}
+.explorer-results.details-view .fs-item{display:grid;grid-template-columns:minmax(150px,2fr) 73px minmax(80px,1fr) 105px;grid-template-rows:23px;min-height:23px;width:100%;padding:0;gap:0;align-items:center;flex:none;text-align:left;overflow:hidden}
+.explorer-results.details-view .fs-item .small-icon{grid-column:1;grid-row:1;width:17px;height:17px;margin-left:4px}
+.explorer-results.details-view .fs-item .fs-item-name{grid-column:1;grid-row:1;margin-left:25px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.explorer-results.details-view .fs-item .fs-item-size{grid-column:2;grid-row:1;display:block;text-align:right;padding-right:5px}
+.explorer-results.details-view .fs-item .fs-item-type{grid-column:3;grid-row:1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
+.explorer-results.details-view .fs-item .fs-item-date{grid-column:4;grid-row:1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
+.explorer-results.details-view .fs-item.selected{background:#000080;color:#fff}
+.explorer-results.details-view .fs-item.selected .fs-item-name{background:transparent}
+.explorer-results .fs-item[draggable="true"]{cursor:default}
+.explorer-results .fs-item:active .fs-item-name{outline:1px dotted #555}
+.l98-properties .l98-prop-heading{display:flex;align-items:center;gap:10px;min-height:40px;font-size:13px}.l98-properties .l98-prop-heading .small-icon{width:32px;height:32px}.l98-properties .l98-prop-row{display:grid;grid-template-columns:78px minmax(0,1fr);gap:9px;margin:9px 0;overflow-wrap:anywhere;font-size:12px}
+@media (max-width:650px){.explorer-shell .explorer-tree{width:125px;min-width:100px;display:flex}.explorer-shell.tree-hidden .explorer-tree{display:none}.explorer-shell .explorer-toolbar{padding:2px 2px;overflow-x:auto}.explorer-toolbar button{padding:3px 7px}.explorer-results .fs-item{width:75px}.explorer-results.details-view .fs-item{grid-template-columns:minmax(130px,2fr) 67px minmax(70px,1fr) 88px;width:100%;min-width:360px}.explorer-shell .explorer-headings{min-width:360px;grid-template-columns:minmax(130px,2fr) 67px minmax(70px,1fr) 88px}.explorer-filepane{overflow-x:auto}.explorer-filepane .explorer-results{min-width:0}}

@@ -1,0 +1,12 @@
+{
+  "policy": "Integrator-approved Norn release; Latch workers must not modify this app",
+  "path": "apps/norn-world-lab/index.html",
+  "sha256": "a99c92ad18b5a40cb75d7b3d50772b6626fbbd16a7b8f5ac81dedb73398dcc29",
+  "baseline_id": "LATCH-R3-2026-11-01",
+  "incoming_release": {
+    "source": "NornWorldLab-Latch98-App.zip",
+    "release_sha256": "a99c92ad18b5a40cb75d7b3d50772b6626fbbd16a7b8f5ac81dedb73398dcc29",
+    "integration": "Latch R3 + Norn integrated specialist handoff",
+    "latchfs_bridge": "norn-disk-host and norn-files unchanged"
+  }
+}

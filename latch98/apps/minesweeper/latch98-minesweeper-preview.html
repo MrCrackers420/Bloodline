@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light"><title>Latch 98 - Minesweeper (Preview)</title>
+<!-- One-file preview: rules run in JS here. Build the Rust crate for the real Rust/WASM desktop app. -->
+<style>html,body{margin:0;background:#c0c0c0;min-height:100%;}#minesweeper-root{width:fit-content;max-width:100%;}
+/* Latch 98 Minesweeper. Scoped app contents: no OS desktop or Start menu. */
+.ms-app {
+  --ms-face: #ffff00;
+  --ms-tile: 16px;
+  --ms-gray: #c0c0c0;
+  --ms-shadow: #808080;
+  --ms-black: #000000;
+  --ms-white: #ffffff;
+  font-family: 'MS Sans Serif', 'Microsoft Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 12px;
+  color: #000;
+  background: var(--ms-gray);
+  box-sizing: border-box;
+  display: inline-flex;
+  flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0 0 5px;
+  overflow: visible;
+  user-select: none;
+  -webkit-user-select: none;
+  image-rendering: pixelated;
+}
+.ms-app *, .ms-app *::before, .ms-app *::after { box-sizing: border-box; }
+.ms-app button, .ms-app input { font: inherit; color: inherit; }
+.ms-app button { border-radius: 0; }
+.ms-menu-bar {
+  display: flex;
+  height: 22px;
+  flex: 0 0 22px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 10;
+  padding-left: 2px;
+}
+.ms-menu-label {
+  height: 21px;
+  line-height: 18px;
+  border: 1px solid transparent;
+  background: transparent;
+  padding: 0 8px;
+  cursor: default;
+  text-align: center;
+}
+.ms-menu-label:hover, .ms-menu-label.active { background: #000080; color: #fff; }
+.ms-popup {
+  position: absolute;
+  top: 20px;
+  left: 2px;
+  min-width: 187px;
+  padding: 3px 3px 4px;
+  background: #c0c0c0;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 1px 1px 0 #000;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+}
+.ms-popup[hidden] { display: none !important; }
+.ms-help-popup { left: 52px; min-width: 164px; }
+.ms-popup button {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  min-height: 24px;
+  border: 0;
+  background: transparent;
+  padding: 2px 7px 2px 4px;
+  text-align: left;
+  white-space: nowrap;
+  cursor: default;
+}
+.ms-popup button:hover, .ms-popup button:focus { background: #000080; color: #fff; outline: none; }
+.ms-check { display: inline-block; width: 18px; font-weight: 700; font-size: 14px; text-align: center; }
+.ms-shortcut { margin-left: auto; padding-left: 20px; color: #333; }
+.ms-popup button:hover .ms-shortcut { color: #fff; }
+.ms-rule { height: 2px; border-top: 1px solid #808080; border-bottom: 1px solid #fff; margin: 3px 2px; }
+.ms-panel-scroll { max-width: 100%; overflow: auto; padding: 0 5px 1px; overscroll-behavior-x: contain; }
+.ms-inset-area {
+  width: max-content;
+  padding: 5px;
+  border-style: solid;
+  border-width: 3px;
+  border-color: #808080 #fff #fff #808080;
+  background: #c0c0c0;
+}
+.ms-score-panel {
+  width: 100%;
+  min-height: 39px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  padding: 4px 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 5px;
+}
+.ms-counter {
+  background: #000;
+  border: 1px solid;
+  border-color: #808080 #fff #fff #808080;
+  width: 55px;
+  height: 29px;
+  min-width: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.ms-seg { display: flex; width: 51px; height: 28px; align-items: center; justify-content: center; }
+.ms-seg svg { width: 17px; height: 26px; display: block; flex: none; }
+.ms-smile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  flex: 0 0 27px;
+  background: #c0c0c0;
+  padding: 1px;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  box-shadow: 1px 1px #404040;
+  cursor: pointer;
+}
+.ms-smile:active { border-color: #808080 #fff #fff #808080; box-shadow: none; padding: 2px 0 0 2px; }
+.ms-face-art { display: block; width: 22px; height: 22px; }
+.ms-board-recess {
+  margin-top: 6px;
+  border: 3px solid;
+  border-color: #808080 #fff #fff #808080;
+  width: fit-content;
+}
+.ms-board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 9), var(--ms-tile));
+  grid-auto-rows: var(--ms-tile);
+  width: max-content;
+  background: #c0c0c0;
+  line-height: 1;
+  touch-action: manipulation;
+}
+.ms-cell {
+  width: var(--ms-tile);
+  height: var(--ms-tile);
+  min-width: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-family: Arial, sans-serif !important;
+  font-weight: 900;
+  font-size: calc(var(--ms-tile) * .8) !important;
+  line-height: 1;
+  border-radius: 0;
+  -webkit-tap-highlight-color: transparent;
+  cursor: default;
+  overflow: hidden;
+}
+.ms-cell.covered {
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  background: #c0c0c0;
+}
+.ms-cell.covered:active { border-color: #808080 #c0c0c0 #c0c0c0 #808080; }
+.ms-cell.opened {
+  background: #c0c0c0;
+  border: 1px solid #808080;
+}
+.ms-cell.exploded { background: #f00; }
+.ms-cell.n1 { color: #0000ff; }
+.ms-cell.n2 { color: #008000; }
+.ms-cell.n3 { color: #ff0000; }
+.ms-cell.n4 { color: #000080; }
+.ms-cell.n5 { color: #800000; }
+.ms-cell.n6 { color: #008080; }
+.ms-cell.n7 { color: #000; }
+.ms-cell.n8 { color: #808080; }
+.ms-question { color: #000; font-weight: 900; }
+.ms-wrong { color: red; position: absolute; font-size: calc(var(--ms-tile) * 1.1); font-weight: 900; text-shadow: 1px 1px #fff; line-height: 1; }
+.ms-cell.incorrect { position: relative; }
+.ms-tile-art { display: block; width: calc(var(--ms-tile) - 3px); height: calc(var(--ms-tile) - 3px); }
+.ms-cell:focus-visible { outline: 2px dotted #000; outline-offset: -3px; }
+.ms-touch-controls { display: none; gap: 5px; padding: 5px; align-items: center; white-space: nowrap; }
+.ms-touch-controls button, .ms-dialog-actions button {
+  background: #c0c0c0;
+  min-height: 25px;
+  padding: 2px 8px;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 1px 1px 0 #000;
+}
+.ms-touch-controls button[aria-pressed="true"] { border-color: #404040 #fff #fff #404040; box-shadow: none; background: #ddd; font-weight: bold; }
+.ms-longpress-hint { font-size: 10px; padding-left: 3px; color: #444; }
+.ms-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.ms-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, .15);
+  padding: 12px;
+}
+.ms-modal-backdrop[hidden] { display: none !important; }
+.ms-dialog {
+  font-family: 'MS Sans Serif', Tahoma, Arial, sans-serif;
+  font-size: 12px;
+  width: min(360px, 96vw);
+  max-height: 94vh;
+  display: flex;
+  flex-direction: column;
+  background: #c0c0c0;
+  border: 3px solid;
+  border-color: #fff #404040 #404040 #fff;
+  box-shadow: 1px 1px 0 #000;
+}
+.ms-dialog-title {
+  background: linear-gradient(to right, #000080, #1084d0);
+  color: #fff;
+  font-weight: bold;
+  min-height: 24px;
+  line-height: 20px;
+  padding: 2px 3px 2px 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.ms-dialog-x {
+  width: 20px;
+  height: 19px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  font-size: 16px !important;
+  font-weight: bold !important;
+  line-height: 11px;
+  padding: 0;
+}
+.ms-dialog-body { padding: 14px 16px 6px; max-height: 70vh; overflow: auto; }
+.ms-dialog-body p { margin: 0 0 12px; line-height: 1.5; }
+.ms-dialog-actions { display: flex; justify-content: center; gap: 10px; padding: 8px 10px 14px; }
+.ms-dialog-actions button { min-width: 78px; }
+.ms-dialog-actions button:active { border-color: #404040 #fff #fff #404040; box-shadow: none; }
+.ms-dialog-actions .ms-default-button { outline: 1px dotted #111; outline-offset: -5px; }
+.ms-custom-form { display: grid; gap: 10px; width: max-content; margin: 0 auto 3px; }
+.ms-custom-form label { display: grid; grid-template-columns: 60px 75px; gap: 8px; align-items: center; justify-content: end; }
+.ms-dialog input {
+  width: 100%;
+  padding: 3px;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  border-radius: 0;
+  background: white;
+  color: black;
+}
+.ms-dialog input[type=number] { appearance: textfield; }
+.ms-dialog input[type=number]::-webkit-inner-spin-button { display: none; }
+.ms-best-times { border-collapse: separate; border-spacing: 8px 7px; width: 100%; }
+.ms-best-times td:first-child { font-weight: 600; }
+.ms-about { display: flex; align-items: flex-start; gap: 13px; }
+.ms-about-icon { display: flex; width: 45px; height: 45px; flex: 0 0 45px; justify-content: center; align-items: center; border: 2px solid; border-color: #fff #808080 #808080 #fff; }
+.ms-about-icon svg { width: 30px; height: 30px; }
+@media (pointer: coarse) {
+  .ms-app { --ms-tile: 26px; font-size: 13px; }
+  .ms-cell { font-size: calc(var(--ms-tile) * .7) !important; }
+  .ms-touch-controls { display: flex; }
+  .ms-menu-label { height: 28px; line-height: 25px; }
+  .ms-menu-bar { height: 29px; flex-basis: 29px; }
+  .ms-popup { top: 27px; }
+}
+@media (max-width: 430px) {
+  .ms-longpress-hint { display: none; }
+}
+</style></head><body>
+<div id="minesweeper-root"></div><script>
+/**
+ * Zero-build preview adapter. This mirrors src/lib.rs so index.html stays
+ * immediately playable before the Rust WASM is built. Once pkg/ exists,
+ * app.js automatically selects the authoritative Rust implementation.
+ */
+class Minefield {
+  constructor(width, height, mines, seed) {
+    this.width = Math.max(2, Math.min(100, width | 0));
+    this.height = Math.max(2, Math.min(100, height | 0));
+    this.mines = Math.max(1, Math.min(this.width * this.height - 1, mines | 0));
+    this.marksEnabled = true;
+    this.reset(seed);
+  }
+  reset(seed) {
+    this.seed = (seed >>> 0) || 0x9e3779b9;
+    this.cells = Array.from({length: this.width * this.height}, () => ({mine: false, adj: 0, revealed: false, exploded: false, mark: 0}));
+    this.status = 0;
+    this.flags = 0;
+    this.opened = 0;
+    this.seconds = 0;
+  }
+  set_question_marks(value) {
+    this.marksEnabled = !!value;
+    if (!this.marksEnabled) this.cells.forEach(c => { if (c.mark === 2) c.mark = 0; });
+  }
+  rnd() {
+    let x = this.seed;
+    x ^= x << 13;
+    x ^= x >>> 17;
+    x ^= x << 5;
+    this.seed = x >>> 0;
+    return this.seed;
+  }
+  neighbors(index) {
+    const x = index % this.width, y = Math.floor(index / this.width), found = [];
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      if (!dx && !dy) continue;
+      let xx = x + dx, yy = y + dy;
+      if (xx >= 0 && yy >= 0 && xx < this.width && yy < this.height) found.push(yy * this.width + xx);
+    }
+    return found;
+  }
+  placeMines(first) {
+    let forbidden = new Set([first, ...this.neighbors(first)]);
+    if (this.cells.length - forbidden.size < this.mines) forbidden = new Set([first]);
+    const options = this.cells.map((_, i) => i).filter(i => !forbidden.has(i));
+    for (let i = 0; i < this.mines; i++) {
+      const at = i + this.rnd() % (options.length - i);
+      [options[i], options[at]] = [options[at], options[i]];
+      this.cells[options[i]].mine = true;
+    }
+    this.cells.forEach((cell, i) => { if (!cell.mine) cell.adj = this.neighbors(i).filter(j => this.cells[j].mine).length; });
+  }
+  openFrom(start) {
+    const queue = [start];
+    for (let head = 0; head < queue.length; head++) {
+      const index = queue[head], cell = this.cells[index];
+      if (cell.revealed || cell.mark === 1) continue;
+      if (cell.mine) {
+        cell.exploded = true;
+        cell.revealed = true;
+        this.status = 3;
+        return;
+      }
+      cell.mark = 0;
+      cell.revealed = true;
+      this.opened++;
+      if (!cell.adj) this.neighbors(index).forEach(j => {
+        const n = this.cells[j];
+        if (!n.revealed && n.mark !== 1 && !n.mine) queue.push(j);
+      });
+    }
+  }
+  checkWin() {
+    if (this.status !== 1 || this.opened !== this.cells.length - this.mines) return;
+    this.status = 2;
+    this.cells.forEach(cell => { if (cell.mine && cell.mark !== 1) { cell.mark = 1; this.flags++; } });
+  }
+  reveal(x, y) {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || this.status > 1) return;
+    const index = y * this.width + x, cell = this.cells[index];
+    if (cell.revealed || cell.mark === 1) return;
+    if (this.status === 0) { this.placeMines(index); this.status = 1; }
+    this.openFrom(index);
+    this.checkWin();
+  }
+  mark(x, y) {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || this.status > 1) return;
+    const cell = this.cells[y * this.width + x];
+    if (cell.revealed) return;
+    const previous = cell.mark;
+    cell.mark = previous === 0 ? 1 : previous === 1 && this.marksEnabled ? 2 : 0;
+    if (previous === 1) this.flags--;
+    if (cell.mark === 1) this.flags++;
+  }
+  chord(x, y) {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height || this.status !== 1) return;
+    const index = y * this.width + x, cell = this.cells[index];
+    if (!cell.revealed || !cell.adj || cell.mine) return;
+    const nearby = this.neighbors(index);
+    if (nearby.filter(i => this.cells[i].mark === 1).length !== cell.adj) return;
+    for (const i of nearby) {
+      if (this.status === 3) break;
+      if (!this.cells[i].revealed && this.cells[i].mark !== 1) this.openFrom(i);
+    }
+    this.checkWin();
+  }
+  tick() { if (this.status === 1) this.seconds = Math.min(999, this.seconds + 1); }
+  snapshot_json() {
+    const cells = this.cells.map(cell => cell.exploded ? 13
+      : this.status === 3 && cell.mark === 1 && !cell.mine ? 14
+      : cell.mark === 1 ? 1
+      : cell.revealed && !cell.mine ? 3 + cell.adj
+      : this.status === 3 && cell.mine ? 12
+      : cell.mark === 2 ? 2 : 0);
+    return JSON.stringify({width: this.width, height: this.height, mines: this.mines,
+      remaining: this.mines - this.flags, seconds: this.seconds,
+      status: this.status, marks_enabled: this.marksEnabled, cells});
+  }
+  free() { /* Rust WASM compatibility */ }
+}
+
+/**
+ * Latch 98 Minesweeper application content. No OS titlebar / start menu here.
+ * Call mountMinesweeper(container) from the desktop's window manager, or
+ * open index.html in a browser to play the preview immediately.
+ */
+
+const PRESETS = Object.freeze({
+  beginner: {width: 9, height: 9, mines: 10, label: 'Beginner'},
+  intermediate: {width: 16, height: 16, mines: 40, label: 'Intermediate'},
+  expert: {width: 30, height: 16, mines: 99, label: 'Expert'}
+});
+const STORAGE_KEY = 'latch98.minesweeper.best-times.v1';
+const RNG_SEED = () => {
+  if (globalThis.crypto?.getRandomValues) return globalThis.crypto.getRandomValues(new Uint32Array(1))[0];
+  return (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0;
+};
+
+function escapeHTML(text) {
+  return String(text).replace(/[&<>"']/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'}[c]));
+}
+
+function sevenSegment(number) {
+  const chars = number < 0 ? `-${String(Math.abs(number)).padStart(2, '0').slice(-2)}` : String(Math.min(999, number)).padStart(3, '0');
+  const segments = [
+    'M4 2H16L13 5H7Z', 'M17 3L20 5L19 11L16 13L14 11L15 6Z',
+    'M17 14L20 16L19 22L16 24L14 21L15 16Z',
+    'M4 23H16L13 26H7Z', 'M2 14L5 16L6 21L4 24L1 22L0 16Z',
+    'M2 3L5 6L6 11L4 13L1 11L0 5Z', 'M4 12H16L13 15H7Z'
+  ];
+  const on = {0:[0,1,2,3,4,5],1:[1,2],2:[0,1,6,4,3],3:[0,1,6,2,3],4:[5,6,1,2],5:[0,5,6,2,3],6:[0,5,6,4,2,3],7:[0,1,2],8:[0,1,2,3,4,5,6],9:[0,1,2,3,5,6],'-':[6]};
+  return `<span class="ms-seg" aria-hidden="true">${[...chars].map(c => `<svg viewBox="0 0 21 28" width="17" height="28">${segments.map((d, i) => `<path d="${d}" fill="${on[c]?.includes(i) ? '#f00' : '#3b0707'}"/>`).join('')}</svg>`).join('')}</span>`;
+}
+
+function smileSVG(mood) {
+  const eyes = mood === 'lost'
+    ? '<path d="M8 10l4 4m0-4l-4 4m10-4l4 4m0-4l-4 4" stroke="#111" stroke-width="1.6"/>'
+    : mood === 'won'
+      ? '<path d="M7 10h7v5H7zM16 10h7v5h-7zM14 12h2" fill="#111" stroke="#111" stroke-width="1"/>'
+      : mood === 'scared'
+        ? '<circle cx="10" cy="12" r="1.5"/><circle cx="20" cy="12" r="1.5"/>'
+        : '<rect x="9" y="11" width="2.5" height="3.5"/><rect x="19" y="11" width="2.5" height="3.5"/>';
+  const mouth = mood === 'scared'
+    ? '<ellipse cx="15" cy="21" rx="3" ry="4" fill="#111"/>'
+    : mood === 'lost'
+      ? '<path d="M10 23Q15 17 20 23" fill="none" stroke="#111" stroke-width="1.6"/>'
+      : '<path d="M8 19Q15 28 22 19" fill="none" stroke="#111" stroke-width="1.6"/>';
+  return `<svg class="ms-face-art" viewBox="0 0 30 30" role="img" aria-label="${mood} face"><circle cx="15" cy="15" r="13" fill="#ffff00" stroke="#111" stroke-width="1.5"/>${eyes}${mouth}</svg>`;
+}
+
+function mineSVG() {
+  return '<svg viewBox="0 0 20 20" class="ms-tile-art" aria-hidden="true"><path stroke="#111" stroke-width="2" d="M10 1v18M1 10h18M4 4l12 12M16 4L4 16"/><rect x="5" y="5" width="10" height="10" fill="#111"/><rect x="7" y="7" width="3" height="3" fill="#fff"/></svg>';
+}
+function flagSVG() {
+  return '<svg viewBox="0 0 20 20" class="ms-tile-art" aria-hidden="true"><path d="M10 3v14" stroke="#000" stroke-width="1.5"/><path d="M10 3L3 6.5L10 10Z" fill="red" stroke="#a00000" stroke-width=".5"/><path d="M5 17h10v2H5z" fill="#111"/></svg>';
+}
+function cellContents(code) {
+  if (code === 1) return flagSVG();
+  if (code === 2) return '<span class="ms-question">?</span>';
+  if (code === 12 || code === 13) return mineSVG();
+  if (code === 14) return `${flagSVG()}<span class="ms-wrong">×</span>`;
+  if (code >= 4 && code <= 11) return String(code - 3);
+  return '';
+}
+function cellClass(code) {
+  if (code === 0) return 'ms-cell covered';
+  if (code === 1) return 'ms-cell covered flagged';
+  if (code === 2) return 'ms-cell covered questioned';
+  if (code === 13) return 'ms-cell opened exploded';
+  if (code === 14) return 'ms-cell covered incorrect';
+  if (code === 12) return 'ms-cell opened';
+  return `ms-cell opened${code > 3 ? ` n${code - 3}` : ''}`;
+}
+
+function loadBest() {
+  try {
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    return Object.fromEntries(Object.keys(PRESETS).map(k => [k, data[k] && Number.isFinite(data[k].time) ? data[k] : null]));
+  } catch { return {beginner: null, intermediate: null, expert: null}; }
+}
+function saveBest(data) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch { /* storage disabled */ }
+}
+
+function installCSS() {}
+async function engineConstructor() { return {Constructor: Minefield, backend: "JavaScript preview (build Rust WASM to enable)"}; }
+
+/** @returns {Promise<{newGame: Function, getState: Function, destroy: Function, backend: string}>} */
+async function mountMinesweeper(container, options = {}) {
+  if (!(container instanceof Element)) throw new Error('A DOM container is required');
+  installCSS();
+  const {Constructor, backend} = await engineConstructor();
+  const app = document.createElement('section');
+  app.className = 'ms-app';
+  app.tabIndex = 0;
+  app.setAttribute('role', 'application');
+  app.setAttribute('aria-label', 'Latch 98 Minesweeper');
+  app.innerHTML = `
+    <div class="ms-menu-bar">
+      <button type="button" class="ms-menu-label" data-menu="game" aria-haspopup="true" aria-expanded="false">Game</button>
+      <button type="button" class="ms-menu-label" data-menu="help" aria-haspopup="true" aria-expanded="false">Help</button>
+      <div class="ms-popup" data-popup="game" hidden>
+        <button type="button" data-action="new">New <span class="ms-shortcut">F2</span></button>
+        <div class="ms-rule"></div>
+        <button type="button" data-action="difficulty" data-value="beginner"><span class="ms-check"></span>Beginner</button>
+        <button type="button" data-action="difficulty" data-value="intermediate"><span class="ms-check"></span>Intermediate</button>
+        <button type="button" data-action="difficulty" data-value="expert"><span class="ms-check"></span>Expert</button>
+        <button type="button" data-action="custom"><span class="ms-check" data-custom-check></span>Custom...</button>
+        <div class="ms-rule"></div>
+        <button type="button" data-action="marks"><span class="ms-check" data-marks-check></span>Marks (?)</button>
+        <div class="ms-rule"></div>
+        <button type="button" data-action="scores">Best Times...</button>
+      </div>
+      <div class="ms-popup ms-help-popup" data-popup="help" hidden>
+        <button type="button" data-action="instructions">How to Play</button>
+        <div class="ms-rule"></div>
+        <button type="button" data-action="about">About Minesweeper</button>
+      </div>
+    </div>
+    <div class="ms-panel-scroll">
+      <div class="ms-inset-area">
+        <div class="ms-score-panel">
+          <div class="ms-counter" data-counter="mines" aria-label="Mines remaining">${sevenSegment(10)}</div>
+          <button type="button" class="ms-smile" title="New game (F2)" aria-label="New game" data-action="new">${smileSVG('happy')}</button>
+          <div class="ms-counter" data-counter="timer" aria-label="Elapsed seconds">${sevenSegment(0)}</div>
+        </div>
+        <div class="ms-board-recess"><div class="ms-board" role="grid" aria-label="Minesweeper field"></div></div>
+      </div>
+    </div>
+    <div class="ms-touch-controls" aria-label="Touch input mode">
+      <span>Tap:</span><button type="button" data-touch="reveal" aria-pressed="true">Reveal</button><button type="button" data-touch="flag" aria-pressed="false">Flag</button>
+      <span class="ms-longpress-hint">Hold a square to flag it</span>
+    </div>
+    <span class="ms-sr-only ms-announcement" aria-live="polite"></span>
+    <div class="ms-modal-backdrop" hidden><div class="ms-dialog" role="dialog" aria-modal="true" aria-labelledby="ms-dialog-heading"></div></div>`;
+  container.replaceChildren(app);
+
+  let difficulty = 'beginner';
+  let config = {...PRESETS.beginner};
+  let marksEnabled = true;
+  let game = null;
+  let state = null;
+  let touchMode = 'reveal';
+  let menuOpen = '';
+  let pointerHeld = false;
+  let longPressTimer = null;
+  let suppressClicksUntil = 0;
+  let pressStart = null;
+  let startedAt = null;
+  let clock = null;
+  let destroyed = false;
+  const best = loadBest();
+  const board = app.querySelector('.ms-board');
+  const face = app.querySelector('.ms-smile');
+  const modalBackdrop = app.querySelector('.ms-modal-backdrop');
+  const dialog = app.querySelector('.ms-dialog');
+  const announcement = app.querySelector('.ms-announcement');
+  const counters = {mines: app.querySelector('[data-counter="mines"]'), timer: app.querySelector('[data-counter="timer"]')};
+  let previousCells = [], previousW = -1, previousH = -1;
+  let prevRemaining = undefined, prevSeconds = undefined, prevStatus = -1;
+
+  const getState = () => JSON.parse(game.snapshot_json());
+  function paintFace(mood) {
+    if (face.dataset.mood !== mood) { face.dataset.mood = mood; face.innerHTML = smileSVG(mood); }
+  }
+  function render() {
+    if (destroyed || !game) return;
+    const next = getState();
+    const oldStatus = state?.status ?? 0;
+    state = next;
+    if (next.width !== previousW || next.height !== previousH) {
+      previousW = next.width; previousH = next.height;
+      board.style.setProperty('--cols', String(next.width));
+      board.setAttribute('aria-rowcount', String(next.height));
+      board.setAttribute('aria-colcount', String(next.width));
+      board.replaceChildren(...next.cells.map((_, i) => {
+        const tile = document.createElement('button');
+        tile.type = 'button';
+        tile.setAttribute('role', 'gridcell');
+        tile.className = 'ms-cell covered';
+        tile.dataset.index = String(i);
+        tile.tabIndex = i === 0 ? 0 : -1;
+        return tile;
+      }));
+      previousCells = new Array(next.cells.length).fill(-1);
+      // Give the desktop host a chance to size its window when field size changes.
+      app.dispatchEvent(new CustomEvent('latch98:content-resize', {bubbles: true, detail: {width: next.width, height: next.height}}));
+    }
+    const tiles = board.children;
+    next.cells.forEach((kind, i) => {
+      if (previousCells[i] === kind) return;
+      previousCells[i] = kind;
+      const tile = tiles[i];
+      tile.className = cellClass(kind);
+      tile.innerHTML = cellContents(kind);
+      tile.setAttribute('aria-label', `${Math.floor(i / next.width) + 1}, ${i % next.width + 1}: ${kind === 0 ? 'covered' : kind === 1 ? 'flagged' : kind === 2 ? 'questioned' : kind === 3 ? 'empty' : kind > 3 && kind <= 11 ? kind - 3 + ' nearby mines' : kind === 14 ? 'wrong flag' : 'mine'}`);
+    });
+    if (prevRemaining !== next.remaining) {
+      counters.mines.innerHTML = sevenSegment(next.remaining);
+      counters.mines.setAttribute('aria-label', `${next.remaining} mines remaining`);
+      prevRemaining = next.remaining;
+    }
+    if (prevSeconds !== next.seconds) {
+      counters.timer.innerHTML = sevenSegment(next.seconds);
+      counters.timer.setAttribute('aria-label', `${next.seconds} seconds`);
+      prevSeconds = next.seconds;
+    }
+    if (!pointerHeld) paintFace(next.status === 3 ? 'lost' : next.status === 2 ? 'won' : 'happy');
+    if (oldStatus === 0 && next.status === 1) startedAt = Date.now();
+    if (oldStatus !== next.status && next.status === 2) {
+      announcement.textContent = 'You won!';
+      if (difficulty !== 'custom' && (!best[difficulty] || next.seconds < best[difficulty].time)) bestTimeDialog(next.seconds);
+    }
+    if (oldStatus !== next.status && next.status === 3) announcement.textContent = 'You hit a mine. Game over.';
+  }
+  function startNew(nextConfig = config, nextDifficulty = difficulty) {
+    config = {...nextConfig};
+    difficulty = nextDifficulty;
+    if (game?.free) game.free();
+    game = new Constructor(config.width, config.height, config.mines, RNG_SEED());
+    game.set_question_marks(marksEnabled);
+    state = null;
+    previousW = -1; previousH = -1;
+    previousCells = [];
+    prevRemaining = undefined; prevSeconds = undefined; prevStatus = -1;
+    pointerHeld = false;
+    startedAt = null;
+    announcement.textContent = '';
+    closeMenu();
+    render();
+  }
+  function takeAction(type, index) {
+    if (!game || !state) return;
+    const x = index % state.width, y = Math.floor(index / state.width);
+    if (type === 'mark') game.mark(x, y);
+    else if (type === 'chord') game.chord(x, y);
+    else game.reveal(x, y);
+    render();
+  }
+  function closeMenu() {
+    menuOpen = '';
+    for (const popup of app.querySelectorAll('.ms-popup')) popup.hidden = true;
+    for (const label of app.querySelectorAll('.ms-menu-label')) {
+      label.classList.remove('active'); label.setAttribute('aria-expanded', 'false');
+    }
+  }
+  function openMenu(name) {
+    if (menuOpen === name) { closeMenu(); return; }
+    closeMenu(); menuOpen = name;
+    const popup = app.querySelector(`[data-popup="${name}"]`);
+    if (popup) popup.hidden = false;
+    const label = app.querySelector(`[data-menu="${name}"]`);
+    if (label) { label.classList.add('active'); label.setAttribute('aria-expanded', 'true'); }
+    app.querySelectorAll('[data-action="difficulty"]').forEach(node => {
+      node.querySelector('.ms-check').textContent = node.dataset.value === difficulty ? '✓' : '';
+    });
+    app.querySelector('[data-custom-check]').textContent = difficulty === 'custom' ? '✓' : '';
+    app.querySelector('[data-marks-check]').textContent = marksEnabled ? '✓' : '';
+  }
+  function openDialog(title, content, actions) {
+    closeMenu();
+    dialog.innerHTML = `<div class="ms-dialog-title" id="ms-dialog-heading">${escapeHTML(title)}<button type="button" class="ms-dialog-x" aria-label="Close dialog" data-dialog-close>×</button></div><div class="ms-dialog-body">${content}</div><div class="ms-dialog-actions">${actions}</div>`;
+    modalBackdrop.hidden = false;
+    dialog.querySelector('[data-dialog-close]').addEventListener('click', closeDialog);
+    dialog.querySelector('[autofocus]')?.focus();
+  }
+  function closeDialog() { modalBackdrop.hidden = true; dialog.innerHTML = ''; app.focus({preventScroll: true}); }
+  function customDialog() {
+    openDialog('Custom Field', `<form id="ms-custom-form" class="ms-custom-form">
+      <label>Height: <input type="number" name="height" min="2" max="24" value="${config.height}" required></label>
+      <label>Width: <input type="number" name="width" min="2" max="60" value="${config.width}" required></label>
+      <label>Mines: <input type="number" name="mines" min="1" max="999" value="${config.mines}" required></label>
+    </form>`, '<button type="submit" form="ms-custom-form" class="ms-default-button">OK</button><button type="button" data-cancel>Cancel</button>');
+    dialog.querySelector('[data-cancel]').addEventListener('click', closeDialog);
+    dialog.querySelector('#ms-custom-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const fd = new FormData(e.currentTarget);
+      const w = Math.min(60, Math.max(2, Number(fd.get('width')))), h = Math.min(24, Math.max(2, Number(fd.get('height'))));
+      const m = Math.max(1, Math.min(w * h - 1, Number(fd.get('mines'))));
+      closeDialog();
+      startNew({width:w, height:h, mines:m, label:'Custom'}, 'custom');
+    });
+  }
+  function scoresDialog() {
+    const rows = Object.entries(PRESETS).map(([id, cfg]) => `<tr><td>${cfg.label}:</td><td>${best[id] ? `${best[id].time} sec.` : '999 sec.'}</td><td>${escapeHTML(best[id]?.name || 'Anonymous')}</td></tr>`).join('');
+    openDialog('Fastest Mine Sweepers', `<table class="ms-best-times">${rows}</table>`, '<button type="button" data-reset-scores>Reset Scores</button><button type="button" data-cancel class="ms-default-button">OK</button>');
+    dialog.querySelector('[data-cancel]').addEventListener('click', closeDialog);
+    dialog.querySelector('[data-reset-scores]').addEventListener('click', () => {
+      for (const level of Object.keys(PRESETS)) best[level] = null;
+      saveBest(best); scoresDialog();
+    });
+  }
+  function bestTimeDialog(time) {
+    openDialog('New Best Time!', `<p>You cleared the ${escapeHTML(PRESETS[difficulty].label)} field in <b>${time} seconds</b>!</p><form id="ms-name-form"><label>Your name: <input type="text" name="name" maxlength="24" value="Player" autofocus required></label></form>`, '<button type="submit" form="ms-name-form" class="ms-default-button">OK</button>');
+    dialog.querySelector('#ms-name-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const name = String(new FormData(e.currentTarget).get('name') || 'Player').trim().slice(0, 24) || 'Player';
+      best[difficulty] = {time, name};
+      saveBest(best); closeDialog();
+    });
+  }
+  function helpDialog() {
+    openDialog('How to Play', `<p>Find every mine without uncovering one. The number on a square tells you how many mines touch it (including diagonals).</p>
+      <p><b>Mouse:</b> Left-click to reveal. Right-click to flag. Double-click or middle-click a number to uncover nearby squares when the correct number of flags is placed.</p>
+      <p><b>Touch:</b> Tap to reveal, hold to flag, or switch to Flag mode below the board. Tap a revealed number to chord.</p>
+      <p><b>Shortcut:</b> F2 starts a new game. The clock starts on your first reveal.</p>`, '<button type="button" data-cancel class="ms-default-button">OK</button>');
+    dialog.querySelector('[data-cancel]').addEventListener('click', closeDialog);
+  }
+  function aboutDialog() {
+    openDialog('About Minesweeper', '<div class="ms-about"><div class="ms-about-icon">' + mineSVG() + '</div><div><b>Latch 98 Minesweeper</b><p>A classic mine-clearing puzzle for Latch 98.</p><p>Game rules: Rust. Interface: HTML/CSS.</p></div></div>', '<button type="button" data-cancel class="ms-default-button">OK</button>');
+    dialog.querySelector('[data-cancel]').addEventListener('click', closeDialog);
+  }
+
+  function clickOnApp(e) {
+    const menu = e.target.closest('[data-menu]');
+    if (menu) { openMenu(menu.dataset.menu); return; }
+    const action = e.target.closest('[data-action]');
+    if (action) {
+      const type = action.dataset.action;
+      if (type === 'new') startNew();
+      else if (type === 'difficulty') startNew(PRESETS[action.dataset.value], action.dataset.value);
+      else if (type === 'custom') customDialog();
+      else if (type === 'scores') scoresDialog();
+      else if (type === 'instructions') helpDialog();
+      else if (type === 'about') aboutDialog();
+      else if (type === 'marks') { marksEnabled = !marksEnabled; game.set_question_marks(marksEnabled); closeMenu(); render(); }
+      return;
+    }
+    const mode = e.target.closest('[data-touch]');
+    if (mode) {
+      touchMode = mode.dataset.touch;
+      app.querySelectorAll('[data-touch]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.touch === touchMode)));
+      return;
+    }
+    const tile = e.target.closest('.ms-cell');
+    if (tile && board.contains(tile) && modalBackdrop.hidden && Date.now() >= suppressClicksUntil) {
+      const idx = Number(tile.dataset.index);
+      if (state.cells[idx] >= 3 && state.cells[idx] <= 11) takeAction('chord', idx);
+      else takeAction(touchMode === 'flag' ? 'mark' : 'reveal', idx);
+    } else if (!tile && !menu && !action && menuOpen && !e.target.closest('.ms-popup')) closeMenu();
+  }
+  app.addEventListener('click', clickOnApp);
+  app.addEventListener('contextmenu', e => {
+    const tile = e.target.closest('.ms-cell');
+    if (tile) {
+      e.preventDefault();
+      if (Date.now() >= suppressClicksUntil && modalBackdrop.hidden) takeAction('mark', Number(tile.dataset.index));
+    }
+  });
+  app.addEventListener('auxclick', e => {
+    const tile = e.target.closest('.ms-cell');
+    if (tile && e.button === 1) { e.preventDefault(); takeAction('chord', Number(tile.dataset.index)); }
+  });
+  app.addEventListener('pointerdown', e => {
+    const tile = e.target.closest('.ms-cell');
+    if (!tile || !modalBackdrop.hidden) return;
+    pressStart = {x:e.clientX, y:e.clientY};
+    if (e.button === 0) { pointerHeld = true; if (state?.status < 2) paintFace('scared'); }
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(() => {
+        suppressClicksUntil = Date.now() + 800;
+        pointerHeld = false;
+        takeAction('mark', Number(tile.dataset.index));
+        if (navigator.vibrate) navigator.vibrate(20);
+      }, 500);
+    }
+  });
+  app.addEventListener('pointermove', e => {
+    if (pressStart && (Math.abs(e.clientX - pressStart.x) > 12 || Math.abs(e.clientY - pressStart.y) > 12)) {
+      clearTimeout(longPressTimer); pressStart = null;
+    }
+  });
+  function clearPress() {
+    clearTimeout(longPressTimer);
+    longPressTimer = null; pointerHeld = false; pressStart = null;
+    if (state) paintFace(state.status === 3 ? 'lost' : state.status === 2 ? 'won' : 'happy');
+  }
+  app.addEventListener('pointerup', clearPress);
+  app.addEventListener('pointercancel', clearPress);
+  app.addEventListener('pointerleave', clearPress);
+  app.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { if (!modalBackdrop.hidden) closeDialog(); else closeMenu(); return; }
+    if (e.key === 'F2' && modalBackdrop.hidden) { e.preventDefault(); startNew(); }
+    if (e.key.toLowerCase() === 'f' && modalBackdrop.hidden && document.activeElement?.classList.contains('ms-cell')) {
+      e.preventDefault(); takeAction('mark', Number(document.activeElement.dataset.index));
+    }
+    if (e.key.startsWith('Arrow') && modalBackdrop.hidden && document.activeElement?.classList.contains('ms-cell')) {
+      e.preventDefault();
+      const current = Number(document.activeElement.dataset.index);
+      const offsets = {ArrowUp: -state.width, ArrowDown: state.width, ArrowLeft: -1, ArrowRight: 1};
+      const delta = offsets[e.key];
+      if (delta === undefined) return;
+      const target = Math.max(0, Math.min(state.cells.length - 1, current + delta));
+      if ((delta === -1 && current % state.width === 0) || (delta === 1 && current % state.width === state.width - 1)) return;
+      const targetTile = board.children[target];
+      document.activeElement.tabIndex = -1;
+      targetTile.tabIndex = 0;
+      targetTile.focus();
+    }
+  });
+  const outsideClick = e => { if (menuOpen && !app.contains(e.target)) closeMenu(); };
+  document.addEventListener('pointerdown', outsideClick);
+  const tickClock = () => {
+    if (destroyed || !game || !state || state.status !== 1 || !startedAt) return;
+    const target = Math.min(999, Math.floor((Date.now() - startedAt) / 1000));
+    let updated = false;
+    for (let t = state.seconds; t < target; t++) { game.tick(); updated = true; }
+    if (updated) render();
+  };
+  clock = setInterval(tickClock, 250);
+  startNew();
+  const api = {
+    backend,
+    newGame: (level = 'beginner') => {
+      if (level === 'custom') startNew(config, 'custom');
+      else startNew(PRESETS[level] || PRESETS.beginner, level in PRESETS ? level : 'beginner');
+    },
+    getState: () => ({...getState(), difficulty, backend}),
+    destroy() {
+      if (destroyed) return;
+      destroyed = true;
+      clearTimeout(longPressTimer);
+      clearInterval(clock);
+      document.removeEventListener('pointerdown', outsideClick);
+      game?.free?.();
+      if (container.contains(app)) app.remove();
+    }
+  };
+  options.onReady?.(api);
+  return api;
+}
+
+mountMinesweeper(document.getElementById("minesweeper-root"));
+</script></body></html>

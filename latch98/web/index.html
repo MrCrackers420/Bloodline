@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
+<meta name="theme-color" content="#008080">
+<title>Latch 98</title>
+<link rel="stylesheet" href="desktop.css">
+<link rel="stylesheet" href="shell_v07.css">
+<link rel="stylesheet" href="explorer_v08.css">
+<link rel="stylesheet" href="swarmwire.css">
+<link rel="stylesheet" href="latchnet.css">
+</head>
+<body>
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs>
+  <linearGradient id="steel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1fbff"/><stop offset=".26" stop-color="#b7d5e2"/><stop offset=".5" stop-color="#567e9f"/><stop offset=".75" stop-color="#e2f4ff"/><stop offset="1" stop-color="#4e7892"/></linearGradient>
+  <linearGradient id="bg-sky" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c5ecff"/><stop offset="1" stop-color="#28849a"/></linearGradient>
+  <!-- Original self-closing clasp/latch mark: no ring, external rod, or locked object. -->
+  <symbol id="mark-latch" viewBox="0 0 100 100">
+    <path d="M23 18 H52 C64 18 69 25 69 37 V48 L79 43 V35 C79 17 69 8 52 8 H23 C16 8 12 13 12 20 V65 C12 85 24 93 44 93 H57 C75 93 87 82 87 66 V51 L75 56 V65 C75 77 69 81 56 81 H44 C31 81 25 76 25 64 V26 H23Z" fill="#31556f" stroke="#17364c" stroke-width="2"/>
+    <path d="M24 14 H52 C66 14 74 22 74 36 V47 L80 43 V34 C80 19 70 10 53 10 H21 C16 10 14 14 14 21 V66 C14 82 26 90 44 90 H57 C73 90 84 80 84 65 V52 L78 54 V65 C78 78 69 84 56 84 H43 C28 84 20 77 20 64 V22 Q20 14 24 14Z" fill="url(#steel)" stroke="#214c62" stroke-width="1.4"/>
+    <path d="M31 26 V63 Q31 74 44 74 H55" fill="none" stroke="#e5f7ff" stroke-width="4" stroke-linecap="square" opacity=".93"/>
+    <path d="M69 47 L84 52 L69 61 Q62 63 62 55 Q62 50 69 47Z" fill="url(#steel)" stroke="#234b67" stroke-width="2"/>
+    <circle cx="70" cy="54" r="2.8" fill="#153855"/><circle cx="70" cy="53" r="1.2" fill="#f0f9ff"/>
+  </symbol>
+  <symbol id="ico-computer" viewBox="0 0 36 36"><path d="M4 3 H30 V25 H4Z" fill="#ece9d8" stroke="#242424" stroke-width="1.5"/><path d="M7 6 H27 V21 H7Z" fill="#0044a4" stroke="#868686"/><path d="M8 7 H26 V18 H8Z" fill="#79c5d5"/><path d="M10 25 H25 L28 30 H6Z" fill="#aaa" stroke="#242424"/><path d="M3 30 H31 V33 H3Z" fill="#e7e7df" stroke="#333"/><path d="M14 32 H22" stroke="#777"/><path d="M25 23 H28" stroke="#11b02c" stroke-width="2"/></symbol>
+  <symbol id="ico-documents" viewBox="0 0 36 36"><path d="M5 5 H21 L28 13 V31 H5Z" fill="#fff" stroke="#262626"/><path d="M20 5 V13 H28" fill="#ddd" stroke="#333"/><path d="M9 18 H24 M9 22 H24 M9 26 H19" stroke="#5478ab" stroke-width="1.5"/><path d="M2 12 H16 V16 H31 V33 H2Z" fill="#ead06f" stroke="#614c13" stroke-width="1.4"/><path d="M3 17 H30 V31 H3" fill="#f7df7b"/></symbol>
+  <symbol id="ico-folder" viewBox="0 0 36 36"><path d="M2 9 H16 L19 13 H33 V31 H2Z" fill="#cba44b" stroke="#604815" stroke-width="2"/><path d="M3 14 H33 L30 33 H3Z" fill="#f6d878" stroke="#86651c" stroke-width="1.4"/><path d="M6 18 H27" stroke="#fff3b5" stroke-width="2"/></symbol>
+  <symbol id="ico-bin" viewBox="0 0 36 36"><path d="M12 7 L15 4 H22 L24 7" fill="none" stroke="#34566a" stroke-width="2"/><path d="M6 8 H29 V12 H6Z" fill="#9ca8b2" stroke="#253847"/><path d="M9 12 L12 32 H25 L28 12Z" fill="#dae4e9" stroke="#536a78" stroke-width="1.5"/><path d="M14 15 L16 29 M20 15 V29 M25 15 L23 29" stroke="#83a5b9" stroke-width="1.4"/></symbol>
+  <symbol id="ico-notepad" viewBox="0 0 36 36"><path d="M5 5 H29 V33 H5Z" fill="#fffef9" stroke="#222" stroke-width="1.5"/><path d="M5 6 H29 V11 H5Z" fill="#2c58a5"/><path d="M9 4 V12 M15 4 V12 M21 4 V12 M27 4 V12" stroke="#e1e1e1" stroke-width="2"/><path d="M10 16 H25 M10 20 H25 M10 24 H25 M10 28 H20" stroke="#a6c2df" stroke-width="1.5"/></symbol>
+  <symbol id="ico-network" viewBox="0 0 36 36"><path d="M13 14 H23 V19 H13Z" fill="#d1d1d1" stroke="#222"/><path d="M17 19 V24 M17 24 H6 V26 M17 24 H30 V26" stroke="#252525" stroke-width="2" fill="none"/><path d="M1 25 H12 V33 H1Z M24 25 H35 V33 H24Z M12 3 H24 V13 H12Z" fill="#e4e2d6" stroke="#222"/><path d="M14 5 H22 V10 H14Z M3 27 H10 V30 H3Z M26 27 H33 V30 H26Z" fill="#2683c2"/></symbol>
+  <symbol id="ico-browser" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="#2a7fc7" stroke="#18365f" stroke-width="1.5"/><path d="M5 18 H31 M18 3 C8 10 8 27 18 33 C28 27 28 10 18 3 M18 3 V33" fill="none" stroke="#9bdadf" stroke-width="1.5"/><path d="M9 7 Q19 13 27 7 M8 28 Q18 22 28 28" fill="none" stroke="#e8ffd5" stroke-width="2"/><path d="M2 20 L14 12 L21 17 L31 8" stroke="#fae67a" fill="none" stroke-width="3"/></symbol>
+  <symbol id="ico-paint" viewBox="0 0 36 36"><path d="M4 6 H29 V29 H4Z" fill="#fff" stroke="#333"/><path d="M7 12 H23 M7 16 H20" stroke="#6b9fe1" stroke-width="2"/><path d="M10 24 Q10 13 20 19 Q27 21 21 26" fill="#efc8a4" stroke="#8b6b56"/><circle cx="14" cy="21" r="2" fill="red"/><circle cx="20" cy="23" r="2" fill="blue"/><path d="M21 7 L33 23 L31 26 L19 10Z" fill="#86562d" stroke="#333"/><path d="M19 10 L16 4 L21 6" fill="#333"/></symbol>
+  <symbol id="ico-calc" viewBox="0 0 36 36"><rect x="7" y="2" width="22" height="33" fill="#eee" stroke="#333" stroke-width="2"/><rect x="10" y="6" width="16" height="8" fill="#b0c5bd" stroke="#44584f"/><path d="M11 19 H15 V23 H11 Z M19 19 H23 V23 H19 Z M11 26 H15 V30 H11 Z M19 26 H23 V30 H19 Z" fill="#396ba3" stroke="#555"/></symbol>
+  <symbol id="ico-settings" viewBox="0 0 36 36"><path d="M5 5 H31 V29 H5Z" fill="#e3e3e3" stroke="#444" stroke-width="2"/><path d="M8 8 H28 V23 H8Z" fill="#1e7999"/><path d="M11 14 H25 M11 18 H25" stroke="#a8e8fd"/><path d="M9 29 H27 V33 H9Z" fill="#929292" stroke="#333"/><circle cx="27" cy="27" r="7" fill="#aaa" stroke="#444"/><circle cx="27" cy="27" r="3" fill="#fff"/></symbol>
+  <symbol id="ico-help" viewBox="0 0 36 36"><path d="M6 5 H30 V32 H6Z" fill="#ffe581" stroke="#666" stroke-width="1.5"/><path d="M8 7 H28 V29 H8Z" fill="#ffffc7"/><text x="11" y="26" font-size="25" font-family="serif" font-weight="bold" fill="#06439e">?</text></symbol>
+  <symbol id="ico-run" viewBox="0 0 36 36"><rect x="3" y="3" width="30" height="29" fill="#f6f6f6" stroke="#333" stroke-width="2"/><path d="M4 4 H32 V9 H4Z" fill="navy"/><path d="M8 15 L14 21 L8 27 M16 27 H27" fill="none" stroke="#333" stroke-width="2"/></symbol>
+  <symbol id="ico-shutdown" viewBox="0 0 36 36"><rect x="5" y="5" width="26" height="26" rx="2" fill="#dfded4" stroke="#444" stroke-width="2"/><circle cx="18" cy="18" r="9" fill="none" stroke="#d43131" stroke-width="4"/><path d="M18 7 V19" stroke="#fff" stroke-width="6"/><path d="M18 7 V19" stroke="#d43131" stroke-width="3.5"/></symbol>
+  <symbol id="ico-solitaire" viewBox="0 0 36 36"><path d="M4 9 L19 3 L30 25 L15 31Z" fill="#c5d5fb" stroke="#172956" stroke-width="1.7"/><path d="M9 5 L26 5 L26 31 L9 31Z" fill="#fff" stroke="#222" stroke-width="1.5"/><rect x="14" y="8" width="17" height="25" rx="1" fill="#faf9f5" stroke="#444" stroke-width="1.5"/><text x="16" y="16" font-family="Georgia,serif" font-size="9" font-weight="bold" fill="#c40000">A</text><text x="18" y="27" font-family="Georgia,serif" font-size="15" fill="#c40000">♥</text></symbol>
+  <symbol id="ico-minesweeper" viewBox="0 0 36 36"><rect x="3" y="3" width="30" height="30" fill="#c0c0c0" stroke="#3d3d3d" stroke-width="1.6"/><rect x="6" y="6" width="24" height="24" fill="#f9f9f9" stroke="#808080"/><path d="M14 7v23M22 7v23M7 14h23M7 22h23" stroke="#929292" stroke-width="1"/><path d="M10 11l2-3 2 3-2 3zM12 6v10M7 11h10" fill="#0a0a0a" stroke="#111" stroke-width="1.3"/><path d="M22 17l-3 2v6h7v-8z" fill="#f00" stroke="#9f0000" stroke-width=".5"/></symbol>
+  <symbol id="ico-disc" viewBox="0 0 36 36"><rect x="3" y="8" width="30" height="23" fill="#dadada" stroke="#333" stroke-width="1.5"/><path d="M5 18 H31 M5 25 H31" stroke="#a0a0a0"/><circle cx="26" cy="27" r="2" fill="#0a9a2d"/></symbol>
+  <symbol id="ico-bloodline" viewBox="0 0 36 36"><rect x="3" y="3" width="30" height="30" fill="#151014" stroke="#a8a8a8" stroke-width="1.5"/><path d="M18 5 C15 12 8 18 8 23 A10 10 0 0 0 28 23 C28 18 21 12 18 5Z" fill="#a71923" stroke="#4f090c" stroke-width="1.5"/><path d="M18 13V29M13 24L18 17L23 24" stroke="#fcbbaa" stroke-width="1.5" fill="none"/></symbol>
+  <symbol id="ico-mail" viewBox="0 0 36 36"><rect x="3" y="9" width="30" height="22" fill="#f7f6ed" stroke="#3b3b3b" stroke-width="2"/><path d="M4 11 L18 22 L32 11" fill="none" stroke="#476b93" stroke-width="2"/><path d="M4 30 L15 20 M32 30 L21 20" fill="none" stroke="#858585" stroke-width="1.4"/><path d="M24 3 H33 V15 H24 Z" fill="#c72424" stroke="#611"/><path d="M28.5 5 V11 M28.5 13 V13.3" stroke="#fff" stroke-width="2"/></symbol>
+  <symbol id="ico-sound" viewBox="0 0 36 36"><path d="M5 14 H12 L22 6 V30 L12 22 H5Z" fill="#e9df96" stroke="#333" stroke-width="1.5"/><path d="M24 12 Q31 18 24 24 M27 7 Q38 18 27 29" fill="none" stroke="#123c9e" stroke-width="2"/></symbol>
+</defs>
+</svg>
+
+<section id="startup" aria-label="Latch 98 startup">
+  <div id="boot-panel">
+    <div class="boot-copy"><svg class="boot-mark" viewBox="0 0 100 100"><use href="#mark-latch"/></svg><div class="boot-heading"><span class="product-name">Latch<span class="version">98</span></span><small>Where ideas click into place.</small></div></div>
+    <div class="boot-subtext" id="boot-instruction">Press the button to start your computer.</div>
+    <button class="boot-trigger" id="boot-button">⏻ &nbsp; Power On</button>
+    <div class="boot-copyline">Copyright © 1998 Latch Computer Co.</div>
+    <div class="boot-footer"><p id="boot-status">Ready to start Latch 98</p><div class="boot-track"><span></span></div></div>
+  </div>
+</section>
+
+<section id="desktop" class="hidden" aria-label="Latch 98 desktop">
+  <div id="desktop-icons" class="desktop-icons">
+    <div class="desktop-icon" data-app="computer" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-computer"/></svg><span class="icon-label">My Computer</span></div>
+    <div class="desktop-icon" data-app="documents" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-documents"/></svg><span class="icon-label">My Documents</span></div>
+    <div class="desktop-icon" data-app="network" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-network"/></svg><span class="icon-label">Network Neighborhood</span></div>
+    <div class="desktop-icon" data-app="bin" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-bin"/></svg><span class="icon-label">Recycle Bin</span></div>
+    <div class="desktop-icon" data-app="browser" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-browser"/></svg><span class="icon-label">Latch Browser</span></div>
+    <div class="desktop-icon" data-app="site:postbox" tabindex="0" role="button" title="Open your Postbox inbox"><svg class="pixel-icon"><use href="#ico-mail"/></svg><span class="icon-label">Postbox Mail</span></div>
+    <div class="desktop-icon" data-app="spritestudio" tabindex="0" role="button" title="Open Latch Sprite Studio"><svg class="pixel-icon"><use href="#ico-paint"/></svg><span class="icon-label">Sprite Studio</span></div>
+    <div class="desktop-icon" data-app="notepad" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-notepad"/></svg><span class="icon-label">Notepad</span></div>
+    <div class="desktop-icon" data-app="minesweeper" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-minesweeper"/></svg><span class="icon-label">Minesweeper</span></div>
+    <div class="desktop-icon" data-app="solitaire" tabindex="0" role="button"><svg class="pixel-icon"><use href="#ico-solitaire"/></svg><span class="icon-label">Solitaire</span></div>
+  </div>
+  <div id="window-layer" class="window-layer"></div>
+  <div class="taskbar">
+    <button class="start-button" id="start-button" aria-label="Open Start menu" aria-expanded="false"><svg viewBox="0 0 100 100"><use href="#mark-latch"/></svg> Start</button>
+    <div class="quick-launch"><button data-launch="computer" title="My Computer"><svg><use href="#ico-computer"/></svg></button><button data-launch="browser" title="Latch Browser"><svg><use href="#ico-browser"/></svg></button><button data-launch="notepad" title="Notepad"><svg><use href="#ico-notepad"/></svg></button></div>
+    <div class="task-buttons" id="task-buttons"></div>
+    <div class="tray"><button id="sound-button" title="Play startup sound" class="tray-speaker" aria-label="Play startup sound">◖))</button><span class="tray-time" id="clock" title="Date and time">12:00 AM</span></div>
+  </div>
+  <div class="start-menu hidden" id="start-menu" role="menu" aria-label="Start menu">
+    <div class="start-rail"><span>Latch <em>98</em></span></div>
+    <div class="menu-content" id="start-items"><div class="menu-item" role="menuitem" tabindex="0" data-app="site:pixelshelf"><svg class="pixel-icon"><use href="#ico-browser"/></svg>Latch Update</div><div class="menu-sep"></div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-sub="programs"><svg class="pixel-icon"><use href="#ico-folder"/></svg>Programs<span class="arrow">▶</span></div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-app="site:postbox"><svg class="pixel-icon"><use href="#ico-mail"/></svg>Postbox Mail</div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-app="spritestudio"><svg class="pixel-icon"><use href="#ico-paint"/></svg>Sprite Studio</div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-sub="documents"><svg class="pixel-icon"><use href="#ico-documents"/></svg>Documents<span class="arrow">▶</span></div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-sub="favorites"><svg class="pixel-icon"><use href="#ico-browser"/></svg>Favorites<span class="arrow">▶</span></div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-sub="settings"><svg class="pixel-icon"><use href="#ico-settings"/></svg>Settings<span class="arrow">▶</span></div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-app="find"><svg class="pixel-icon"><use href="#ico-run"/></svg>Find</div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-app="help"><svg class="pixel-icon"><use href="#ico-help"/></svg>Help</div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-app="run"><svg class="pixel-icon"><use href="#ico-run"/></svg>Run...</div>
+      <div class="menu-sep"></div>
+      <div class="menu-item" role="menuitem" tabindex="0" data-app="shutdown"><svg class="pixel-icon"><use href="#ico-shutdown"/></svg>Shut Down...</div>
+    </div>
+  </div>
+  <div id="submenu" class="submenu hidden" role="menu" aria-label="Submenu"></div>
+  <div id="nested-menu" class="submenu hidden" role="menu" aria-label="Nested submenu"></div>
+  <div id="context-menu" class="context-menu hidden"><div class="menu-item" data-fsaction="newfolder">New Folder</div><div class="menu-item" data-fsaction="newtext">New Text Document</div><div class="menu-sep"></div><div class="menu-item" data-fsaction="refresh">Refresh</div><div class="menu-sep"></div><div class="menu-item" data-app="display">Properties</div></div>
+  <div id="dialog-overlay" class="hidden"></div>
+</section>
+
+<!-- Modular/GitHub launcher: Bloodline is full-viewport without navigating away from the desktop.
+     The generated single-file build has its own separate fullscreen host. -->
+<section id="l98-modular-game" class="hidden" aria-label="Bloodline fullscreen game">
+  <iframe title="Bloodline fullscreen" allow="fullscreen; gamepad" allowfullscreen></iframe>
+  <button type="button" class="l98-modular-return" data-l98-modular-return title="Return to Latch 98 (Ctrl+Shift+Esc or controller Back + Start)" aria-label="Close Bloodline and return to Latch 98"><span aria-hidden="true">×</span> Return to Latch 98</button>
+</section>
+
+<section id="poweroff" class="hidden" aria-label="Computer shut down"><svg viewBox="0 0 100 100" width="80" height="80"><use href="#mark-latch"/></svg><h1>It is now safe to turn off your computer.</h1><button class="classic-btn" id="restart-button">⏻ &nbsp; Start Latch 98</button></section>
+
+<script src="latchnet.js"></script>
+<script src="filesystem.js"></script>
+<script src="swarmwire.js"></script>
+
+<script src="desktop.js"></script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+{
+  "checkpoint": "threads-1-2-3-4-merged",
+  "base_manifest": "coordination/base_manifest.json",
+  "threads_applied": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "threads_pending": [
+    5
+  ],
+  "changed_files": [
+    {
+      "path": "README.md",
+      "sha256": "9c50db55a536d21fa70386d29a2de811f6b82588815437481308c8647d4a1bcb",
+      "size": 6139
+    },
+    {
+      "path": "apps/audacity/index.html",
+      "sha256": "b4bae76834d47902aeb65dd419dd023945b254c5b6ce33594ef150c2c847b463",
+      "size": 48879
+    },
+    {
+      "path": "apps/minesweeper/latch98-minesweeper-preview.html",
+      "sha256": "d4c60012aef943e48362d676a6d56b096b81c91516137ffc119635f37e1b2b09",
+      "size": 37627
+    },
+    {
+      "path": "apps/minesweeper/web/app.js",
+      "sha256": "107b8f9003cfdcaaa16634d35d71b1ffc3f12020046c54e32223f13f8391436a",
+      "size": 24131
+    },
+    {
+      "path": "apps/norn-world-lab/index.html",
+      "sha256": "ca0483c20d48bc396f380502eabaf4f6d5e99de952f250ca9a022652a384dd33",
+      "size": 1348593
+    },
+    {
+      "path": "apps/norn-world-lab/tests/test-thread2-browser.py",
+      "sha256": "476081a6aaabaee320e1a61740d2a1254fcd1cd0485d6b15e89446b494535960",
+      "size": 7327
+    },
+    {
+      "path": "apps/norn-world-lab/tests/test-thread2-disk.cjs",
+      "sha256": "7f6a42c4e57a7a6f7ce3b6b56fe19ba202fc7ba06d58afb99f12f2001a093402",
+      "size": 5114
+    },
+    {
+      "path": "apps/solitaire/engine.js",
+      "sha256": "e3c0440a323761b87065ea337c103f024309c924014b8c43295f695d38bf25af",
+      "size": 6178
+    },
+    {
+      "path": "apps/solitaire/tests/engine.test.cjs",
+      "sha256": "88e18f3b5fb78deaca01bb0771d58572074c077826c277e6d1f464ad9a0f89fb",
+      "size": 3731
+    },
+    {
+      "path": "apps/soundstudio/index.html",
+      "sha256": "0bf2a3791f481a2a6ca578a4d76e272b2b37fe80dd6ed64c96006b0e133f4385",
+      "size": 148574
+    },
+    {
+      "path": "apps/tests/iframe_smoke.py",
+      "sha256": "1a1650f4f59ea19e749bf9f138ae3b3f9513b541dde58d6a268f8b4ea8b5b171",
+      "size": 6814
+    },
+    {
+      "path": "apps/tests/soundstudio-disk.test.cjs",
+      "sha256": "457737c0f13332a9c02794b5c69c35d5c2fb58f70fc70d8fe64a19491d82936f",
+      "size": 2803
+    },
+    {
+      "path": "coordination/INTEGRATOR_STATUS.md",
+      "sha256": "4cd9d3903c58b4ababd474eb80ead25fd87c0ca6010faea434af60e7035ddd57",
+      "size": 1273
+    },
+    {
+      "path": "coordination/MERGE_1_2_3_4_MANIFEST.json",
+      "sha256": "cd1511c0306173aafa6721459374af2a2c39a2db9d8908c2ebb4b67aaa318d90",
+      "size": 8626
+    },
+    {
+      "path": "coordination/MERGE_1_2_3_4_REPORT.md",
+      "sha256": "77d7c706b7303149944d8267bc7343badc34cb36242a0304b29d80def61079cb",
+      "size": 4173
+    },
+    {
+      "path": "coordination/MERGE_1_3_MANIFEST.json",
+      "sha256": "598aa3de9daefe385d7bd3e8d65d162b666b6ea97ca51359d504152ca5e224a8",
+      "size": 2856
+    },
+    {
+      "path": "coordination/MERGE_1_3_REPORT.md",
+      "sha256": "620b53d24a81ef1df72e862f757bd5c05725874dbd304a6ff0a937396d01cc92",
+      "size": 3786
+    },
+    {
+      "path": "coordination/OWNERSHIP.json",
+      "sha256": "3421fae066c671bc898d848d688adb1d0a70deacfc592ef49ac3822296a429e3",
+      "size": 1959
+    },
+    {
+      "path": "coordination/THREADS.md",
+      "sha256": "e7d3803eb4e0a82ce70b25972a9ca49fb8fba27c279f089efbcf3086585588b2",
+      "size": 6210
+    },
+    {
+      "path": "coordination/THREAD_1_INSTRUCTIONS.md",
+      "sha256": "a07f4dd428bc59c109a2ed483675402b2a5ac25b4f8b54956327096570069f5e",
+      "size": 3327
+    },
+    {
+      "path": "coordination/THREAD_2_INSTRUCTIONS.md",
+      "sha256": "e5716c2fe5b588ebbb738de6cb5e3b39283c9b2d4446b095a03c68b8fb357e47",
+      "size": 3238
+    },
+    {
+      "path": "coordination/THREAD_3_INSTRUCTIONS.md",
+      "sha256": "22ce0afe94082486312c0f6ffc6aae0d29d0b8dea3b715fd9746c86dec314d0d",
+      "size": 2954
+    },
+    {
+      "path": "coordination/THREAD_5_INSTRUCTIONS.md",
+      "sha256": "4c2873f416f49372403da79b30908c757f54e79713f80e688b440ea96c9376ca",
+      "size": 498
+    },
+    {
+      "path": "coordination/base_manifest.json",
+      "sha256": "5decc77594f5ee91061a4ec347de030f37762c1344667450bc379bd81a69bb2a",
+      "size": 6342
+    },
+    {
+      "path": "tools/build_standalone.py",
+      "sha256": "b9d17c91abd9336326d84c12f627c5dbc5aad12ff846e51f1404651842ac6f10",
+      "size": 6399
+    },
+    {
+      "path": "tools/experiments/DOOZER_FINDINGS.md",
+      "sha256": "e29b986dedf22a8fef628d18c57954a8b48f451ea0f952592da1b2384cddaab7",
+      "size": 6896
+    },
+    {
+      "path": "tools/experiments/doozer_results.json",
+      "sha256": "32e6ccc27c07ee1cda3906f8c4881bf7be7363a7fc737df5a937907e181548db",
+      "size": 154866
+    },
+    {
+      "path": "tools/experiments/doozer_spatial_experiment.py",
+      "sha256": "523e9df6bd76a013eec71f949d548814c1ad6e7f372ba6a70d585b2891392fe9",
+      "size": 11811
+    },
+    {
+      "path": "tools/experiments/fixtures/step32_unmodified_control.html",
+      "sha256": "38da534fdd76732caddff88539c6310aa07181a451d7bfb53b161752af9f13b1",
+      "size": 1348521
+    },
+    {
+      "path": "tools/experiments/step32-simulation.patch",
+      "sha256": "351dd3dda82d1cbdc0723357fbae14db13f3fba3f661a26477a8a1a2178bab68",
+      "size": 708
+    },
+    {
+      "path": "tools/experiments/verify_integrity.py",
+      "sha256": "f7c3997fd9957d8bcdb5b486b471c82a7c98b106aba6b993a6578c8af43d7555",
+      "size": 3081
+    },
+    {
+      "path": "tools/parallel_merge.py",
+      "sha256": "65f4a5549dc629683427c688d2843456fb96022167c013b8d0f1fbcfbe156d0b",
+      "size": 6040
+    },
+    {
+      "path": "tools/release_check.py",
+      "sha256": "a9db1834da2c9c4d0759d47b4083c3081c862ed0972b52fcffd671abf1a2c3e0",
+      "size": 4915
+    },
+    {
+      "path": "tools/test-first-run-ui.py",
+      "sha256": "2f178b0d2a803c1dc5e94ae56a876b97c04b823580bad1a03fbdaf977d9a3516",
+      "size": 3421
+    },
+    {
+      "path": "tools/test-games-in-one-html.py",
+      "sha256": "6b5bdd2161c63d077a3b32efe7087870da49de1d28e07818a089a28947d2b18e",
+      "size": 3629
+    },
+    {
+      "path": "tools/test-integrated-norn-simulation.cjs",
+      "sha256": "1f5922794db02843074cd9462b8b790916af24a75f0f761ed89c5a1e6884fd4c",
+      "size": 1275
+    },
+    {
+      "path": "tools/test-standalone-no-navigation.py",
+      "sha256": "c874ca9abc50ef84a07b572de398c821e4e4cb7bb9c4735d4e4a42ffed53ead9",
+      "size": 2689
+    },
+    {
+      "path": "tools/test-standalone-playwright.py",
+      "sha256": "0a541cae25d6d6b21df9bc9d27a7a8f2eba9c672b087428b89787ecd0697011c",
+      "size": 4417
+    },
+    {
+      "path": "tools/test_parallel_merge.py",
+      "sha256": "b7baf4e083296ac35179f316aa85140b92ccd64be257c80a5f8dd62df2d20425",
+      "size": 3175
+    },
+    {
+      "path": "web/desktop.css",
+      "sha256": "e394d46e5301d2818d5d293d970eb0b36562bba06b72adbb94473e8c73e93bb2",
+      "size": 28837
+    },
+    {
+      "path": "web/desktop.js",
+      "sha256": "f4715a72ec4cecb240a82fce00cfcfab980fb40b43bbbf8e58a9223dbcbe18b0",
+      "size": 113652
+    },
+    {
+      "path": "web/filesystem.js",
+      "sha256": "6c6b8111c15fa2042d7998047f0296a29efba0edbfe31b7ae92c0c1f1004b69d",
+      "size": 25612
+    },
+    {
+      "path": "web/index.html",
+      "sha256": "a8583998bf68d69b0dd89a95aee80b0b0af5c472624c07f217478fbecdad974a",
+      "size": 15182
+    },
+    {
+      "path": "web/swarmwire.js",
+      "sha256": "b1ad530b67e8997e9b1c373bd1bb6bfc0675bc4285c37dace61c0791c5bb2057",
+      "size": 5757
+    }
+  ],
+  "notes": "Manifest excludes self-generated hash of this manifest to avoid circular hashing."
+}

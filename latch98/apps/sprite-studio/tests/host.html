@@ -1,0 +1,6 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Sprite Studio LatchFS test host</title></head><body>
+<script>
+window.LatchFS=(()=>{const entries={'C:/MY DOCUMENTS':{kind:'dir',name:'My Documents'}};return {ready:Promise.resolve(),get:p=>entries[p.toUpperCase()]||null,mkdir:(parent,name)=>{const path=(parent+'/'+name).toUpperCase();entries[path]={kind:'dir',name};return path;},write:(path,text)=>{if(window.LatchFS.failWrite)throw Error('Simulated disk full');if(text.length>130000)throw Error('Too large');entries[path.toUpperCase()]={kind:'text',name:path.split('/').pop(),data:text};return path;},read:p=>entries[p.toUpperCase()]?.data||'',list:path=>Object.entries(entries).filter(([p,v])=>p.startsWith(path.toUpperCase()+'/')&&v.kind==='text').map(([p,v])=>({...v,path:p})),export:()=>JSON.stringify(entries),sync:()=>Promise.resolve(),error:()=>'',failWrite:false};})();
+</script>
+<iframe sandbox="allow-scripts allow-same-origin allow-downloads" src="../index.html" style="width:1100px;height:800px;border:1px solid black"></iframe>
+</body></html>

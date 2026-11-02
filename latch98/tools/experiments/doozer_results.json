@@ -1,0 +1,8000 @@
+{
+  "baseline_sha256": "38da534fdd76732caddff88539c6310aa07181a451d7bfb53b161752af9f13b1",
+  "updated_sha256": "ca0483c20d48bc396f380502eabaf4f6d5e99de952f250ca9a022652a384dd33",
+  "hypothesis": "Doozer teaching uses unavailable body.x and erroneously computes Norn x=0",
+  "design": "32 independent seeds (101..132), 3 spatial configurations, 3 fixed creature locations (800,1600,2400), 5 opportunities at 1..41 seconds; no creature motion, no external teaching. Uses actual NornCore + real Language Lab hear() and vocabulary API.",
+  "control": {
+    "summary": {
+      "teacher_beside_beta": {
+        "replicates": 32,
+        "mean_word_gain_by_norn": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonzero_hearing_trials_by_norn": [
+          0,
+          0,
+          0
+        ],
+        "anatomical_x_lookups": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ]
+      },
+      "teacher_far_from_all": {
+        "replicates": 32,
+        "mean_word_gain_by_norn": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonzero_hearing_trials_by_norn": [
+          0,
+          0,
+          0
+        ],
+        "anatomical_x_lookups": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ]
+      },
+      "teacher_near_world_origin": {
+        "replicates": 32,
+        "mean_word_gain_by_norn": [
+          22.49,
+          22.49,
+          22.49
+        ],
+        "nonzero_hearing_trials_by_norn": [
+          32,
+          32,
+          32
+        ],
+        "anatomical_x_lookups": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ]
+      }
+    },
+    "raw": [
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 101,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 102,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 103,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 104,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 105,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 106,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 107,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 108,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 109,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 110,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 111,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 112,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 113,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 114,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 115,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 116,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 117,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 118,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 119,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 120,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 121,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 122,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 123,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 124,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 125,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 126,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 127,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 128,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 129,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 130,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 131,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 132,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 101,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 102,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 103,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 104,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 105,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 106,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 107,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 108,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 109,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 110,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 111,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 112,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 113,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 114,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 115,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 116,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 117,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 118,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 119,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 120,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 121,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 122,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 123,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 124,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 125,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 126,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 127,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 128,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 129,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.344,
+          22.344,
+          22.344
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 130,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.344,
+          22.344,
+          22.344
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 131,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 132,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          22.5,
+          22.5,
+          22.5
+        ],
+        "heard": [
+          true,
+          true,
+          true
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 101,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 102,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 103,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 104,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 105,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 106,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 107,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 108,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 109,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 110,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 111,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 112,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 113,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 114,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 115,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 116,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 117,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 118,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 119,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 120,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 121,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 122,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 123,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 124,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 125,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 126,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 127,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 128,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 129,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 130,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 131,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 132,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      }
+    ],
+    "smoke": {
+      "before": {
+        "time": 0,
+        "names": [
+          "Bram",
+          "Mira",
+          "Pip"
+        ],
+        "controls": true,
+        "applets": true
+      },
+      "after": {
+        "time": 0.5,
+        "norns": 3,
+        "renderError": null,
+        "lastDraw": 3640.100000000559,
+        "visibleCanvas": true,
+        "errors": "ready"
+      },
+      "pageErrors": [],
+      "handGrammarRegression": [
+        {
+          "text": "Bram no slap Pip",
+          "kind": "prohibition",
+          "actor": "Bram",
+          "object": "Pip",
+          "predicate": "slap",
+          "polarity": -1,
+          "confidence": 0.94
+        },
+        {
+          "text": "No slap Pip, Bram",
+          "kind": "prohibition",
+          "actor": "Bram",
+          "object": "Pip",
+          "predicate": "slap",
+          "polarity": -1,
+          "confidence": 0.94
+        }
+      ],
+      "mockLatchFSBridgeRoundtrip": {
+        "ok": true,
+        "path": "C:/My Documents/Norn World Lab/Research/thread4-bridge-test.json",
+        "loaded": {
+          "format": "NornLab-Bridge-Test",
+          "version": 1,
+          "preset": "Bram Mira Pip",
+          "norns": 3
+        },
+        "nodeCount": 5
+      }
+    }
+  },
+  "updated": {
+    "summary": {
+      "teacher_beside_beta": {
+        "replicates": 32,
+        "mean_word_gain_by_norn": [
+          0.0,
+          22.49,
+          0.0
+        ],
+        "nonzero_hearing_trials_by_norn": [
+          0,
+          32,
+          0
+        ],
+        "anatomical_x_lookups": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ]
+      },
+      "teacher_far_from_all": {
+        "replicates": 32,
+        "mean_word_gain_by_norn": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonzero_hearing_trials_by_norn": [
+          0,
+          0,
+          0
+        ],
+        "anatomical_x_lookups": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ]
+      },
+      "teacher_near_world_origin": {
+        "replicates": 32,
+        "mean_word_gain_by_norn": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "nonzero_hearing_trials_by_norn": [
+          0,
+          0,
+          0
+        ],
+        "anatomical_x_lookups": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ]
+      }
+    },
+    "raw": [
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 101,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 102,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 103,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 104,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 105,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 106,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 107,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 108,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 109,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 110,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 111,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 112,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 113,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 114,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 115,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 116,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 117,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 118,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 119,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 120,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 121,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 122,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 123,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 124,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 125,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 126,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 127,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 128,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 129,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.344,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 130,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.344,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 131,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_beside_beta",
+        "seed": 132,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": true
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 1600,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          22.5,
+          0
+        ],
+        "heard": [
+          false,
+          true,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 101,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 102,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 103,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 104,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 105,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 106,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 107,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 108,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 109,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 110,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 111,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 112,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 113,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 114,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 115,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 116,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 117,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 118,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 119,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 120,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 121,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 122,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 123,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 124,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 125,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 126,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 127,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 128,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 129,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 130,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 131,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_near_world_origin",
+        "seed": 132,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 100,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 101,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 102,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 103,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 104,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 105,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 106,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 107,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 108,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 109,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 110,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 111,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 112,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 113,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 114,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 115,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 116,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 117,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 118,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 119,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 120,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 121,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 122,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 123,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 124,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 125,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 126,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 127,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 128,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 129,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 130,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 131,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      },
+      {
+        "scenario": "teacher_far_from_all",
+        "seed": 132,
+        "positions": [
+          {
+            "name": "A",
+            "x": 800,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "B",
+            "x": 1600,
+            "bodyX": null,
+            "near": false
+          },
+          {
+            "name": "C",
+            "x": 2400,
+            "bodyX": null,
+            "near": false
+          }
+        ],
+        "dojoX": 4500,
+        "lessonOpportunities": 5,
+        "timeWindowSeconds": [
+          1,
+          41
+        ],
+        "wordGain": [
+          0,
+          0,
+          0
+        ],
+        "heard": [
+          false,
+          false,
+          false
+        ]
+      }
+    ],
+    "smoke": {
+      "before": {
+        "time": 0,
+        "names": [
+          "Bram",
+          "Mira",
+          "Pip"
+        ],
+        "controls": true,
+        "applets": true
+      },
+      "after": {
+        "time": 0.6,
+        "norns": 3,
+        "renderError": null,
+        "lastDraw": 3529.199999999255,
+        "visibleCanvas": true,
+        "errors": "ready"
+      },
+      "pageErrors": [],
+      "handGrammarRegression": [
+        {
+          "text": "Bram no slap Pip",
+          "kind": "prohibition",
+          "actor": "Bram",
+          "object": "Pip",
+          "predicate": "slap",
+          "polarity": -1,
+          "confidence": 0.94
+        },
+        {
+          "text": "No slap Pip, Bram",
+          "kind": "prohibition",
+          "actor": "Bram",
+          "object": "Pip",
+          "predicate": "slap",
+          "polarity": -1,
+          "confidence": 0.94
+        }
+      ],
+      "mockLatchFSBridgeRoundtrip": {
+        "ok": true,
+        "path": "C:/My Documents/Norn World Lab/Research/thread4-bridge-test.json",
+        "loaded": {
+          "format": "NornLab-Bridge-Test",
+          "version": 1,
+          "preset": "Bram Mira Pip",
+          "norns": 3
+        },
+        "nodeCount": 5
+      }
+    }
+  }
+}

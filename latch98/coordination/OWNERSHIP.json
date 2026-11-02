@@ -1,0 +1,76 @@
+{
+  "base_release": "Latch98-Round3-Shared-Base.zip",
+  "baseline_id": "LATCH-R3-2026-11-01",
+  "source_checkpoint": "Latch98-Round2-Shared-Base.zip",
+  "threads": {
+    "desktop": {
+      "description": "Round 3 Thread 1: desktop, window management, responsive layout and launch UX; no application internals",
+      "files": [
+        "web/index.html",
+        "web/desktop.css",
+        "web/desktop.js",
+        "web/shell_v07.css",
+        "web/explorer_v08.css",
+        "web/standalone_runtime.js"
+      ]
+    },
+    "disk": {
+      "description": "Round 3 Thread 2: virtual filesystem, backup, removable media, SwarmWire transfer state and installation; no Postbox content or Norn simulation",
+      "files": [
+        "web/filesystem.js",
+        "web/swarmwire.js",
+        "web/swarmwire.css"
+      ]
+    },
+    "apps": {
+      "description": "Round 3 Thread 3: independent non-Norn games, music studio, Audacity; excludes story Bloodline and Sprite Studio",
+      "directories": [
+        "apps/"
+      ],
+      "excludes": [
+        "apps/bloodline/",
+        "apps/norn-world-lab/",
+        "apps/sprite-studio/"
+      ]
+    },
+    "network": {
+      "description": "Round 3 Thread 4: fictional LatchNet websites, browser content, Postbox mail UI and hidden clues; no virtual disk or SwarmWire behavior",
+      "files": [
+        "web/latchnet.js",
+        "web/latchnet.css"
+      ]
+    },
+    "sprite": {
+      "description": "Round 3 Thread 5: standalone Sprite Studio drawing, animation, formats and offline Flipnote compatibility",
+      "directories": [
+        "apps/sprite-studio/"
+      ]
+    },
+    "integrator": {
+      "description": "Latch-only release coordinator: packaging, interfaces, tests, merge and source integration",
+      "directories": [
+        "tools/",
+        "coordination/"
+      ],
+      "files": [
+        "README.md",
+        "GITHUB_PAGES.md",
+        "DISCOVERABILITY_FIX.md",
+        "NORN_WORLD_LAB_HANDOFF.md",
+        ".gitignore",
+        "Cargo.toml",
+        "src/main.rs",
+        "start_latch98.bat",
+        "start_latch98.sh",
+        "build_minesweeper_rust.bat",
+        "build_minesweeper_rust.sh"
+      ]
+    }
+  },
+  "reserved": [
+    "apps/norn-world-lab/",
+    "apps/bloodline/",
+    ".github/"
+  ],
+  "merge_policy": "Workers submit only owned UTF-8 paths; Norn simulation/code is maintained solely by Norn World Lab integrator. Latch integrator alone imports a separately validated Norn release; no worker modifies Norn or the Bloodline story. One baseline, no cross-thread file edits."
+}

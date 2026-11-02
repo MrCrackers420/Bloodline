@@ -1,0 +1,7 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="color-scheme" content="light"><title>Solitaire - Latch 98</title><link rel="stylesheet" href="solitaire.css"></head>
+<body><main id="app">
+<div class="sol-menubar"><button data-menu="game" aria-expanded="false">Game</button><button data-menu="help" aria-expanded="false">Help</button><div id="popup" class="sol-menu" role="menu"></div></div>
+<div class="sol-board-scroll" id="scroller"><div class="sol-board" id="board"><div id="top-row" class="sol-cols sol-top"></div><div id="tableau-row" class="sol-cols sol-tableau"></div><div class="sol-note" id="note">Select a card, then select a destination. Double-click a card to move it to a foundation.</div></div></div>
+<div class="sol-status"><span id="score">Score: 0</span><span id="timer">Time: 0:00</span><span id="deal">Draw: 1</span><span class="sol-message" id="message" aria-live="polite">Ready</span></div>
+</main><script src="engine.js"></script><script src="app.js"></script></body></html>

@@ -1,0 +1,56 @@
+/* Latch 98 shell refinements — original art, classic Windows 98 proportions. */
+.l98-display{height:100%;min-height:0;display:flex;flex-direction:column;padding:8px;background:var(--face);gap:0}
+.l98-display-tabs{display:flex;align-items:end;flex-wrap:wrap;gap:1px;padding:0 3px;flex-shrink:0}
+.l98-display-tab{border:2px solid;border-color:#fff #585858 var(--face) #fff;box-shadow:inset -1px 0 #888;background:var(--face);padding:4px 8px;min-height:25px;position:relative;top:2px;white-space:nowrap}
+.l98-display-tab.active{z-index:2;border-bottom-color:var(--face);font-weight:bold;top:2px;padding-bottom:6px}
+.l98-display-page{flex:1;min-height:0;overflow:auto;padding:10px 13px;border:2px solid;border-color:#fff #555 #555 #fff;display:flex;align-items:center;gap:15px;background:var(--face)}
+.l98-display-footer{display:flex;gap:7px;justify-content:flex-end;padding-top:9px;flex-shrink:0}
+.l98-display-footer button{min-width:78px}
+.l98-monitor{width:190px;height:162px;flex-shrink:0;position:relative;display:grid;place-items:start center;padding-top:13px;background:linear-gradient(#777,#d6d6d6 9px,#c0c0c0 10px,#c0c0c0 128px,#555 129px,#555 136px,#999 137px,#aaa 146px,#555 147px);border:2px solid #333;clip-path:polygon(0 0,100% 0,100% 93%,66% 93%,66% 100%,34% 100%,34% 93%,0 93%)}
+.l98-monitor-desktop{width:157px;height:107px;border:3px inset #999;box-shadow:0 0 0 4px #333;background:#008080;display:flex;justify-content:center;align-items:center;overflow:hidden}
+.l98-monitor-window{width:107px;min-height:54px;background:#c0c0c0;border:2px outset white;font-size:8px;box-shadow:2px 2px 0 #333}
+.l98-monitor-window b{display:block;background:#000080;color:white;font-size:8px;padding:2px}
+.l98-monitor-window p{margin:9px 3px}
+.l98-panel-fields{display:flex;flex:1;flex-direction:column;gap:12px;min-width:0;font-size:12px}
+.l98-panel-fields label{display:flex;flex-direction:column;gap:5px}
+.l98-panel-fields select,.l98-panel-fields input[type="number"]{background:white;border:2px inset #999;min-height:27px;padding:2px 5px;max-width:100%}
+.l98-panel-fields input[type="number"]{width:70px}
+.l98-panel-fields p{margin:0;line-height:1.4;color:#303030}
+.l98-color-picker{display:flex;flex-wrap:wrap;gap:5px}
+.l98-color-picker button{height:25px;width:30px;border:2px outset white}
+.l98-color-picker button.selected{outline:2px dotted #111;outline-offset:2px}
+.l98-settings-checks{gap:16px;align-self:flex-start;padding-top:23px}
+.l98-settings-checks label{display:flex;align-items:flex-start;flex-direction:row;gap:9px}
+.l98-settings-checks input{margin:1px 0 0}
+.l98-appearance-sample{width:210px;flex-shrink:0;background:#c0c0c0;border:2px inset #999;padding:13px}
+.l98-preview-title{background:linear-gradient(90deg,#000080,#0080c0);color:white;padding:5px;font-weight:bold;display:flex;justify-content:space-between}
+.l98-preview-body{border:2px outset white;min-height:99px;padding:12px;display:flex;align-items:center;justify-content:space-between;gap:5px}
+.l98-preview-body button{min-width:43px}
+.l98-resolution{padding:2px 5px;background:#c0c0c0;color:black;border:1px solid #888;font-size:11px}
+.l98-saver-thumbnail.stars,.l98-stars{background-color:#000!important;background-image:radial-gradient(2px 2px at 17% 34%,white 98%,transparent),radial-gradient(1px 1px at 51% 75%,#d1dfff 98%,transparent),radial-gradient(2px 2px at 82% 47%,white 98%,transparent),radial-gradient(1px 1px at 34% 89%,#b0cbff 98%,transparent),radial-gradient(1px 1px at 76% 15%,white 98%,transparent)!important;background-size:163px 177px,113px 137px,191px 203px,251px 217px,149px 113px!important}
+.l98-screen-saver{position:absolute;inset:0;background:black;z-index:4800;cursor:none;display:grid;place-items:center}
+.l98-screen-saver.l98-stars{animation:l98-starmove 4s linear infinite}
+.l98-saver-hint{position:absolute;bottom:20px;color:#fff;font:12px Tahoma,Arial,sans-serif;cursor:pointer}
+@keyframes l98-starmove{from{background-position:0 0,0 0,0 0,0 0,0 0}to{background-position:163px 177px,-113px 137px,191px 203px,-251px 217px,149px 113px}}
+.l98-check-line{display:flex;align-items:center;gap:7px;padding:7px 2px}
+.l98-small-start .start-menu .menu-item{height:29px;min-height:29px;font-size:12px}
+.l98-small-start .start-menu .menu-item svg{width:19px;height:19px}
+.l98-small-start .start-menu{min-height:300px}
+.l98-no-animations .boot-track span,.l98-no-animations .l98-stars{animation:none}
+html[data-scheme="slate"]{--face:#b0b9c3;--mid:#d7dce1;--shadow:#737c89;--blue:#1a3858}
+html[data-scheme="slate"] .titlebar{background:linear-gradient(90deg,#243f68,#819db5)}
+html[data-scheme="contrast"]{--face:#111;--mid:#222;--shadow:#777;--light:#fff;--dark:#fff;--blue:#000;}
+html[data-scheme="contrast"] .window,html[data-scheme="contrast"] .start-menu,html[data-scheme="contrast"] .submenu,html[data-scheme="contrast"] .taskbar{background:#111;color:white}
+html[data-scheme="contrast"] .window-content,html[data-scheme="contrast"] .l98-display,html[data-scheme="contrast"] .l98-display-page{background:#111;color:white}
+html[data-scheme="contrast"] .titlebar{background:#001a7f}
+html[data-scheme="contrast"] .classic-btn{background:#222;color:white}
+html[data-scheme="contrast"] .menu-item{color:white}
+html[data-scheme="contrast"] .menu-item:hover{background:#000080}
+@media(max-width:650px){.l98-display{padding:4px}.l98-display-page{padding:9px;align-items:stretch;gap:8px;flex-direction:column}.l98-monitor{transform:scale(.79);transform-origin:center top;margin-bottom:-33px}.l98-panel-fields{width:100%;gap:8px}.l98-settings-checks{padding-top:4px}.l98-display-tab{font-size:11px;padding:4px 6px}.l98-display-footer{padding-top:5px}.l98-appearance-sample{transform:scale(.83);transform-origin:center top;margin-bottom:-22px}.l98-panel-fields select{min-height:23px}}
+
+/* Menu opening and window transitions can be disabled from Effects. */
+@keyframes l98-window-appear{from{opacity:.6;transform:scale(.987)}to{opacity:1;transform:scale(1)}}
+@keyframes l98-menu-appear{from{opacity:.65}to{opacity:1}}
+.window:not(.minimized){animation:l98-window-appear .11s ease-out}
+.start-menu:not(.hidden),.submenu:not(.hidden){animation:l98-menu-appear .1s ease-out}
+.l98-no-animations .window:not(.minimized),.l98-no-animations .start-menu:not(.hidden),.l98-no-animations .submenu:not(.hidden){animation:none}
