@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#c0c0c0">
-<title>LatchAmp 1.10 — Latch 98</title>
+<title>LatchAmp 1.14 — Latch 98</title>
 <style>
 :root{font-family:Tahoma,'MS Sans Serif',Verdana,sans-serif;color:#111;background:#008080;font-size:13px}
 *{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:15px}
@@ -39,7 +39,7 @@ input[type=range]{accent-color:#296937;cursor:pointer}input[type=text],input[typ
 #feedback{min-height:14px}.note{line-height:1.5;font-size:12px;margin-top:5px}
 @media(max-width:540px){body{padding:4px;align-items:start}.window{margin-top:4px}.main{padding:3px}.transport{gap:3px}.transport button{padding:2px 7px}.volume{margin-left:0}.content{padding:7px}.song{font-size:13px}.inputgroup{flex-wrap:wrap}.inputgroup button{flex:1}.menubar{gap:9px}.title-actions{display:none}}
 
-/* LatchAmp 1.10: small-device queue, equalizer, searchable library. */
+/* LatchAmp 1.11: small-device queue, equalizer, searchable library. */
 .controls-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0}
 .controls-line label{display:flex;gap:5px;align-items:center;font-size:11px}
 .controls-line input[type=search]{font:inherit;font-size:12px;padding:5px;border:2px inset #bbb;background:white;flex:1;min-width:120px;max-width:320px}
@@ -58,11 +58,43 @@ body.in-latch .window{max-width:none;width:100%;border:0;box-shadow:none}
 body.in-latch .titlebar{display:none}
 body.in-latch .main{padding:4px}
 @media(max-width:540px){.eqpanel{gap:5px;padding:5px}.eqpanel input[type=range]{width:55px}.track .size{display:none}.track .move{padding:0 3px}.transport .speed{order:8}}
+/* LatchAmp 1.14: integrated link library, video transport and audio coordination. */
+.yt-resume-box{background:#fffbe4;border:1px solid #888;padding:7px;margin:6px 0;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:11px}
+.yt-resume-box[hidden]{display:none}
+.yt-resume-box span{flex:1;min-width:140px}
+.yt-library{display:grid;grid-template-columns:minmax(145px,1fr) minmax(170px,1.5fr);gap:7px;margin:7px 0}
+.yt-links,.yt-songs{background:#fff;border:2px inset #999;overflow-y:auto;max-height:220px;min-height:110px;padding:2px}
+.yt-entry{width:100%;text-align:left;min-height:26px;border:0;border-bottom:1px dotted #ccc;padding:5px 7px;background:#fff;display:block;overflow-wrap:anywhere;font-size:11px}
+.yt-entry:hover,.yt-entry.selected{background:#e4f0d9}.yt-entry small{display:block;color:#555;word-break:break-all}
+.yt-entry button{min-height:22px;padding:0 4px;margin-right:4px}.yt-actions{display:flex;gap:5px;flex-wrap:wrap;margin:6px 0}
+.yt-actions input[type=search]{width:100%;font:12px Tahoma;padding:5px}
+.yt-label{font-size:11px;font-weight:bold;display:block;margin-bottom:3px}
+#yt-video-status{font-size:11px;padding:5px 0}
+.transition-panel,.game-audio-panel{background:#e1e1e1;border:2px inset #aaa;padding:7px;margin:6px 0;font-size:11px}
+.transition-panel label,.game-audio-panel label{display:inline-flex;align-items:center;gap:6px;margin:4px 9px 4px 0}
+.transition-panel select,.game-audio-panel select{font:12px Tahoma}
+.game-audio-panel input[type=range]{width:105px}.game-audio-panel output{display:inline-block;min-width:35px;text-align:right}
+.latch-resume{background:#fff9d9;border:1px solid #999;padding:8px;margin:7px 0;display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:11px}
+.latch-resume[hidden]{display:none}.latch-resume .resume-name{flex:1;min-width:100px}
+@media(max-width:530px){.yt-library{grid-template-columns:1fr}.yt-links,.yt-songs{max-height:165px}}
+/* Android YouTube Music: separate, permission-gated media-session viewer. */
+.external-session{background:#d4d0c8;border:2px outset #eee;padding:9px;margin-bottom:11px;color:#222;font:12px Tahoma,sans-serif}
+.external-session .row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.external-session h3{font:bold 13px Tahoma,sans-serif;margin:0}
+.external-session .track-info{background:#101b12;color:#b8f1aa;border:2px inset #777;margin:7px 0;padding:8px;min-height:62px}
+.external-session .track-info strong{font-size:15px;display:block;overflow-wrap:anywhere}
+.external-session .track-info span{display:block;font-size:12px;margin-top:4px;color:#9cb4a0}
+.external-session .track-info small{color:#7ca389}
+.external-session .buttons{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.external-session .buttons button{padding:5px 8px}
+.external-session .tip{line-height:1.45;font-size:11px;color:#393939;margin:5px 0}
+.external-session .live-status{font-weight:bold;color:#004000}
+.external-session button[hidden]{display:none}
 </style>
 </head>
 <body>
 <main class="window" aria-label="LatchAmp music player">
-  <div class="titlebar"><div class="caption"><span class="lamp"></span><span>LatchAmp 1.10 — Portable Audio Player</span></div><div class="title-actions">LATCH 98</div></div>
+  <div class="titlebar"><div class="caption"><span class="lamp"></span><span>LatchAmp 1.14 — Portable Audio Player</span></div><div class="title-actions">LATCH 98</div></div>
   <div class="menubar"><button class="menulink" id="menu-file"><u>F</u>ile</button><button class="menulink" id="menu-playlist"><u>P</u>laylist</button><button class="menulink" id="menu-help"><u>H</u>elp</button><span class="device">LATCH 98 · SOUND</span></div>
   <div class="main">
     <section class="display" aria-label="Now playing">
@@ -96,29 +128,122 @@ body.in-latch .main{padding:4px}
       </div>
       <div class="controls-line"><input id="search" type="search" placeholder="Find a song…" aria-label="Search music library"><span id="queue-status" class="queue-status" aria-live="polite">0 tracks</span></div>
       <input type="file" id="pick" accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac" multiple hidden>
+      <div class="latch-resume" id="resume-session" hidden><span class="resume-name" id="resume-description">Last session</span><button id="resume-last">Resume track</button><button id="dismiss-resume">Dismiss</button></div>
+      <div class="drive-panel" id="drive-panel" hidden>
+        <div class="toolbar"><strong>C:\MY DOCUMENTS\MY MUSIC</strong><button id="drive-refresh">Browse Latch C:</button><button id="drive-import">Import files into C:</button><input id="drive-picker" type="file" accept="audio/*,video/*,.mp3,.flac,.wav,.mp4,.webm" multiple hidden></div>
+        <div id="drive-files" class="yt-songs" aria-label="Latch C drive music and online links"></div>
+        <p class="hint">Offline songs are stored in this device's media database. Online files are links, not downloaded YouTube audio. A disk JSON backup saves names/links, not imported media bytes.</p>
+        <div class="toolbar"><strong id="mixed-title">MIXED PLAYLIST</strong><button id="mixed-prev">Previous</button><button id="mixed-next">Next</button><label>Loop <select id="mixed-loop"><option value="off">Off</option><option value="all">Playlist</option><option value="one">Current</option></select></label></div>
+        <div id="mixed-tracks" class="yt-songs" aria-label="Local and online playlist entries"></div>
+      </div>
       <div class="library" id="library" aria-label="Your local audio library"></div>
-      <p class="hint">Audio remains on this device in browser storage where supported; exported track lists contain names/order, not the audio files. Tap ↑ or ↓ to reorder tracks. EQ works on local playback. Android may pause background audio.</p>
+      <div class="transition-panel"><strong>SONG TRANSITIONS</strong><div class="controls-line"><label>Mode <select id="transition-mode" aria-label="Song transition mode"><option value="off">Off (normal)</option><option value="fade">Crossfade</option><option value="smart">Auto Transition (adaptive fade)</option></select></label><label>Fade length <input id="fade-seconds" type="range" min="1" max="12" step="1" value="5"><output id="fade-length">5 s</output></label></div><small>For local audio only. Smart mode adjusts fade length to track duration; it does not analyze beats or match tempo.</small></div>
+      <div class="game-audio-panel"><strong>LATCH GAME AUDIO</strong><div class="controls-line"><label><input type="checkbox" id="duck-game"> Lower LatchAmp when a game gets loud</label><label><input type="checkbox" id="suppress-music"> Suppress compatible game soundtracks while LatchAmp plays</label><label><input type="checkbox" id="mute-games"> Mute all other Latch games while listening</label></div><div class="controls-line"><label>Game volume <input id="game-volume" type="range" min="0" max="100" value="100"><output id="game-volume-label">100%</output></label><label>Duck at <input id="duck-threshold" type="range" min="5" max="80" value="20"><output id="duck-threshold-label">20%</output></label><label>Duck amount <input id="duck-depth" type="range" min="10" max="95" value="60"><output id="duck-depth-label">60%</output></label></div>
+      <div class="controls-line"><label>Lower speed <select id="duck-attack"><option value="0.03">Fast</option><option value="0.08" selected>Normal</option><option value="0.25">Gentle</option></select></label><label>Recover speed <select id="duck-release"><option value="0.3">Fast</option><option value="0.75" selected>Normal</option><option value="1.5">Slow</option></select></label></div><small id="game-audio-status">Only works for game windows that support the Latch audio bridge; no systemwide audio capture.</small></div>
+      <p class="hint">Audio keeps playing while LatchAmp is minimized or a Latch game is in front (where the browser permits). Closing LatchAmp stops playback. Track, position and modes are saved for manual resume. Exported track lists contain names/order, not audio files. Tap ↑ or ↓ to reorder tracks. EQ works on local playback. Android may pause background audio.</p>
     </section>
     <section class="content" id="yt-panel" role="tabpanel" aria-labelledby="tab-yt" hidden>
-      <div class="inputgroup"><input type="url" id="ytlink" placeholder="Paste a YouTube or YouTube Music link" aria-label="YouTube URL" autocomplete="off"><button id="loadvideo">Load video</button></div>
+      <section class="external-session" aria-label="Android YouTube Music session">
+        <div class="row"><h3>ANDROID PLAYER — YOUTUBE MUSIC</h3><span class="live-status" id="remote-status" role="status">CHECKING</span></div>
+        <div class="track-info"><strong id="remote-track">No current song</strong><span id="remote-artist">Open YouTube Music to start a session.</span><small id="remote-album"></small></div>
+        <div class="buttons"><button id="remote-previous" aria-label="Previous YouTube Music track">◀◀</button><button id="remote-play" aria-label="Play or pause YouTube Music">▶ / ❚❚</button><button id="remote-next" aria-label="Next YouTube Music track">▶▶</button>
+          <button id="remote-refresh">Refresh</button><button id="remote-permission" hidden>Enable Android media access…</button></div>
+        <p class="tip" id="remote-help">Reads the currently playing song and controls the real YouTube Music app on Android. To choose a playlist, open a saved link in the Music app. Your private YouTube Music library cannot be browsed through Android media controls.</p>
+      </section>
+      <div class="inputgroup"><input type="url" id="ytlink" placeholder="Paste a YouTube or YouTube Music link" aria-label="YouTube URL" autocomplete="off"><button id="loadvideo">Load video</button><button id="saveyt">Save link</button></div>
+      <div class="yt-actions"><label>Video repeat: <select id="yt-repeat"><option value="off">Off</option><option value="video">Repeat video</option><option value="playlist">Repeat playlist</option></select></label><button id="yt-export">Export links</button><button id="yt-import">Import links</button><button id="yt-save-disk" hidden>Save links to C:</button><button id="yt-load-disk" hidden>Load links from C:</button></div>
+      <div class="yt-actions"><input type="search" id="yt-search" placeholder="Find a saved song or playlist…" aria-label="Search saved video links"></div>
+      <div id="yt-resume-box" class="yt-resume-box" hidden><span id="yt-resume-title">Previously played YouTube video</span><button id="yt-resume-play">Resume video</button><button id="yt-resume-clear">Dismiss</button></div>
+      <div class="yt-library"><div><span class="yt-label">SAVED LINKS / PLAYLISTS</span><div id="yt-links" class="yt-links" aria-label="Saved YouTube links"></div></div><div><span class="yt-label">SONGS / VIDEOS IN PLAYLIST</span><div id="yt-songs" class="yt-songs" aria-label="Playlist video entries"></div></div></div>
+      <div id="yt-video-status" role="status">Select a saved link or load a video. Playlist contents appear after the player loads them.</div>
       <div class="video-shell" id="video-shell"><div class="placeholder">The official YouTube video player appears here when a video is loaded. It stays visible while playing.</div></div>
       <div class="toolbar"><button id="openmusic">Open in YouTube Music ↗</button><button id="openvideo">Open on YouTube ↗</button><button id="unloadvideo">Stop / Unload video</button></div>
-      <p class="note">YouTube videos use the official embedded player, including its controls and ads. YouTube Music links can open the official Android app or browser; playback, Premium benefits, and background music are handled by YouTube Music, not LatchAmp. The embedded player needs an internet connection and a supported HTTPS/HTTP application origin.</p>
+      <p class="note">Saved YouTube and YouTube Music URLs (including playlists) are stored locally and can be exported or saved to LatchFS. They are bookmarks, not a direct import of your private YouTube Music library. Playlist entries are browsable when the YouTube player provides IDs; full playlist song titles require the YouTube Data API. Embedded video crossfading is unavailable. YouTube videos use the official embedded player, including its controls and ads. YouTube Music links can open the official Android app or browser; playback, Premium benefits, and background music are handled by YouTube Music, not LatchAmp. The embedded player needs an internet connection and a supported HTTPS/HTTP application origin.</p>
     </section>
     <footer class="foot"><span id="feedback" role="status" aria-live="polite">Ready.</span><span>Latch Audio Devices, 2003</span></footer>
   </div>
 </main>
 <audio id="audio" preload="metadata"></audio>
+<audio id="standby-audio" preload="metadata"></audio>
 <input type="file" id="importlist" accept=".json,application/json" hidden>
+<input type="file" id="yt-import-file" accept=".json,application/json" hidden>
 <script>
 (() => {
 'use strict';
-const $ = id => document.getElementById(id), audio=$('audio');
-const STORAGE='latchamp.prefs.v110', ORDER='latchamp.queue.v110';
+const $ = id => document.getElementById(id); let audio=$('audio'), standby=$('standby-audio');
+const STORAGE='latchamp.prefs.v110', ORDER='latchamp.queue.v110', YTLIB='latchamp.youtube.links.v112', RESUME='latchamp.session.v113', YTRESUME='latchamp.youtube.session.v113';
 const presetGains={flat:[0,0,0],bass:[7,-1,0],vocal:[-3,5,1],treble:[-2,0,6]};
+let mixedEntries=[],mixedPosition=-1,mixedLoop='off',drivePath=null;
 let tracks=[], order=[], currentId=null, currentURL=null, db=null, shuffle=false, repeatMode='off', search='';
 let ctx=null, filters=[], analyser=null, meterBuf=null, animating=false, shuffledBag=[], history=[];
-let gains=[0,0,0];
+let gains=[0,0,0], transitionMode='off', fadeSeconds=5, fadeTimer=null, fading=false, fadeTarget=null, sourceGain=new Map(), currentTransition=null, volumeGain=null, masterVolume=1, duckFactor=1;
+let duckEnabled=false, suppressSoundtracks=false, muteOtherGames=false, gameLevel=0, gameVolume=1, duckThreshold=.2, duckDepth=.6, duckAttack=.08, duckRelease=.75, duckTick=performance.now();
+let resumePending=null,lastSavedAt=0,ytSessionPending=null,ytSessionLastSaved=0,ytResumeOnReady=null;
+let ytPlayer=null, ytReady=false, ytVideoState=-1, ytSelection=null, ytLibrary=[], ytVideoIds=[], ytVideoIndex=0, ytRepeat='off', ytPlayerLoading=false;
+let ytApiPromise=null, ytPendingUrl=null, ytActiveURL=null;
+
+let activeTab='local', remoteSnapshot=null;
+const androidMusic=()=>window.LatchAndroid && typeof window.LatchAndroid.getMediaSnapshot==='function' ? window.LatchAndroid : null;
+const hostOrigin=()=>{try{const u=new URL(document.baseURI);return u.origin==='null'?'*':u.origin;}catch{return location.origin==='null'?'*':location.origin;}};
+const remoteMode=()=>activeTab==='yt'&&!ytPlayer;
+const videoMode=()=>activeTab==='yt'&&!!ytPlayer;
+function saveYtSession(force=false){
+ if(!ytPlayer)return;
+ const now=Date.now();if(!force&&now-ytSessionLastSaved<3500)return;ytSessionLastSaved=now;
+ const url=ytActiveURL;if(!youtubeInfo(url))return;
+ try{safeStore(YTRESUME,{url,selected:ytSelection||null,index:Math.max(0,Number(ytPlayer.getPlaylistIndex?.())||0),position:Math.max(0,Number(ytPlayer.getCurrentTime?.())||0),title:ytActiveVideo().title||'',at:now});}catch{}
+}
+function offerYtResume(){
+ const saved=safeRead(YTRESUME,null);if(!saved||!youtubeInfo(saved.url))return;
+ ytSessionPending=saved;
+ $('yt-resume-title').textContent='Continue: '+(saved.title||'Saved YouTube video')+' · '+format(Number(saved.position)||0);
+ $('yt-resume-box').hidden=false;
+}
+function dismissYtResume(){ytSessionPending=null;$('yt-resume-box').hidden=true;}
+$('yt-resume-play').onclick=()=>{if(!ytSessionPending)return;const v=ytSessionPending;
+ tabs('yt');$('ytlink').value=v.url;loadVideoFromLink(v.url,v.selected,{position:v.position,index:v.index});dismissYtResume();};
+$('yt-resume-clear').onclick=()=>{try{localStorage.removeItem(YTRESUME);}catch{}dismissYtResume();};
+function renderRemote(){
+ const bridge=androidMusic(),snap=remoteSnapshot;
+ const permission=!!snap?.permission,active=!!snap?.active;
+ const status=$('remote-status'),title=$('remote-track'),artist=$('remote-artist'),album=$('remote-album');
+ const grant=$('remote-permission');grant.hidden=!bridge || permission;
+ if(!bridge){status.textContent='ANDROID APP ONLY';title.textContent='No Android media connection';artist.textContent='Standalone HTML cannot read other Android apps.';album.textContent='';}
+ else if(!permission){status.textContent='ACCESS REQUIRED';title.textContent='Grant media access to continue';artist.textContent='Tap Enable Android media access and allow LatchAmp notification access.';album.textContent='';}
+ else if(!active){status.textContent='NO ACTIVE SESSION';title.textContent='YouTube Music is not playing';artist.textContent='Start or pause a song in the real YouTube Music app.';album.textContent='';}
+ else{status.textContent=(snap.state||'unknown').toUpperCase();title.textContent=snap.title||'Unknown track';artist.textContent=snap.artist||'Unknown artist';album.textContent=snap.album||'';}
+ const controllable=!!bridge&&permission&&active;
+ $('remote-previous').disabled=!controllable||!snap.canPrevious;
+ $('remote-next').disabled=!controllable||!snap.canNext;
+ $('remote-play').disabled=!controllable||!snap.canPlayPause;
+ $('remote-play').textContent=active&&snap.playing?'❚❚ Pause':'▶ Play';
+ if(remoteMode()){
+   $('song').textContent=active?(snap.title||'UNKNOWN TRACK').toUpperCase().slice(0,115):title.textContent.toUpperCase();
+   $('status').textContent=status.textContent;
+   $('subread').textContent=active?(snap.artist||'YouTube Music'):'ANDROID MEDIA SESSION';
+   $('elapsed').textContent=format((snap?.positionMs||0)/1000);
+   $('duration').textContent=format((snap?.durationMs||0)/1000);
+   $('seek').value=0;$('seek').disabled=true;
+   $('play').textContent=active&&snap.playing?'❚❚':'▶';
+   $('previous').disabled=!controllable||!snap.canPrevious;
+   $('next').disabled=!controllable||!snap.canNext;
+   $('play').disabled=!controllable||!snap.canPlayPause;
+   $('stop').disabled=!controllable||!snap.playing;
+ }
+ announceTransport();
+}
+function refreshRemote(){const bridge=androidMusic();
+ if(!bridge){remoteSnapshot=null;renderRemote();return;}
+ try{remoteSnapshot=JSON.parse(bridge.getMediaSnapshot());}
+ catch{remoteSnapshot={permission:false,active:false,error:'Cannot read Android media session'};}
+ renderRemote();
+}
+function remoteAction(action){const bridge=androidMusic();if(!bridge||!remoteSnapshot?.permission){post('Enable Android media access to control YouTube Music.');return;}
+ try{if(!bridge.sendMediaAction(action))post('YouTube Music cannot perform that command right now.');else post('Command sent to YouTube Music.');}
+ catch(e){post('Android media command failed: '+e.message);}
+ setTimeout(refreshRemote,350);
+}
+
 const post = message => $('feedback').textContent=message;
 const format = t => Number.isFinite(t) ? String(Math.floor(t/60)).padStart(2,'0')+':'+String(Math.floor(t%60)).padStart(2,'0') : '00:00';
 const cleanName = name => String(name||'Track').replace(/\.[^.]+$/,'').slice(0,110);
@@ -130,7 +255,88 @@ const safeStore=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value)
 const queue = () => order.map(id=>findTrack(id)).filter(Boolean);
 function normalizeOrder(){const ids=new Set(tracks.map(t=>idKey(t.id)));order=order.filter(id=>ids.has(idKey(id)));for(const t of tracks)if(!order.some(id=>idKey(id)===idKey(t.id)))order.push(t.id);saveOrder();}
 function saveOrder(){safeStore(ORDER,order);}
-function savePrefs(){safeStore(STORAGE,{shuffle,repeatMode,volume:audio.volume,speed:audio.playbackRate,gains});}
+function savePrefs(){safeStore(STORAGE,{shuffle,repeatMode,volume:masterVolume,speed:audio.playbackRate,gains,transitionMode,fadeSeconds,duckEnabled,suppressSoundtracks,muteOtherGames,gameVolume,duckThreshold,duckDepth,duckAttack,duckRelease,ytRepeat});}
+function saveSession(force=false){
+ if(currentId===null)return;
+ const now=Date.now();if(!force&&now-lastSavedAt<3800)return;lastSavedAt=now;
+ const t=findTrack(currentId);if(!t)return;
+ safeStore(RESUME,{trackId:t.id,name:t.name,size:t.size,position:Math.max(0,Number(audio.currentTime)||0),wasPlaying:!audio.paused,tab:activeTab,at:now});
+}
+function offerResume(){
+ const saved=safeRead(RESUME,null);if(!saved||typeof saved!=='object')return;
+ const t=findTrack(saved.trackId)||tracks.find(t=>t.name===saved.name&&t.size===saved.size);
+ if(!t)return;
+ resumePending={id:t.id,position:Number.isFinite(saved.position)?Math.max(0,saved.position):0};
+ $('resume-description').textContent='Last session: '+cleanName(t.name)+' · '+format(resumePending.position);
+ $('resume-session').hidden=false;
+}
+function dismissResume(){resumePending=null;$('resume-session').hidden=true;}
+function announceTransport(){
+ if(window.parent===window)return;
+ const t=findTrack(currentId),video=videoMode(),remote=remoteMode();
+ const title=video?($('song').textContent||'YouTube video'):remote?($('remote-track').textContent||'Android music'):(t?cleanName(t.name):'No track loaded');
+ const playing=video?ytVideoState===1:remote?!!remoteSnapshot?.playing:!!t&&!audio.paused;
+ try{window.parent.postMessage({type:'latchamp:transport-state',title:title.slice(0,125),playing,active:!!t||video||remote,volume:masterVolume,mode:video?'video':remote?'remote':'local'},hostOrigin());}catch{}
+}
+window.addEventListener('message',event=>{
+ if(window.parent===window||event.source!==window.parent||(hostOrigin()!=='*'&&event.origin!==hostOrigin()))return;
+ const msg=event.data;if(msg?.type!=='latch98:latchamp-command')return;
+ if(['toggle','next','previous','stop','pause','play'].includes(msg.command)){
+  if(videoMode()){const command=msg.command==='stop'?'pause':msg.command;videoAction(command);}
+  else if(remoteMode())remoteAction(msg.command==='stop'?'pause':msg.command);
+  else if(msg.command==='pause'){audio.pause();}else if(msg.command==='play'){if(audio.paused)$('play').click();}
+  else {const button={toggle:'play',next:'next',previous:'previous',stop:'stop'}[msg.command];if(button)$(button).click();}
+}
+ if(msg.command==='volume'&&Number.isFinite(msg.value)){
+  const pct=Math.max(0,Math.min(100,Number(msg.value)));$('volume').value=pct;$('volume').dispatchEvent(new Event('input',{bubbles:true}));
+ }
+ if(msg.command==='state')announceTransport();
+});
+// Latch C: entries share the player with the existing optional local library.
+// Disk entries never contain binary audio: the parent owns IndexedDB blobs.
+const driveFS=()=>window.parent!==window?window.parent.LatchFS:null;
+function driveMedia(){return window.parent!==window?window.parent.LatchMedia:null;}
+function renderDrive(){const fs=driveFS(),root=$('drive-files');if(!fs||!root)return;root.replaceChildren();
+ const items=fs.mediaFiles().filter(n=>!n.path.startsWith('C:/RECYCLED/')).sort((a,b)=>a.name.localeCompare(b.name));
+ if(!items.length){root.textContent='No media files yet. In Explorer: File → Import Audio / Video or New YouTube Media Link.';return;}
+ for(const item of items){const b=document.createElement('button');b.type='button';b.className='yt-entry';b.textContent=(item.kind==='media-local'?'◉ ':item.kind==='media-link'?'↗ ':'▤ ')+item.name;
+ const sub=document.createElement('small');sub.textContent=(item.kind==='media-local'?'Offline':item.kind==='media-link'?'YouTube link':'Mixed playlist')+' · '+fs.display(item.path);b.append(sub);
+ b.onclick=()=>openDrivePath(item.path);root.append(b);}}
+function renderMixed(){const root=$('mixed-tracks');root.replaceChildren();$('mixed-title').textContent=mixedEntries.length?'MIXED PLAYLIST ('+mixedEntries.length+' TRACKS)':'MIXED PLAYLIST';
+ if(!mixedEntries.length){root.textContent='Open a .l98mix file from Explorer or the C: browser.';return;}
+ mixedEntries.forEach((entry,i)=>{const b=document.createElement('button');b.type='button';b.className='yt-entry'+(i===mixedPosition?' selected':'');b.textContent=String(i+1).padStart(2,'0')+'  '+(entry.type==='youtube'?'↗ ':'♪ ')+entry.title;b.title=entry.type==='youtube'?'Online · internet required':'Offline · stored on this device';b.onclick=()=>playMixed(i);root.append(b);});}
+async function playDriveAudio(ref,title,path=null){const fs=driveFS(),media=driveMedia();if(!fs||!media)throw Error('Latch media storage unavailable');
+ const item=fs.mediaFiles().find(n=>n.kind==='media-local'&&n.mediaId===ref);if(!item)throw Error('This local song was moved off the drive or deleted');
+ if(item.mime.startsWith('video/')){window.parent.postMessage({type:'latchamp:open-local-video',path:item.path},hostOrigin());post('Opening local video player…');return;}
+ const blob=await media.blobFor(ref),id='drive:'+ref;
+ let track=findTrack(id);if(!track){track={id,name:title||item.name,size:blob.size,mime:item.mime,blob,source:'latch-drive'};tracks.push(track);order.push(id);saveOrder();}else track.blob=blob;
+ tabs('local');render();await playId(id);post('Playing offline file from C: · '+track.name);
+}
+async function openDrivePath(path){try{const fs=driveFS(),n=fs?.get(path);if(!n)throw Error('File not found');drivePath=path;
+ if(n.kind==='media-local')await playDriveAudio(n.mediaId,n.name,path);
+ else if(n.kind==='media-link'){if(!youtubeInfo(n.url))throw Error('Unsupported YouTube URL');tabs('yt');$('ytlink').value=n.url;await loadVideoFromLink(n.url);}
+ else if(n.kind==='media-playlist'){const record=JSON.parse(n.data);if(record.format!=='latch-mixed-playlist-v1')throw Error('Unsupported playlist');mixedEntries=record.entries;mixedPosition=-1;mixedLoop='off';$('mixed-loop').value='off';renderMixed();tabs('local');post('Loaded mixed playlist: '+mixedEntries.length+' entries. Select a track to play.');}
+ else throw Error('This item is not playable media');
+ }catch(e){post('Cannot open media: '+e.message);}}
+async function playMixed(index){if(!mixedEntries.length)return;
+ if(index>=mixedEntries.length){if(mixedLoop==='all')index=0;else {post('End of mixed playlist.');return;}}
+ if(index<0){if(mixedLoop==='all')index=mixedEntries.length-1;else return;}
+ mixedPosition=index;renderMixed();const entry=mixedEntries[index];
+ try{if(entry.type==='youtube'){tabs('yt');$('ytlink').value=entry.url;await loadVideoFromLink(entry.url);}
+ else await playDriveAudio(entry.mediaId,entry.title);
+ }catch(e){post('Mixed playlist entry unavailable: '+e.message);}}
+function mixedAdvance(delta){if(mixedPosition<0){playMixed(0);return;}playMixed(mixedLoop==='one'?mixedPosition:mixedPosition+delta);}
+$('drive-refresh').onclick=renderDrive;
+$('drive-import').onclick=()=>$('drive-picker').click();
+$('drive-picker').onchange=async e=>{const fs=driveFS(),store=driveMedia();if(!fs||!store){post('Latch C: storage is unavailable outside Latch 98.');return;}
+ let done=0,last=null;for(const file of [...(e.target.files||[])])try{last=await store.importFile(file,'C:/MY DOCUMENTS/MY MUSIC');done++;}catch(err){post('Import stopped: '+err.message);break;}
+ e.target.value='';renderDrive();if(done){post('Imported '+done+' real media file(s) to C:\My Documents\My Music.');if(last)await openDrivePath(last);}};
+$('mixed-prev').onclick=()=>mixedAdvance(-1);$('mixed-next').onclick=()=>mixedAdvance(1);
+$('mixed-loop').onchange=e=>mixedLoop=e.target.value;
+window.addEventListener('message',event=>{
+ if(window.parent===window||event.source!==window.parent||(hostOrigin()!=='*'&&event.origin!==hostOrigin()))return;
+ if(event.data?.type==='latch98:open-media')openDrivePath(event.data.path);
+});
 function openDB(){return new Promise((resolve,reject)=>{if(!indexedDB){reject(Error('IndexedDB unavailable'));return;}
  const req=indexedDB.open('latchamp-audio-v1',1);
  req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('tracks'))req.result.createObjectStore('tracks',{keyPath:'id',autoIncrement:true});};
@@ -142,9 +348,10 @@ function transaction(method,value){return new Promise((resolve,reject)=>{
  let result;req.onsuccess=()=>{result=req.result;};req.onerror=()=>reject(req.error);tx.onerror=()=>reject(tx.error);
  tx.oncomplete=()=>resolve(result);
 });}
-function updateReadout(){const t=findTrack(currentId);$('song').textContent=t?cleanName(t.name).toUpperCase():'NO TRACK LOADED';
+function updateReadout(){if(remoteMode())return;const t=findTrack(currentId);$('song').textContent=t?cleanName(t.name).toUpperCase():'NO TRACK LOADED';
  $('status').textContent=t?(audio.paused?'PAUSED':'PLAYING'):'STOPPED';$('play').textContent=t&&!audio.paused?'Ⅱ':'▶';
  $('subread').textContent=t?`LOCAL • ${(t.size/1048576).toFixed(1)} MB • ${t.mime||'AUDIO'}`:'44 kHz • STEREO • LATCHAMP';
+ announceTransport();
 }
 function render(){const list=$('library');list.replaceChildren();const all=queue(),visible=all.filter(t=>cleanName(t.name).toLowerCase().includes(search));
  $('queue-status').textContent=`${visible.length}/${all.length} tracks`;
@@ -163,14 +370,38 @@ function render(){const list=$('library');list.replaceChildren();const all=queue
 }
 function moveTrack(id,delta){const index=order.findIndex(x=>idKey(x)===idKey(id)),to=index+delta;if(index<0||to<0||to>=order.length)return;
  [order[index],order[to]]=[order[to],order[index]];saveOrder();render();post('Playlist order saved.');}
-function release(){audio.pause();audio.removeAttribute('src');audio.load();if(currentURL){URL.revokeObjectURL(currentURL);currentURL=null;}}
+function cancelFade(){if(fadeTimer!==null){clearTimeout(fadeTimer);fadeTimer=null;}fading=false;currentTransition=null;standby.pause();if(standby._latchURL){URL.revokeObjectURL(standby._latchURL);standby._latchURL=null;standby.removeAttribute('src');standby.load();}
+ for(const el of [audio,standby]){const g=sourceGain.get(el);if(g){g.gain.cancelScheduledValues(ctx.currentTime);g.gain.value=el===audio?1:0;}}}
+function release(){cancelFade();for(const el of [audio,standby]){el.pause();el.removeAttribute('src');el.load();const url=el._latchURL;if(url){URL.revokeObjectURL(url);el._latchURL=null;}}currentURL=null;}
+function currentTrackNext(){const all=queue();if(!all.length)return null;const n=all.findIndex(t=>idKey(t.id)===idKey(currentId));if(shuffle)return null;
+ if(n+1<all.length)return all[n+1];if(repeatMode==='all')return all[0];return null;}
+function fadeDuration(duration){if(transitionMode==='off')return 0;const base=transitionMode==='smart'?(duration<80?2:duration>240?7:4):fadeSeconds;return Math.min(Math.max(1,base),fadeSeconds,Math.max(0.5,duration*.12));}
+async function crossfadeTo(nextTrack,secs){if(!nextTrack||fading||!ctx||!sourceGain.has(audio)||!sourceGain.has(standby))return false;
+ try{const url=URL.createObjectURL(nextTrack.blob);standby._latchURL=url;standby.src=url;standby.volume=masterVolume;standby.playbackRate=audio.playbackRate;const gOut=sourceGain.get(audio),gIn=sourceGain.get(standby),start=ctx.currentTime;
+  gOut.gain.cancelScheduledValues(start);gIn.gain.cancelScheduledValues(start);gOut.gain.setValueAtTime(1,start);gIn.gain.setValueAtTime(0,start);
+  await standby.play();const len=Math.max(.3,secs);
+  // Equal-power transition; the two decoded local tracks run simultaneously.
+  const steps=48,a=new Float32Array(steps),b=new Float32Array(steps);for(let i=0;i<steps;i++){const p=i/(steps-1);a[i]=Math.cos(p*Math.PI/2);b[i]=Math.sin(p*Math.PI/2);}
+  gOut.gain.setValueCurveAtTime(a,start,len);gIn.gain.setValueCurveAtTime(b,start,len);fading=true;currentTransition={from:audio,to:standby,next:nextTrack};
+  fadeTimer=setTimeout(()=>finishFade(),Math.round(len*1000+80));post('Transitioning to '+nextTrack.name);return true;
+ }catch(e){if(standby._latchURL)URL.revokeObjectURL(standby._latchURL);standby._latchURL=null;standby.pause();post('Fade unavailable; normal playback will continue.');return false;}}
+function finishFade(){if(!fading||!currentTransition)return;const {from,to,next}=currentTransition;fadeTimer=null;fading=false;currentTransition=null;
+ from.pause();from.removeAttribute('src');from.load();if(from._latchURL)URL.revokeObjectURL(from._latchURL);from._latchURL=null;
+ const out=sourceGain.get(from),incoming=sourceGain.get(to);if(out){out.gain.cancelScheduledValues(ctx.currentTime);out.gain.value=0;}if(incoming){incoming.gain.cancelScheduledValues(ctx.currentTime);incoming.gain.value=1;}
+ audio=to;standby=from;currentId=next.id;currentURL=audio._latchURL;updateReadout();updateMediaSession();render();notifyAudioState();saveSession(true);}
+
 function updateMediaSession(){if(!('mediaSession' in navigator))return;const t=findTrack(currentId);
  try{navigator.mediaSession.metadata=t&&window.MediaMetadata?new MediaMetadata({title:cleanName(t.name),artist:'Local audio',album:'LatchAmp'}):null;
  navigator.mediaSession.playbackState=t?(audio.paused?'paused':'playing'):'none';}catch{}
 }
-async function playId(id,{recordHistory=true}={}){const t=findTrack(id);if(!t)return;try{
- if(idKey(id)!==idKey(currentId)||!audio.src){if(recordHistory&&currentId!==null&&idKey(currentId)!==idKey(id))history.push(currentId);release();currentId=id;currentURL=URL.createObjectURL(t.blob);audio.src=currentURL;}
- await audio.play();startMeter();updateReadout();updateMediaSession();render();post('Playing '+t.name);
+async function playId(id,{recordHistory=true,resumeAt=null}={}){const t=findTrack(id);if(!t)return;try{
+ if(idKey(id)!==idKey(currentId)||!audio.src){if(recordHistory&&currentId!==null&&idKey(currentId)!==idKey(id))history.push(currentId);release();currentId=id;currentURL=URL.createObjectURL(t.blob);audio._latchURL=currentURL;audio.src=currentURL;}
+ if(Number.isFinite(resumeAt)&&resumeAt>0){
+  if(audio.readyState<1)await new Promise(resolve=>{const done=()=>resolve();audio.addEventListener('loadedmetadata',done,{once:true});audio.addEventListener('error',done,{once:true});setTimeout(done,1800);});
+  const target=Number.isFinite(audio.duration)?Math.min(resumeAt,Math.max(0,audio.duration-.3)):resumeAt;
+  try{audio.currentTime=Math.max(0,target);}catch{}
+ }
+ dismissResume();await audio.play();startMeter();updateReadout();updateMediaSession();render();saveSession(true);post('Playing '+t.name);
  }catch(err){post('Cannot play this file on this device: '+(err.message||err));updateReadout();}}
 function resetBag(){shuffledBag=queue().filter(t=>idKey(t.id)!==idKey(currentId)).map(t=>t.id);for(let i=shuffledBag.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffledBag[i],shuffledBag[j]]=[shuffledBag[j],shuffledBag[i]];}}
 function nextIndex(delta,auto=false){const all=queue();if(!all.length)return;
@@ -199,10 +430,10 @@ function setGains(next,save=true){gains=next.map(v=>Math.max(-12,Math.min(12,Num
  $('eq'+key).value=String(gains[i]);$('eq'+key+'val').textContent=gains[i]+' dB';if(filters[i])filters[i].gain.value=gains[i];}
  const detected=Object.entries(presetGains).find(([,g])=>g.every((n,i)=>n===gains[i]));$('eqpreset').value=detected?detected[0]:'custom';if(save)savePrefs();
 }
-function startMeter(){if(!window.AudioContext&&!window.webkitAudioContext)return;try{if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();const source=ctx.createMediaElementSource(audio);
+function startMeter(){if(!window.AudioContext&&!window.webkitAudioContext)return;try{if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;ctx=new AC();const source=ctx.createMediaElementSource(audio),second=ctx.createMediaElementSource(standby);const g1=ctx.createGain(),g2=ctx.createGain();g1.gain.value=1;g2.gain.value=0;source.connect(g1);second.connect(g2);sourceGain.set(audio,g1);sourceGain.set(standby,g2);
  const settings=[['lowshelf',140,0.7],['peaking',1100,0.85],['highshelf',6500,0.7]];
  filters=settings.map(([type,frequency,q],i)=>{const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=frequency;f.Q.value=q;f.gain.value=gains[i];return f;});
- source.connect(filters[0]);filters[0].connect(filters[1]);filters[1].connect(filters[2]);analyser=ctx.createAnalyser();analyser.fftSize=128;filters[2].connect(analyser);analyser.connect(ctx.destination);meterBuf=new Uint8Array(analyser.frequencyBinCount);
+ g1.connect(filters[0]);g2.connect(filters[0]);filters[0].connect(filters[1]);filters[1].connect(filters[2]);analyser=ctx.createAnalyser();analyser.fftSize=128;filters[2].connect(analyser);volumeGain=ctx.createGain();volumeGain.gain.value=duckFactor;analyser.connect(volumeGain);volumeGain.connect(ctx.destination);meterBuf=new Uint8Array(analyser.frequencyBinCount);
  }ctx.resume().catch(()=>{});if(!animating){animating=true;requestAnimationFrame(drawMeter);}}
  catch(err){post('Audio works, but this browser does not support the EQ/meter.');}}
 function drawMeter(){const c=$('visual'),g=c.getContext('2d');if(!g){animating=false;return;}g.fillStyle='#151c20';g.fillRect(0,0,c.width,c.height);
@@ -213,7 +444,7 @@ function drawMeter(){const c=$('visual'),g=c.getContext('2d');if(!g){animating=f
  requestAnimationFrame(drawMeter);
 }
 function downloadFile(content,name,type='application/json'){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
-function playlistRecord(){return {format:'latchamp-tracklist-v1',player:'LatchAmp 1.10',tracks:queue().map(t=>({name:t.name,size:t.size,mime:t.mime})),equalizer:gains,shuffle,repeatMode};}
+function playlistRecord(){return {format:'latchamp-tracklist-v1',player:'LatchAmp 1.14',tracks:queue().map(t=>({name:t.name,size:t.size,mime:t.mime})),equalizer:gains,shuffle,repeatMode};}
 function exportList(){downloadFile(JSON.stringify(playlistRecord(),null,2),'LatchAmp-Track-List.json');post('Exported track names, order and settings (not audio files).');}
 function applyTrackList(data){if(!data||data.format!=='latchamp-tracklist-v1'||!Array.isArray(data.tracks)||data.tracks.length>5000)throw Error('This is not a LatchAmp track list');
  const all=queue(),used=new Set(),sorted=[];let missing=0;
@@ -231,45 +462,66 @@ async function loadFromLatch(){try{const host=window.parent.LatchFS;if(!host)thr
 async function saveToLatch(){try{const host=window.parent.LatchFS;if(!host)throw Error('Latch disk is unavailable');await host.ready;const path='C:/My Documents/LatchAmp Playlist.json';host.write(path,JSON.stringify(playlistRecord(),null,2));await host.sync();post('Playlist information saved to C:\My Documents (audio files stay local).');}
  catch(err){post('Could not save playlist: '+err.message);}}
 $('menu-file').onclick=()=>{$('pick').click();};$('menu-playlist').onclick=()=>{tabs('local');$('search').focus();};
-$('menu-help').onclick=()=>alert('LatchAmp 1.10\n\nLocal Music: Import music from your device. Search, reorder with arrows, and export a track list. Imported files remain on this device.\n\nEqualizer: Choose a preset or adjust three frequency bands; speed changes local playback only. Repeat cycles Off / All / One.\n\nYouTube Music uses its official app; YouTube iframe is a visible official video player, not an audio extractor.');
-$('import').onclick=()=>$('pick').click();$('pick').onchange=e=>{addFiles(e.target.files);e.target.value='';};
+$('menu-help').onclick=()=>alert('LatchAmp 1.14\n\nSaved YouTube links: save, search, export, import, or save to virtual C:. Embedded player controls work on hosted Latch 98. Playlist IDs are browsable after playback starts.\n\nGame audio: ducking works for monitored WebAudio games; soundtrack-only muting requires a tagged HTML music track or compatible audio channel.\n\nLocal Music: Import music from your device. Search, reorder with arrows, and export a track list. Imported files remain on this device.\n\nEqualizer: Choose a preset or adjust three frequency bands; speed changes local playback only. Repeat cycles Off / All / One.\n\nYouTube Music runs in its own Android app. Enable LatchAmp media access on the YouTube tab to display its current song and control playback. Standalone HTML cannot access Android media sessions. YouTube iframe is a visible official video player, not an audio extractor.');
+$('import').onclick=()=>{mixedPosition=-1;mixedEntries=[];renderMixed();$('pick').click();};$('pick').onchange=e=>{addFiles(e.target.files);e.target.value='';};
 $('clear').onclick=async()=>{if(!tracks.length||!confirm('Remove all imported music from LatchAmp?'))return;
  if(db){try{await transaction('clear');}catch(e){post('Cannot clear library: '+e.message);return;}}
- release();currentId=null;tracks=[];order=[];history=[];shuffledBag=[];saveOrder();render();updateReadout();updateMediaSession();post('Library cleared.');};
+ release();currentId=null;tracks=[];order=[];history=[];shuffledBag=[];try{localStorage.removeItem(RESUME);}catch{}dismissResume();saveOrder();render();updateReadout();updateMediaSession();post('Library cleared.');};
 $('search').oninput=e=>{search=e.target.value.toLowerCase().trim();render();};
 $('exportlist').onclick=exportList;
 $('importlistbtn').onclick=()=>$('importlist').click();
 $('importlist').onchange=e=>{importTrackList(e.target.files?.[0]);e.target.value='';};
 $('savelatch').onclick=saveToLatch;
 $('loadlatch').onclick=loadFromLatch;
-$('play').onclick=async()=>{if(!audio.src){const all=queue();if(all.length)playId(all[0].id);else post('Add a music file first.');return;}
- if(audio.paused){try{await audio.play();startMeter();}catch(e){post('Playback blocked: '+e.message);}}else audio.pause();updateReadout();};
-$('stop').onclick=()=>{audio.pause();if(audio.src)audio.currentTime=0;updateReadout();};
-$('next').onclick=()=>nextIndex(1);$('previous').onclick=()=>nextIndex(-1);
-$('shuffle').onclick=()=>{shuffle=!shuffle;shuffledBag=[];history=[];$('shuffle').classList.toggle('active',shuffle);$('shuffle').setAttribute('aria-pressed',String(shuffle));savePrefs();};
-$('repeat').onclick=()=>setRepeat(({off:'all',all:'one',one:'off'})[repeatMode]);
-$('volume').oninput=e=>{audio.volume=Number(e.target.value)/100;savePrefs();};
+$('resume-last').onclick=()=>{if(resumePending)playId(resumePending.id,{resumeAt:resumePending.position});};
+$('dismiss-resume').onclick=dismissResume;
+$('play').onclick=async()=>{if(videoMode()){videoAction('toggle');return;}if(remoteMode()){remoteAction('toggle');return;}if(!audio.src){const all=queue();if(all.length)playId(all[0].id);else post('Add a music file first.');return;}
+ if(audio.paused){try{await audio.play();startMeter();}catch(e){post('Playback blocked: '+e.message);}}else {if(fading)cancelFade();audio.pause();}updateReadout();};
+$('stop').onclick=()=>{if(activeTab==='local'&&fading)cancelFade();if(videoMode()){videoAction('stop');return;}if(remoteMode()){remoteAction('pause');return;}audio.pause();if(audio.src)audio.currentTime=0;updateReadout();};
+$('next').onclick=()=>mixedPosition>=0?mixedAdvance(1):videoMode()?videoAction('next'):remoteMode()?remoteAction('next'):nextIndex(1);$('previous').onclick=()=>mixedPosition>=0?mixedAdvance(-1):videoMode()?videoAction('previous'):remoteMode()?remoteAction('previous'):nextIndex(-1);
+$('shuffle').onclick=()=>{if(activeTab==='yt')return;shuffle=!shuffle;shuffledBag=[];history=[];$('shuffle').classList.toggle('active',shuffle);$('shuffle').setAttribute('aria-pressed',String(shuffle));savePrefs();};
+$('repeat').onclick=()=>{if(activeTab==='yt')return;setRepeat(({off:'all',all:'one',one:'off'})[repeatMode]);};
+$('volume').oninput=e=>{masterVolume=Number(e.target.value)/100;audio.volume=masterVolume;standby.volume=masterVolume;if(videoMode())updateDucking();savePrefs();announceTransport();};
 $('speed').onchange=e=>{audio.playbackRate=Number(e.target.value);savePrefs();post('Playback speed: '+e.target.selectedOptions[0].textContent);};
 $('eqpreset').onchange=e=>{if(presetGains[e.target.value])setGains(presetGains[e.target.value]);};
 for(const [i,key] of ['bass','mid','treble'].entries())$('eq'+key).oninput=e=>{const next=[...gains];next[i]=Number(e.target.value);setGains(next);};
-$('seek').oninput=e=>{if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=Number(e.target.value)/1000*audio.duration;};
-audio.ontimeupdate=()=>{const d=audio.duration;$('elapsed').textContent=format(audio.currentTime);$('duration').textContent=format(d);
- if(Number.isFinite(d)&&d>0){$('seek').disabled=false;$('seek').value=Math.round(audio.currentTime/d*1000);}else $('seek').disabled=true;};
-audio.onended=()=>{if(repeatMode==='one'){audio.currentTime=0;audio.play().catch(()=>{});}else nextIndex(1,true);};
-audio.onpause=()=>{updateReadout();updateMediaSession();};audio.onplay=()=>{updateReadout();updateMediaSession();};
-audio.onerror=()=>post('Playback failed. This device may not support the audio format.');
-if('mediaSession' in navigator){try{navigator.mediaSession.setActionHandler('play',()=>{if(audio.paused)$('play').click();});
- navigator.mediaSession.setActionHandler('pause',()=>audio.pause());navigator.mediaSession.setActionHandler('nexttrack',()=>nextIndex(1));
- navigator.mediaSession.setActionHandler('previoustrack',()=>nextIndex(-1));navigator.mediaSession.setActionHandler('stop',()=>{$('stop').click();});
- navigator.mediaSession.setActionHandler('seekto',details=>{if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,Math.max(0,details.seekTime));});
+$('seek').oninput=e=>{if(videoMode()){const d=ytPlayer.getDuration?.()||0;if(d>0)ytPlayer.seekTo(Number(e.target.value)/1000*d,true);return;}if(activeTab==='yt')return;if(Number.isFinite(audio.duration)&&audio.duration>0)audio.currentTime=Number(e.target.value)/1000*audio.duration;};
+function localTimeUpdate(ev){if(ev?.target&&ev.target!==audio)return;if(activeTab!=='local')return;const d=audio.duration;$('elapsed').textContent=format(audio.currentTime);$('duration').textContent=format(d);
+ if(Number.isFinite(d)&&d>0){$('seek').disabled=false;$('seek').value=Math.round(audio.currentTime/d*1000);}else $('seek').disabled=true;saveSession();
+ if(mixedPosition<0&&!fading&&transitionMode!=='off'&&!audio.paused&&ctx&&Number.isFinite(d)&&d>5){const n=currentTrackNext(),remain=d-audio.currentTime,fade=fadeDuration(d);if(n&&remain<=fade&&remain>0)crossfadeTo(n,Math.max(.3,remain)).catch(()=>{});}}
+for(const el of [audio,standby])el.addEventListener('timeupdate',localTimeUpdate);
+for(const el of [audio,standby])el.addEventListener('ended',()=>{if(el!==audio||fading)return;if(mixedPosition>=0&&mixedEntries.length){if(mixedLoop==='one'){audio.currentTime=0;audio.play().catch(()=>{});}else mixedAdvance(1);}else if(repeatMode==='one'){audio.currentTime=0;audio.play().catch(()=>{});}else nextIndex(1,true);});
+for(const el of [audio,standby]){el.addEventListener('pause',()=>{if(el===audio){updateReadout();updateMediaSession();notifyAudioState();saveSession(true);}});el.addEventListener('play',()=>{if(el===audio){updateReadout();updateMediaSession();notifyAudioState();saveSession(true);}});}
+for(const el of [audio,standby])el.addEventListener('error',()=>post('Playback failed. This device may not support the audio format.'));
+if('mediaSession' in navigator){try{navigator.mediaSession.setActionHandler('play',()=>{if(activeTab==='yt')$('play').click();else if(audio.paused)$('play').click();});
+ navigator.mediaSession.setActionHandler('pause',()=>{if(activeTab==='yt')$('stop').click();else audio.pause();});navigator.mediaSession.setActionHandler('nexttrack',()=>$('next').click());
+ navigator.mediaSession.setActionHandler('previoustrack',()=>$('previous').click());navigator.mediaSession.setActionHandler('stop',()=>{$('stop').click();});
+ navigator.mediaSession.setActionHandler('seekto',details=>{if(videoMode())ytPlayer.seekTo(details.seekTime,true);else if(Number.isFinite(audio.duration))audio.currentTime=Math.min(audio.duration,Math.max(0,details.seekTime));});
  }catch{}}
-document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,button'))return;
- if(e.code==='Space'){e.preventDefault();$('play').click();}if(e.code==='ArrowRight'&&audio.src)audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+5);
- if(e.code==='ArrowLeft'&&audio.src)audio.currentTime=Math.max(0,audio.currentTime-5);});
-function stopVideo(){const shell=$('video-shell');shell.replaceChildren();const p=document.createElement('div');p.className='placeholder';p.textContent='Video unloaded. Choose another link or open YouTube Music.';shell.append(p);}
-function tabs(mode){$('local-panel').hidden=mode!=='local';$('yt-panel').hidden=mode!=='yt';$('tab-local').setAttribute('aria-selected',String(mode==='local'));
- $('tab-yt').setAttribute('aria-selected',String(mode==='yt'));if(mode!=='yt')stopVideo();}
+document.addEventListener('keydown',e=>{
+ const mediaKeys={MediaPlayPause:'toggle',MediaTrackNext:'next',MediaTrackPrevious:'previous',MediaPlay:'play',MediaPause:'pause',MediaStop:'pause'};
+ const mediaCommand=mediaKeys[e.code]||mediaKeys[e.key];
+ if(activeTab==='yt'&&mediaCommand){e.preventDefault();if(videoMode())videoAction(mediaCommand);else remoteAction(mediaCommand);return;}
+ if(e.target.closest('input,textarea,select,button'))return;
+ if(e.code==='Space'){e.preventDefault();$('play').click();}if(activeTab==='local'&&e.code==='ArrowRight'&&audio.src)audio.currentTime=Math.min(audio.duration||Infinity,audio.currentTime+5);
+ if(activeTab==='local'&&e.code==='ArrowLeft'&&audio.src)audio.currentTime=Math.max(0,audio.currentTime-5);});
+function stopVideo(){saveYtSession(true);ytActiveURL=null;if(ytPlayer){try{ytPlayer.destroy();}catch{}ytPlayer=null;}ytReady=false;ytVideoState=-1;ytVideoIds=[];ytVideoIndex=0;
+ const shell=$('video-shell');shell.replaceChildren();const p=document.createElement('div');p.className='placeholder';p.textContent='Video unloaded. Choose another link or open YouTube Music.';shell.append(p);renderYtSongs();updateYtPlayerInfo();notifyAudioState();}
+
+function tabs(mode){activeTab=mode;if(mode==='yt')audio.pause();$('local-panel').hidden=mode!=='local';$('yt-panel').hidden=mode!=='yt';$('tab-local').setAttribute('aria-selected',String(mode==='local'));
+ $('tab-yt').setAttribute('aria-selected',String(mode==='yt'));if(mode!=='yt')stopVideo();
+ for(const key of ['shuffle','repeat','speed'])$(key).disabled=mode==='yt';
+ if(mode==='yt'){refreshRemote();updateYtPlayerInfo();}else{
+ for(const key of ['previous','next','play','stop'])$(key).disabled=false;
+ $('play').textContent=audio.paused?'▶':'❚❚';updateReadout();
+ audio.dispatchEvent(new Event('timeupdate'));
+ }announceTransport();}
 $('tab-local').onclick=()=>tabs('local');$('tab-yt').onclick=()=>tabs('yt');
+$('remote-refresh').onclick=refreshRemote;
+$('remote-permission').onclick=()=>{const bridge=androidMusic();if(bridge){bridge.openMediaPermissionSettings();post('Enable LatchAmp notification access in Android settings.');}};
+$('remote-previous').onclick=()=>remoteAction('previous');$('remote-next').onclick=()=>remoteAction('next');$('remote-play').onclick=()=>remoteAction('toggle');
+setInterval(()=>{if(remoteMode()&&!document.hidden)refreshRemote();},1800);
+window.addEventListener('focus',()=>{if(remoteMode())refreshRemote();});
 function youtubeInfo(input){const text=String(input||'').trim();let url;try{url=new URL(text);}catch{return null;}
  if(!['https:','http:'].includes(url.protocol))return null;
  const host=url.hostname.toLowerCase();if(host!=='youtu.be'&&host!=='youtube.com'&&!host.endsWith('.youtube.com'))return null;
@@ -283,27 +535,174 @@ function linkFor(service){const src=$('ytlink').value.trim(),item=youtubeInfo(sr
  const base=service==='music'?'https://music.youtube.com':'https://www.youtube.com';
  return item.video?`${base}/watch?v=${encodeURIComponent(item.video)}${item.list?'&list='+encodeURIComponent(item.list):''}`:`${base}/playlist?list=${encodeURIComponent(item.list)}`;}
 function openExternal(url){if(!url)return;const w=window.open(url,'_blank','noopener,noreferrer');if(!w){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open link';$('feedback').replaceChildren(a);}}
-$('openmusic').onclick=()=>openExternal(linkFor('music'));$('openvideo').onclick=()=>openExternal(linkFor('youtube'));$('unloadvideo').onclick=stopVideo;
-$('loadvideo').onclick=()=>{const info=youtubeInfo($('ytlink').value);if(!info){post('Paste a YouTube or YouTube Music link.');return;}
- const scheme=(()=>{try{return new URL(document.baseURI).protocol;}catch{return location.protocol;}})();
- if(scheme==='file:'){post('Embedded YouTube needs a hosted HTTP/HTTPS page. Choose “Open on YouTube” for this file.');return;}
- audio.pause(); // prevent two simultaneous audio sources
- const id=info.video?encodeURIComponent(info.video):'videoseries',q=new URLSearchParams({playsinline:'1',rel:'0'});if(info.list)q.set('list',info.list);
- const f=document.createElement('iframe');f.title='Official YouTube embedded player';f.allow='accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';f.allowFullscreen=true;
- f.referrerPolicy='strict-origin-when-cross-origin';f.src=`https://www.youtube.com/embed/${id}?${q.toString()}`;$('video-shell').replaceChildren(f);
- post('Video loaded; use the official YouTube controls.');};
+$('openmusic').onclick=()=>{const url=linkFor('music');if(!url)return;const bridge=androidMusic();
+ if(bridge?.openYouTubeMusic){bridge.openYouTubeMusic(url);post('Opening YouTube Music…');}
+ else openExternal(url);
+};$('openvideo').onclick=()=>openExternal(linkFor('youtube'));$('unloadvideo').onclick=stopVideo;
+$('loadvideo').onclick=()=>loadVideoFromLink($('ytlink').value);
 $('ytlink').onkeydown=e=>{if(e.key==='Enter')$('loadvideo').click();};
+
+// The official YouTube iframe API controls the visible player. No audio is extracted.
+function youtubeAPI(){if(window.YT?.Player)return Promise.resolve(window.YT);
+ if(ytApiPromise)return ytApiPromise;
+ ytApiPromise=new Promise((resolve,reject)=>{
+  let settled=false;const prior=window.onYouTubeIframeAPIReady;
+  const finish=(yt)=>{if(settled)return;settled=true;resolve(yt);};
+  window.onYouTubeIframeAPIReady=()=>{try{prior?.();}catch{}finish(window.YT);};
+  const script=document.createElement('script');script.src='https://www.youtube.com/iframe_api';script.async=true;
+  script.onerror=()=>{if(!settled){settled=true;reject(Error('YouTube player script unavailable'));}};
+  document.head.append(script);setTimeout(()=>{if(!settled){settled=true;reject(Error('YouTube player timed out'));}},12000);
+ }).catch(e=>{ytApiPromise=null;throw e;});return ytApiPromise;
+}
+function ytActiveVideo(){try{const info=ytPlayer?.getVideoData?.()||{};return{id:info.video_id||'',title:info.title||''};}catch{return{id:'',title:''};}}
+function updateYtPlayerInfo(){if(activeTab!=='yt')return;
+ if(ytPlayer){const video=ytActiveVideo(),playing=ytVideoState===1,d=Number(ytPlayer.getDuration?.())||0,t=Number(ytPlayer.getCurrentTime?.())||0;
+  $('song').textContent=(video.title||'YOUTUBE VIDEO').toUpperCase().slice(0,115);$('status').textContent=playing?'VIDEO PLAYING':ytVideoState===2?'VIDEO PAUSED':'VIDEO READY';
+  $('subread').textContent='YOUTUBE • VISIBLE OFFICIAL PLAYER';$('play').textContent=playing?'❚❚':'▶';
+  $('elapsed').textContent=format(t);$('duration').textContent=format(d);$('seek').disabled=!(d>0);if(d>0)$('seek').value=String(Math.round(t/d*1000));
+  for(const key of ['previous','play','stop','next'])$(key).disabled=false;
+  if('mediaSession' in navigator){try{if(video.title&&window.MediaMetadata)navigator.mediaSession.metadata=new MediaMetadata({title:video.title,artist:'YouTube',album:'LatchAmp embedded video'});
+    navigator.mediaSession.playbackState=playing?'playing':'paused';}catch{}}
+ }else renderRemote();
+}
+function videoAction(command){if(!ytPlayer){post('Load a video in LatchAmp first.');return;}
+ try{if(command==='toggle'){ytVideoState===1?ytPlayer.pauseVideo():ytPlayer.playVideo();}
+  else if(command==='play')ytPlayer.playVideo();else if(command==='pause')ytPlayer.pauseVideo();
+  else if(command==='stop'){ytPlayer.pauseVideo();ytPlayer.seekTo(0,true);}
+  else if(command==='next'){if(ytVideoIds.length>1)ytPlayer.nextVideo();else playNeighborSaved(1);}
+  else if(command==='previous'){if(ytVideoIds.length>1)ytPlayer.previousVideo();else playNeighborSaved(-1);}
+ }catch(e){post('Video control failed: '+e.message);}}
+function playNeighborSaved(delta){if(!ytLibrary.length){post('No other saved video links.');return;}const i=ytLibrary.findIndex(e=>e.id===ytSelection),entry=ytLibrary[(i+delta+ytLibrary.length)%ytLibrary.length];if(entry)chooseYtEntry(entry.id,true);}
+function videoRepeatSettings(){if(!ytPlayer)return;try{ytPlayer.setLoop(ytRepeat==='playlist');}catch{}}
+function onVideoState(event){ytVideoState=event.data;
+ if(ytResumeOnReady && (event.data===1||event.data===5)){
+  const desired=ytResumeOnReady;ytResumeOnReady=null;
+  try{if(desired.position>0)ytPlayer.seekTo(desired.position,true);}catch{}
+ }
+ saveYtSession(true);
+ announceTransport();if(ytVideoState===0&&mixedPosition>=0&&mixedEntries.length){if(mixedLoop==='one')try{ytPlayer.seekTo(0,true);ytPlayer.playVideo();}catch{}else mixedAdvance(1);}else if(ytVideoState===0&&ytRepeat==='video'){try{ytPlayer.seekTo(0,true);ytPlayer.playVideo();}catch{}}
+ syncVideoList();updateYtPlayerInfo();notifyAudioState();}
+function syncVideoList(){if(!ytPlayer)return;
+ try{const video=ytActiveVideo();const list=ytPlayer.getPlaylist?.()||[];
+  const signature=list.join(',');if(signature!==ytVideoIds.join(',')){ytVideoIds=list.filter(x=>/^[\w-]{11}$/.test(x));renderYtSongs();}
+  const index=Number(ytPlayer.getPlaylistIndex?.());if(Number.isInteger(index)&&index>=0&&index<ytVideoIds.length)ytVideoIndex=index;
+  if(video.id){const entry=ytLibrary.find(e=>e.id===ytSelection);if(entry){entry.knownTitles=entry.knownTitles||{};
+    if(video.title&&entry.knownTitles[video.id]!==video.title){entry.knownTitles[video.id]=video.title;saveYtLibrary();renderYtSongs();}}}
+ }catch{}
+}
+async function loadVideoFromLink(url,selectId=null,resume=null){const info=youtubeInfo(url);if(!info){post('Paste a valid YouTube video or playlist URL.');return;}
+ const scheme=(()=>{try{return new URL(document.baseURI).protocol;}catch{return location.protocol;}})();
+ if(!['https:','http:'].includes(scheme)){post('Embedded video requires a hosted Latch page. Open on YouTube instead.');return;}
+ if(location.host==='appassets.androidplatform.net'){post('Android secure WebView does not yet support embedded YouTube. Use Open on YouTube.');return;}
+ // Only a trusted HTTP(S) page can use this API; some browsers or videos may still disallow embedding.
+ if(ytPlayerLoading)return;ytPlayerLoading=true;$('yt-video-status').textContent='Connecting to YouTube player…';
+ try{const YT=await youtubeAPI();audio.pause();stopVideo();ytActiveURL=url;$('ytlink').value=url;ytSelection=selectId||ytLibrary.find(e=>e.url===url)?.id||null;ytResumeOnReady=resume&&typeof resume==='object'?{position:Math.max(0,Number(resume.position)||0)}:null;
+  const target=document.createElement('div');target.id='yt-official-player';$('video-shell').replaceChildren(target);
+  ytPlayer=new YT.Player(target.id,{height:'360',width:'640',videoId:info.video||undefined,
+   playerVars:{playsinline:1,rel:0,origin:location.origin,...(info.list?{listType:'playlist',list:info.list}:{})},
+   events:{onReady:ev=>{ytReady=true;videoRepeatSettings();if(info.list&&!info.video)ev.target.loadPlaylist({listType:'playlist',list:info.list,index:Math.max(0,Number(resume?.index)||0)});
+    else if(info.list&&info.video){ev.target.loadPlaylist({listType:'playlist',list:info.list,index:Math.max(0,Number(resume?.index)||0)});}
+    else if(info.video)ev.target.cueVideoById(info.video);
+    syncVideoList();updateYtPlayerInfo();post('Video loaded; use LatchAmp or the official player controls.');},
+    onStateChange:onVideoState,onError:ev=>post('YouTube player cannot play this video (error '+ev.data+').') }});
+  $('yt-video-status').textContent='YouTube video player loaded. Playlist songs can be selected below.';
+ }catch(e){stopVideo();post('Embedded video unavailable: '+e.message);}finally{ytPlayerLoading=false;}}
+function renderYtLinks(){const out=$('yt-links');out.replaceChildren();const match=$('yt-search').value.trim().toLowerCase();const items=ytLibrary.filter(x=>(x.title+' '+x.url).toLowerCase().includes(match));
+ for(const entry of items){const b=document.createElement('div');b.className='yt-entry'+(entry.id===ytSelection?' selected':'');const t=document.createElement('button');t.className='yt-entry';t.textContent=(entry.list?'▤ ':'♪ ')+entry.title;t.title='Select this saved link; use Load Video for the visible embedded player';t.onclick=()=>chooseYtEntry(entry.id,false);
+  const small=document.createElement('small');small.textContent=entry.list?'YouTube playlist':'Single video';t.append(small);
+  const music=document.createElement('button');music.textContent='Music ↗';music.title='Open this playlist or track in the real YouTube Music app or website';music.onclick=()=>{ytSelection=entry.id;$('ytlink').value=entry.url;const url=linkFor('music');if(!url)return;const bridge=androidMusic();if(bridge?.openYouTubeMusic)bridge.openYouTubeMusic(url);else openExternal(url);renderYtLinks();};
+  const saveFile=document.createElement('button');saveFile.textContent='C: ↧';saveFile.title='Create a virtual linked-media file in C:\\My Documents\\My Music';saveFile.onclick=()=>{try{const fs=driveFS();if(!fs)throw Error('Latch disk unavailable');const folder='C:/MY DOCUMENTS/MY MUSIC';const filename=entry.title.replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').slice(0,72)+'.l98music';fs.makeMediaLink(folder,fs.unique(folder,filename),entry.url,entry.title);renderDrive();post('Saved linked-media file to C:\\My Documents\\My Music.');}catch(e){post('Cannot save media link: '+e.message);}};
+  const rename=document.createElement('button');rename.textContent='Rename';rename.onclick=()=>{const v=prompt('Label for this link:',entry.title);if(v?.trim()){entry.title=v.trim().slice(0,120);saveYtLibrary();renderYtLinks();}};
+  const del=document.createElement('button');del.textContent='Remove';del.onclick=()=>{ytLibrary=ytLibrary.filter(x=>x.id!==entry.id);if(ytSelection===entry.id)ytSelection=null;saveYtLibrary();renderYtLinks();renderYtSongs();};
+  b.append(t,music,saveFile,rename,del);out.append(b);}
+ if(!items.length){const p=document.createElement('div');p.className='empty';p.textContent='No saved links match.';out.append(p);}}
+function renderYtSongs(){const el=$('yt-songs');el.replaceChildren();const selected=ytLibrary.find(e=>e.id===ytSelection),list=ytVideoIds.length?ytVideoIds:(selected?.video?[selected.video]:[]);
+ if(!list.length){const p=document.createElement('div');p.className='empty';p.textContent=selected?.list?'Playlist contents appear after YouTube loads this playlist.':'Select a saved link to browse songs.';el.append(p);return;}
+ list.slice(0,500).forEach((id,i)=>{const row=document.createElement('button');row.className='yt-entry'+(ytVideoIndex===i?' selected':'');
+  row.textContent=String(i+1).padStart(2,'0')+'  '+(selected?.knownTitles?.[id]||('Video '+id));row.title='Play playlist video '+(i+1);
+  row.onclick=()=>{if(ytPlayer&&ytVideoIds.length){ytPlayer.playVideoAt(i);ytVideoIndex=i;renderYtSongs();}else loadVideoFromLink('https://www.youtube.com/watch?v='+id,ytSelection);};el.append(row);});}
+function saveYtLibrary(){safeStore(YTLIB,ytLibrary);}
+function saveYtLink(input){const info=youtubeInfo(input);if(!info){post('Enter a valid YouTube or YouTube Music link.');return;}
+ const canonical=info.video?'https://www.youtube.com/watch?v='+info.video+(info.list?'&list='+info.list:''):'https://www.youtube.com/playlist?list='+info.list;
+ const old=ytLibrary.find(e=>e.url===canonical);if(old){ytSelection=old.id;post('Link already saved.');renderYtLinks();return;}
+ if(ytLibrary.length>=200) {post('200 saved links maximum. Export or remove older links.');return;}
+ const title=prompt('Name this saved link:',info.video?'YouTube video '+info.video:'YouTube playlist '+info.list);
+ if(title===null)return;const entry={id:'yt'+Date.now().toString(36)+Math.random().toString(36).slice(2,7),title:(title.trim()||'YouTube link').slice(0,120),url:canonical,video:info.video,list:info.list,knownTitles:{}};
+ ytLibrary.push(entry);ytSelection=entry.id;saveYtLibrary();renderYtLinks();renderYtSongs();post('Saved YouTube link.');}
+function chooseYtEntry(id,load){const entry=ytLibrary.find(e=>e.id===id);if(!entry)return;ytSelection=id;$('ytlink').value=entry.url;renderYtLinks();renderYtSongs();if(load)loadVideoFromLink(entry.url,id);}
+function ytRecord(){return{format:'latchamp-links-v1',links:ytLibrary.map(({id,title,url,knownTitles})=>({id,title,url,knownTitles}))};}
+function importYtRecord(data){if(!data||data.format!=='latchamp-links-v1'||!Array.isArray(data.links)||data.links.length>200)throw Error('Not a LatchAmp links file');
+ const items=data.links.map(x=>{const info=youtubeInfo(x?.url);if(!info||typeof x.title!=='string')throw Error('Invalid video link');return{id:'yt'+Math.random().toString(36).slice(2,10),title:x.title.slice(0,120),url:x.url,video:info.video,list:info.list,knownTitles:{}};});
+ const urls=new Set(ytLibrary.map(x=>x.url));for(const x of items)if(!urls.has(x.url)){ytLibrary.push(x);urls.add(x.url);}ytLibrary=ytLibrary.slice(0,200);saveYtLibrary();renderYtLinks();post('Imported video links.');}
+async function ytDisk(save){try{const fs=window.parent?.LatchFS;if(!fs)throw Error('Latch drive not available');await fs.ready;const file='C:/My Documents/LatchAmp Links.json';
+ if(save){fs.write(file,JSON.stringify(ytRecord()));await fs.sync();post('Saved YouTube links to Latch C: drive.');}
+ else importYtRecord(JSON.parse(fs.read(file)));
+ }catch(e){post('Latch drive error: '+e.message);}}
+$('saveyt').onclick=() =>saveYtLink($('ytlink').value);$('yt-search').oninput=renderYtLinks;
+$('yt-repeat').onchange=e=>{ytRepeat=e.target.value;videoRepeatSettings();savePrefs();};
+$('yt-export').onclick=()=>downloadFile(JSON.stringify(ytRecord(),null,2),'LatchAmp-YouTube-Links.json');
+$('yt-import').onclick=()=>$('yt-import-file').click();
+$('yt-import-file').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{if(f.size>150000)throw Error('File too large');importYtRecord(JSON.parse(await f.text()));}catch(e){post(e.message);}e.target.value='';};
+$('yt-save-disk').onclick=()=>ytDisk(true);$('yt-load-disk').onclick=()=>ytDisk(false);
+setInterval(()=>{if(videoMode()&&!document.hidden){syncVideoList();updateYtPlayerInfo();saveYtSession();}},900);
+// Audio coordination works across Latch game windows without touching standalone game data.
+function notifyAudioState(){const listening=(!audio.paused&&activeTab==='local')||(videoMode()&&ytVideoState===1);
+ try{if(window.parent!==window)window.parent.postMessage({type:'latchamp:audio-state',listening,suppressSoundtracks,muteOtherGames,gameVolume},hostOrigin());}catch{}
+ announceTransport();
+}
+function updateDucking(){
+ const now=performance.now(),elapsed=Math.max(0,Math.min(.6,(now-duckTick)/1000));duckTick=now;
+ const intensity=Math.max(0,Math.min(1,(gameLevel-duckThreshold)/Math.max(.05,1-duckThreshold)));
+ const target=duckEnabled?Math.max(.05,1-duckDepth*intensity):1;
+ const tau=target<duckFactor?duckAttack:duckRelease;
+ duckFactor+= (target-duckFactor)*(1-Math.exp(-elapsed/Math.max(.025,tau)));
+ if(volumeGain&&ctx){volumeGain.gain.setTargetAtTime(duckFactor,ctx.currentTime,.045);}
+ if(videoMode())try{ytPlayer.setVolume(Math.round(masterVolume*duckFactor*100));}catch{}
+ $('game-audio-status').textContent=duckEnabled?'Game level '+Math.round(gameLevel*100)+'% · Player volume '+Math.round(duckFactor*100)+'%':'Ducking off · Game volume '+Math.round(gameVolume*100)+'%';
+}
+window.addEventListener('message',event=>{if(event.source!==window.parent||(hostOrigin()!=='*'&&event.origin!==hostOrigin()))return;
+ const msg=event.data;if(!msg||msg.type!=='latch98:game-audio-level')return;gameLevel=Math.max(0,Math.min(1,Number(msg.level)||0));updateDucking();});
+setInterval(()=>{gameLevel*=.8;if(duckEnabled)updateDucking();},700);
+$('duck-game').onchange=e=>{duckEnabled=e.target.checked;savePrefs();updateDucking();};
+$('suppress-music').onchange=e=>{suppressSoundtracks=e.target.checked;savePrefs();notifyAudioState();};
+$('mute-games').onchange=e=>{muteOtherGames=e.target.checked;savePrefs();notifyAudioState();};
+for(const [key,field,scale] of [['game-volume','gameVolume',100],['duck-threshold','duckThreshold',100],['duck-depth','duckDepth',100]]){
+ $(key).oninput=e=>{const v=Number(e.target.value)/scale;
+  if(field==='gameVolume')gameVolume=v;else if(field==='duckThreshold')duckThreshold=v;else duckDepth=v;
+  $(key+'-label').textContent=Math.round(v*100)+'%';savePrefs();updateDucking();notifyAudioState();};
+}
+for(const [key,field] of [['duck-attack','duckAttack'],['duck-release','duckRelease']]){
+ $(key).onchange=e=>{if(field==='duckAttack')duckAttack=Number(e.target.value);else duckRelease=Number(e.target.value);savePrefs();};
+}
+$('transition-mode').onchange=e=>{transitionMode=e.target.value;savePrefs();};
+$('fade-seconds').oninput=e=>{fadeSeconds=+e.target.value;$('fade-length').textContent=fadeSeconds+' s';savePrefs();};
+window.addEventListener('pagehide',()=>{saveSession(true);saveYtSession(true);try{window.parent?.postMessage({type:'latchamp:audio-state',listening:false,suppressSoundtracks:false,muteOtherGames:false},hostOrigin());}catch{}});
+
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopVideo();});
 function readPrefs(){const cfg=safeRead(STORAGE,{});shuffle=cfg.shuffle===true;$('shuffle').classList.toggle('active',shuffle);$('shuffle').setAttribute('aria-pressed',String(shuffle));
  setRepeat(['off','one','all'].includes(cfg.repeatMode)?cfg.repeatMode:'off',false);
- const volume=Number.isFinite(cfg.volume)?Math.max(0,Math.min(1,cfg.volume)):.8;audio.volume=volume;$('volume').value=String(Math.round(volume*100));
+ const volume=Number.isFinite(cfg.volume)?Math.max(0,Math.min(1,cfg.volume)):.8;masterVolume=volume;audio.volume=volume;standby.volume=volume;$('volume').value=String(Math.round(volume*100));
  const rate=[.75,1,1.25,1.5,2].includes(cfg.speed)?cfg.speed:1;audio.playbackRate=rate;$('speed').value=String(rate);
  setGains(Array.isArray(cfg.gains)&&cfg.gains.length===3?cfg.gains:[0,0,0],false);
+ transitionMode=['off','fade','smart'].includes(cfg.transitionMode)?cfg.transitionMode:'off';$('transition-mode').value=transitionMode;
+ fadeSeconds=Math.max(1,Math.min(12,Number(cfg.fadeSeconds)||5));$('fade-seconds').value=fadeSeconds;$('fade-length').textContent=fadeSeconds+' s';
+ duckEnabled=cfg.duckEnabled===true;suppressSoundtracks=cfg.suppressSoundtracks===true;muteOtherGames=cfg.muteOtherGames===true;
+ $('duck-game').checked=duckEnabled;$('suppress-music').checked=suppressSoundtracks;$('mute-games').checked=muteOtherGames;
+ gameVolume=Number.isFinite(cfg.gameVolume)?Math.min(1,Math.max(0,cfg.gameVolume)):1;
+ duckThreshold=Number.isFinite(cfg.duckThreshold)?Math.min(.8,Math.max(.05,cfg.duckThreshold)):.2;
+ duckDepth=Number.isFinite(cfg.duckDepth)?Math.min(.95,Math.max(.1,cfg.duckDepth)):.6;
+ duckAttack=[.03,.08,.25].includes(cfg.duckAttack)?cfg.duckAttack:.08;
+ duckRelease=[.3,.75,1.5].includes(cfg.duckRelease)?cfg.duckRelease:.75;
+ for(const [id,v] of [['game-volume',gameVolume],['duck-threshold',duckThreshold],['duck-depth',duckDepth]]){$(id).value=Math.round(v*100);$(id+'-label').textContent=Math.round(v*100)+'%';}
+ $('duck-attack').value=duckAttack;$('duck-release').value=duckRelease;
+ ytRepeat=['off','video','playlist'].includes(cfg.ytRepeat)?cfg.ytRepeat:'off';$('yt-repeat').value=ytRepeat;
+ updateDucking();
 }
-(async()=>{try{if(window.parent!==window&&window.parent.LatchFS){document.body.classList.add('in-latch');$('savelatch').hidden=false;$('loadlatch').hidden=false;}}catch{}
- readPrefs();try{db=await openDB();tracks=await transaction('getAll');order=safeRead(ORDER,[]);normalizeOrder();post(`Library ready: ${tracks.length} local tracks.`);}
+(async()=>{try{if(window.parent!==window&&window.parent.LatchFS){document.body.classList.add('in-latch');$('drive-panel').hidden=false;$('savelatch').hidden=false;$('loadlatch').hidden=false;$('yt-save-disk').hidden=false;$('yt-load-disk').hidden=false;}}catch{}
+ readPrefs();offerYtResume();ytLibrary=safeRead(YTLIB,[]);if(!Array.isArray(ytLibrary))ytLibrary=[];ytLibrary=ytLibrary.slice(0,200).filter(x=>x&&youtubeInfo(x.url)&&typeof x.title==='string');renderYtLinks();renderYtSongs();
+ try{db=await openDB();tracks=await transaction('getAll');order=safeRead(ORDER,[]);normalizeOrder();post(`Library ready: ${tracks.length} local tracks.`);}
  catch(e){post('Local music storage unavailable. Files will last until this page closes.');}
- render();updateReadout();})();
+ render();renderDrive();renderMixed();updateReadout();offerResume();notifyAudioState();})();
 })();
 </script>
 </body>
