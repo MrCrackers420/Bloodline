@@ -87,8 +87,8 @@ def test_player_queue_playback_eq_persistence_and_export():
         page.locator('#tab-yt').click()
         page.locator('#ytlink').fill('https://music.youtube.com/watch?v=dQw4w9WgXcQ')
         page.locator('#loadvideo').click()
-        assert page.locator('#video-shell iframe').count()==1
-        assert 'youtube.com/embed/dQw4w9WgXcQ' in page.locator('#video-shell iframe').get_attribute('src')
+        assert page.locator('#video-shell iframe').count()==0
+        assert 'hosted' in page.locator('#feedback').inner_text().lower()
         page.locator('#tab-local').click()
         assert page.locator('#video-shell iframe').count()==0
         assert not errors,errors

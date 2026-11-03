@@ -51,11 +51,19 @@ with sync_playwright() as p:
  page.locator('#submenu [data-sub="games"]').click()
  page.locator('#nested-menu [data-app="nornlab"]').click()
  page.wait_for_timeout(1800)
- norn_frames=page.locator('iframe.norn-frame')
- print('norn iframe count',norn_frames.count())
- assert norn_frames.count()==1
- print('norn title',norn_frames.first.content_frame.locator('title').all_text_contents())
- print('norn embedded',norn_frames.first.element_handle().content_frame().evaluate('window.NornDiskEmbedded'))
- assert norn_frames.first.element_handle().content_frame().evaluate('window.NornDiskEmbedded') is True
+ # The Norn loader moves the iframe into the window after its first load,
+ # which detaches the original browsing context. Probe the currently attached
+ # iframe and its loaded document rather than retaining the first Frame object.
+ page.wait_for_function("""() => {
+   const f=document.querySelector('.window[data-id="nornlab"] .window-content > iframe.norn-frame');
+   return !!(f?.contentWindow?.NornDiskEmbedded && f.contentDocument?.getElementById('e-gait'));
+ }""",timeout=30000)
+ state=page.evaluate("""() => {
+   const f=document.querySelector('.window[data-id="nornlab"] .window-content > iframe.norn-frame');
+   return {count:document.querySelectorAll('.window[data-id="nornlab"] iframe.norn-frame').length,
+      title:f.contentDocument.title,embedded:f.contentWindow.NornDiskEmbedded};
+ }""")
+ print('norn ready',state)
+ assert state['count']==1 and state['embedded'] is True and 'Norn' in state['title']
  print('errors',errors[:5])
  browser.close()

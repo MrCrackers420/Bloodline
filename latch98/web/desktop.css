@@ -91,3 +91,11 @@ body,button,input,textarea{font-size:12px}
 }
 .window:focus{outline:none}
 .window:focus-visible .titlebar{outline:1px dotted #fff;outline-offset:-3px}
+
+/* LatchAmp 1.13 taskbar transport, intentionally compact on phone displays. */
+.l98-amp-mini{display:flex;gap:2px;align-items:center;height:27px;min-width:0;max-width:320px;flex:0 1 255px;padding:2px 3px;background:#d4d0c8;border:2px inset #eee;color:#111;font:11px Tahoma,Arial,sans-serif}
+.l98-amp-mini .l98-amp-mini-title{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:25px;cursor:pointer}
+.l98-amp-mini button{flex:none;width:25px;height:21px;padding:0;font:10px Tahoma,Arial,sans-serif;background:#d4d0c8;border:2px outset #eee;cursor:pointer}
+.l98-amp-mini input{width:48px;height:15px;min-width:26px;margin:0}
+@media(max-width:650px){.l98-amp-mini{flex:0 0 94px;padding:1px;gap:1px;height:27px}.l98-amp-mini .l98-amp-mini-title,.l98-amp-mini input{display:none}.l98-amp-mini button{width:28px;height:22px}}
+@media(max-width:350px){.l98-amp-mini{flex-basis:32px}.l98-amp-mini button:not([data-amp-cmd="toggle"]){display:none}}

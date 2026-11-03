@@ -70,9 +70,9 @@
          e.preventDefault();e.stopImmediatePropagation();bundle.closeFullscreenGame();
        }
      },true);}catch{}};
-     if(html)frame.srcdoc=html;else if(url)frame.src=url;
+     if(html)frame.srcdoc=window.LatchAudioBus?.instrument(html,document.baseURI)||html;else if(url)frame.src=url;
      if(layer.classList.contains('hidden'))fullscreenPriorFocus=document.activeElement;
-     layer.classList.remove('hidden');document.getElementById('desktop').classList.add('hidden');
+     window.LatchDesktop?.pauseAmpVideo?.();layer.classList.remove('hidden');document.getElementById('desktop').classList.add('hidden');
      performanceMode()?.enter('standalone-bloodline');startExitPoll();
      frame.focus({preventScroll:true});
    },
@@ -90,7 +90,7 @@
      let html;try{html=await bundle.bloodline();}catch{html=null;}
      if(generation!==launchGeneration)return;fullscreenOpening=false;
      if(html){bundle.fullscreenGame(html);return;}
-     const layer=document.getElementById('l98-standalone-game');layer.classList.remove('hidden');
+     const layer=document.getElementById('l98-standalone-game');window.LatchDesktop?.pauseAmpVideo?.();layer.classList.remove('hidden');
      document.getElementById('desktop').classList.add('hidden');
      performanceMode()?.enter('standalone-bloodline');startExitPoll();
      const setup=layer.querySelector('.l98-full-setup');setup.classList.remove('hidden');

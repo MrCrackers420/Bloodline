@@ -13,13 +13,14 @@ const sites={
  dialup:{host:'www.dialupcommons.l98',title:'Dial-Up Commons — Forum Archive',icon:'📟',desc:'Archived discussions, message threads and repair tips.',tags:'forums message boards dial-up radio archives'},
  savepoint:{host:'www.savepoint.l98',title:'SavePoint — Game Reviews',icon:'🎮',desc:'Letters, reviews and reader scores for local computer games.',tags:'review games bloodline minesweeper solitaire'},
  lantern:{host:'www.lanternhouse.l98',title:'Lantern House — Personal Homepage',icon:'🏠',desc:'A retired sound engineer collects recordings and signal maps.',tags:'homepages personal radio music signals tapes broadcast'},
- relic:{host:'www.relicmirror.l98',title:'RelicMirror — Old Link Index',icon:'🔗',desc:'Dead links, captured site listings and archived web fragments.',tags:'obsolete links mirror 404 archive history'}
+ relic:{host:'www.relicmirror.l98',title:'RelicMirror — Old Link Index',icon:'🔗',desc:'Dead links, captured site listings and archived web fragments.',tags:'obsolete links mirror 404 archive history'},
+ myspace:{host:'myspace.com',external:true,title:'MySpace.com — Live Website',icon:'🎵',desc:'Visit the real MySpace website inside the Latch Browser (where the site permits it).',tags:'myspace.com social music profiles live website real internet'}
 };
-const siteUrl=id=>'http://'+sites[id].host+'/';
+const siteUrl=id=>sites[id].external?'https://'+sites[id].host+'/':'http://'+sites[id].host+'/';
 const pageUrl=(id,path='')=>siteUrl(id)+String(path).replace(/^\/+/, '');
 const pageLink=(id,path,label)=>`<a href="${esc(pageUrl(id,path))}" data-ln-url="${esc(pageUrl(id,path))}">${esc(label)}</a>`;
 const messageLink=(path,subject,label)=>`<a class="ln-message-link" href="${esc(pageUrl('postbox',path))}" data-ln-url="${esc(pageUrl('postbox',path))}" aria-label="${esc(label)}">${esc(subject)}</a>`;
-const link=(id,label)=>`<a href="${siteUrl(id)}" data-ln-url="${siteUrl(id)}">${label||sites[id].title}</a>`;
+const link=(id,label)=>`<a href="${esc(siteUrl(id))}" data-ln-url="${esc(siteUrl(id))}">${esc(label||sites[id].title)}</a>`;
 const foot=(id)=>`<div class="ln-site-foot">© 2003 ${sites[id].title.replace(/ — .*/, '')}<br>${link('latchnet','Return to the LatchNet directory')}</div>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // The Latch 98 story takes place in October 2003, not the host computer's year.
@@ -162,8 +163,30 @@ function relic(path=''){if(path==='gone/old-tape-server')return `<div class="ln-
 
 function notFound(path){return `<div class="ln-page"><h1>404 — Page Not Found</h1><p>The page <code>${esc(path)}</code> couldn't be found on LatchNet.</p><p>Try ${link('latchnet','the directory')} or use Back.</p><div class="ln-note">The requested page is unavailable. Check the address and try again.</div></div>`;}
 function secret(){return `<div class="ln-page ln-dark"><h2>ARCHIVE ENTRY 13 — RESTRICTED</h2><p>FILE RESTORED. <span style="color:#ffdc88">DO NOT MIRROR.</span></p><p>"At 03:17 the sleeping subject opened its eyes. The subject remained asleep. A second voice described a room that did not exist in this building."</p><p>One margin note reads: <i>When did the dream begin?</i></p>${link('norn','Return to field notes')}</div>`;}
+// Only MySpace is linked to the real Internet. No arbitrary URL execution, credentials or non-HTTP schemes.
+function realMyspace(raw){
+ try{
+  let s=String(raw||'').trim();if(/^(?:www\.)?myspace\.com(?:[/?#]|$)/i.test(s))s='https://'+s;
+  const u=new URL(s);
+  if(!['http:','https:'].includes(u.protocol)||u.port||u.username||u.password||!['myspace.com','www.myspace.com'].includes(u.hostname.toLowerCase()))return null;
+  return 'https://myspace.com'+u.pathname+u.search+u.hash;
+ }catch{return null;}
+}
+function realMyspacePage(url){
+ const safe=realMyspace(url)||siteUrl('myspace');
+ // The actual site loads in a dedicated, isolated browser frame inside the
+ // existing Latch Browser window. This is NOT a proxy, clone or login screen.
+ return `<div class="ln-live-page" data-ln-live-url="${esc(safe)}">
+  <div class="ln-live-strip"><span><b>🎵 MySpace.com</b> · Live website</span>
+   <span class="ln-live-actions"><button type="button" data-ln-live-retry="1">↻ Retry</button><button type="button" data-ln-live-copy="1">Copy address</button></span></div>
+  <div class="ln-live-frame-slot" data-ln-live-slot aria-label="Live MySpace website"></div>
+  <details class="ln-live-help"><summary>Page blank or blocked?</summary><p>MySpace may refuse to appear inside another website, or block third-party cookies and sign-in. Latch Browser cannot override the site's security settings. The address is saved here; you can retry or copy it. Latch does not open another app automatically.</p></details>
+ </div>`;
+}
+
 function normalize(raw){
  let s=clip(raw,2048).trim();if(!s||/^(?:latch|home):/i.test(s))return HOME;
+ const myspace=realMyspace(s);if(myspace)return myspace;
  if(!/^https?:\/\//i.test(s))s='http://'+s;
  try{const u=new URL(s);if(!['http:','https:'].includes(u.protocol))return s;return 'http://'+u.host.toLowerCase()+(u.pathname||'/')+u.search+u.hash;}
  catch{return s;}
@@ -172,11 +195,13 @@ function parse(url){
  const clean=normalize(url);
  try{const u=new URL(clean),entry=Object.entries(sites).find(([,site])=>site.host===u.hostname);
   if(!entry||u.port||!['http:','https:'].includes(u.protocol)||u.username||u.password)return {id:null,clean};
-  const id=entry[0];return {id,clean:siteUrl(id).slice(0,-1)+u.pathname+u.search+u.hash,path:u.pathname,params:u.searchParams,hash:u.hash};
+  const id=entry[0];
+  if(sites[id].external){const safe=realMyspace(clean);return safe?{id,clean:safe,path:u.pathname,params:u.searchParams,hash:u.hash}:{id:null,clean};}
+  return {id,clean:siteUrl(id).slice(0,-1)+u.pathname+u.search+u.hash,path:u.pathname,params:u.searchParams,hash:u.hash};
  }catch{return {id:null,clean};}
 }
 function favoriteList(){const raw=storeRead('favorites',[HOME,siteUrl('pixelshelf'),siteUrl('norn')]);return safeFavorites(raw);}
-function favoritePage(){const favorites=favoriteList();return `<div class="ln-page"><h1>★ My Favorites</h1><p>Saved LatchNet addresses (up to 32).</p><ul>${favorites.map(f=>`<li><a href="${esc(f)}" data-ln-url="${esc(f)}">${esc(renderPage(f).title)}</a><div class="ln-small">${esc(f)} <button type="button" data-ln-removefavorite="${esc(f)}">Remove</button></div></li>`).join('')}</ul><p><button type="button" data-ln-savefavorite="1">Add the last page I visited</button></p>${link('latchnet','Home')}${foot('latchnet')}</div>`;}
+function favoritePage(){const favorites=favoriteList();return `<div class="ln-page"><h1>★ My Favorites</h1><p>Saved LatchNet addresses (up to 32), including approved live links.</p><ul>${favorites.map(f=>{const label=esc(renderPage(f).title);return `<li><a href="${esc(f)}" data-ln-url="${esc(f)}">${label}</a><div class="ln-small">${esc(f)} <button type="button" data-ln-removefavorite="${esc(f)}">Remove</button></div></li>`;}).join('')}</ul><p><button type="button" data-ln-savefavorite="1">Add the last page I visited</button></p>${link('latchnet','Home')}${foot('latchnet')}</div>`;}
 function renderPage(url){
  const p=parse(url);if(!p.id)return {html:notFound(url),title:'Page not found',url:p.clean};
  const params=p.params||new URLSearchParams(),path=p.path||'/',sub=path.replace(/^\//,'');let html=null;
@@ -193,10 +218,11 @@ function renderPage(url){
   case 'savepoint':if(path==='/')html=savepoint();else if(/^\/reviews\/(minesweeper|solitaire|bloodline)$/.test(path))html=savepoint(path.split('/')[2]);break;
   case 'lantern':if(path==='/')html=lantern();else if(path==='/radio-log')html=lantern(true);break;
   case 'relic':if(path==='/')html=relic();else if(['gone/old-tape-server','captures/relay'].includes(sub))html=relic(sub);break;
+  case 'myspace':html=realMyspacePage(p.clean);break;
  }
- return {html:html??notFound(p.clean),title:html?(p.id==='latchnet'&&path==='/favorites'?'Favorites — LatchNet':sites[p.id].title):'Page not found',url:p.clean,hash:p.hash};
+ return {html:html??notFound(p.clean),title:html?(p.id==='latchnet'&&path==='/favorites'?'Favorites — LatchNet':sites[p.id].title):'Page not found',url:p.clean,hash:p.hash,liveUrl:p.id==='myspace'?realMyspace(p.clean):null};
 }
-function mount(host,{openApp=()=>{},saveAttachment=()=>{}}={}){
+function mount(host,{openApp=()=>{},saveAttachment=()=>{},onTitleChange=()=>{}}={}){
  const wrap=document.createElement('div');wrap.className='ln-shell';
  wrap.innerHTML=`<div class="ln-toolbar"><button type="button" class="ln-tool" data-ln-control="back" title="Back">◀ Back</button><button type="button" class="ln-tool" data-ln-control="forward" title="Forward">Forward ▶</button><button type="button" class="ln-tool" data-ln-control="reload" title="Refresh">↻ Refresh</button><button type="button" class="ln-tool" data-ln-control="home" title="Home">⌂ Home</button><button type="button" class="ln-tool" data-ln-control="favorites" title="Favorites">★ Favorites</button></div><form class="ln-address"><label for="ln-location">Address</label><input id="ln-location" name="address" aria-label="Website address" spellcheck="false" autocomplete="off" maxlength="2048" value="${HOME}"><button type="submit">Go</button></form><div class="ln-viewport" aria-label="Website contents" tabindex="0"></div><div class="ln-status"><span data-ln-status role="status" aria-live="polite">LatchNet — Ready</span><span>🌐 LatchNet</span></div>`;
  host.replaceChildren(wrap);
@@ -212,8 +238,26 @@ function mount(host,{openApp=()=>{},saveAttachment=()=>{}}={}){
   const page=renderPage(url);
   if(record&&hist[at]!==page.url){hist=hist.slice(0,at+1);hist.push(page.url);if(hist.length>40)hist.shift();at=hist.length-1;}
   persistHistory();
-  address.value=page.url;view.innerHTML=page.html;view.scrollTop=0;
+  address.value=page.url;
+  view.classList.toggle('ln-live-view',!!page.liveUrl);
+  view.innerHTML=page.html;view.scrollTop=0;
   status.textContent=`LatchNet — ${page.title}`;
+  onTitleChange(page.liveUrl?'MySpace.com':null);
+  if(page.liveUrl){
+   // Construct the frame from a strictly validated URL. Cross-origin content
+   // never receives any of Latch 98's JavaScript objects or virtual disk API.
+   const slot=view.querySelector('[data-ln-live-slot]');
+   const frame=document.createElement('iframe');
+   frame.className='ln-live-frame';frame.title='Real MySpace website';
+   frame.referrerPolicy='strict-origin-when-cross-origin';
+   // No top-level navigation, downloads or popups into the host desktop.
+   frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-forms allow-presentation');
+   frame.setAttribute('allow','fullscreen');
+   frame.src=page.liveUrl;
+   frame.addEventListener('load',()=>{if(!destroyed&&frame.isConnected)status.textContent='MySpace — requested live page; if blank, the website may block embedding';});
+   frame.addEventListener('error',()=>{if(!destroyed&&frame.isConnected)status.textContent='MySpace — site could not load inside Latch';});
+   slot?.replaceChildren(frame);
+  }
   if(focus)view.focus({preventScroll:true});
   wrap.querySelector('[data-ln-control="back"]').disabled=at<=0;
   wrap.querySelector('[data-ln-control="forward"]').disabled=at>=hist.length-1;
@@ -234,6 +278,15 @@ function mount(host,{openApp=()=>{},saveAttachment=()=>{}}={}){
  const attachment=e.target.closest('[data-ln-attachment]');if(attachment){const action=attachment.dataset.lnAttachment;if(action==='save'||action==='open')saveAttachment(action);return;}
  const app=e.target.closest('[data-ln-app]');if(app){const allowed=['minesweeper','solitaire','notepad'];if(allowed.includes(app.dataset.lnApp))openApp(app.dataset.lnApp);return;}
  const anchor=e.target.closest('[data-ln-anchor]');if(anchor){e.preventDefault();const id=anchor.dataset.lnAnchor;const el=[...view.querySelectorAll('[id]')].find(n=>n.id===id);if(el){go(hist[at].split('#')[0]+'#'+encodeURIComponent(id),true); }return;}
+ const retry=e.target.closest('[data-ln-live-retry]');if(retry){
+  const safe=realMyspace(hist[at]);if(safe)show(safe,{record:false});return;
+ }
+ const copy=e.target.closest('[data-ln-live-copy]');if(copy){
+  const safe=realMyspace(hist[at]);if(!safe)return;
+  if(navigator.clipboard?.writeText){navigator.clipboard.writeText(safe).then(()=>{status.textContent='MySpace address copied';}).catch(()=>{status.textContent='Copy the MySpace URL from the address bar';});}
+  else {address.focus();address.select();status.textContent='Address selected; use Ctrl+C to copy';}
+  return;
+ }
  const a=e.target.closest('a[data-ln-url]');if(a){e.preventDefault();go(a.dataset.lnUrl,true);return;}
  }
  function onSubmit(e){

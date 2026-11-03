@@ -62,3 +62,16 @@
  .ln-page .ln-mail-body{padding:9px 1px}
  .ln-page .ln-attachment button{margin-top:4px;min-height:34px}
 }
+
+/* v1.20 — Live websites stay inside the existing Latch Browser window. */
+.ln-viewport.ln-live-view{display:flex;flex-direction:column;overflow:hidden;background:#fff}
+.ln-live-page{display:flex;flex-direction:column;min-height:0;height:100%;flex:1;background:#fff}
+.ln-live-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px;padding:4px 7px;background:#e7e7e7;border-bottom:1px solid #888;font:11px Tahoma,Arial,sans-serif}
+.ln-live-actions{display:flex;gap:4px}
+.ln-live-actions button{font:11px Tahoma,Arial,sans-serif;background:#d6d6d6;border:2px outset #eee;padding:3px 8px;color:#111;cursor:pointer}
+.ln-live-frame-slot{flex:1;min-height:150px;background:white;overflow:hidden}
+.ln-live-frame{width:100%;height:100%;border:0;display:block;background:white}
+.ln-live-help{flex:none;border-top:1px solid #aaa;padding:4px 8px;background:#ffffdf;font:11px/1.45 Tahoma,Arial,sans-serif}
+.ln-live-help summary{cursor:pointer}
+.ln-live-help p{margin:5px 0}
+@media(max-width:520px){.ln-live-strip{align-items:flex-start}.ln-live-frame-slot{min-height:130px}}

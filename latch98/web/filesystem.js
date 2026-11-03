@@ -113,30 +113,30 @@ function createBlankDisk(name){
 }
 function createAppInstaller(id){
  if(id!=='latchamp')throw Error('This program cannot be downloaded by Latch Update');
- const path='C:/Downloads/LatchAmp-114.setup.exe';
+ const path='C:/Downloads/LatchAmp-118.setup.exe';
  const old=get(path);if(old){if(old.kind!=='installer'||old.program!==id)throw Error('The setup filename is already in use');return path;}
- add(path,'installer',{program:id,version:'1.14'});save();return path;
+ add(path,'installer',{program:id,version:'1.18'});save();return path;
 }
 function installSoftware(id){
  if(id==='charmap'&&(!disk.media?.mounted||get('A:/SETUP.EXE')?.program!=='charmap'))throw Error('Insert the Latch Utilities floppy and run A:\\Setup.exe first.');
  if(id==='nornlab'&&(!disk.cdrom?.mounted||get('D:/SETUP.EXE')?.program!=='nornlab'))throw Error('Insert the Norn World Lab disc into drive D: first.');
- if(id==='latchamp'&&get('C:/DOWNLOADS/LATCHAMP-114.SETUP.EXE')?.program!=='latchamp')throw Error('Download LatchAmp Setup from Latch Update first.');
+ if(id==='latchamp'&&get('C:/DOWNLOADS/LATCHAMP-118.SETUP.EXE')?.program!=='latchamp')throw Error('Download LatchAmp Setup from Latch Update first.');
  const def=KNOWN_SOFTWARE[id];if(!def)throw Error('This setup program is not compatible with Latch 98');
  if(disk.installed[id]){
-  if(id!=='latchamp'||disk.installed[id].version==='1.14')throw Error(def.name+' is already installed');
+  if(id!=='latchamp'||disk.installed[id].version==='1.18')throw Error(def.name+' is already installed');
   // Upgrade in place: retain existing virtual disk and shortcuts, and never delete user files.
-  disk.installed[id].version='1.14';disk.installed[id].updated=Date.now();
+  disk.installed[id].version='1.18';disk.installed[id].updated=Date.now();
   const readme=get(def.dir+'/README.TXT');if(readme?.kind==='text'){
-    readme.data='LatchAmp 1.14\nUpdated through Latch Setup.\nYour device-local music library is unchanged.\n';readme.modified=Date.now();
+    readme.data='LatchAmp 1.18\nUpdated through Latch Setup.\nYour device-local music library is unchanged.\n';readme.modified=Date.now();
   }
   save();return def;
  }
  const dir=def.dir;
  if(!isDir(dir))add(dir,'dir');
- add(dir+'/README.TXT','text',{data:id==='nornlab'?'Norn World Lab\n\nInstalled from NWLAB03.\nOriginal research application.\n':id==='latchamp'?'LatchAmp 1.14\nInstalled through Latch Setup.\n':''+def.name+'\nCopyright Latch Computer Co.\nInstalled using Latch Setup.\n'});
+ add(dir+'/README.TXT','text',{data:id==='nornlab'?'Norn World Lab\n\nInstalled from NWLAB03.\nOriginal research application.\n':id==='latchamp'?'LatchAmp 1.18\nInstalled through Latch Setup.\n':''+def.name+'\nCopyright Latch Computer Co.\nInstalled using Latch Setup.\n'});
  add(dir+'/'+id.toUpperCase()+'.EXE','shortcut',{target:id});
  add(def.menu,'shortcut',{target:id});
- disk.installed[id]={name:def.name,dir,menu:def.menu,installed:Date.now(),...(id==='latchamp'?{version:'1.14'}:{})};save();return def;
+ disk.installed[id]={name:def.name,dir,menu:def.menu,installed:Date.now(),...(id==='latchamp'?{version:'1.18'}:{})};save();return def;
 }
 function uninstallSoftware(id){
  const installed=disk.installed[id];if(!installed)throw Error('Program is not installed');

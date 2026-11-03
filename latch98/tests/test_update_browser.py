@@ -8,9 +8,9 @@ def test_catalog_download_installer_and_stays_optional():
     html='''<!doctype html><html><body><div id="mount"></div><script>
       const files=new Map();let installed=false;
       const api={
-        installedPrograms:()=>installed?[{id:'latchamp',name:'LatchAmp',version:'1.10'}]:[],
+        installedPrograms:()=>installed?[{id:'latchamp',name:'LatchAmp',version:'1.12'}]:[],
         get:path=>files.get(path.toUpperCase())||null,
-        createAppInstaller:id=>{if(id!=='latchamp')throw Error('unknown');const path='C:/DOWNLOADS/LATCHAMP-110.SETUP.EXE';files.set(path,{kind:'installer',program:id});document.dispatchEvent(new Event('latchfschange'));return path;}
+        createAppInstaller:id=>{if(id!=='latchamp')throw Error('unknown');const path='C:/DOWNLOADS/LATCHAMP-112.SETUP.EXE';files.set(path,{kind:'installer',program:id});document.dispatchEvent(new Event('latchfschange'));return path;}
       };
       window.mock={api,install:()=>{installed=true;document.dispatchEvent(new Event('latchfschange'))}};
     </script><script id="addon"></script></body></html>'''
@@ -25,6 +25,6 @@ def test_catalog_download_installer_and_stays_optional():
         assert page.get_by_role('button',name='Run Setup...').is_enabled()
         assert page.evaluate('window.mock.api.installedPrograms().length')==0
         page.get_by_role('button',name='Run Setup...').click()
-        assert page.get_by_text('LatchAmp 1.10 is installed.',exact=False).count()==1
+        assert page.get_by_text('LatchAmp 1.12 is installed.',exact=False).count()==1
         assert page.get_by_role('button',name='Download Setup').is_disabled()
         browser.close()

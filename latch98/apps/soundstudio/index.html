@@ -84,6 +84,20 @@ SOFTWARE.
 .file-window{width:min(520px,100%)!important;max-height:min(92dvh,620px)!important}.file-path{padding:7px;background:#eee;border:2px inset #fff;margin-bottom:10px;overflow-wrap:anywhere}.file-buttons{display:flex;gap:5px;justify-content:flex-end;flex-wrap:wrap}.file-window select{border:2px inset #fff;background:white}.file-window option{padding:5px}.file-window label{font-weight:normal}.transport select#loopFrom,.transport select#loopTo{width:44px}.transport #songSave,.transport #songOpen,.transport #newSong{font-size:12px}.transport #metroListen.active{background:#b0d6b0}.file-window input{background:#fff;border:2px inset #fff;padding:5px}.file-window .win-body{overflow-y:auto}
 @media(max-width:760px){.transport{max-height:160px;overflow-y:auto;align-content:flex-start}.transport #newSong,.transport #songOpen,.transport #songSave{padding:2px 5px}.file-window{max-height:90dvh!important}.file-buttons button{flex:1;min-height:37px}}
 #sampleSpeedMode{max-width:none;min-width:245px}#sampleOutputWave{touch-action:none;cursor:ew-resize} .embedded .shell-title{display:none}.embedded .shell{min-height:320px}
+
+/* Sound Studio is one Latch application with internal applets, never a nested desktop. */
+.studio-status{padding:5px 8px;min-height:24px;border-top:2px ridge #fff;background:var(--face);font:11px Tahoma;flex-shrink:0}
+html,body{background:var(--face)}
+.studio-applets{display:flex;gap:4px;align-items:center;padding:5px 6px;background:#c0c0c0;border-bottom:2px ridge #fff;overflow-x:auto;flex-shrink:0;white-space:nowrap}
+.studio-applets-label{font:bold 11px Tahoma;color:#444;margin-right:4px}
+.studio-applets button{flex-shrink:0;min-height:29px;padding:4px 10px;white-space:nowrap;font-size:11px}
+.studio-applets button.active{background:#fff;border-style:inset;font-weight:bold}
+#workspace{background:var(--face);position:relative;overflow:hidden}
+#workspace .window[data-win]{position:absolute!important;inset:0!important;left:0!important;top:0!important;width:100%!important;height:100%!important;max-height:100%!important;box-shadow:none!important;border:0!important;padding:0!important;display:none!important}
+#workspace .window[data-win].applet-active:not(.hidden):not(.minimized){display:flex!important}
+#workspace .window[data-win] .win-title{cursor:default}
+#workspace .window[data-win] [data-min],#workspace .window[data-win] [data-close]{display:none}
+@media(max-width:760px){.studio-applets{gap:2px;padding:3px}.studio-applets button{padding:4px 6px;min-height:33px}.studio-applets-label{display:none}}
 </style>
 </head>
 <body>
@@ -101,10 +115,16 @@ SOFTWARE.
 <label class="volume">Vol <input id="masterVolume" type="range" min="0" max="100" value="65"></label>
 <div class="transport-spacer"></div><span id="counter" class="clock">01:01:00</span>
 </div>
+<nav class="studio-applets" aria-label="Sound Studio applets" role="tablist">
+  <span class="studio-applets-label">APPLET:</span>
+  <button type="button" role="tab" data-task="stylophone" aria-selected="true" class="active">🎹 Metal-Key</button>
+  <button type="button" role="tab" data-task="sampler" aria-selected="false">📼 Sampler</button>
+  <button type="button" role="tab" data-task="beatlab" aria-selected="false">🥁 Beat Lab</button>
+  <button type="button" role="tab" data-task="vocal" aria-selected="false">🎤 Vocal</button>
+  <button type="button" role="tab" data-task="arrange" aria-selected="false">🎚️ Arrangement</button>
+</nav>
 <div class="workspace" id="workspace">
-<div class="shortcuts"><button class="shortcut" data-open="stylophone"><span class="ico">🎹</span>Metal-Key Synth</button><button class="shortcut" data-open="sampler"><span class="ico">📼</span>Sample Lab</button><button class="shortcut" data-open="beatlab"><span class="ico">🥁</span>Beat Lab</button><button class="shortcut" data-open="vocal"><span class="ico">🎤</span>Vocal Synth</button><button class="shortcut" data-open="arrange"><span class="ico">🎚️</span>Arrangement</button></div>
-<div class="desktop-hint">Use the Start menu or taskbar. Pocket Tone, Sample Lab, Vocal Synth and Beat Lab share the same four-track sequencer.</div>
-<section class="window" data-win="stylophone" aria-label="Metal-Key Synth tool">
+<section class="window applet-active" data-win="stylophone" aria-label="Metal-Key Synth tool">
  <div class="win-title"><span>🎹</span><span class="winname">Metal-Key Synth — Latch Pocket Tone</span><button data-min="stylophone" aria-label="Minimize instrument">_</button><button data-close="stylophone" aria-label="Close instrument">×</button></div>
  <div class="win-menu"><small>Instrument &gt; Metal-Key Synth</small><span style="flex:1"></span><span class="pill" id="inputDevice">INPUT: TOUCH / PEN / MOUSE</span></div>
  <div class="win-body">
@@ -186,8 +206,7 @@ SOFTWARE.
  <div class="win-footer"><span>Latch Sequencer · 4 tracks</span><span id="studioDiskPath">C:\My Documents\My Music\Untitled.l98s</span></div>
 </section>
 </div>
-<div class="start-menu" id="startMenu"><div class="start-strip">Latch 98</div><div class="start-items"><button data-open="stylophone">🎹 Metal-Key Synth</button><button data-open="sampler">📼 Sample Lab</button><button data-open="beatlab">🥁 Beat Lab</button><button data-open="vocal">🎤 Vocal Synthesizer</button><button data-open="arrange">🎚️ Arrangement</button><hr style="width:95%"><button id="startHelp">❔ About Sound Studio</button></div></div>
-<footer class="tasks"><button class="start" id="startButton">◈ Start</button><button class="task active" data-task="stylophone">🎹 Pocket Tone</button><button class="task" data-task="sampler">📼 Sample</button><button class="task" data-task="beatlab">🥁 Beat Lab</button><button class="task" data-task="vocal">🎤 Vocal</button><button class="task" data-task="arrange">🎚️ Arrange</button><div class="right" id="footerStatus">Ready · Tap a key to enable audio</div></footer>
+<footer class="studio-status" role="status" id="footerStatus">Ready · Sound Studio applets</footer>
 </div>
 <div aria-modal="true" role="dialog" aria-label="Latch 98 Save and Open" id="fileDialog" class="dialog">
  <div class="window file-window"><div class="win-title"><span>📂</span><span id="fileDialogTitle" class="winname">My Music</span><button id="fileDialogX" aria-label="Close">×</button></div>
@@ -219,7 +238,7 @@ function dialog(message){$('dialogText').textContent=message;$('dialog').classLi
 function hideDialog(){$('dialog').classList.remove('open');}
 $('dialogOk').addEventListener('click',hideDialog);$('dialogX').addEventListener('click',hideDialog);
 function isMobile(){return matchMedia('(max-width:760px)').matches;}
-function openWin(id){if(!['stylophone','vocal','sampler','beatlab','arrange'].includes(id))return;const w=document.querySelector(`.window[data-win="${id}"]`);w.classList.remove('hidden','minimized');front=id;w.style.zIndex=++z;document.querySelectorAll('.window[data-win]').forEach(x=>x.classList.toggle('mobile-front',x===w));document.querySelectorAll('[data-task]').forEach(t=>t.classList.toggle('active',t.dataset.task===id));$('startMenu').classList.remove('open');if([...liveVoices.values()].some(v=>v.instrument!==id))stopLive();}
+function openWin(id){if(!['stylophone','vocal','sampler','beatlab','arrange'].includes(id))return;const w=document.querySelector(`.window[data-win="${id}"]`);w.classList.remove('hidden','minimized');front=id;document.querySelectorAll('.window[data-win]').forEach(x=>{x.classList.toggle('applet-active',x===w);x.classList.toggle('mobile-front',x===w);});document.querySelectorAll('[data-task]').forEach(t=>{t.classList.toggle('active',t.dataset.task===id);t.setAttribute('aria-selected',String(t.dataset.task===id));});if([...liveVoices.values()].some(v=>v.instrument!==id))stopLive();}
 function minimizeWin(id){const w=document.querySelector(`.window[data-win="${id}"]`);w.classList.add('minimized');if(front===id){const other=['stylophone','vocal','sampler','beatlab','arrange'].find(x=>x!==id&&!document.querySelector(`.window[data-win="${x}"]`).classList.contains('hidden'));if(other)openWin(other);}stopLive();}
 function closeWin(id){document.querySelector(`.window[data-win="${id}"]`).classList.add('hidden');if(front===id){const other=['stylophone','vocal','sampler','beatlab','arrange'].find(x=>x!==id&&!document.querySelector(`.window[data-win="${x}"]`).classList.contains('hidden'));if(other)openWin(other);}stopLive();}
 document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>openWin(b.dataset.open)));
@@ -227,12 +246,11 @@ document.querySelectorAll('[data-task]').forEach(b=>b.addEventListener('click',(
 document.querySelectorAll('[data-min]').forEach(b=>b.addEventListener('click',()=>minimizeWin(b.dataset.min)));
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>closeWin(b.dataset.close)));
 $('openVocal').onclick=()=>openWin('vocal');$('openStylo').onclick=()=>openWin('stylophone');$('openSampler').onclick=()=>openWin('sampler');$('openBeatLab').onclick=()=>openWin('beatlab');$('openSampleFromStylo').onclick=()=>openWin('sampler');
-$('startButton').onclick=()=>$('startMenu').classList.toggle('open');$('startHelp').onclick=()=>{$('startMenu').classList.remove('open');showHelp();};
+
 $('menuTools').onclick=()=>openWin(front==='stylophone'?'sampler':front==='sampler'?'beatlab':front==='beatlab'?'vocal':front==='vocal'?'arrange':'stylophone');
 $('menuFile').onclick=()=>openFiles('open');$('menuHelp').onclick=showHelp;
-function showHelp(){dialog('Latch 98 Sound Studio v0.7 · phone and desktop.\n\nOpen instruments using Start or taskbar. Play chords by holding multiple metal keys with two or more fingers (or keyboard keys) at once; dragging a finger changes only its own note. Compatible pen and touch combinations depend on hardware. The Vocal tool has an XY pad and keyboard. Sample Lab records/imports short real sounds and plays them across pitches. Tap ● Rec then perform; use ▶ Play for playback. Projects export as JSON (including recorded samples), and arrangements render as WAV.\n\nUse WaveSampler to edit a recording or create your own sound pack. Save a project before reloading; small samples can be recovered when temporary storage is available.');}
-// Move desktop windows only via title-bar, but never turn mobile swipe into window drag.
-document.querySelectorAll('.window[data-win] .win-title').forEach(bar=>{let moving=null;bar.addEventListener('pointerdown',e=>{if(isMobile()||e.target.closest('button'))return;const w=bar.closest('.window'),r=w.getBoundingClientRect();openWin(w.dataset.win);moving={id:e.pointerId,x:e.clientX,y:e.clientY,left:r.left,top:r.top};bar.setPointerCapture(e.pointerId);});bar.addEventListener('pointermove',e=>{if(!moving||moving.id!==e.pointerId)return;const w=bar.closest('.window'),ws=$('workspace').getBoundingClientRect();w.style.left=clamp(moving.left-ws.left+e.clientX-moving.x,0,Math.max(0,ws.width-90))+'px';w.style.top=clamp(moving.top-ws.top+e.clientY-moving.y,0,Math.max(0,ws.height-30))+'px';});for(const evt of ['pointerup','pointercancel','lostpointercapture'])bar.addEventListener(evt,()=>moving=null);});
+function showHelp(){dialog('Latch 98 Sound Studio v0.7 · phone and desktop.\n\nOpen instruments with the applet tabs. Play chords by holding multiple metal keys with two or more fingers (or keyboard keys) at once; dragging a finger changes only its own note. Compatible pen and touch combinations depend on hardware. The Vocal tool has an XY pad and keyboard. Sample Lab records/imports short real sounds and plays them across pitches. Tap ● Rec then perform; use ▶ Play for playback. Projects export as JSON (including recorded samples), and arrangements render as WAV.\n\nUse WaveSampler to edit a recording or create your own sound pack. Save a project before reloading; small samples can be recovered when temporary storage is available.');}
+// Applet panels remain docked; only Latch itself manages desktop windows.
 
 // Latch WaveSampler: real-world audio recording/file input, trim, pitch-map and embed.
 const SAMPLE_MAX_SECONDS=10, SAMPLE_RATE=22050;

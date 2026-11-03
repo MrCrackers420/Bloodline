@@ -123,10 +123,10 @@ function closeMenus(){clearTimeout(menuHoverTimer);startOpen=false;submenuOwner=
 function toggleStart(focusMenu=false){if(startOpen){closeMenus();return;}closeMenus();startOpen=true;el.start.classList.remove('hidden');$('start-button').classList.add('pressed');$('start-button').setAttribute('aria-expanded','true');if(focusMenu)el.start.querySelector('.menu-item')?.focus({preventScroll:true});}
 $('start-button').addEventListener('click',e=>{e.stopPropagation();toggleStart();});
 const submenus={
- favorites:[['browser','LatchNet Directory','site:latchnet'],['browser','PixelShelf','site:pixelshelf'],['browser','The Norn Observer','site:norn'],['browser','TownWire','site:town']],
+ favorites:[['browser','LatchNet Directory','site:latchnet'],['browser','PixelShelf','site:pixelshelf'],['browser','The Norn Observer','site:norn'],['browser','TownWire','site:town'],['browser','MySpace.com (In Latch)','site:myspace']],
  programs:[['folder','Games','games'],['folder','Accessories','accessories'],['folder','Internet','internet'],['browser','Latch Browser','browser'],['settings','Latch Update','updates'],['computer','File Explorer','computer'],['run','MS-DOS Prompt','terminal']],
  games:[['bloodline','Bloodline','bloodline'],['bloodline','Bloodline (Windowed)','bloodline-windowed'],['solitaire','Solitaire','solitaire'],['minesweeper','Minesweeper','minesweeper'],['bloodline','Bloodline: Wilds','wilds'],['bloodline','Bloodline: Catacombs','catacombs'],['bloodline','Weed Warrior','weedwarrior']],
- internet:[['browser','Latch Browser','browser'],['network','SwarmWire','swarmwire'],['browser','LatchNet Directory','site:latchnet'],['browser','PixelShelf Downloads','site:pixelshelf'],['browser','Postbox WebMail','site:postbox'],['browser','TownWire News','site:town']],
+ internet:[['browser','Latch Browser','browser'],['network','SwarmWire','swarmwire'],['browser','LatchNet Directory','site:latchnet'],['browser','PixelShelf Downloads','site:pixelshelf'],['browser','Postbox WebMail','site:postbox'],['browser','TownWire News','site:town'],['browser','MySpace.com (In Latch)','site:myspace']],
  accessories:[['notepad','Notepad','notepad'],['paint','Paint','paint'],['calc','Calculator','calculator'],['help','Help','help'],['sound','Latch Sound Studio','soundstudio'],['sound','Audacity','audacity'],['paint','Latch Sprite Studio','spritestudio']],
  documents:[['documents','My Documents','documents']],
  settings:[['settings','Control Panel','control'],['disc','Floppy Disk Tray','disktray'],['settings','Display','display'],['sound','Sounds','sounds'],['about','About Latch 98','about']]
@@ -315,7 +315,7 @@ function launch(id){
  if(id.startsWith('viewer:'))id='viewer:'+LatchFS.canonical(id.slice(7));
 
  if(windows.has(id)){const w=windows.get(id);activateWindow(id);focusWindow(w);return;}
- const n=++serial,small=['about','calculator','sounds','display','control','help','find','disktray','addremove','charmap'].includes(id),size=({computer:[575,390],documents:[555,350],network:[470,330],bin:[450,290],browser:[760,560],swarmwire:[640,455],nornlab:[800,580],'bloodline-windowed':[920,635],wilds:[950,650],catacombs:[900,620],weedwarrior:[770,580],soundstudio:[920,620],audacity:[980,640],spritestudio:[1024,700],latchamp:[780,610],updates:[540,420],cdrom:[475,290],notepad:[530,380],paint:[655,465],calculator:[335,405],minesweeper:[320,405],solitaire:[790,580],explorer:[650,440],about:[390,300],display:[565,445],control:[490,340],sounds:[430,290],terminal:[550,325],disktray:[500,370],addremove:[510,385],charmap:[510,410],help:[480,365],find:[440,310]})[id]||[(id.startsWith('explorer:')?650:id.startsWith('viewer:')?480:(small?425:500)),(id.startsWith('explorer:')?440:id.startsWith('viewer:')?400:340)];
+ const n=++serial,small=['about','calculator','sounds','display','control','help','find','disktray','addremove','charmap'].includes(id),size=({computer:[575,390],documents:[555,350],network:[470,330],bin:[450,290],browser:[760,560],swarmwire:[640,455],nornlab:[800,580],'bloodline-windowed':[920,635],wilds:[950,650],catacombs:[900,620],weedwarrior:[770,580],soundstudio:[920,620],audacity:[980,640],spritestudio:[1024,700],latchamp:[1000,740],updates:[540,420],cdrom:[475,290],notepad:[530,380],paint:[655,465],calculator:[335,405],minesweeper:[320,405],solitaire:[790,580],explorer:[650,440],about:[390,300],display:[565,445],control:[490,340],sounds:[430,290],terminal:[550,325],disktray:[500,370],addremove:[510,385],charmap:[510,410],help:[480,365],find:[440,310]})[id]||[(id.startsWith('explorer:')?650:id.startsWith('viewer:')?480:(small?425:500)),(id.startsWith('explorer:')?440:id.startsWith('viewer:')?400:340)];
  const node=document.createElement('div');node.className='window';node.dataset.id=id;node.tabIndex=-1;node.setAttribute('role','region');node.setAttribute('aria-label',titleOf(id)+' window');node.style.width=Math.min(size[0],innerWidth-16)+'px';node.style.height=Math.min(innerWidth<=650&&id==='browser'?innerHeight-55:size[1],innerHeight-55)+'px';
  const left=Math.max(2,Math.min(innerWidth-size[0]-9,75+(n%7)*28));const top=Math.max(2,Math.min(innerHeight-size[1]-51,48+(n%7)*21));node.style.left=(innerWidth<=650?4:left)+'px';node.style.top=top+'px';
  node.innerHTML=`<div class="titlebar" data-drag="1">${icon(iconOf(id))}<span class="caption">${titleOf(id)}</span><div class="controls"><button class="ctrl" data-window-action="min" title="Minimize">_</button><button class="ctrl" data-window-action="max" title="Maximize">□</button><button class="ctrl" data-window-action="close" title="Close">×</button></div></div>${(['notepad','paint','computer','documents','network','bin','browser','terminal'].includes(id)||id.startsWith('explorer:'))?`<div class="window-menubar"><button data-window-menu="file">File</button><button data-window-menu="edit">Edit</button>${isExplorer(id)?`<button data-window-menu="view">View</button><button data-window-menu="go">Go</button>`:``}<button data-window-menu="help">Help</button></div>`:''}<div class="window-content">${appHtml(id)}</div>${(['computer','documents','network','bin','notepad','paint'].includes(id)||id.startsWith('explorer:'))?'<div class="statusbar"><span class="status-text">Ready</span></div>':''}`;
@@ -383,7 +383,7 @@ function setupApp(id,node){
  if(id==='swarmwire')setupSwarmWire(node);if(id==='bloodline-windowed')setupBloodlineWindow(node);if(id==='nornlab')setupNornWorldLab(node);if(id==='cdrom')setupCdrom(node);
  if(id==='disktray')setupDiskTray(node);if(id==='addremove')setupAddRemove(node);if(id==='charmap')setupCharMap(node);
  if(id==='terminal')setupTerminal(node);
- if(id==='browser'){const api=window.LatchNet?.mount(node.querySelector('.latch-browser-root'),{openApp:launch,saveAttachment:saveMailAttachment});if(api)windows.get(id).cleanup=()=>api.destroy();}
+ if(id==='browser'){const api=window.LatchNet?.mount(node.querySelector('.latch-browser-root'),{openApp:launch,saveAttachment:saveMailAttachment,onTitleChange:name=>{const label=node.querySelector('.titlebar .caption');if(label)label.textContent=name?name+' - Latch Browser':'Latch Browser';}});if(api)windows.get(id).cleanup=()=>api.destroy();}
  if(id==='minesweeper')setupMinesweeper(node);
  if(id==='solitaire')setupSolitaire(node);
  if(['wilds','catacombs','weedwarrior','soundstudio','audacity','spritestudio','latchamp'].includes(id))setupExtraWindow(node,id);
@@ -410,7 +410,7 @@ function setupDiskTray(node){
 }
 function showSoftwareSetup(program){
  const def={charmap:'Character Map',nornlab:'Norn World Lab',latchamp:'LatchAmp'}[program];if(!def){fsError('This setup file cannot be opened.');return;}
- const installed=fs.installedPrograms().find(p=>p.id===program);const upgrading=program==='latchamp'&&!!installed&&installed.version!=='1.14';
+ const installed=fs.installedPrograms().find(p=>p.id===program);const upgrading=program==='latchamp'&&!!installed&&installed.version!=='1.18';
  if(installed&&!upgrading){showDialog('Setup','<p>This program is already up to date.</p>');return;}
  showDialog(`${def} Setup`,`<div class="l98-installer-banner"><span class="l98-floppy">${icon('disc')}</span><div><strong>Welcome to the ${escapeHtml(def)} Setup program.</strong><p>This wizard will ${upgrading?'upgrade':'install'} ${escapeHtml(def)} on your computer.</p></div></div><p>Click Next to continue.</p>`,[{label:'Next >',action:()=>showDialog(`${def} Setup`,`<p>Setup will ${upgrading?'upgrade':'install'} ${escapeHtml(def)} in:</p><div class="l98-status">${program==='nornlab'?'C:\\Program Files\\Norn World Lab':program==='latchamp'?'C:\\Program Files\\LatchAmp':'C:\\Program Files\\Accessories\\Character Map'}</div><p>Click ${upgrading?'Upgrade':'Install'} to begin.</p>`,[{label:upgrading?'Upgrade':'Install',action:()=>{try{fs.installSoftware(program);showDialog('Setup Complete',`<p>${escapeHtml(def)} has been ${upgrading?'updated':'installed'} successfully.</p><p>You can find it in ${program==='nornlab'?'Start > Programs > Games':'Start > Programs > Accessories'}.</p>`,[{label:'Finish'}]);}catch(e){fsError(e);}}},{label:'Cancel'}])},{label:'Cancel'}]);
 }
@@ -446,7 +446,13 @@ async function setupBloodlineWindow(node){
  const start=(html,remote)=>{
    const iframe=document.createElement('iframe');iframe.className='bloodline-frame';
    iframe.title='Bloodline';
-   if(html)iframe.srcdoc=window.LatchAudioBus?.instrument(html,bloodlinePage())||html;else iframe.src=remote||bloodlinePage();
+   if(html){
+     // The packed standalone can run from an opaque document (for example a
+     // browser preview). In that case a relative Bloodline URL has no valid
+     // base; the game bytes are already bundled, so do not abort the launch.
+     let gameBase='';try{gameBase=bloodlinePage();}catch{}
+     iframe.srcdoc=window.LatchAudioBus?.instrument(html,gameBase)||html;
+   }else iframe.src=remote||bloodlinePage();
    iframe.setAttribute('allow','fullscreen; gamepad');iframe.setAttribute('allowfullscreen','');
    holder.replaceChildren(iframe);
  };
